@@ -1,0 +1,259 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "FrozenPrediction": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_ablation_outcome": {
+          "minLength": 1,
+          "title": "Expected Ablation Outcome",
+          "type": "string"
+        },
+        "expected_conditions": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Expected Conditions",
+          "type": "array"
+        },
+        "expected_rival_difference": {
+          "minLength": 1,
+          "title": "Expected Rival Difference",
+          "type": "string"
+        },
+        "frozen_at": {
+          "minLength": 1,
+          "title": "Frozen At",
+          "type": "string"
+        },
+        "hypothesis_ref": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "origin": {
+          "const": "prospective",
+          "default": "prospective",
+          "title": "Origin",
+          "type": "string"
+        },
+        "predicted_result": {
+          "minLength": 1,
+          "title": "Predicted Result",
+          "type": "string"
+        },
+        "prediction_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Prediction Id",
+          "type": "string"
+        },
+        "proposed_economic_chain": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Proposed Economic Chain",
+          "type": "array"
+        },
+        "surprise_or_falsifier": {
+          "minLength": 1,
+          "title": "Surprise Or Falsifier",
+          "type": "string"
+        }
+      },
+      "required": [
+        "prediction_id",
+        "hypothesis_ref",
+        "predicted_result",
+        "proposed_economic_chain",
+        "expected_conditions",
+        "expected_ablation_outcome",
+        "expected_rival_difference",
+        "surprise_or_falsifier",
+        "frozen_at"
+      ],
+      "title": "FrozenPrediction",
+      "type": "object"
+    },
+    "PredictionReconciliation": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "mechanism_diagnosis": {
+          "minLength": 1,
+          "title": "Mechanism Diagnosis",
+          "type": "string"
+        },
+        "observed_result": {
+          "minLength": 1,
+          "title": "Observed Result",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "confirmed",
+            "right_result_wrong_reason",
+            "informative_failure",
+            "non_discriminating",
+            "implementation_failure",
+            "unresolved"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "prediction_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Prediction Id",
+          "type": "string"
+        },
+        "reconciliation_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Reconciliation Id",
+          "type": "string"
+        },
+        "recorded_at": {
+          "minLength": 1,
+          "title": "Recorded At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reconciliation_id",
+        "prediction_id",
+        "outcome",
+        "observed_result",
+        "mechanism_diagnosis",
+        "evidence_refs",
+        "recorded_at"
+      ],
+      "title": "PredictionReconciliation",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/prediction-register.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "mechanism_tournament_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "original_predictions": {
+      "items": {
+        "$ref": "#/$defs/FrozenPrediction"
+      },
+      "minItems": 1,
+      "title": "Original Predictions",
+      "type": "array"
+    },
+    "question_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "reconciliations": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/PredictionReconciliation"
+      },
+      "title": "Reconciliations",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "question_ref",
+    "mechanism_tournament_ref",
+    "original_predictions"
+  ],
+  "title": "PredictionRegister",
+  "type": "object"
+}

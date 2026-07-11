@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import lru_cache
 from importlib.metadata import PackageNotFoundError, distribution, version as package_version
+import json
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Mapping
@@ -18,12 +19,23 @@ from .models import (
     DecisionKind,
     Facet,
     RouteRegistry,
+    RouteRegistryLike,
+    RouteRegistryV2,
     RouteSpec,
+    RouteSpecLike,
+    RouteSpecV2,
 )
 
 FACETS: tuple[Facet, ...] = FACET_ORDER
-DECISION_REGISTRY_VERSION = 1
-ROUTE_REGISTRY_HASH = "d9c84001420bd63a82418ee3cfe1776895be69936e921aa8c4790a8966aa6913"
+DECISION_REGISTRY_V1_VERSION = 1
+DECISION_REGISTRY_V2_VERSION = 1
+# Backward-compatible alias for frozen Phase 1 context bytes.
+DECISION_REGISTRY_VERSION = DECISION_REGISTRY_V1_VERSION
+ROUTE_REGISTRY_V1_HASH = "d9c84001420bd63a82418ee3cfe1776895be69936e921aa8c4790a8966aa6913"
+# Filled only after the complete v2 catalog and every instruction bundle are
+# content-addressed.  The value is a policy identifier, not a mutable checksum.
+ROUTE_REGISTRY_V2_HASH = "cd6e4147ea639f0c3016e88783afcf090ccd8383b70d6efe314599d3909bfa40"
+ROUTE_REGISTRY_HASH = ROUTE_REGISTRY_V2_HASH
 SELECTOR_VERSION = "context_selector.v1"
 KERNEL_VERSION = "theory_kernel.v1"
 KERNEL_HASH = "1670162bdca5e8b31017c2cb42c48d96bfc627921361904a3c8fe67ee94aca71"
@@ -111,6 +123,12 @@ def minimum_authority_for_decision(kind: DecisionKind) -> AuthorityLevel:
         raise AuthorityError(f"unregistered Decision kind: {kind}") from exc
 
 
+def decision_registry_version_for_route(route: RouteSpecLike) -> int:
+    if isinstance(route, RouteSpecV2):
+        return DECISION_REGISTRY_V2_VERSION
+    return DECISION_REGISTRY_V1_VERSION
+
+
 def validate_decision_authority(decision: Decision) -> None:
     rule = DECISION_REGISTRY.get(decision.decision_kind)
     if rule is None:
@@ -129,7 +147,7 @@ def validate_decision_authority(decision: Decision) -> None:
         )
 
 
-CORE_ROUTE_IDS: tuple[str, ...] = (
+V1_ROUTE_IDS: tuple[str, ...] = (
     "frame.question_and_benchmarks",
     "decompose.primitives",
     "tournament.mechanisms",
@@ -148,13 +166,26 @@ CORE_ROUTE_IDS: tuple[str, ...] = (
     "review.manuscript_unit",
     "repair.dependency",
 )
-ENABLED_ROUTE_IDS = frozenset(
+CORE_ROUTE_IDS = V1_ROUTE_IDS
+V2_ROUTE_IDS: tuple[str, ...] = (
+    V1_ROUTE_IDS[0],
+    "prepare.blind_case",
+    "evaluate.blind_argument_package",
+    *V1_ROUTE_IDS[1:],
+)
+V1_ENABLED_ROUTE_IDS = frozenset(
     {"frame.question_and_benchmarks", "repair.dependency"}
+)
+V2_ENABLED_ROUTE_IDS = frozenset(V2_ROUTE_IDS).difference(
+    {"design.reader_path", "compose.manuscript_unit", "review.manuscript_unit"}
+)
+ROUTE_REGISTRY_HASHES: Mapping[int, str] = MappingProxyType(
+    {1: ROUTE_REGISTRY_V1_HASH, 2: ROUTE_REGISTRY_V2_HASH}
 )
 
 
 def _default_registry_path() -> Path:
-    return _routes_root() / "registry.v1.json"
+    return _routes_root() / "registry.v2.json"
 
 
 def _routes_root() -> Path:
@@ -178,24 +209,51 @@ def _routes_root() -> Path:
     return installed_root
 
 
-def validate_route_registry(registry: RouteRegistry) -> RouteRegistry:
+def registry_hash(registry: RouteRegistryLike) -> str:
+    """Return the exact pinned identity of one validated catalog."""
+
+    expected = ROUTE_REGISTRY_HASHES.get(registry.registry_version)
+    if expected is None:
+        raise RegistryError(
+            f"unsupported route registry version: {registry.registry_version}"
+        )
+    actual = sha256_digest(canonical_json_bytes(registry))
+    if actual != expected:
+        raise RegistryError(
+            f"route registry v{registry.registry_version} differs from its pinned bytes"
+        )
+    return expected
+
+
+def validate_route_registry(registry: RouteRegistryLike) -> RouteRegistryLike:
     ids = tuple(route.route_id for route in registry.routes)
-    if ids != CORE_ROUTE_IDS:
-        raise RegistryError("route registry must contain the exact ordered core IDs")
+    expected_ids = (
+        V1_ROUTE_IDS if registry.registry_version == 1 else V2_ROUTE_IDS
+    )
+    if ids != expected_ids:
+        raise RegistryError(
+            f"route registry v{registry.registry_version} must contain its exact ordered route IDs"
+        )
     if registry.aliases:
-        raise RegistryError("Phase 1 registry has no implicit route aliases")
+        raise RegistryError("route registries have no implicit route aliases")
     enabled = {route.route_id for route in registry.routes if route.availability == "enabled"}
-    if enabled != ENABLED_ROUTE_IDS:
-        raise RegistryError("only framing and dependency repair may be enabled in slice 1")
+    expected_enabled = (
+        V1_ENABLED_ROUTE_IDS
+        if registry.registry_version == 1
+        else V2_ENABLED_ROUTE_IDS
+    )
+    if enabled != expected_enabled:
+        raise RegistryError(
+            f"route registry v{registry.registry_version} has the wrong enabled set"
+        )
     if any(route.authority_ceiling != "L1" for route in registry.routes):
-        raise RegistryError("Phase 1 routes may propose but not exercise L2/L3 authority")
-    if sha256_digest(canonical_json_bytes(registry)) != ROUTE_REGISTRY_HASH:
-        raise RegistryError("route registry differs from the pinned Phase 1 registry")
+        raise RegistryError("routes may propose but not exercise L2/L3 authority")
+    registry_hash(registry)
     return registry
 
 
-@lru_cache(maxsize=4)
-def load_route_registry(path: str | Path | None = None) -> RouteRegistry:
+@lru_cache(maxsize=8)
+def load_route_registry(path: str | Path | None = None) -> RouteRegistryLike:
     validate_runtime_validator()
     source = Path(path) if path is not None else _default_registry_path()
     try:
@@ -203,13 +261,40 @@ def load_route_registry(path: str | Path | None = None) -> RouteRegistry:
     except OSError as exc:
         raise RegistryError(f"cannot read route registry: {source}") from exc
     try:
-        registry = RouteRegistry.model_validate_json(payload, strict=True)
-    except ValueError as exc:
+        decoded = json.loads(payload.decode("utf-8"))
+        if not isinstance(decoded, dict):
+            raise ValueError("registry is not an object")
+        version = decoded.get("registry_version")
+        if version == 1:
+            registry: RouteRegistryLike = RouteRegistry.model_validate_json(
+                payload, strict=True
+            )
+        elif version == 2:
+            registry = RouteRegistryV2.model_validate_json(payload, strict=True)
+        else:
+            raise ValueError(f"unsupported registry_version: {version!r}")
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
         raise RegistryError(f"invalid route registry: {source}") from exc
     return validate_route_registry(registry)
 
 
-def route_spec(route_id: str, registry: RouteRegistry | None = None) -> RouteSpec:
+@lru_cache(maxsize=4)
+def load_route_registry_by_hash(route_registry_hash: str) -> RouteRegistryLike:
+    """Resolve historical policy by exact manifest-bound registry hash."""
+
+    versions = [
+        version
+        for version, digest in ROUTE_REGISTRY_HASHES.items()
+        if digest == route_registry_hash
+    ]
+    if len(versions) != 1:
+        raise RegistryError(f"unknown exact route registry hash: {route_registry_hash}")
+    return load_route_registry(_routes_root() / f"registry.v{versions[0]}.json")
+
+
+def route_spec(
+    route_id: str, registry: RouteRegistryLike | None = None
+) -> RouteSpecLike:
     active_registry = registry or load_route_registry()
     for route in active_registry.routes:
         if route.route_id == route_id:
@@ -217,7 +302,19 @@ def route_spec(route_id: str, registry: RouteRegistry | None = None) -> RouteSpe
     raise RegistryError(f"unknown exact route ID: {route_id}")
 
 
-def instruction_bundle_bytes(route: RouteSpec) -> bytes:
+def route_spec_by_hash(route_id: str, route_registry_hash: str) -> RouteSpecLike:
+    return route_spec(route_id, load_route_registry_by_hash(route_registry_hash))
+
+
+def registry_hash_for_route(route: RouteSpecLike) -> str:
+    if isinstance(route, RouteSpec):
+        return ROUTE_REGISTRY_V1_HASH
+    if isinstance(route, RouteSpecV2):
+        return ROUTE_REGISTRY_V2_HASH
+    raise RegistryError(f"unsupported route specification type: {type(route).__name__}")
+
+
+def instruction_bundle_bytes(route: RouteSpecLike) -> bytes:
     """Load one enabled route's exact, content-addressed instruction bundle."""
 
     if route.instruction_bundle_id is None or route.instruction_bundle_hash is None:

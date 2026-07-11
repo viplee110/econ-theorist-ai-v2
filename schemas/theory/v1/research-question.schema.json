@@ -1,0 +1,78 @@
+{
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/research-question.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "candidate_archetypes": {
+      "items": {
+        "enum": [
+          "mechanism_explanation",
+          "comparative_statics_threshold",
+          "characterization_bounds",
+          "robustness_invariance_equivalence",
+          "design_implementation_impossibility",
+          "concept_representation_foundation"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Candidate Archetypes",
+      "type": "array"
+    },
+    "importance": {
+      "minLength": 1,
+      "title": "Importance",
+      "type": "string"
+    },
+    "kill_condition": {
+      "minLength": 1,
+      "title": "Kill Condition",
+      "type": "string"
+    },
+    "object_to_explain": {
+      "minLength": 1,
+      "title": "Object To Explain",
+      "type": "string"
+    },
+    "phenomenon": {
+      "minLength": 1,
+      "title": "Phenomenon",
+      "type": "string"
+    },
+    "prohibited_claims": {
+      "default": [],
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Prohibited Claims",
+      "type": "array"
+    },
+    "proposed_scope": {
+      "minLength": 1,
+      "title": "Proposed Scope",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "unresolved_delta": {
+      "minLength": 1,
+      "title": "Unresolved Delta",
+      "type": "string"
+    }
+  },
+  "required": [
+    "phenomenon",
+    "object_to_explain",
+    "unresolved_delta",
+    "importance",
+    "kill_condition",
+    "proposed_scope",
+    "candidate_archetypes"
+  ],
+  "title": "ResearchQuestion",
+  "type": "object"
+}

@@ -1,0 +1,133 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/absorption-assessment.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "central_claim_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "central_claim_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Central Claim Id",
+      "type": "string"
+    },
+    "closest_theory_map_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "first_mapping_failure": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "First Mapping Failure"
+    },
+    "outcome": {
+      "enum": [
+        "nonabsorbed",
+        "partially_absorbed",
+        "application_only",
+        "unresolved_evidence",
+        "absorbed"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "rationale": {
+      "minLength": 1,
+      "title": "Rationale",
+      "type": "string"
+    },
+    "recommended_route": {
+      "enum": [
+        "mutate",
+        "demote",
+        "pivot",
+        "park",
+        "kill",
+        "proceed"
+      ],
+      "title": "Recommended Route",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "standard_argument_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ArtifactDependencyRef"
+      },
+      "title": "Standard Argument Refs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "closest_theory_map_ref",
+    "central_claim_graph_ref",
+    "central_claim_id",
+    "outcome",
+    "rationale",
+    "recommended_route"
+  ],
+  "title": "AbsorptionAssessment",
+  "type": "object"
+}

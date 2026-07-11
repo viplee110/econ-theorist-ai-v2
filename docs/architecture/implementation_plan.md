@@ -1,8 +1,8 @@
 # Implementation plan
 
-Status: Architecture v0.1 with Phase 1 implementation candidate
+Status: Architecture v0.1 with accepted Phase 1 implementation
 
-Current phase: Phase 1 — walking substrate
+Current phase: Phase 2 — theory-kernel vertical slice
 
 ## 1. Delivery strategy
 
@@ -42,7 +42,7 @@ The first useful system is not a manuscript generator. It is a reliable theory-p
 
 Build the smallest reliable runtime.
 
-Implementation status: the walking candidate and its adversarial acceptance suite are implemented on `agent/phase1-walking-substrate`. It remains a candidate until branch review and does not imply that later theory, authoring, or release capabilities exist.
+Implementation status: the walking substrate and its adversarial acceptance suite were reviewed and merged into `main` at `3ce5c6b8c92fbcbefb361b319a70894e173b119f`. Phase 1 is accepted; this does not imply that later theory, authoring, or release capabilities exist.
 
 ### Initial persistent objects
 
@@ -91,6 +91,11 @@ init
 
 ## 4. Phase 2 — theory-kernel vertical slice
 
+Implementation status: the vertical-slice candidate is implemented on
+`agent/phase2-theory-kernel-slice` and has passed its local acceptance suite;
+branch review and merge remain pending. This is a semantic/runtime milestone,
+not evidence that an AI generator has reached publication quality.
+
 Implement only the objects and routes needed for one complete theoretical argument:
 
 - research question and benchmarks;
@@ -111,6 +116,20 @@ The first case should be synthetic or based on public theory material and must b
 - benchmark closure, mechanism ablation, rival separation, assumption distance, boundary witness, arrow coverage, and absorption translation tests run;
 - numerical corroboration cannot certify a universal theorem;
 - all applicable G1–G5 promotion decisions are recorded; reversible exploration may bundle decisions, but G3 formal-base and G5 argument-validation authority cannot be skipped before authoring-ready promotion.
+- one real ObjectStore chain crosses G1 through G5, records the human G5
+  Decision, derives a fresh validation closure, and replays exactly from
+  genesis;
+- a real absorption mutation makes the G4 dossier, argument package, and G5
+  closure stale while preserving the exact bytes of the formal model, claim
+  graph, verification records, and verification bundle, with only G1--G3
+  remaining scientifically effective;
+- one sealed confirmatory attempt executes `prepare.blind_case` and
+  `evaluate.blind_argument_package` through begin, isolated context, stage,
+  preflight, commit, and replay, ending in one terminal comparison;
+- evaluator independence is enforced before any gold-bearing context is
+  compiled, and historical v1 replay cannot be used as a live Phase 2 write
+  downgrade;
+- the frozen Phase 1 byte oracle remains unchanged and passes byte-for-byte.
 
 ## 5. Phase 3 — assurance and authoring vertical slice
 
@@ -151,7 +170,8 @@ Add the versioned universal quality floor, theory modes, result archetypes, fiel
 Add only after the single-agent vertical slice is stable:
 
 - isolated mechanism/model lanes;
-- blind/context/literature review contexts;
+- general multi-agent lanes beyond Phase 2's sealed confirmatory-evaluation
+  contexts, including broader blind, context, and literature-review panels;
 - judge synthesis with minority preservation;
 - version-control adapter;
 - Lean or other formal-proof adapter;
@@ -169,6 +189,11 @@ Add only after the single-agent vertical slice is stable:
 ## 8. Phase 6 — comparative evaluation and hardening
 
 Run the preregistered compiler-only, end-to-end discovery, and revision comparisons on held-out theory cases under the full protocol in `evaluation.md`. Perform v2 ablations for the economic argument representation, reader contracts, mechanism/result packets, dependency invalidation, and craft retrieval.
+
+Phase 2's sealed blind routes establish the protocol and runtime slice only.
+Phase 6 supplies the held-out comparative evidence about whether an isolated AI
+generator can actually recover high-quality theory more efficiently than the
+frozen baselines.
 
 Before any external-release route is enabled, add and verify replayable private backups plus redacted public bundles/receipts on a different machine path. The Phase 1 walking candidate performs no export or external action.
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 from collections import defaultdict
 from pathlib import Path
@@ -42,6 +43,7 @@ from ..models import (
     RiskOrBlocker,
     RouteOutcome,
     RouteRun,
+    RouteSpecV2,
     RetireEntityOp,
     RetireRelationOp,
     Snapshot,
@@ -53,16 +55,22 @@ from ..models import (
 )
 from ..policy import (
     AUTHORITY_RANK,
-    DECISION_REGISTRY_VERSION,
     ISOLATION_POLICY,
     KERNEL_HASH,
     KERNEL_VERSION,
-    ROUTE_REGISTRY_HASH,
     SELECTOR_VERSION,
     VALIDATOR_VERSION,
+    decision_registry_version_for_route,
+    load_route_registry_by_hash,
     route_spec,
     validate_decision_authority,
     validate_runtime_validator,
+)
+from ..theory_validation import (
+    TheoryValidationError,
+    validate_phase2_human_gate_transaction,
+    validate_phase2_route_transaction,
+    validate_theory_projection,
 )
 from .freshness import (
     FacetPathError,
@@ -205,6 +213,88 @@ def validate_route_context_output_flow(
             )
         input_records.extend(records)  # type: ignore[arg-type]
 
+    route_record = context_payload.get("route")
+    route_id = (
+        route_record.get("route_id") if isinstance(route_record, dict) else None
+    )
+    evaluation_route = route_id in {
+        "prepare.blind_case",
+        "evaluate.blind_argument_package",
+    }
+    evaluation_fields = {
+        "evaluation_selector",
+        "evaluation_artifacts",
+        "evaluation_decisions",
+    }
+    if evaluation_route:
+        selector = context_payload.get("evaluation_selector")
+        if selector != {
+            "mode": "exact_focus.v1",
+            "optional_neighbors": False,
+        }:
+            raise PrivacyFlowError(
+                "evaluation context omits its exact-focus selector binding"
+            )
+        artifacts = context_payload.get("evaluation_artifacts")
+        if not isinstance(artifacts, list):
+            raise PrivacyFlowError(
+                "evaluation context artifacts must be an exact list"
+            )
+        for item in artifacts:
+            if not isinstance(item, dict) or set(item) != {
+                "registration",
+                "content_encoding",
+                "content_base64",
+            }:
+                raise PrivacyFlowError(
+                    "evaluation context contains a malformed artifact record"
+                )
+            registration = item["registration"]
+            encoded = item["content_base64"]
+            if (
+                not isinstance(registration, dict)
+                or item["content_encoding"] != "base64"
+                or not isinstance(encoded, str)
+            ):
+                raise PrivacyFlowError(
+                    "evaluation context contains a malformed artifact encoding"
+                )
+            try:
+                decoded = base64.b64decode(encoded, validate=True)
+            except (ValueError, TypeError) as exc:
+                raise PrivacyFlowError(
+                    "evaluation context artifact is not canonical base64"
+                ) from exc
+            if base64.b64encode(decoded).decode("ascii") != encoded:
+                raise PrivacyFlowError(
+                    "evaluation context artifact uses a noncanonical base64 spelling"
+                )
+            content_hash = registration.get("content_hash")
+            byte_size = registration.get("byte_size")
+            if (
+                not isinstance(content_hash, str)
+                or isinstance(byte_size, bool)
+                or not isinstance(byte_size, int)
+                or sha256_digest(decoded) != content_hash
+                or len(decoded) != byte_size
+            ):
+                raise PrivacyFlowError(
+                    "evaluation context artifact bytes disagree with registration"
+                )
+            input_records.append(registration)
+        evaluation_decisions = context_payload.get("evaluation_decisions")
+        if not isinstance(evaluation_decisions, list) or any(
+            not isinstance(item, dict) for item in evaluation_decisions
+        ):
+            raise PrivacyFlowError(
+                "evaluation context Decisions must be an exact list"
+            )
+        input_records.extend(evaluation_decisions)  # type: ignore[arg-type]
+    elif evaluation_fields.intersection(context_payload):
+        raise PrivacyFlowError(
+            "non-evaluation context cannot carry sealed evaluation fields"
+        )
+
     privacy_floor = "public"
     compartment_floor: set[str] = set()
     for record in input_records:
@@ -252,9 +342,9 @@ def _validate_operational_provenance(
     layout: StoreLayout,
     transaction: Transaction,
     base_snapshot: Snapshot | None,
-) -> None:
+) -> str | None:
     if transaction.origin != "route_run":
-        return
+        return None
     if base_snapshot is None:
         raise ChainIntegrityError("route provenance requires a canonical base snapshot")
     assert transaction.route_id is not None
@@ -315,7 +405,8 @@ def _validate_operational_provenance(
         )
 
     try:
-        route = route_spec(transaction.route_id)
+        registry = load_route_registry_by_hash(manifest.route_registry_hash)
+        route = route_spec(transaction.route_id, registry)
     except Exception as exc:
         raise ChainIntegrityError("committed transaction names an invalid route") from exc
     if (
@@ -323,8 +414,8 @@ def _validate_operational_provenance(
         or route.route_version != run.route_version
         or run.purpose not in route.allowed_purposes
         or not set(route.required_compartments).issubset(run.compartments)
-        or manifest.route_registry_hash != ROUTE_REGISTRY_HASH
-        or manifest.decision_registry_version != DECISION_REGISTRY_VERSION
+        or manifest.decision_registry_version
+        != decision_registry_version_for_route(route)
         or manifest.validator_version != VALIDATOR_VERSION
         or manifest.selector_version != SELECTOR_VERSION
         or manifest.kernel_version != KERNEL_VERSION
@@ -347,6 +438,7 @@ def _validate_operational_provenance(
             privacy_clearance=run.privacy_clearance,
             focus_entity_ids=run.focus_entity_ids,
             budget_units=manifest.budget_units,
+            layout=layout,
         )
         expected_manifest = make_context_manifest(
             compiled,
@@ -384,23 +476,31 @@ def _validate_operational_provenance(
         raise ChainIntegrityError(
             "committed route output violates its compiled-context privacy join"
         ) from exc
+    return manifest.route_registry_hash
 
 
-def _validate_route_transaction_contract(transaction: Transaction) -> None:
+def _validate_route_transaction_contract(
+    transaction: Transaction, *, route_registry_hash: str | None = None
+) -> None:
     """Enforce route write/authority policy inside canonical validation."""
 
     if transaction.origin != "route_run":
         return
     assert transaction.route_id is not None
     try:
-        route = route_spec(transaction.route_id)
+        registry = (
+            load_route_registry_by_hash(route_registry_hash)
+            if route_registry_hash is not None
+            else None
+        )
+        route = route_spec(transaction.route_id, registry)
     except Exception as exc:
         raise CandidateValidationError(
             f"route_run transaction names an invalid route: {transaction.route_id}"
         ) from exc
     if route.availability != "enabled":
         raise CandidateValidationError(
-            f"route {route.route_id} is not enabled in Phase 1"
+            f"route {route.route_id} is not enabled in its bound registry"
         )
     disallowed = sorted(
         {operation.op for operation in transaction.operations}
@@ -1238,14 +1338,21 @@ def _validate_relation(
         prior_effective=prior_effective,
         label=f"relation {relation.relation_id}@{relation.version}",
     )
-    _validate_privacy_flow(
-        source,
-        target_privacy=target.privacy,
-        target_compartments=target.access_compartments,
-        transaction=transaction,
-        prior_effective=prior_effective,
-        label=f"dependency {relation.relation_id}@{relation.version}",
-    )
+    # ``trace_only`` is a protected graph pointer, not a declaration that the
+    # target was derived from the source.  Both endpoints must still be able to
+    # flow into the relation envelope (the checks above), so the existence and
+    # meaning of a protected link cannot leak.  Source -> target taint applies
+    # only when the relation declares an actual invalidating dependency with
+    # exact semantic endpoints.
+    if relation.dependency_mode != "trace_only":
+        _validate_privacy_flow(
+            source,
+            target_privacy=target.privacy,
+            target_compartments=target.access_compartments,
+            transaction=transaction,
+            prior_effective=prior_effective,
+            label=f"dependency {relation.relation_id}@{relation.version}",
+        )
 
 
 def _dependency_node(
@@ -1539,7 +1646,10 @@ def _validate_transaction_privacy_envelope(
 
 
 def validate_candidate(
-    snapshot: Snapshot | None, transaction: Transaction
+    snapshot: Snapshot | None,
+    transaction: Transaction,
+    *,
+    route_registry_hash: str | None = None,
 ) -> Snapshot:
     """Apply one transaction to an isolated projection or reject it atomically.
 
@@ -1610,6 +1720,13 @@ def validate_candidate(
             raise CandidateValidationError(
                 "human_decision origin requires a human actor and Decision-only operations"
             )
+        if snapshot is not None:
+            try:
+                validate_phase2_human_gate_transaction(snapshot, transaction)
+            except TheoryValidationError as exc:
+                raise CandidateValidationError(
+                    f"Phase 2 human gate contract rejected the transaction: {exc}"
+                ) from exc
 
     if snapshot is None:
         creates = [
@@ -1639,7 +1756,9 @@ def validate_candidate(
                 "policy is executable"
             )
 
-    _validate_route_transaction_contract(transaction)
+    _validate_route_transaction_contract(
+        transaction, route_registry_hash=route_registry_hash
+    )
 
     entity_by_ref = _entity_index(entities)
     relation_by_ref = _relation_index(relations)
@@ -2271,6 +2390,24 @@ def validate_candidate(
         prior_effective=prior_effective,
     )
 
+    phase2_route_validated = False
+    if (
+        snapshot is not None
+        and transaction.origin == "route_run"
+        and transaction.route_id is not None
+        and route_registry_hash is not None
+    ):
+        registry = load_route_registry_by_hash(route_registry_hash)
+        bound_route = route_spec(transaction.route_id, registry)
+        if isinstance(bound_route, RouteSpecV2):
+            try:
+                validate_phase2_route_transaction(snapshot, transaction, bound_route)
+            except TheoryValidationError as exc:
+                raise CandidateValidationError(
+                    f"Phase 2 route contract rejected the transaction: {exc}"
+                ) from exc
+            phase2_route_validated = True
+
     if digest in chain:
         raise ChainIntegrityError("candidate transaction is already reachable")
     provisional = Snapshot(
@@ -2306,6 +2443,20 @@ def validate_candidate(
         current_artifacts=dict(sorted(current_artifacts.items())),
         effective_decisions=dict(sorted(effective_decisions.items())),
     )
+    if not phase2_route_validated:
+        try:
+            validate_theory_projection(
+                provisional.entity_versions,
+                provisional.artifacts,
+                provisional.decisions,
+                current_entities=provisional.current_entities,
+                current_artifacts=provisional.current_artifacts,
+                current_decisions=provisional.current_decisions,
+            )
+        except TheoryValidationError as exc:
+            raise CandidateValidationError(
+                f"Phase 2 theory projection is inadmissible: {exc}"
+            ) from exc
     derived = derive_entity_statuses(
         entity_versions=provisional.entity_versions,
         relation_versions=provisional.relation_versions,
@@ -2360,10 +2511,14 @@ def _replay_head(active_layout: StoreLayout, head: str) -> Snapshot:
     snapshot: Snapshot | None = None
     for expected_digest, transaction in reversed(reverse_chain):
         try:
-            _validate_operational_provenance(
+            route_registry_hash = _validate_operational_provenance(
                 active_layout, transaction, snapshot
             )
-            snapshot = validate_candidate(snapshot, transaction)
+            snapshot = validate_candidate(
+                snapshot,
+                transaction,
+                route_registry_hash=route_registry_hash,
+            )
         except (CandidateValidationError, ChainIntegrityError) as exc:
             raise ChainIntegrityError(
                 f"reachable transaction {expected_digest} is inadmissible: {exc}"

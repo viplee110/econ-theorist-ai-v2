@@ -1,0 +1,136 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/verification-bundle.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "claim_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "counterexample_evidence_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ArtifactDependencyRef"
+      },
+      "title": "Counterexample Evidence Refs",
+      "type": "array"
+    },
+    "interpretation_evidence_refs": {
+      "default": [],
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          {
+            "$ref": "#/$defs/ArtifactDependencyRef"
+          },
+          {
+            "$ref": "#/$defs/DecisionVersionRef"
+          }
+        ]
+      },
+      "title": "Interpretation Evidence Refs",
+      "type": "array"
+    },
+    "proof_obligation_refs": {
+      "items": {
+        "$ref": "#/$defs/EntityVersionRef"
+      },
+      "minItems": 1,
+      "title": "Proof Obligation Refs",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "verification_record_refs": {
+      "items": {
+        "$ref": "#/$defs/EntityVersionRef"
+      },
+      "minItems": 1,
+      "title": "Verification Record Refs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "claim_graph_ref",
+    "proof_obligation_refs",
+    "verification_record_refs"
+  ],
+  "title": "VerificationBundle",
+  "type": "object"
+}

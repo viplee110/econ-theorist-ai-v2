@@ -1,0 +1,5 @@
+Evaluate only a candidate whose canonical EntityVersion bytes were locked in a prior transaction for this exact blind attempt.
+Use the sealed inverse map, gold signature, answer key, and hidden probes without modifying candidate, gold, or generator research state.
+Compare all seventeen semantic-signature dimensions and record exact evaluator evidence for every judgment.
+Keep public-classic results diagnostic; confirmatory-clean status is available only to transformed or synthetic holdouts with independent evaluator and uncontaminated attempt lineage.
+Produce one immutable VAPComparisonRecord and close the attempt permanently; feedback-driven repair requires a new attempt ID and brief.

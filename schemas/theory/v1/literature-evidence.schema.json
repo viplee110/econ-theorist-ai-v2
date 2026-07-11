@@ -1,0 +1,143 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "LiteratureAssertion": {
+      "additionalProperties": false,
+      "properties": {
+        "access_status": {
+          "enum": [
+            "full_text",
+            "abstract_only",
+            "metadata_only"
+          ],
+          "title": "Access Status",
+          "type": "string"
+        },
+        "assertion": {
+          "minLength": 1,
+          "title": "Assertion",
+          "type": "string"
+        },
+        "assertion_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Assertion Id",
+          "type": "string"
+        },
+        "evidence_ref": {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        "inference": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Inference"
+        },
+        "source_locator": {
+          "minLength": 1,
+          "title": "Source Locator",
+          "type": "string"
+        },
+        "verification_status": {
+          "enum": [
+            "source_verified",
+            "unverified"
+          ],
+          "title": "Verification Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "assertion_id",
+        "assertion",
+        "source_locator",
+        "access_status",
+        "evidence_ref",
+        "verification_status"
+      ],
+      "title": "LiteratureAssertion",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/literature-evidence.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "assertions": {
+      "items": {
+        "$ref": "#/$defs/LiteratureAssertion"
+      },
+      "minItems": 1,
+      "title": "Assertions",
+      "type": "array"
+    },
+    "question_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "question_ref",
+    "assertions"
+  ],
+  "title": "LiteratureEvidence",
+  "type": "object"
+}

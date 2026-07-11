@@ -1,0 +1,5 @@
+Seal one preregistered blind attempt before the generator receives any evaluator or gold material.
+Bind the untransformed brief and gold package to a transformed brief identified by a prior human implementation-freeze Decision.
+Register exact source, transform, inverse, invariant, answer-key, semantic-signature, and hidden-probe artifacts under holdout compartments.
+Produce immutable BlindCaseManifest and TransformedVariantManifest objects; never produce a generator-visible brief or modify research state.
+Preserve the base and transformed ResearchQuestion roots as an explicit locked mapping rather than collapsing their semantics.

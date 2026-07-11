@@ -1,0 +1,5 @@
+Assemble the exact fresh question, benchmarks, mechanism graph, formalization, claims, proofs, boundaries, absorption status, and portfolio.
+Check formal validity, semantic entailment, mechanism validity, literature status, freshness, and human gates as non-compensatory floors.
+List unresolved risks and prohibited overclaims; absorbed novelty cannot be repaired by renaming or decorative generality.
+Produce a ValidatedArgumentPackage candidate and G5 GateDossier; only a human may confirm G5 or authorize later handoff.
+Require G1-G4 to govern one exact ResearchQuestion; bind G5 and every package component to that ref and cite it as transaction evidence.

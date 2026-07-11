@@ -1,0 +1,96 @@
+{
+  "$defs": {
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/pre-result-brief.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "allowed_context_refs": {
+      "items": {
+        "$ref": "#/$defs/EntityVersionRef"
+      },
+      "title": "Allowed Context Refs",
+      "type": "array"
+    },
+    "allowed_tools": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Allowed Tools",
+      "type": "array"
+    },
+    "attempt_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Attempt Id",
+      "type": "string"
+    },
+    "benchmark_set_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "budget_units": {
+      "minimum": 1,
+      "title": "Budget Units",
+      "type": "integer"
+    },
+    "excluded_information": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Excluded Information",
+      "type": "array"
+    },
+    "institution": {
+      "minLength": 1,
+      "title": "Institution",
+      "type": "string"
+    },
+    "primitive_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "question_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "question_ref",
+    "benchmark_set_ref",
+    "primitive_graph_ref",
+    "institution",
+    "allowed_context_refs",
+    "allowed_tools",
+    "budget_units",
+    "excluded_information",
+    "attempt_id"
+  ],
+  "title": "PreResultBrief",
+  "type": "object"
+}

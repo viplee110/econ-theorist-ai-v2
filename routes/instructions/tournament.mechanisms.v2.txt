@@ -1,0 +1,5 @@
+Generate economically distinct mechanism hypotheses under the human-confirmed G1 scope.
+Include at least one serious rival whose predictions can diverge, or record an explicit evidence-backed waiver.
+Compare causal steps, load-bearing primitives, benchmark differences, and observable separating implications.
+Produce a MechanismTournament; do not choose a mechanism merely because its formalization is convenient.
+Cite the exact governing ResearchQuestion as transaction evidence and keep every output and relation endpoint in that gate scope.

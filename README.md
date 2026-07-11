@@ -6,9 +6,9 @@ The project is designed for pure and applied theory. It does not provide econome
 
 ## Current status
 
-The repository contains **Architecture v0.1** and a tested **Phase 1 walking-substrate candidate**. Phase 1 is a local, provider-neutral scientific state kernel: it initializes a theory project, preserves immutable transactions and Decisions, compiles bounded route contexts, commits under an exclusive lock, derives facet-level staleness, protects human-owned files, renders noncanonical views, and recovers from interrupted commits. Its acceptance suite includes real two-process head races, abrupt subprocess exits on both sides of the atomic-head boundary, adversarial authority/privacy tests, and Windows junction/reparse checks.
+The repository contains **Architecture v0.1**, the accepted **Phase 1 walking substrate**, and a **Phase 2 implementation candidate pending branch review**. Phase 1 is a local, provider-neutral scientific state kernel: it initializes a theory project, preserves immutable transactions and Decisions, compiles bounded route contexts, commits under an exclusive lock, derives facet-level staleness, protects human-owned files, renders noncanonical views, and recovers from interrupted commits. Its acceptance suite includes real two-process head races, abrupt subprocess exits on both sides of the atomic-head boundary, adversarial authority/privacy tests, and Windows junction/reparse checks. Phase 1 was reviewed and merged into `main`.
 
-It does not yet discover economic mechanisms, verify theorems, call an AI provider, or compile a manuscript. Those capabilities begin with the later theory-kernel and authoring phases. No claim is made that the system can guarantee publication at Econometrica, a Top-5 journal, or a leading field journal. Those venues define an ambition and evaluation burden, not a style template or an acceptance promise.
+Registry v2 contains 19 routes: 16 are enabled (13 theory routes, dependency repair, and two sealed blind-evaluation routes), while `design.reader_path`, `compose.manuscript_unit`, and `review.manuscript_unit` remain `not_implemented`. Phase 2 supplies provider-neutral scientific semantics and a replayable runtime contract; it does not itself call an AI provider, generate a paper, or compile a manuscript. No claim is made that the system can guarantee publication at Econometrica, a Top-5 journal, or a leading field journal. Those venues define an ambition and evaluation burden, not a style template or an acceptance promise.
 
 ## Design thesis
 
@@ -42,6 +42,7 @@ A typed canonical state, dependency graph, decision history, and route-specific 
 - [V1 capability migration](docs/architecture/v1_migration.md)
 - [Implementation plan](docs/architecture/implementation_plan.md)
 - [Phase 1 executable contract](docs/implementation/phase1_contract.md)
+- [Phase 2 executable contract](docs/implementation/phase2_contract.md)
 
 Each detailed document owns one part of the design. `ARCHITECTURE.md` defines the cross-cutting constitution and points to those owners; it does not duplicate their full specifications.
 
@@ -63,7 +64,7 @@ etai --project /path/to/theory-project validate
 etai --project /path/to/theory-project status
 ```
 
-The first implemented route can then be opened at an exact canonical head:
+A minimal framing run can then be opened at an exact canonical head:
 
 ```text
 etai --project /path/to/theory-project begin frame.question_and_benchmarks
@@ -78,6 +79,7 @@ Run the deterministic test suite from a source checkout with:
 ```text
 python -m unittest discover -s tests -v
 python scripts/export_schemas.py --check
+python scripts/export_theory_schemas.py --check
 ```
 
 ## License

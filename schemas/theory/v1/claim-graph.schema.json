@@ -1,0 +1,241 @@
+{
+  "$defs": {
+    "ClaimDependencyEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "dependency_kind": {
+          "enum": [
+            "logical",
+            "enabling",
+            "scope",
+            "mechanism",
+            "interpretation"
+          ],
+          "title": "Dependency Kind",
+          "type": "string"
+        },
+        "source_claim_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Source Claim Id",
+          "type": "string"
+        },
+        "target_claim_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Target Claim Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_claim_id",
+        "target_claim_id",
+        "dependency_kind"
+      ],
+      "title": "ClaimDependencyEdge",
+      "type": "object"
+    },
+    "ClaimNode": {
+      "additionalProperties": false,
+      "properties": {
+        "archetype": {
+          "enum": [
+            "mechanism_explanation",
+            "comparative_statics_threshold",
+            "characterization_bounds",
+            "robustness_invariance_equivalence",
+            "design_implementation_impossibility",
+            "concept_representation_foundation"
+          ],
+          "title": "Archetype",
+          "type": "string"
+        },
+        "assumption_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Assumption Ids",
+          "type": "array"
+        },
+        "boundary_case_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Boundary Case Ids",
+          "type": "array"
+        },
+        "claim_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "closest_theory_map_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntityVersionRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dependency_refs": {
+          "items": {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          "title": "Dependency Refs",
+          "type": "array"
+        },
+        "domain": {
+          "minLength": 1,
+          "title": "Domain",
+          "type": "string"
+        },
+        "formal_statement": {
+          "minLength": 1,
+          "title": "Formal Statement",
+          "type": "string"
+        },
+        "mechanism_ref": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "proof_obligation_refs": {
+          "items": {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          "minItems": 1,
+          "title": "Proof Obligation Refs",
+          "type": "array"
+        },
+        "quantifiers": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Quantifiers",
+          "type": "array"
+        },
+        "scientific_job": {
+          "enum": [
+            "headline",
+            "enabling",
+            "decomposition",
+            "necessity",
+            "converse",
+            "boundary",
+            "robustness",
+            "negative_result",
+            "application"
+          ],
+          "title": "Scientific Job",
+          "type": "string"
+        },
+        "semantic_translation": {
+          "minLength": 1,
+          "title": "Semantic Translation",
+          "type": "string"
+        },
+        "verification_record_refs": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          "title": "Verification Record Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "claim_id",
+        "archetype",
+        "scientific_job",
+        "formal_statement",
+        "domain",
+        "quantifiers",
+        "assumption_ids",
+        "semantic_translation",
+        "dependency_refs",
+        "mechanism_ref",
+        "proof_obligation_refs"
+      ],
+      "title": "ClaimNode",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/claim-graph.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "assumption_map_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "claims": {
+      "items": {
+        "$ref": "#/$defs/ClaimNode"
+      },
+      "minItems": 1,
+      "title": "Claims",
+      "type": "array"
+    },
+    "contribution_spine": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Contribution Spine",
+      "type": "array"
+    },
+    "dependency_edges": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ClaimDependencyEdge"
+      },
+      "title": "Dependency Edges",
+      "type": "array"
+    },
+    "formal_model_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "formalization_map_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "formal_model_ref",
+    "formalization_map_ref",
+    "assumption_map_ref",
+    "claims",
+    "contribution_spine"
+  ],
+  "title": "ClaimGraph",
+  "type": "object"
+}

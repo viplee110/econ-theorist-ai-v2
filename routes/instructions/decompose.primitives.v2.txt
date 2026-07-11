@@ -1,0 +1,5 @@
+Decompose the framed environment into economically meaningful primitives, timing, information, actions, payoffs, and solution concept candidates.
+Name which primitives differ from each exact benchmark and which are merely normalizations.
+Produce a PrimitiveGraph and a G1 GateDossier with importance, kill conditions, scope risks, and exact supporting references.
+Do not confirm G1; only a human decision may promote the question and benchmark scope.
+Bind the G1 GateDossier to the exact ResearchQuestion ref, include that ref among its ordered objects, and keep every output in that one scope.

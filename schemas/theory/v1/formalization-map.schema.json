@@ -1,0 +1,201 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EconomicToFormalEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "economic_element_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Economic Element Id",
+          "type": "string"
+        },
+        "formal_object_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Formal Object Ids",
+          "type": "array"
+        },
+        "implementation_statement": {
+          "minLength": 1,
+          "title": "Implementation Statement",
+          "type": "string"
+        },
+        "witness_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Witness Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "economic_element_id",
+        "formal_object_ids",
+        "implementation_statement",
+        "witness_refs"
+      ],
+      "title": "EconomicToFormalEntry",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "FormalToEconomicEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "economic_element_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Economic Element Ids",
+          "type": "array"
+        },
+        "economic_identity": {
+          "minLength": 1,
+          "title": "Economic Identity",
+          "type": "string"
+        },
+        "formal_object_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Formal Object Id",
+          "type": "string"
+        },
+        "research_job": {
+          "minLength": 1,
+          "title": "Research Job",
+          "type": "string"
+        }
+      },
+      "required": [
+        "formal_object_id",
+        "economic_identity",
+        "research_job",
+        "economic_element_ids"
+      ],
+      "title": "FormalToEconomicEntry",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/formalization-map.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "economic_argument_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "economic_to_formal": {
+      "items": {
+        "$ref": "#/$defs/EconomicToFormalEntry"
+      },
+      "minItems": 1,
+      "title": "Economic To Formal",
+      "type": "array"
+    },
+    "formal_model_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "formal_to_economic": {
+      "items": {
+        "$ref": "#/$defs/FormalToEconomicEntry"
+      },
+      "minItems": 1,
+      "title": "Formal To Economic",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "economic_argument_graph_ref",
+    "formal_model_ref",
+    "economic_to_formal",
+    "formal_to_economic"
+  ],
+  "title": "FormalizationMap",
+  "type": "object"
+}

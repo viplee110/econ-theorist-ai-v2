@@ -13,18 +13,21 @@ from .codec import canonical_json_bytes, sha256_digest
 from .context import compile_context, make_context_manifest, units_for_bytes
 from .errors import IntegrityError, RuntimeStoreError
 from .ids import new_id, utc_now
-from .models import Actor, ContextManifest, PrivacyLabel, RouteRun, Snapshot
+from .legacy_boundary import snapshot_has_phase2_material
+from .models import Actor, ContextManifest, PrivacyLabel, RouteRun, RouteSpecV2, Snapshot
 from .policy import (
-    DECISION_REGISTRY_VERSION,
     ISOLATION_POLICY,
     KERNEL_HASH,
     KERNEL_VERSION,
-    ROUTE_REGISTRY_HASH,
     SELECTOR_VERSION,
     VALIDATOR_VERSION,
+    ROUTE_REGISTRY_V1_HASH,
+    decision_registry_version_for_route,
     instruction_bundle_bytes,
+    registry_hash_for_route,
 )
 from .route_registry import authorize_route, get_route, validate_privacy_clearance
+from .theory_validation import TheoryValidationError, validate_phase2_route_entry
 from .runtime.layout import StoreLayout, UnsafeStorePath, assert_safe_store_path
 from .runtime.objects import HeadStore, fsync_directory
 
@@ -42,6 +45,10 @@ class RunError(RuntimeStoreError):
 
 class RunBaseMismatch(RunError):
     """The supplied snapshot is not the project's current canonical head."""
+
+
+class RouteEntryError(RunError):
+    """The exact canonical base does not satisfy a v2 scientific entry contract."""
 
 
 class ImmutableRunConflict(IntegrityError):
@@ -203,6 +210,7 @@ def begin_run(
     route_run_id: str | None = None,
     context_manifest_id: str | None = None,
     created_at: str | None = None,
+    route_registry_hash: str | None = None,
 ) -> RouteRun:
     """Compile and start an isolated route run at ``snapshot.head``.
 
@@ -243,7 +251,24 @@ def begin_run(
         purpose=purpose,
         compartments=compartment_tuple,
         privacy_clearance=clearance,
+        route_registry_hash=route_registry_hash,
     )
+    if (
+        registry_hash_for_route(route) == ROUTE_REGISTRY_V1_HASH
+        and snapshot_has_phase2_material(snapshot)
+    ):
+        raise RouteEntryError(
+            "frozen v1 routes are replay-only after Phase 2 material enters a project"
+        )
+    if isinstance(route, RouteSpecV2):
+        try:
+            validate_phase2_route_entry(
+                snapshot, route, focus_tuple, actor=actor
+            )
+        except TheoryValidationError as exc:
+            raise RouteEntryError(
+                f"Phase 2 route entry rejected {route.route_id}: {exc}"
+            ) from exc
 
     actual_head = HeadStore(layout).read()
     if actual_head != snapshot.head:
@@ -263,6 +288,7 @@ def begin_run(
         privacy_clearance=clearance,
         focus_entity_ids=focus_tuple,
         budget_units=budget_units,
+        layout=layout,
     )
 
     run_id = route_run_id or new_id("run")
@@ -352,7 +378,9 @@ def read_context(layout: StoreLayout, route_run_id: str) -> ContextManifest:
     if canonical_json_bytes(manifest) != data:
         raise IntegrityError("immutable context manifest is not canonical JSON")
     run = read_run(layout, route_run_id)
-    route = get_route(run.route_id)
+    route = get_route(
+        run.route_id, route_registry_hash=manifest.route_registry_hash
+    )
     instruction_bundle_bytes(route)
     if (
         run.context_manifest_id != manifest.context_manifest_id
@@ -369,8 +397,8 @@ def read_context(layout: StoreLayout, route_run_id: str) -> ContextManifest:
     ):
         raise IntegrityError("run/context manifest binding does not match")
     if (
-        manifest.route_registry_hash != ROUTE_REGISTRY_HASH
-        or manifest.decision_registry_version != DECISION_REGISTRY_VERSION
+        manifest.decision_registry_version
+        != decision_registry_version_for_route(route)
         or manifest.selector_version != SELECTOR_VERSION
         or manifest.kernel_version != KERNEL_VERSION
         or manifest.kernel_hash != KERNEL_HASH
@@ -428,7 +456,17 @@ def provenance_bytes(layout: StoreLayout, route_run_id: str) -> dict[str, bytes]
         purpose=run.purpose,
         compartments=run.compartments,
         privacy_clearance=run.privacy_clearance,
+        route_registry_hash=manifest.route_registry_hash,
     )
+    if isinstance(route, RouteSpecV2):
+        try:
+            validate_phase2_route_entry(
+                snapshot, route, run.focus_entity_ids, actor=run.actor
+            )
+        except TheoryValidationError as exc:
+            raise RouteEntryError(
+                f"Phase 2 route entry no longer recompiles: {exc}"
+            ) from exc
     compiled = compile_context(
         snapshot,
         route=route,
@@ -438,6 +476,7 @@ def provenance_bytes(layout: StoreLayout, route_run_id: str) -> dict[str, bytes]
         privacy_clearance=run.privacy_clearance,
         focus_entity_ids=run.focus_entity_ids,
         budget_units=manifest.budget_units,
+        layout=layout,
     )
     expected_manifest = make_context_manifest(
         compiled,

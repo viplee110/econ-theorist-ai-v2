@@ -1,0 +1,5 @@
+Audit each assumption's functional role and test whether the claimed mechanism survives its removal or relaxation.
+Translate the argument primitive by primitive into the closest verified theories and identify the first substantive mapping failure.
+If no mapping failure exists, mark the contribution absorbed without making a true theorem formally false.
+Produce literature evidence, ClosestTheoryMap, and AbsorptionAssessment with exact sources and prohibited overclaims.
+Cite the exact governing ResearchQuestion as transaction evidence and keep every output and relation endpoint in that gate scope.

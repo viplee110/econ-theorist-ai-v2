@@ -1,0 +1,454 @@
+{
+  "case_id": "phase2.attention_precision.indivisible.v1",
+  "evaluator": {
+    "absorption_decoy": {
+      "classification": "direct_corollary",
+      "comparator_id": "fixture.K_adoption.v1",
+      "expected_effects": [
+        "formal_validity_preserved",
+        "g5_denied_or_reopened",
+        "mechanism_validity_preserved",
+        "novelty_absorbed",
+        "package_stale"
+      ],
+      "first_mapping_failure": null,
+      "translation": {
+        "adopter": "receiver",
+        "adoption": "processing_attention",
+        "baseline_output": "one_half",
+        "benefit": "x_over_2",
+        "cost": "kappa_x_squared",
+        "output_gain": "x_over_2",
+        "project": "signal_policy"
+      }
+    },
+    "continuous_attention": {
+      "ell": {
+        "denominator": 2,
+        "numerator": 1
+      },
+      "expected": {
+        "e_ell": {
+          "denominator": 1,
+          "numerator": 1
+        },
+        "e_h": {
+          "denominator": 3,
+          "numerator": 2
+        },
+        "ordering": "h_gt_ell",
+        "y_ell": {
+          "denominator": 4,
+          "numerator": 3
+        },
+        "y_h": {
+          "denominator": 6,
+          "numerator": 5
+        }
+      },
+      "h": {
+        "denominator": 1,
+        "numerator": 1
+      },
+      "kappa": {
+        "denominator": 4,
+        "numerator": 3
+      }
+    },
+    "gate_expectations": {
+      "G1_question_benchmark": "approve_fixture_question",
+      "G2_mechanism": "promote_extensive_attention_preserve_direct_force",
+      "G3_formal_base": "lock_binary_attention_keep_continuous_boundary",
+      "G4_result_investment": "narrow_to_exact_binary_attention_characterization",
+      "G5_argument_validation_after_absorption": "reopen_and_deny_handoff",
+      "G5_argument_validation_control": "approve_evaluation_only_handoff"
+    },
+    "gold_examples": [
+      {
+        "case_id": "E0",
+        "ell": {
+          "denominator": 2,
+          "numerator": 1
+        },
+        "expected": {
+          "d_ell": true,
+          "d_h": true,
+          "delta_ell": {
+            "denominator": 4,
+            "numerator": 1
+          },
+          "delta_h": {
+            "denominator": 2,
+            "numerator": 1
+          },
+          "ordering": "h_gt_ell",
+          "y_ell": {
+            "denominator": 4,
+            "numerator": 3
+          },
+          "y_h": {
+            "denominator": 1,
+            "numerator": 1
+          }
+        },
+        "h": {
+          "denominator": 1,
+          "numerator": 1
+        },
+        "kappa": {
+          "denominator": 1,
+          "numerator": 0
+        },
+        "roles": [
+          "benchmark"
+        ],
+        "tie_rule": "process"
+      },
+      {
+        "case_id": "E1",
+        "ell": {
+          "denominator": 2,
+          "numerator": 1
+        },
+        "expected": {
+          "d_ell": true,
+          "d_h": false,
+          "delta_ell": {
+            "denominator": 16,
+            "numerator": 1
+          },
+          "delta_h": {
+            "denominator": 4,
+            "numerator": -1
+          },
+          "ordering": "ell_gt_h",
+          "y_ell": {
+            "denominator": 4,
+            "numerator": 3
+          },
+          "y_h": {
+            "denominator": 2,
+            "numerator": 1
+          }
+        },
+        "h": {
+          "denominator": 1,
+          "numerator": 1
+        },
+        "kappa": {
+          "denominator": 4,
+          "numerator": 3
+        },
+        "roles": [
+          "mechanism_on"
+        ],
+        "tie_rule": "process"
+      },
+      {
+        "case_id": "E2",
+        "constant_cost": {
+          "denominator": 16,
+          "numerator": 3
+        },
+        "ell": {
+          "denominator": 2,
+          "numerator": 1
+        },
+        "expected": {
+          "d_ell": true,
+          "d_h": true,
+          "delta_ell": {
+            "denominator": 16,
+            "numerator": 1
+          },
+          "delta_h": {
+            "denominator": 16,
+            "numerator": 5
+          },
+          "ordering": "h_gt_ell",
+          "y_ell": {
+            "denominator": 4,
+            "numerator": 3
+          },
+          "y_h": {
+            "denominator": 1,
+            "numerator": 1
+          }
+        },
+        "h": {
+          "denominator": 1,
+          "numerator": 1
+        },
+        "kappa": {
+          "denominator": 4,
+          "numerator": 3
+        },
+        "roles": [
+          "constant_cost_ablation"
+        ],
+        "tie_rule": "process"
+      },
+      {
+        "case_id": "E3",
+        "ell": {
+          "denominator": 3,
+          "numerator": 1
+        },
+        "expected": {
+          "d_ell": true,
+          "d_h": false,
+          "delta_ell": {
+            "denominator": 18,
+            "numerator": 1
+          },
+          "delta_h": {
+            "denominator": 9,
+            "numerator": -1
+          },
+          "ordering": "ell_gt_h",
+          "y_ell": {
+            "denominator": 3,
+            "numerator": 2
+          },
+          "y_h": {
+            "denominator": 2,
+            "numerator": 1
+          }
+        },
+        "h": {
+          "denominator": 3,
+          "numerator": 2
+        },
+        "kappa": {
+          "denominator": 1,
+          "numerator": 1
+        },
+        "rival_fixed_attention": {
+          "ordering": "h_gt_ell",
+          "y_ell": {
+            "denominator": 3,
+            "numerator": 2
+          },
+          "y_h": {
+            "denominator": 6,
+            "numerator": 5
+          }
+        },
+        "roles": [
+          "rival_separator"
+        ],
+        "tie_rule": "process"
+      },
+      {
+        "case_id": "E4",
+        "ell": {
+          "denominator": 2,
+          "numerator": 1
+        },
+        "expected": {
+          "d_ell": true,
+          "d_h": true,
+          "delta_ell": {
+            "denominator": 8,
+            "numerator": 1
+          },
+          "delta_h": {
+            "denominator": 1,
+            "numerator": 0
+          },
+          "ordering": "h_gt_ell",
+          "y_ell": {
+            "denominator": 4,
+            "numerator": 3
+          },
+          "y_h": {
+            "denominator": 1,
+            "numerator": 1
+          }
+        },
+        "h": {
+          "denominator": 1,
+          "numerator": 1
+        },
+        "kappa": {
+          "denominator": 2,
+          "numerator": 1
+        },
+        "roles": [
+          "lower_boundary"
+        ],
+        "tie_rule": "process"
+      },
+      {
+        "case_id": "E5",
+        "ell": {
+          "denominator": 2,
+          "numerator": 1
+        },
+        "expected": {
+          "d_ell": true,
+          "d_h": false,
+          "delta_ell": {
+            "denominator": 1,
+            "numerator": 0
+          },
+          "delta_h": {
+            "denominator": 2,
+            "numerator": -1
+          },
+          "ordering": "ell_gt_h",
+          "y_ell": {
+            "denominator": 4,
+            "numerator": 3
+          },
+          "y_h": {
+            "denominator": 2,
+            "numerator": 1
+          }
+        },
+        "h": {
+          "denominator": 1,
+          "numerator": 1
+        },
+        "kappa": {
+          "denominator": 1,
+          "numerator": 1
+        },
+        "roles": [
+          "upper_boundary"
+        ],
+        "tie_rule": "process"
+      },
+      {
+        "case_id": "E6",
+        "ell": {
+          "denominator": 2,
+          "numerator": 1
+        },
+        "expected": {
+          "d_ell": false,
+          "d_h": false,
+          "delta_ell": {
+            "denominator": 16,
+            "numerator": -1
+          },
+          "delta_h": {
+            "denominator": 4,
+            "numerator": -3
+          },
+          "ordering": "equal",
+          "y_ell": {
+            "denominator": 2,
+            "numerator": 1
+          },
+          "y_h": {
+            "denominator": 2,
+            "numerator": 1
+          }
+        },
+        "h": {
+          "denominator": 1,
+          "numerator": 1
+        },
+        "kappa": {
+          "denominator": 4,
+          "numerator": 5
+        },
+        "roles": [
+          "beyond_boundary"
+        ],
+        "tie_rule": "process"
+      }
+    ],
+    "headline_proposition": {
+      "archetype": "mechanism_explanation",
+      "reversal_interval": "1/(2*h) < kappa <= 1/(2*ell)",
+      "statement_id": "P1"
+    },
+    "hidden_probes": [
+      {
+        "ell": {
+          "denominator": 2,
+          "numerator": 1
+        },
+        "expected_ordering": "ell_gt_h",
+        "h": {
+          "denominator": 1,
+          "numerator": 1
+        },
+        "kappa": {
+          "denominator": 2,
+          "numerator": 1
+        },
+        "probe_id": "tie-rule.lower-endpoint",
+        "tie_rule": "do_not_process"
+      },
+      {
+        "ell": {
+          "denominator": 2,
+          "numerator": 1
+        },
+        "expected_ordering": "equal",
+        "h": {
+          "denominator": 1,
+          "numerator": 1
+        },
+        "kappa": {
+          "denominator": 1,
+          "numerator": 1
+        },
+        "probe_id": "tie-rule.upper-endpoint",
+        "tie_rule": "do_not_process"
+      }
+    ],
+    "proof_obligations": [
+      "PO-1.signal-value",
+      "PO-2.attention-threshold",
+      "PO-3.threshold-order",
+      "PO-4.interval-orderings",
+      "PO-5.nonempty-reversal-region",
+      "PO-6.constant-cost-ablation",
+      "PO-7.continuous-attention-monotonicity"
+    ],
+    "prohibited_overclaims": [
+      "Coarse information always improves decisions.",
+      "Endogenous attention alone is sufficient for reversal.",
+      "The result is robust to continuous attention.",
+      "Indivisible attention is merely a technical assumption.",
+      "Accuracy is welfare without an explicit social objective.",
+      "This development fixture is a novel publishable contribution."
+    ],
+    "semantic_signature": {
+      "boundary": "binary-attention participation thresholds",
+      "direct_force": "precision raises conditional signal accuracy",
+      "headline_claim": "P1",
+      "load_bearing_condition": "indivisible processing",
+      "mechanism": "precision-linked convex processing cost changes attention participation",
+      "selected_implementation": "F1.binary_attention",
+      "serious_rival": "M1.fixed_attention_direct_information"
+    }
+  },
+  "generator": {
+    "pre_result_brief": {
+      "action_rule": "If processed, choose the observed binary signal as the action.",
+      "allowed_tools": [
+        "exact rational arithmetic",
+        "hand derivation",
+        "finite examples for falsification only"
+      ],
+      "attention_choice": "Choose indivisible processing d in {0,1} before observing the signal.",
+      "no_attention_accuracy": "1/2",
+      "outcome": "Realized probability that the action equals the state, excluding processing cost.",
+      "precision_domain": "Choose and compare 0 < ell < h <= 1.",
+      "prior": "Each state has probability 1/2.",
+      "processing_cost": "Processing precision x costs kappa*x^2.",
+      "question": "Can a less precise signal produce higher realized decision accuracy when precision changes processing incentives? Characterize the exact boundary.",
+      "signal_accuracy": "Conditional on processing, Pr(signal equals state)=(1+x)/2.",
+      "state_space": "theta in {0,1}",
+      "task": "Develop competing mechanisms, freeze predictions, build transparent examples and ablations, compare formal implementations, and derive exact scoped claims.",
+      "tie_rule": "Process when indifferent."
+    }
+  },
+  "schema": "econ-theorist/gold-case/attention-precision/v1",
+  "split": "development"
+}

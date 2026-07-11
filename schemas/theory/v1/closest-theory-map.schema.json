@@ -1,0 +1,213 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "ClosestTheoryDimension": {
+      "additionalProperties": false,
+      "properties": {
+        "comparator_side": {
+          "minLength": 1,
+          "title": "Comparator Side",
+          "type": "string"
+        },
+        "dimension": {
+          "enum": [
+            "benchmark",
+            "primitives",
+            "timing",
+            "solution_concept",
+            "assumptions",
+            "quantifiers",
+            "formal_result",
+            "economic_lesson"
+          ],
+          "title": "Dimension",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "mapping_status": {
+          "enum": [
+            "exact",
+            "standard_argument",
+            "fails",
+            "unresolved"
+          ],
+          "title": "Mapping Status",
+          "type": "string"
+        },
+        "project_side": {
+          "minLength": 1,
+          "title": "Project Side",
+          "type": "string"
+        },
+        "translation": {
+          "minLength": 1,
+          "title": "Translation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimension",
+        "project_side",
+        "comparator_side",
+        "translation",
+        "mapping_status",
+        "evidence_refs"
+      ],
+      "title": "ClosestTheoryDimension",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/closest-theory-map.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "claim_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "classification": {
+      "enum": [
+        "duplicate",
+        "direct_corollary",
+        "special_case",
+        "generalization",
+        "converse",
+        "different_mechanism",
+        "different_boundary",
+        "application",
+        "non_comparable",
+        "unresolved"
+      ],
+      "title": "Classification",
+      "type": "string"
+    },
+    "comparator_label": {
+      "minLength": 1,
+      "title": "Comparator Label",
+      "type": "string"
+    },
+    "dimensions": {
+      "items": {
+        "$ref": "#/$defs/ClosestTheoryDimension"
+      },
+      "minItems": 1,
+      "title": "Dimensions",
+      "type": "array"
+    },
+    "first_mapping_failure": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "First Mapping Failure"
+    },
+    "literature_evidence_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "claim_graph_ref",
+    "literature_evidence_ref",
+    "comparator_label",
+    "dimensions",
+    "classification"
+  ],
+  "title": "ClosestTheoryMap",
+  "type": "object"
+}

@@ -1,0 +1,206 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "GateRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "recorded_condition": {
+          "enum": [
+            "evidence_supplied",
+            "gap_disclosed",
+            "risk_disclosed"
+          ],
+          "title": "Recorded Condition",
+          "type": "string"
+        },
+        "requirement_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Requirement Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "requirement_id",
+        "description",
+        "recorded_condition"
+      ],
+      "title": "GateRequirement",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/gate-dossier.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "gate_kind": {
+      "enum": [
+        "G1_question_benchmark",
+        "G2_mechanism",
+        "G3_formal_base",
+        "G4_result_investment",
+        "G5_argument_validation"
+      ],
+      "title": "Gate Kind",
+      "type": "string"
+    },
+    "ordered_artifact_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ArtifactDependencyRef"
+      },
+      "title": "Ordered Artifact Refs",
+      "type": "array"
+    },
+    "ordered_object_refs": {
+      "items": {
+        "$ref": "#/$defs/EntityVersionRef"
+      },
+      "minItems": 1,
+      "title": "Ordered Object Refs",
+      "type": "array"
+    },
+    "prepared_at": {
+      "minLength": 1,
+      "title": "Prepared At",
+      "type": "string"
+    },
+    "proposed_action": {
+      "enum": [
+        "approve",
+        "revise",
+        "reopen",
+        "narrow",
+        "mutate",
+        "pivot",
+        "park",
+        "kill"
+      ],
+      "title": "Proposed Action",
+      "type": "string"
+    },
+    "rationale": {
+      "minLength": 1,
+      "title": "Rationale",
+      "type": "string"
+    },
+    "requirements": {
+      "items": {
+        "$ref": "#/$defs/GateRequirement"
+      },
+      "minItems": 1,
+      "title": "Requirements",
+      "type": "array"
+    },
+    "research_question_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "gate_kind",
+    "research_question_ref",
+    "ordered_object_refs",
+    "requirements",
+    "proposed_action",
+    "rationale",
+    "prepared_at"
+  ],
+  "title": "GateDossier",
+  "type": "object"
+}

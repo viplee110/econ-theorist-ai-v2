@@ -1,0 +1,253 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EconomicArgumentEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "conclusion_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Conclusion Ids",
+          "type": "array"
+        },
+        "economic_meaning": {
+          "minLength": 1,
+          "title": "Economic Meaning",
+          "type": "string"
+        },
+        "edge_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Edge Id",
+          "type": "string"
+        },
+        "effect_kind": {
+          "enum": [
+            "direct",
+            "equilibrium_feedback",
+            "logical"
+          ],
+          "title": "Effect Kind",
+          "type": "string"
+        },
+        "formal_witness_refs": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "title": "Formal Witness Refs",
+          "type": "array"
+        },
+        "load_bearing": {
+          "title": "Load Bearing",
+          "type": "boolean"
+        },
+        "primitive_or_assumption_refs": {
+          "items": {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          "minItems": 1,
+          "title": "Primitive Or Assumption Refs",
+          "type": "array"
+        },
+        "source_node_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Source Node Id",
+          "type": "string"
+        },
+        "supporting_case_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Supporting Case Ids",
+          "type": "array"
+        },
+        "target_node_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Target Node Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "edge_id",
+        "source_node_id",
+        "target_node_id",
+        "economic_meaning",
+        "effect_kind",
+        "load_bearing",
+        "primitive_or_assumption_refs",
+        "supporting_case_ids",
+        "conclusion_ids"
+      ],
+      "title": "EconomicArgumentEdge",
+      "type": "object"
+    },
+    "EconomicArgumentNode": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "primitive",
+            "assumption",
+            "margin",
+            "response",
+            "constraint",
+            "feedback",
+            "equilibrium_consequence",
+            "outcome"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "node_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Node Id",
+          "type": "string"
+        },
+        "statement": {
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "node_id",
+        "kind",
+        "statement"
+      ],
+      "title": "EconomicArgumentNode",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/economic-argument-graph.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "edges": {
+      "items": {
+        "$ref": "#/$defs/EconomicArgumentEdge"
+      },
+      "minItems": 1,
+      "title": "Edges",
+      "type": "array"
+    },
+    "example_suite_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/EconomicArgumentNode"
+      },
+      "minItems": 1,
+      "title": "Nodes",
+      "type": "array"
+    },
+    "prediction_register_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "primitive_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "selected_mechanism_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    }
+  },
+  "required": [
+    "selected_mechanism_ref",
+    "primitive_graph_ref",
+    "prediction_register_ref",
+    "example_suite_ref",
+    "nodes",
+    "edges"
+  ],
+  "title": "EconomicArgumentGraph",
+  "type": "object"
+}

@@ -1,0 +1,222 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "ExampleCase": {
+      "additionalProperties": false,
+      "properties": {
+        "assumption_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Assumption Ids",
+          "type": "array"
+        },
+        "case_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Case Id",
+          "type": "string"
+        },
+        "exact_values": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/RationalAssignment"
+          },
+          "title": "Exact Values",
+          "type": "array"
+        },
+        "interaction_to_outcome_trace": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Interaction To Outcome Trace",
+          "type": "array"
+        },
+        "method": {
+          "enum": [
+            "hand_solved",
+            "symbolic",
+            "enumeration",
+            "simulation"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "primitive_to_choice_trace": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Primitive To Choice Trace",
+          "type": "array"
+        },
+        "result": {
+          "minLength": 1,
+          "title": "Result",
+          "type": "string"
+        },
+        "roles": {
+          "items": {
+            "enum": [
+              "benchmark",
+              "mechanism_on",
+              "ablation",
+              "rival_separator",
+              "boundary",
+              "failure",
+              "tightness",
+              "independence"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Roles",
+          "type": "array"
+        },
+        "setup": {
+          "minLength": 1,
+          "title": "Setup",
+          "type": "string"
+        },
+        "solution_artifact_ref": {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        }
+      },
+      "required": [
+        "case_id",
+        "roles",
+        "setup",
+        "primitive_to_choice_trace",
+        "interaction_to_outcome_trace",
+        "result",
+        "method",
+        "solution_artifact_ref"
+      ],
+      "title": "ExampleCase",
+      "type": "object"
+    },
+    "RationalAssignment": {
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Symbol",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/ReducedRational"
+        }
+      },
+      "required": [
+        "symbol",
+        "value"
+      ],
+      "title": "RationalAssignment",
+      "type": "object"
+    },
+    "ReducedRational": {
+      "additionalProperties": false,
+      "description": "An exact canonical rational: positive denominator and reduced terms.",
+      "properties": {
+        "denominator": {
+          "minimum": 1,
+          "title": "Denominator",
+          "type": "integer"
+        },
+        "numerator": {
+          "title": "Numerator",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "numerator",
+        "denominator"
+      ],
+      "title": "ReducedRational",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/example-suite.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "cases": {
+      "items": {
+        "$ref": "#/$defs/ExampleCase"
+      },
+      "minItems": 1,
+      "title": "Cases",
+      "type": "array"
+    },
+    "frozen_prediction_register_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "selected_mechanism_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    }
+  },
+  "required": [
+    "selected_mechanism_ref",
+    "frozen_prediction_register_ref",
+    "cases"
+  ],
+  "title": "ExampleSuite",
+  "type": "object"
+}

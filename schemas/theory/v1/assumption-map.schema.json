@@ -1,0 +1,270 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "AssumptionRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "argument_edge_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Argument Edge Ids",
+          "type": "array"
+        },
+        "assumption_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Assumption Id",
+          "type": "string"
+        },
+        "dependent_claim_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Dependent Claim Ids",
+          "type": "array"
+        },
+        "economic_interpretation": {
+          "minLength": 1,
+          "title": "Economic Interpretation",
+          "type": "string"
+        },
+        "exact_content": {
+          "minLength": 1,
+          "title": "Exact Content",
+          "type": "string"
+        },
+        "foundation": {
+          "enum": [
+            "primitive",
+            "reduced_form"
+          ],
+          "title": "Foundation",
+          "type": "string"
+        },
+        "necessity_evidence_refs": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "title": "Necessity Evidence Refs",
+          "type": "array"
+        },
+        "necessity_status": {
+          "enum": [
+            "result_necessary",
+            "proof_only",
+            "unknown",
+            "not_result_necessary"
+          ],
+          "title": "Necessity Status",
+          "type": "string"
+        },
+        "primitive_sufficient_conditions": {
+          "default": [],
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Primitive Sufficient Conditions",
+          "type": "array"
+        },
+        "proof_obligation_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Proof Obligation Ids",
+          "type": "array"
+        },
+        "quantifiers": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Quantifiers",
+          "type": "array"
+        },
+        "roles": {
+          "items": {
+            "enum": [
+              "definition",
+              "mechanism",
+              "existence",
+              "uniqueness",
+              "selection",
+              "tractability",
+              "regularity",
+              "sign",
+              "domain"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Roles",
+          "type": "array"
+        },
+        "satisfying_case_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Satisfying Case Ids",
+          "type": "array"
+        },
+        "scope_cost": {
+          "minLength": 1,
+          "title": "Scope Cost",
+          "type": "string"
+        },
+        "violation_attempts": {
+          "default": [],
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Violation Attempts",
+          "type": "array"
+        },
+        "weakening_attempts": {
+          "default": [],
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Weakening Attempts",
+          "type": "array"
+        }
+      },
+      "required": [
+        "assumption_id",
+        "exact_content",
+        "quantifiers",
+        "economic_interpretation",
+        "foundation",
+        "roles",
+        "satisfying_case_ids",
+        "scope_cost",
+        "necessity_status"
+      ],
+      "title": "AssumptionRecord",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/assumption-map.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "assumptions": {
+      "items": {
+        "$ref": "#/$defs/AssumptionRecord"
+      },
+      "minItems": 1,
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "formal_model_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "formalization_map_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "formal_model_ref",
+    "formalization_map_ref",
+    "assumptions"
+  ],
+  "title": "AssumptionMap",
+  "type": "object"
+}

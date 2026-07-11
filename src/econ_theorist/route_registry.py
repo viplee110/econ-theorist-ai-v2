@@ -12,8 +12,8 @@ from types import MappingProxyType
 from typing import Mapping
 
 from .errors import PolicyError, RegistryError
-from .models import PrivacyLabel, RouteRegistry, RouteSpec
-from .policy import load_route_registry, route_spec
+from .models import PrivacyLabel, RouteRegistryLike, RouteSpecLike
+from .policy import load_route_registry, route_spec, route_spec_by_hash
 
 
 class RouteUnavailableError(RegistryError):
@@ -34,8 +34,8 @@ PRIVACY_RANK: Mapping[PrivacyLabel, int] = MappingProxyType(
 )
 
 
-def load_registry() -> RouteRegistry:
-    """Load and validate ``routes/registry.v1.json``.
+def load_registry() -> RouteRegistryLike:
+    """Load and validate the active route registry.
 
     ``policy.load_route_registry`` resolves exactly the source-tree registry or
     its installed data-file counterpart.  No caller-supplied registry, alias,
@@ -45,11 +45,15 @@ def load_registry() -> RouteRegistry:
     return load_route_registry()
 
 
-def get_route(route_id: str) -> RouteSpec:
+def get_route(
+    route_id: str, *, route_registry_hash: str | None = None
+) -> RouteSpecLike:
     """Return one exact registered route ID or fail closed."""
 
     if not isinstance(route_id, str) or not route_id:
         raise RegistryError("route_id must be one non-empty exact route ID")
+    if route_registry_hash is not None:
+        return route_spec_by_hash(route_id, route_registry_hash)
     return route_spec(route_id, load_registry())
 
 
@@ -73,14 +77,15 @@ def authorize_route(
     purpose: str,
     compartments: Iterable[str],
     privacy_clearance: str,
-) -> RouteSpec:
+    route_registry_hash: str | None = None,
+) -> RouteSpecLike:
     """Authorize entry to one enabled route using explicit grants only.
 
     Content-level privacy and compartment checks still occur during context
     selection.  This function checks the route contract itself.
     """
 
-    route = get_route(route_id)
+    route = get_route(route_id, route_registry_hash=route_registry_hash)
     if route.availability != "enabled":
         raise RouteUnavailableError(
             f"registered route {route.route_id!r} is {route.availability}"

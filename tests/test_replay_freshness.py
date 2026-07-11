@@ -508,6 +508,52 @@ class DependencyValidationTests(unittest.TestCase):
 
         self.assertEqual(set(updated.current_relations), {"rel_lr_trace", "rel_rl_trace"})
 
+    def test_trace_only_link_does_not_claim_source_to_target_information_flow(self) -> None:
+        sealed = entity("ent_sealed_trace", formal="hidden", privacy="restricted")
+        visible = entity("ent_visible_trace", formal="already visible", privacy="public")
+        _, snapshot = genesis(sealed, visible)
+        protected_pointer = relation(
+            "rel_sealed_trace_pointer", sealed, visible, mode="trace_only"
+        ).model_copy(
+            update={
+                "privacy": "restricted",
+                "access_compartments": ("confirmatory_holdout", "project_research"),
+            }
+        )
+
+        updated = validate_candidate(
+            snapshot,
+            transaction(
+                "txn_sealed_trace_pointer",
+                (CreateRelationOp(relation=protected_pointer),),
+                base=snapshot.head,
+                privacy="restricted",
+                access_compartments=("confirmatory_holdout", "project_research"),
+            ),
+        )
+
+        self.assertEqual(
+            updated.current_relations[protected_pointer.relation_id], 1
+        )
+
+    def test_trace_only_link_envelope_cannot_drop_source_protection(self) -> None:
+        sealed = entity("ent_sealed_trace", formal="hidden", privacy="restricted")
+        visible = entity("ent_visible_trace", formal="already visible", privacy="public")
+        _, snapshot = genesis(sealed, visible)
+        underprotected_pointer = relation(
+            "rel_underprotected_trace", sealed, visible, mode="trace_only"
+        ).model_copy(update={"privacy": "public"})
+
+        with self.assertRaises(PrivacyFlowError):
+            validate_candidate(
+                snapshot,
+                transaction(
+                    "txn_underprotected_trace",
+                    (CreateRelationOp(relation=underprotected_pointer),),
+                    base=snapshot.head,
+                ),
+            )
+
     def test_overlapping_json_pointer_regions_cannot_hide_a_cycle(self) -> None:
         left = entity("ent_pointer_left", formal={"x": {"z": 1}})
         right = entity("ent_pointer_right", formal={"y": {"z": 1}})

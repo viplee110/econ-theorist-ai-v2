@@ -1,0 +1,153 @@
+{
+  "$defs": {
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "MechanismStep": {
+      "additionalProperties": false,
+      "properties": {
+        "economic_meaning": {
+          "minLength": 1,
+          "title": "Economic Meaning",
+          "type": "string"
+        },
+        "effect_kind": {
+          "enum": [
+            "direct",
+            "feedback",
+            "constraint",
+            "transformation",
+            "conflict"
+          ],
+          "title": "Effect Kind",
+          "type": "string"
+        },
+        "response_or_constraint": {
+          "minLength": 1,
+          "title": "Response Or Constraint",
+          "type": "string"
+        },
+        "source": {
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        },
+        "step_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Step Id",
+          "type": "string"
+        },
+        "target": {
+          "minLength": 1,
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "step_id",
+        "source",
+        "response_or_constraint",
+        "target",
+        "economic_meaning",
+        "effect_kind"
+      ],
+      "title": "MechanismStep",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/mechanism-hypothesis.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "boundary": {
+      "minLength": 1,
+      "title": "Boundary",
+      "type": "string"
+    },
+    "decision_margin_or_foundational_distinction": {
+      "minLength": 1,
+      "title": "Decision Margin Or Foundational Distinction",
+      "type": "string"
+    },
+    "distinguishing_signature": {
+      "minLength": 1,
+      "title": "Distinguishing Signature",
+      "type": "string"
+    },
+    "expected_load_bearing_conditions": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Expected Load Bearing Conditions",
+      "type": "array"
+    },
+    "force_chain": {
+      "items": {
+        "$ref": "#/$defs/MechanismStep"
+      },
+      "minItems": 1,
+      "title": "Force Chain",
+      "type": "array"
+    },
+    "initiating_wedge": {
+      "minLength": 1,
+      "title": "Initiating Wedge",
+      "type": "string"
+    },
+    "killer_test": {
+      "minLength": 1,
+      "title": "Killer Test",
+      "type": "string"
+    },
+    "predicted_consequence": {
+      "minLength": 1,
+      "title": "Predicted Consequence",
+      "type": "string"
+    },
+    "primitive_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "question_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "question_ref",
+    "primitive_graph_ref",
+    "decision_margin_or_foundational_distinction",
+    "initiating_wedge",
+    "force_chain",
+    "predicted_consequence",
+    "boundary",
+    "expected_load_bearing_conditions",
+    "distinguishing_signature",
+    "killer_test"
+  ],
+  "title": "MechanismHypothesis",
+  "type": "object"
+}

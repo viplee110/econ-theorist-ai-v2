@@ -27,6 +27,7 @@ from econ_theorist.models import (
     Transaction,
 )
 from econ_theorist.project import init_project
+from econ_theorist.policy import ROUTE_REGISTRY_V1_HASH
 from econ_theorist.runs import (
     begin_run,
     compiled_context_path,
@@ -153,6 +154,7 @@ class CommitRecoveryTestCase(unittest.TestCase):
             purpose="research_framing",
             compartments=("project_research",),
             budget_units=4000,
+            route_registry_hash=ROUTE_REGISTRY_V1_HASH,
         )
 
     def _prepare_blocker(self):

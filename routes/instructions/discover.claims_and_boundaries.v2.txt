@@ -1,0 +1,6 @@
+Derive scoped claims from the human-confirmed formal base and promoted mechanism.
+For each claim record quantifiers, domain, assumptions, economic interpretation, proof obligations, and known boundary challenges.
+Actively search for in-domain counterexamples and weaken or reject claims they defeat.
+Produce a ClaimGraph against the exact G3 AssumptionMap without treating computation as universal proof.
+Only supersede the AssumptionMap when claim discovery changes a substantive assumption; that invalidates the old G3 evidence and requires repair and fresh human G3 approval before verification continues.
+Cite the exact governing ResearchQuestion as transaction evidence and keep every output and relation endpoint in that gate scope.

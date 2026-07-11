@@ -1,0 +1,109 @@
+{
+  "$defs": {
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/proof-obligation.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "admissible_methods": {
+      "items": {
+        "enum": [
+          "analytic_proof",
+          "formal_proof",
+          "symbolic_identity",
+          "exhaustive_finite_proof",
+          "counterexample",
+          "semantic_audit"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Admissible Methods",
+      "type": "array"
+    },
+    "assumption_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Assumption Ids",
+      "type": "array"
+    },
+    "burden": {
+      "enum": [
+        "existence",
+        "necessity",
+        "sufficiency",
+        "uniqueness",
+        "comparative_static",
+        "boundary",
+        "counterexample_exclusion",
+        "semantic_entailment",
+        "mechanism_witness"
+      ],
+      "title": "Burden",
+      "type": "string"
+    },
+    "claim_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "claim_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Claim Id",
+      "type": "string"
+    },
+    "obligation_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Obligation Id",
+      "type": "string"
+    },
+    "quantifier_scope": {
+      "minLength": 1,
+      "title": "Quantifier Scope",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "statement": {
+      "minLength": 1,
+      "title": "Statement",
+      "type": "string"
+    }
+  },
+  "required": [
+    "claim_graph_ref",
+    "claim_id",
+    "obligation_id",
+    "statement",
+    "burden",
+    "quantifier_scope",
+    "assumption_ids",
+    "admissible_methods"
+  ],
+  "title": "ProofObligation",
+  "type": "object"
+}

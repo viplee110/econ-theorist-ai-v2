@@ -1,0 +1,201 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "BenchmarkRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "benchmark_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Benchmark Id",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ArtifactDependencyRef"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "exact_primitives": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Exact Primitives",
+          "type": "array"
+        },
+        "exact_values": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/RationalAssignment"
+          },
+          "title": "Exact Values",
+          "type": "array"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "prediction": {
+          "minLength": 1,
+          "title": "Prediction",
+          "type": "string"
+        },
+        "solution_concept": {
+          "minLength": 1,
+          "title": "Solution Concept",
+          "type": "string"
+        },
+        "timing": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Timing",
+          "type": "array"
+        },
+        "unresolved_delta": {
+          "minLength": 1,
+          "title": "Unresolved Delta",
+          "type": "string"
+        }
+      },
+      "required": [
+        "benchmark_id",
+        "label",
+        "exact_primitives",
+        "timing",
+        "solution_concept",
+        "prediction",
+        "unresolved_delta"
+      ],
+      "title": "BenchmarkRecord",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "RationalAssignment": {
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Symbol",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/ReducedRational"
+        }
+      },
+      "required": [
+        "symbol",
+        "value"
+      ],
+      "title": "RationalAssignment",
+      "type": "object"
+    },
+    "ReducedRational": {
+      "additionalProperties": false,
+      "description": "An exact canonical rational: positive denominator and reduced terms.",
+      "properties": {
+        "denominator": {
+          "minimum": 1,
+          "title": "Denominator",
+          "type": "integer"
+        },
+        "numerator": {
+          "title": "Numerator",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "numerator",
+        "denominator"
+      ],
+      "title": "ReducedRational",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/benchmark-set.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "benchmarks": {
+      "items": {
+        "$ref": "#/$defs/BenchmarkRecord"
+      },
+      "minItems": 1,
+      "title": "Benchmarks",
+      "type": "array"
+    },
+    "exact_question_delta": {
+      "minLength": 1,
+      "title": "Exact Question Delta",
+      "type": "string"
+    },
+    "question_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "question_ref",
+    "benchmarks",
+    "exact_question_delta"
+  ],
+  "title": "BenchmarkSet",
+  "type": "object"
+}

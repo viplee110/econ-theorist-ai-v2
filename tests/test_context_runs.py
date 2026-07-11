@@ -46,7 +46,12 @@ from econ_theorist.route_registry import (
 from econ_theorist.policy import (
     KERNEL_HASH,
     KERNEL_VERSION,
+    ROUTE_REGISTRY_V1_HASH,
+    ROUTE_REGISTRY_V2_HASH,
+    V2_ENABLED_ROUTE_IDS,
     load_route_registry,
+    load_route_registry_by_hash,
+    registry_hash,
     theory_kernel,
 )
 from econ_theorist.project import init_project
@@ -159,7 +164,7 @@ def fixture_snapshot(*, private_neighbor: bool = False) -> Snapshot:
 
 
 class RouteRegistryTests(unittest.TestCase):
-    def test_only_two_exact_routes_can_begin(self) -> None:
+    def test_v2_enables_theory_routes_but_not_authoring(self) -> None:
         framing = authorize_route(
             "frame.question_and_benchmarks",
             purpose="research_framing",
@@ -175,10 +180,17 @@ class RouteRegistryTests(unittest.TestCase):
         self.assertEqual(framing.availability, "enabled")
         self.assertEqual(repair.availability, "enabled")
 
+        decomposition = authorize_route(
+            "decompose.primitives",
+            purpose="research_discovery",
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+        )
+        self.assertEqual(decomposition.route_version, 2)
         with self.assertRaises(RouteUnavailableError):
             authorize_route(
-                "decompose.primitives",
-                purpose="research_discovery",
+                "design.reader_path",
+                purpose="research_authoring",
                 compartments=("project_research",),
                 privacy_clearance="project_private",
             )
@@ -206,6 +218,21 @@ class RouteRegistryTests(unittest.TestCase):
             tampered.write_text(json.dumps(payload), encoding="utf-8")
             with self.assertRaises(RegistryError):
                 load_route_registry(tampered)
+
+    def test_v1_is_frozen_and_v2_is_the_active_catalog(self) -> None:
+        active = load_route_registry()
+        historical = load_route_registry_by_hash(ROUTE_REGISTRY_V1_HASH)
+        self.assertEqual(active.registry_version, 2)
+        self.assertEqual(registry_hash(active), ROUTE_REGISTRY_V2_HASH)
+        self.assertEqual(historical.registry_version, 1)
+        self.assertEqual(registry_hash(historical), ROUTE_REGISTRY_V1_HASH)
+        self.assertEqual(
+            sum(route.availability == "enabled" for route in active.routes),
+            len(V2_ENABLED_ROUTE_IDS),
+        )
+        self.assertEqual(
+            sum(route.availability == "enabled" for route in historical.routes), 2
+        )
 
 
 class ContextCompilerTests(unittest.TestCase):

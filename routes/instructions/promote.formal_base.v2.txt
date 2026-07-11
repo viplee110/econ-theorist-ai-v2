@@ -1,0 +1,5 @@
+Map each selected formal primitive, timing step, information set, action, payoff, and solution concept to the promoted economic argument.
+Require bidirectional coverage: no economic step without implementation and no load-bearing formal device without interpretation.
+Classify assumptions by economic, institutional, proof, normalization, or scope role.
+Produce FormalizationMap, AssumptionMap, selected FormalModel, and a G3 GateDossier; do not confirm G3.
+Bind the G3 dossier and every output to the exact gated ResearchQuestion, and cite that exact ref as transaction evidence.

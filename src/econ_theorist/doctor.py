@@ -13,6 +13,7 @@ from .policy import (
     PINNED_PYDANTIC_CORE_VERSION,
     PINNED_PYDANTIC_VERSION,
     load_route_registry,
+    registry_hash,
 )
 from .runtime import HeadStore, StoreLayout
 
@@ -70,7 +71,11 @@ def doctor_report(project_root: str | Path | None = None) -> dict[str, Any]:
     try:
         registry = load_route_registry()
         registry_ok = True
-        registry_detail = f"v{registry.registry_version}; {len(registry.routes)} routes"
+        enabled = sum(route.availability == "enabled" for route in registry.routes)
+        registry_detail = (
+            f"active v{registry.registry_version}; {len(registry.routes)} routes; "
+            f"{enabled} enabled; sha256:{registry_hash(registry)}"
+        )
     except Exception as exc:  # report diagnostics; callers decide whether to fail
         registry_ok = False
         registry_detail = f"{type(exc).__name__}: {exc}"

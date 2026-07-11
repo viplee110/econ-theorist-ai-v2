@@ -7,14 +7,18 @@ recompile a context against the provider tokenizer it actually uses.
 
 from __future__ import annotations
 
+import base64
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+from pydantic import BaseModel
 
 from .codec import canonical_json_bytes, sha256_digest
-from .errors import PolicyError
+from .errors import PolicyError, RuntimeStoreError
 from .models import (
     Actor,
+    ArtifactDependencyRef,
     ArtifactRegistration,
     ContextManifest,
     Decision,
@@ -24,24 +28,37 @@ from .models import (
     PrivacyLabel,
     RelationVersion,
     RiskOrBlocker,
-    RouteSpec,
+    RouteSpecLike,
+    RouteSpecV2,
     Snapshot,
 )
 from .policy import (
-    DECISION_REGISTRY_VERSION,
     ISOLATION_POLICY,
     KERNEL_HASH,
     KERNEL_VERSION,
-    ROUTE_REGISTRY_HASH,
     SELECTOR_VERSION,
     VALIDATOR_VERSION,
+    decision_registry_version_for_route,
     instruction_bundle_bytes,
+    registry_hash_for_route,
     theory_kernel,
 )
 from .route_registry import clearance_allows
 
+if TYPE_CHECKING:
+    from .runtime.layout import StoreLayout
+
 
 TOKENIZER_ID = "etai_lexical_v1"
+
+_EVALUATION_ROUTE_PURPOSES = {
+    "prepare.blind_case": "confirmatory_case_preparation",
+    "evaluate.blind_argument_package": "confirmatory_evaluation",
+}
+_HOLDOUT_PURPOSES = frozenset(_EVALUATION_ROUTE_PURPOSES.values())
+_EVALUATION_FOCUS_ENTITY_TYPES = frozenset(
+    {"BlindCaseManifest", "TransformedVariantManifest"}
+)
 
 
 class ContextCompilationError(PolicyError):
@@ -68,7 +85,7 @@ class CompiledContext:
     used_units: int
 
 
-def _route_instructions(route: RouteSpec) -> tuple[str, ...]:
+def _route_instructions(route: RouteSpecLike) -> tuple[str, ...]:
     """Decode the exact instruction bundle already pinned by the registry."""
 
     text = instruction_bundle_bytes(route).decode("utf-8")
@@ -168,7 +185,7 @@ def _entity_accessible(
 ) -> bool:
     if (
         "confirmatory_holdout" in entity.access_compartments
-        and purpose != "confirmatory_evaluation"
+        and purpose not in _HOLDOUT_PURPOSES
     ):
         return False
     return clearance_allows(clearance, entity.privacy) and set(
@@ -185,7 +202,7 @@ def _relation_accessible(
 ) -> bool:
     if (
         "confirmatory_holdout" in relation.access_compartments
-        and purpose != "confirmatory_evaluation"
+        and purpose not in _HOLDOUT_PURPOSES
     ):
         return False
     return clearance_allows(clearance, relation.privacy) and set(
@@ -202,7 +219,7 @@ def _decision_accessible(
 ) -> bool:
     if (
         "confirmatory_holdout" in decision.access_compartments
-        and purpose != "confirmatory_evaluation"
+        and purpose not in _HOLDOUT_PURPOSES
     ):
         return False
     return clearance_allows(clearance, decision.privacy) and set(
@@ -219,7 +236,7 @@ def _blocker_accessible(
 ) -> bool:
     if (
         "confirmatory_holdout" in blocker.access_compartments
-        and purpose != "confirmatory_evaluation"
+        and purpose not in _HOLDOUT_PURPOSES
     ):
         return False
     return clearance_allows(clearance, blocker.privacy) and set(
@@ -239,7 +256,7 @@ def _privacy_record_accessible(
     purpose: str,
 ) -> bool:
     compartments = record.access_compartments
-    if "confirmatory_holdout" in compartments and purpose != "confirmatory_evaluation":
+    if "confirmatory_holdout" in compartments and purpose not in _HOLDOUT_PURPOSES:
         return False
     return clearance_allows(clearance, record.privacy) and set(
         compartments
@@ -539,7 +556,7 @@ def _blocker_is_relevant(
 def _required_slice(
     snapshot: Snapshot,
     *,
-    route: RouteSpec,
+    route: RouteSpecLike,
     focus_entity_ids: tuple[str, ...],
     clearance: PrivacyLabel,
     grants: frozenset[str],
@@ -769,7 +786,7 @@ def _required_slice(
 def _optional_neighbor_groups(
     snapshot: Snapshot,
     *,
-    route: RouteSpec,
+    route: RouteSpecLike,
     focus_entity_ids: tuple[str, ...],
     selected: Mapping[tuple[str, int], EntityVersion],
     selected_relations: Mapping[tuple[str, int], RelationVersion],
@@ -878,10 +895,312 @@ def _optional_neighbor_groups(
     return tuple(groups), tuple(sorted(privacy_omissions))
 
 
+def _evaluation_exact_entities(
+    snapshot: Snapshot,
+    *,
+    focus_entity_ids: tuple[str, ...],
+    clearance: PrivacyLabel,
+    grants: frozenset[str],
+    purpose: str,
+    require_manifest: bool,
+) -> dict[tuple[str, int], EntityVersion]:
+    """Select only exact current focus entities for a sealed evaluation run."""
+
+    if not focus_entity_ids:
+        raise ContextCompilationError(
+            "evaluation contexts require at least one exact focus entity"
+        )
+    current = _current_entities(snapshot)
+    by_id = {entity.entity_id: entity for entity in current.values()}
+    selected: dict[tuple[str, int], EntityVersion] = {}
+    for entity_id in focus_entity_ids:
+        entity = by_id.get(entity_id)
+        if entity is None:
+            raise ContextCompilationError(
+                f"evaluation focus entity is not current: {entity_id}"
+            )
+        if not _entity_accessible(
+            entity, clearance=clearance, grants=grants, purpose=purpose
+        ):
+            raise ContextAccessError(
+                f"evaluation focus entity is not readable: "
+                f"{entity.entity_id}@{entity.version}"
+            )
+        selected[_entity_key(entity)] = entity
+    if require_manifest and not any(
+        entity.entity_type in _EVALUATION_FOCUS_ENTITY_TYPES
+        for entity in selected.values()
+    ):
+        raise ContextCompilationError(
+            "evaluation contexts require a focused BlindCaseManifest or "
+            "TransformedVariantManifest"
+        )
+    return selected
+
+
+def _walk_direct_evaluation_refs(value: object) -> Iterable[object]:
+    """Yield exact artifact/Decision refs directly encoded in one payload."""
+
+    if isinstance(value, (ArtifactDependencyRef, DecisionVersionRef)):
+        yield value
+        return
+    if isinstance(value, EntityVersionRef):
+        return
+    if isinstance(value, BaseModel):
+        for field_name in type(value).model_fields:
+            yield from _walk_direct_evaluation_refs(getattr(value, field_name))
+        return
+    if isinstance(value, Mapping):
+        for nested in value.values():
+            yield from _walk_direct_evaluation_refs(nested)
+        return
+    if isinstance(value, (tuple, list)):
+        for nested in value:
+            yield from _walk_direct_evaluation_refs(nested)
+
+
+def _evaluation_context_inputs(
+    snapshot: Snapshot,
+    selected: Mapping[tuple[str, int], EntityVersion],
+    *,
+    route_id: str,
+    layout: StoreLayout | None,
+    clearance: PrivacyLabel,
+    grants: frozenset[str],
+    purpose: str,
+) -> tuple[tuple[dict[str, Any], ...], tuple[Decision, ...]]:
+    """Resolve sealed manifest refs to exact registrations, bytes, and Decisions."""
+
+    if layout is None:
+        raise ContextCompilationError(
+            "evaluation context compilation requires the canonical StoreLayout"
+        )
+    from .runtime.objects import ObjectStore
+    from .theory import PreResultBrief, ValidatedArgumentPackage, parse_theory_entity
+
+    artifact_refs: dict[tuple[str, int], ArtifactDependencyRef] = {}
+    decision_refs: set[tuple[str, int]] = set()
+    parsed_entities: list[tuple[EntityVersion, BaseModel]] = []
+    for entity in selected.values():
+        relevant_type = (
+            entity.entity_type in _EVALUATION_FOCUS_ENTITY_TYPES
+            or (
+                route_id == "prepare.blind_case"
+                and entity.entity_type == "PreResultBrief"
+            )
+            or (
+                route_id == "evaluate.blind_argument_package"
+                and entity.entity_type == "ValidatedArgumentPackage"
+            )
+        )
+        if not relevant_type:
+            continue
+        try:
+            payload = parse_theory_entity(entity)
+        except (TypeError, ValueError) as exc:
+            raise ContextCompilationError(
+                f"evaluation focus is not a typed {entity.entity_type}: "
+                f"{entity.entity_id}@{entity.version}"
+            ) from exc
+        parsed_entities.append((entity, payload))
+        if entity.entity_type not in _EVALUATION_FOCUS_ENTITY_TYPES:
+            continue
+        references = (*entity.artifact_refs, *_walk_direct_evaluation_refs(payload))
+        for reference in references:
+            if isinstance(reference, ArtifactDependencyRef):
+                key = (reference.artifact_id, reference.version)
+                prior = artifact_refs.get(key)
+                if prior is not None and prior.content_hash != reference.content_hash:
+                    raise ContextCompilationError(
+                        "evaluation manifest repeats an artifact version with "
+                        "conflicting hashes"
+                    )
+                artifact_refs[key] = reference
+            elif isinstance(reference, DecisionVersionRef):
+                decision_refs.add((reference.decision_id, reference.version))
+
+    if route_id == "prepare.blind_case":
+        briefs = [
+            (entity, payload)
+            for entity, payload in parsed_entities
+            if isinstance(payload, PreResultBrief)
+        ]
+        attempts = {payload.attempt_id for _, payload in briefs}
+        if len(briefs) != 2 or len(attempts) != 1:
+            raise ContextCompilationError(
+                "blind case preparation context requires two focused "
+                "PreResultBrief entities with one shared attempt"
+            )
+        attempt_id = next(iter(attempts))
+        brief_entities = {entity.entity_id: entity for entity, _ in briefs}
+        effective_refs = {
+            (reference.decision_id, reference.version)
+            for reference in snapshot.effective_decisions.values()
+        }
+        freezes = [
+            decision
+            for decision in snapshot.decisions
+            if (decision.decision_id, decision.version) in effective_refs
+            and decision.decision_kind == "theory_mode"
+            and decision.status == "confirmed"
+            and decision.decider.kind == "human"
+            and decision.selected_option == "freeze"
+            and decision.subject_ref in brief_entities
+            and decision.scope_ref == attempt_id
+            and decision.decided_at
+            > brief_entities[decision.subject_ref].created_at
+        ]
+        if len(freezes) != 1:
+            raise ContextCompilationError(
+                "blind case preparation context requires one effective human "
+                "implementation freeze for the transformed brief"
+            )
+        decision_refs.add((freezes[0].decision_id, freezes[0].version))
+
+    if route_id == "evaluate.blind_argument_package":
+        candidates = [
+            (entity, payload)
+            for entity, payload in parsed_entities
+            if isinstance(payload, ValidatedArgumentPackage)
+            and payload.release_mode == "evaluation_only"
+            and payload.evaluation_attempt_id is not None
+        ]
+        if len(candidates) != 1:
+            raise ContextCompilationError(
+                "evaluation context requires one focused evaluation-only "
+                "ValidatedArgumentPackage with an attempt ID"
+            )
+        candidate_entity, candidate = candidates[0]
+        lock_id = f"candidate.lock.{candidate.evaluation_attempt_id}"
+        lock_version = snapshot.current_artifacts.get(lock_id)
+        locks = [
+            item
+            for item in snapshot.artifacts
+            if item.artifact_id == lock_id and item.version == lock_version
+        ]
+        expected_hash = sha256_digest(canonical_json_bytes(candidate_entity))
+        if (
+            lock_version != 1
+            or len(locks) != 1
+            or locks[0].supersedes is not None
+            or locks[0].project_id != snapshot.project_id
+            or locks[0].media_type
+            != "application/vnd.econ-theorist.candidate-lock+json"
+            or locks[0].content_hash != expected_hash
+        ):
+            raise ContextCompilationError(
+                "evaluation context requires the unique current v1 candidate "
+                "lock over the exact focused candidate bytes"
+            )
+        lock = locks[0]
+        artifact_refs[(lock.artifact_id, lock.version)] = ArtifactDependencyRef(
+            artifact_id=lock.artifact_id,
+            version=lock.version,
+            content_hash=lock.content_hash,
+        )
+
+    evaluation_attempt_ids = {
+        attempt_id
+        for _, payload in parsed_entities
+        for attempt_id in (
+            getattr(payload, "attempt_id", None),
+            getattr(payload, "evaluation_attempt_id", None),
+        )
+        if isinstance(attempt_id, str)
+    }
+
+    artifact_index = {
+        (item.artifact_id, item.version): item for item in snapshot.artifacts
+    }
+    store = ObjectStore(layout)
+    artifact_records: list[dict[str, Any]] = []
+    for key in sorted(artifact_refs):
+        reference = artifact_refs[key]
+        registration = artifact_index.get(key)
+        if (
+            registration is None
+            or registration.content_hash != reference.content_hash
+        ):
+            raise ContextCompilationError(
+                "evaluation manifest contains an unresolved or hash-mismatched "
+                f"artifact ref {reference.artifact_id}@{reference.version}"
+            )
+        if not _privacy_record_accessible(
+            registration,
+            clearance=clearance,
+            grants=grants,
+            purpose=purpose,
+        ):
+            raise ContextAccessError(
+                "evaluation artifact is not readable: "
+                f"{registration.artifact_id}@{registration.version}"
+            )
+        try:
+            data = store.read_bytes(
+                "artifacts", registration.content_hash, verify=True
+            )
+        except RuntimeStoreError as exc:
+            raise ContextCompilationError(
+                "evaluation artifact bytes are unavailable or corrupt: "
+                f"{registration.artifact_id}@{registration.version}"
+            ) from exc
+        if len(data) != registration.byte_size:
+            raise ContextCompilationError(
+                "evaluation artifact byte_size does not match registered bytes: "
+                f"{registration.artifact_id}@{registration.version}"
+            )
+        artifact_records.append(
+            {
+                "registration": registration.model_dump(mode="json"),
+                "content_encoding": "base64",
+                "content_base64": base64.b64encode(data).decode("ascii"),
+            }
+        )
+
+    decision_index = {
+        (item.decision_id, item.version): item for item in snapshot.decisions
+    }
+    decisions: list[Decision] = []
+    for key in sorted(decision_refs):
+        decision = decision_index.get(key)
+        if decision is None:
+            raise ContextCompilationError(
+                "evaluation manifest contains an unresolved exact Decision ref "
+                f"{key[0]}@{key[1]}"
+            )
+        reference_check = decision
+        if (
+            decision.decision_kind == "theory_mode"
+            and decision.status == "confirmed"
+            and decision.decider.kind == "human"
+            and decision.selected_option == "freeze"
+            and decision.scope_ref in evaluation_attempt_ids
+        ):
+            # The sealed evaluation protocol uses ``scope_ref`` as its typed
+            # attempt identifier, not as a mutable canonical-object pointer.
+            # All other Decision references still receive the ordinary
+            # current-object privacy walk.
+            reference_check = decision.model_copy(update={"scope_ref": None})
+        if not _decision_accessible(
+            decision, clearance=clearance, grants=grants, purpose=purpose
+        ) or not _decision_references_accessible(
+            snapshot,
+            reference_check,
+            clearance=clearance,
+            grants=grants,
+            purpose=purpose,
+        ):
+            raise ContextAccessError(
+                f"evaluation Decision is not readable: {key[0]}@{key[1]}"
+            )
+        decisions.append(decision)
+    return tuple(artifact_records), tuple(decisions)
+
+
 def _payload(
     snapshot: Snapshot,
     *,
-    route: RouteSpec,
+    route: RouteSpecLike,
     purpose: str,
     focus_entity_ids: tuple[str, ...],
     budget_units: int,
@@ -891,14 +1210,25 @@ def _payload(
     omissions: tuple[str, ...],
     clearance: PrivacyLabel,
     grants: frozenset[str],
+    exact_evaluation: bool = False,
+    evaluation_artifacts: tuple[dict[str, Any], ...] = (),
+    evaluation_decisions: tuple[Decision, ...] = (),
 ) -> dict[str, Any]:
     selected_ids = frozenset(entity.entity_id for entity in entities.values())
-    relevant_decisions = tuple(
-        decision
-        for decision in decisions
-        if _decision_is_relevant(decision, selected_ids, snapshot.project_id)
+    relevant_decisions = (
+        ()
+        if exact_evaluation
+        else tuple(
+            decision
+            for decision in decisions
+            if _decision_is_relevant(decision, selected_ids, snapshot.project_id)
+        )
     )
-    status_source_decisions = _status_source_decisions(snapshot, selected_ids)
+    status_source_decisions = (
+        ()
+        if exact_evaluation
+        else _status_source_decisions(snapshot, selected_ids)
+    )
     selected_object_ids = frozenset(
         {
             *selected_ids,
@@ -912,16 +1242,20 @@ def _payload(
             *(decision.decision_id for decision in status_source_decisions),
         }
     )
-    blockers = tuple(
-        sorted(
-            (
-                blocker
-                for blocker in snapshot.blockers
-                if _blocker_is_relevant(
-                    blocker, selected_object_ids, route.route_id
-                )
-            ),
-            key=lambda blocker: blocker.blocker_id,
+    blockers = (
+        ()
+        if exact_evaluation
+        else tuple(
+            sorted(
+                (
+                    blocker
+                    for blocker in snapshot.blockers
+                    if _blocker_is_relevant(
+                        blocker, selected_object_ids, route.route_id
+                    )
+                ),
+                key=lambda blocker: blocker.blocker_id,
+            )
         )
     )
     for decision in relevant_decisions:
@@ -969,26 +1303,53 @@ def _payload(
             raise ContextAccessError(
                 f"selected context would disclose blocker {blocker.blocker_id}"
             )
-    derived_status = {
-        entity_id: snapshot.derived_status[entity_id].model_dump(mode="json")
-        for entity_id in sorted(selected_ids)
-        if entity_id in snapshot.derived_status
+    derived_status = (
+        {}
+        if exact_evaluation
+        else {
+            entity_id: snapshot.derived_status[entity_id].model_dump(mode="json")
+            for entity_id in sorted(selected_ids)
+            if entity_id in snapshot.derived_status
+        }
+    )
+    route_contract: dict[str, Any] = {
+        "route_id": route.route_id,
+        "route_version": route.route_version,
+        "purpose": purpose,
+        "authority_ceiling": route.authority_ceiling,
+        "route_registry_hash": registry_hash_for_route(route),
+        "instruction_bundle_id": route.instruction_bundle_id,
+        "instruction_bundle_hash": route.instruction_bundle_hash,
+        "allowed_operations": route.allowed_operations,
+        "instructions": _route_instructions(route),
     }
-    return {
+    if isinstance(route, RouteSpecV2):
+        route_contract.update(
+            {
+                "allowed_entity_types": route.allowed_entity_types,
+                "allowed_relation_types": route.allowed_relation_types,
+                "required_input_entities": tuple(
+                    item.model_dump(mode="json")
+                    for item in route.required_input_entities
+                ),
+                "required_output_entities": tuple(
+                    item.model_dump(mode="json")
+                    for item in route.required_output_entities
+                ),
+                "required_output_relations": tuple(
+                    item.model_dump(mode="json")
+                    for item in route.required_output_relations
+                ),
+                "required_gate_kinds": route.required_gate_kinds,
+                "entry_validator_id": route.entry_validator_id,
+                "exit_validator_id": route.exit_validator_id,
+            }
+        )
+    payload = {
         "context_schema": "econ-theorist/compiled-context/v1",
         "source_head": snapshot.head,
         "project_id": snapshot.project_id,
-        "route": {
-            "route_id": route.route_id,
-            "route_version": route.route_version,
-            "purpose": purpose,
-            "authority_ceiling": route.authority_ceiling,
-            "route_registry_hash": ROUTE_REGISTRY_HASH,
-            "instruction_bundle_id": route.instruction_bundle_id,
-            "instruction_bundle_hash": route.instruction_bundle_hash,
-            "allowed_operations": route.allowed_operations,
-            "instructions": _route_instructions(route),
-        },
+        "route": route_contract,
         "budget": {
             "estimator": TOKENIZER_ID,
             "units": budget_units,
@@ -1020,18 +1381,34 @@ def _payload(
         "blockers": tuple(blocker.model_dump(mode="json") for blocker in blockers),
         "omissions": omissions,
     }
+    if exact_evaluation:
+        payload.update(
+            {
+                "evaluation_selector": {
+                    "mode": "exact_focus.v1",
+                    "optional_neighbors": False,
+                },
+                "evaluation_artifacts": evaluation_artifacts,
+                "evaluation_decisions": tuple(
+                    decision.model_dump(mode="json")
+                    for decision in sorted(evaluation_decisions, key=_decision_key)
+                ),
+            }
+        )
+    return payload
 
 
 def compile_context(
     snapshot: Snapshot,
     *,
-    route: RouteSpec,
+    route: RouteSpecLike,
     actor: Actor,
     purpose: str,
     compartments: Iterable[str],
     privacy_clearance: PrivacyLabel,
     focus_entity_ids: Iterable[str] = (),
     budget_units: int,
+    layout: StoreLayout | None = None,
 ) -> CompiledContext:
     """Compile a deterministic exact-version context without touching disk."""
 
@@ -1052,6 +1429,66 @@ def compile_context(
         raise ContextCompilationError("focus entity IDs must be unique")
     grants = frozenset(grants_tuple)
     focus = tuple(sorted(focus_tuple))
+
+    expected_evaluation_purpose = _EVALUATION_ROUTE_PURPOSES.get(route.route_id)
+    if expected_evaluation_purpose is not None:
+        if purpose != expected_evaluation_purpose:
+            raise ContextAccessError(
+                f"route {route.route_id} requires purpose "
+                f"{expected_evaluation_purpose!r}"
+            )
+        exact_entities = _evaluation_exact_entities(
+            snapshot,
+            focus_entity_ids=focus,
+            clearance=privacy_clearance,
+            grants=grants,
+            purpose=purpose,
+            require_manifest=route.route_id == "evaluate.blind_argument_package",
+        )
+        evaluation_artifacts, evaluation_decisions = _evaluation_context_inputs(
+            snapshot,
+            exact_entities,
+            route_id=route.route_id,
+            layout=layout,
+            clearance=privacy_clearance,
+            grants=grants,
+            purpose=purpose,
+        )
+        payload = _payload(
+            snapshot,
+            route=route,
+            purpose=purpose,
+            focus_entity_ids=focus,
+            budget_units=budget_units,
+            entities=exact_entities,
+            relations={},
+            decisions=(),
+            omissions=(),
+            clearance=privacy_clearance,
+            grants=grants,
+            exact_evaluation=True,
+            evaluation_artifacts=evaluation_artifacts,
+            evaluation_decisions=evaluation_decisions,
+        )
+        encoded = canonical_json_bytes(payload)
+        used_units = units_for_bytes(encoded)
+        if used_units > budget_units:
+            raise ContextBudgetError(
+                f"required exact evaluation context needs {used_units} "
+                f"{TOKENIZER_ID} units; budget is {budget_units}"
+            )
+        selected_refs = tuple(
+            EntityVersionRef(entity_id=entity.entity_id, version=entity.version)
+            for entity in sorted(exact_entities.values(), key=_entity_key)
+        )
+        return CompiledContext(
+            payload=payload,
+            encoded=encoded,
+            context_hash=sha256_digest(encoded),
+            selected_entity_refs=selected_refs,
+            omissions=(),
+            used_units=used_units,
+        )
 
     required_entities, required_relations, decisions = _required_slice(
         snapshot,
@@ -1165,7 +1602,7 @@ def make_context_manifest(
     *,
     context_manifest_id: str,
     snapshot: Snapshot,
-    route: RouteSpec,
+    route: RouteSpecLike,
     actor: Actor,
     purpose: str,
     compartments: Iterable[str],
@@ -1182,8 +1619,8 @@ def make_context_manifest(
         source_head=snapshot.head,
         route_id=route.route_id,
         route_version=route.route_version,
-        route_registry_hash=ROUTE_REGISTRY_HASH,
-        decision_registry_version=DECISION_REGISTRY_VERSION,
+        route_registry_hash=registry_hash_for_route(route),
+        decision_registry_version=decision_registry_version_for_route(route),
         selector_version=SELECTOR_VERSION,
         kernel_version=KERNEL_VERSION,
         kernel_hash=KERNEL_HASH,

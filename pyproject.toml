@@ -22,9 +22,28 @@ etai = "econ_theorist.cli:main"
 where = ["src"]
 
 [tool.setuptools.data-files]
-"share/econ-theorist/routes" = ["routes/registry.v1.json"]
+"share/econ-theorist/routes" = [
+  "routes/registry.v1.json",
+  "routes/registry.v2.json",
+]
 "share/econ-theorist/routes/instructions" = [
   "routes/instructions/frame.question_and_benchmarks.v1.txt",
   "routes/instructions/repair.dependency.v1.txt",
+  "routes/instructions/audit.assumptions_generality_and_absorption.v2.txt",
+  "routes/instructions/curate.result_portfolio.v2.txt",
+  "routes/instructions/decompose.primitives.v2.txt",
+  "routes/instructions/discover.claims_and_boundaries.v2.txt",
+  "routes/instructions/evaluate.blind_argument_package.v2.txt",
+  "routes/instructions/frame.question_and_benchmarks.v2.txt",
+  "routes/instructions/freeze.predictions.v2.txt",
+  "routes/instructions/lab.micro_examples_and_ablations.v2.txt",
+  "routes/instructions/prepare.blind_case.v2.txt",
+  "routes/instructions/promote.formal_base.v2.txt",
+  "routes/instructions/promote.mechanism.v2.txt",
+  "routes/instructions/repair.dependency.v2.txt",
+  "routes/instructions/tournament.implementations.v2.txt",
+  "routes/instructions/tournament.mechanisms.v2.txt",
+  "routes/instructions/validate.argument_package.v2.txt",
+  "routes/instructions/verify.claims_proofs_and_interpretation.v2.txt",
   "routes/instructions/theory_kernel.v1.json",
 ]

@@ -1,0 +1,160 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "MechanismPairComparison": {
+      "additionalProperties": false,
+      "properties": {
+        "decisive_test": {
+          "minLength": 1,
+          "title": "Decisive Test",
+          "type": "string"
+        },
+        "distinct_arrow_or_signature": {
+          "minLength": 1,
+          "title": "Distinct Arrow Or Signature",
+          "type": "string"
+        },
+        "left_ref": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "right_ref": {
+          "$ref": "#/$defs/EntityVersionRef"
+        }
+      },
+      "required": [
+        "left_ref",
+        "right_ref",
+        "distinct_arrow_or_signature",
+        "decisive_test"
+      ],
+      "title": "MechanismPairComparison",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/mechanism-tournament.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "comparisons": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/MechanismPairComparison"
+      },
+      "title": "Comparisons",
+      "type": "array"
+    },
+    "hypothesis_refs": {
+      "items": {
+        "$ref": "#/$defs/EntityVersionRef"
+      },
+      "minItems": 1,
+      "title": "Hypothesis Refs",
+      "type": "array"
+    },
+    "proposed_selected_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "question_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "rivalry_waiver_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "selection_rationale": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Selection Rationale"
+    },
+    "serious_rival_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EntityVersionRef"
+      },
+      "title": "Serious Rival Refs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "question_ref",
+    "hypothesis_refs"
+  ],
+  "title": "MechanismTournament",
+  "type": "object"
+}

@@ -1,8 +1,8 @@
 # Phase 1 Walking Substrate Contract
 
-Status: executable acceptance contract; implementation candidate under review
+Status: accepted Phase 1 executable contract
 
-Branch: `agent/phase1-walking-substrate`
+Accepted on `main`: `3ce5c6b8c92fbcbefb361b319a70894e173b119f`
 
 Architecture base: `f30fd51bef78b0ee94f73e7c056c1b28e9789349`
 

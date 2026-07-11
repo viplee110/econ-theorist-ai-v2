@@ -1,0 +1,132 @@
+{
+  "$defs": {
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "ExcludedResult": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "exclusion_reason": {
+          "minLength": 1,
+          "title": "Exclusion Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "claim_id",
+        "exclusion_reason"
+      ],
+      "title": "ExcludedResult",
+      "type": "object"
+    },
+    "PortfolioItem": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "marginal_value": {
+          "minLength": 1,
+          "title": "Marginal Value",
+          "type": "string"
+        },
+        "scientific_job": {
+          "minLength": 1,
+          "title": "Scientific Job",
+          "type": "string"
+        }
+      },
+      "required": [
+        "claim_id",
+        "scientific_job",
+        "marginal_value"
+      ],
+      "title": "PortfolioItem",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/result-portfolio.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "claim_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "economic_consequence": {
+      "minLength": 1,
+      "title": "Economic Consequence",
+      "type": "string"
+    },
+    "economic_nugget": {
+      "minLength": 1,
+      "title": "Economic Nugget",
+      "type": "string"
+    },
+    "excluded_results": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ExcludedResult"
+      },
+      "title": "Excluded Results",
+      "type": "array"
+    },
+    "headline_claim_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Headline Claim Id",
+      "type": "string"
+    },
+    "included_results": {
+      "items": {
+        "$ref": "#/$defs/PortfolioItem"
+      },
+      "minItems": 1,
+      "title": "Included Results",
+      "type": "array"
+    },
+    "reader_belief_update": {
+      "minLength": 1,
+      "title": "Reader Belief Update",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "claim_graph_ref",
+    "headline_claim_id",
+    "included_results",
+    "economic_nugget",
+    "reader_belief_update",
+    "economic_consequence"
+  ],
+  "title": "ResultPortfolio",
+  "type": "object"
+}

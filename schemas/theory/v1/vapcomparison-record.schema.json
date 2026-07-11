@@ -1,0 +1,216 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "SignatureDimensionComparison": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_signature_ref": {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        "comparison": {
+          "enum": [
+            "match",
+            "partial",
+            "mismatch",
+            "not_applicable"
+          ],
+          "title": "Comparison",
+          "type": "string"
+        },
+        "diagnostic": {
+          "minLength": 1,
+          "title": "Diagnostic",
+          "type": "string"
+        },
+        "dimension": {
+          "enum": [
+            "question_delta",
+            "benchmarks",
+            "mechanism_graph",
+            "rivals",
+            "frozen_predictions",
+            "functional_examples",
+            "implementations",
+            "formalization",
+            "claim_scope",
+            "assumptions",
+            "proof_obligations",
+            "boundaries",
+            "absorption",
+            "portfolio",
+            "gates",
+            "prohibited_overclaims",
+            "dependency_traces"
+          ],
+          "title": "Dimension",
+          "type": "string"
+        },
+        "gold_signature_ref": {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        }
+      },
+      "required": [
+        "dimension",
+        "candidate_signature_ref",
+        "gold_signature_ref",
+        "comparison",
+        "diagnostic"
+      ],
+      "title": "SignatureDimensionComparison",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/vapcomparison-record.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "attempt_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Attempt Id",
+      "type": "string"
+    },
+    "candidate_lock_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "candidate_package_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Candidate Package Hash",
+      "type": "string"
+    },
+    "candidate_package_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "case_manifest_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "compared_at": {
+      "minLength": 1,
+      "title": "Compared At",
+      "type": "string"
+    },
+    "dimension_comparisons": {
+      "items": {
+        "$ref": "#/$defs/SignatureDimensionComparison"
+      },
+      "minItems": 1,
+      "title": "Dimension Comparisons",
+      "type": "array"
+    },
+    "disposition": {
+      "enum": [
+        "confirmatory_clean",
+        "diagnostic_contaminated",
+        "invalid_attempt"
+      ],
+      "title": "Disposition",
+      "type": "string"
+    },
+    "evaluator": {
+      "$ref": "#/$defs/Actor"
+    },
+    "evaluator_evidence_refs": {
+      "items": {
+        "$ref": "#/$defs/ArtifactDependencyRef"
+      },
+      "minItems": 1,
+      "title": "Evaluator Evidence Refs",
+      "type": "array"
+    },
+    "gold_package_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "attempt_id",
+    "case_manifest_ref",
+    "candidate_package_ref",
+    "gold_package_ref",
+    "candidate_package_hash",
+    "candidate_lock_ref",
+    "evaluator",
+    "dimension_comparisons",
+    "evaluator_evidence_refs",
+    "disposition",
+    "compared_at"
+  ],
+  "title": "VAPComparisonRecord",
+  "type": "object"
+}

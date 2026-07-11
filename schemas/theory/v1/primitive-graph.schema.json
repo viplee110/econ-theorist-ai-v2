@@ -1,0 +1,162 @@
+{
+  "$defs": {
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "PrimitiveEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "economic_meaning": {
+          "minLength": 1,
+          "title": "Economic Meaning",
+          "type": "string"
+        },
+        "edge_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Edge Id",
+          "type": "string"
+        },
+        "source_node_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Source Node Id",
+          "type": "string"
+        },
+        "target_node_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Target Node Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "edge_id",
+        "source_node_id",
+        "target_node_id",
+        "economic_meaning"
+      ],
+      "title": "PrimitiveEdge",
+      "type": "object"
+    },
+    "PrimitiveNode": {
+      "additionalProperties": false,
+      "properties": {
+        "economic_meaning": {
+          "minLength": 1,
+          "title": "Economic Meaning",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "actor",
+            "choice",
+            "constraint",
+            "information",
+            "timing",
+            "institution",
+            "preference_technology",
+            "interaction",
+            "equilibrium_object",
+            "perturbation",
+            "outcome"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "node_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Node Id",
+          "type": "string"
+        },
+        "primitive_sufficient_conditions": {
+          "default": [],
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Primitive Sufficient Conditions",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "primitive",
+            "reduced_form",
+            "derived",
+            "unresolved_scope_cost"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "node_id",
+        "kind",
+        "label",
+        "economic_meaning",
+        "status"
+      ],
+      "title": "PrimitiveNode",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/primitive-graph.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "benchmark_set_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "edges": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/PrimitiveEdge"
+      },
+      "title": "Edges",
+      "type": "array"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/PrimitiveNode"
+      },
+      "minItems": 1,
+      "title": "Nodes",
+      "type": "array"
+    },
+    "question_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "question_ref",
+    "benchmark_set_ref",
+    "nodes"
+  ],
+  "title": "PrimitiveGraph",
+  "type": "object"
+}

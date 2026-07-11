@@ -1,0 +1,177 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/blind-case-manifest.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "answer_key_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "attempt_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Attempt Id",
+      "type": "string"
+    },
+    "case_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Case Id",
+      "type": "string"
+    },
+    "evaluator_compartments": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Evaluator Compartments",
+      "type": "array"
+    },
+    "generator_compartments": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Generator Compartments",
+      "type": "array"
+    },
+    "gold_package_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "gold_semantic_refs": {
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          {
+            "$ref": "#/$defs/ArtifactDependencyRef"
+          },
+          {
+            "$ref": "#/$defs/DecisionVersionRef"
+          }
+        ]
+      },
+      "minItems": 1,
+      "title": "Gold Semantic Refs",
+      "type": "array"
+    },
+    "hidden_probe_refs": {
+      "items": {
+        "$ref": "#/$defs/ArtifactDependencyRef"
+      },
+      "title": "Hidden Probe Refs",
+      "type": "array"
+    },
+    "layer": {
+      "enum": [
+        "public_classic",
+        "transformed",
+        "synthetic_holdout"
+      ],
+      "title": "Layer",
+      "type": "string"
+    },
+    "pre_result_brief_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source_paper_refs": {
+      "items": {
+        "$ref": "#/$defs/ArtifactDependencyRef"
+      },
+      "title": "Source Paper Refs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "case_id",
+    "layer",
+    "pre_result_brief_ref",
+    "gold_package_ref",
+    "source_paper_refs",
+    "gold_semantic_refs",
+    "hidden_probe_refs",
+    "answer_key_ref",
+    "generator_compartments",
+    "evaluator_compartments",
+    "attempt_id"
+  ],
+  "title": "BlindCaseManifest",
+  "type": "object"
+}

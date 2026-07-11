@@ -1,0 +1,6 @@
+Construct transparent hand-solvable examples for benchmark, mechanism-on, ablation, rival separation, endpoints, and failure regions.
+Reconcile every outcome against the frozen prediction register without changing the frozen record.
+Distinguish finite illustrative evidence from proof of a quantified claim.
+Produce an ExampleSuite with exact inputs, reduced rational outputs, functional roles, and unresolved contradictions.
+Supersede the exact PredictionRegister only by appending reconciliations for the observed cases; never rewrite frozen predictions.
+Cite the exact governing ResearchQuestion as transaction evidence and keep every output and relation endpoint in that gate scope.

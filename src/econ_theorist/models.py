@@ -117,6 +117,15 @@ DecisionKind: TypeAlias = Literal[
     "external_communication",
     "destructive_cleanup",
 ]
+GATE_DECISION_KINDS = frozenset(
+    {
+        "G1_question_benchmark",
+        "G2_mechanism",
+        "G3_formal_base",
+        "G4_result_investment",
+        "G5_argument_validation",
+    }
+)
 StoredStatusDimension: TypeAlias = Literal[
     "lifecycle",
     "formal_validity",
@@ -482,9 +491,23 @@ class Decision(StrictModel):
                 raise ValueError(
                     "non-effective privacy Decisions cannot carry a machine outcome"
                 )
+        elif self.decision_kind in GATE_DECISION_KINDS:
+            if self.privacy_change is not None:
+                raise ValueError("G1-G5 Decisions cannot carry a privacy_change")
+            # ``None`` remains valid for frozen Phase 1 histories.  Phase 2's
+            # typed GateDossier validator requires an explicit machine outcome.
+            if self.machine_outcome is not None:
+                if self.status not in {"provisional", "confirmed"}:
+                    raise ValueError(
+                        "non-effective G1-G5 Decisions cannot carry a machine outcome"
+                    )
+                if self.selected_option != self.machine_outcome:
+                    raise ValueError(
+                        "G1-G5 Decision selected_option must equal machine_outcome"
+                    )
         elif self.privacy_change is not None or self.machine_outcome is not None:
             raise ValueError(
-                "privacy_change and machine_outcome are reserved for privacy Decisions"
+                "privacy_change and machine_outcome are reserved for typed gate Decisions"
             )
         if self.version == 1 and self.supersedes is not None:
             raise ValueError("decision version 1 cannot supersede an earlier version")
@@ -866,6 +889,143 @@ class RouteRegistry(StrictModel):
         if len(set(route_ids)) != len(route_ids):
             raise ValueError("route registry contains duplicate exact IDs")
         return self
+
+
+class RouteEntityRequirement(StrictModel):
+    """Exact entity-type cardinality required at one v2 route boundary."""
+
+    entity_type: StableId
+    min_count: Annotated[int, Field(ge=0)] = 1
+    max_count: Annotated[int, Field(ge=1)] | None = None
+
+    @model_validator(mode="after")
+    def _maximum_does_not_precede_minimum(self) -> "RouteEntityRequirement":
+        if self.max_count is not None and self.max_count < self.min_count:
+            raise ValueError("route entity maximum cannot be below its minimum")
+        return self
+
+
+class RouteRelationRequirement(StrictModel):
+    """Exact relation-type cardinality required at one v2 route exit."""
+
+    relation_type: StableId
+    min_count: Annotated[int, Field(ge=1)] = 1
+    max_count: Annotated[int, Field(ge=1)] | None = None
+
+    @model_validator(mode="after")
+    def _maximum_does_not_precede_minimum(self) -> "RouteRelationRequirement":
+        if self.max_count is not None and self.max_count < self.min_count:
+            raise ValueError("route relation maximum cannot be below its minimum")
+        return self
+
+
+class RouteSpecV2(StrictModel):
+    """Phase 2 route contract without changing the frozen v1 projection."""
+
+    route_id: StableId
+    route_version: Literal[2] = 2
+    availability: RouteAvailability
+    authority_ceiling: AuthorityLevel = "L1"
+    allowed_purposes: Annotated[tuple[StableId, ...], Field(min_length=1)]
+    required_compartments: tuple[StableId, ...] = ("project_research",)
+    allowed_operations: tuple[StableId, ...] = ()
+    allowed_entity_types: tuple[StableId, ...] = ()
+    allowed_relation_types: tuple[StableId, ...] = ()
+    required_input_entities: tuple[RouteEntityRequirement, ...] = ()
+    required_output_entities: tuple[RouteEntityRequirement, ...] = ()
+    required_output_relations: tuple[RouteRelationRequirement, ...] = ()
+    required_gate_kinds: tuple[DecisionKind, ...] = ()
+    entry_validator_id: StableId | None = None
+    exit_validator_id: StableId | None = None
+    instruction_bundle_id: StableId | None = None
+    instruction_bundle_hash: Digest | None = None
+
+    @field_validator(
+        "required_compartments",
+        "allowed_operations",
+        "allowed_entity_types",
+        "allowed_relation_types",
+        "required_gate_kinds",
+    )
+    @classmethod
+    def _contract_sets_are_canonical(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        if len(set(value)) != len(value):
+            raise ValueError("v2 route contract lists must not contain duplicates")
+        if value != tuple(sorted(value)):
+            raise ValueError("v2 route contract lists must be canonically ordered")
+        return value
+
+    @field_validator("required_input_entities", "required_output_entities")
+    @classmethod
+    def _entity_requirements_are_canonical(
+        cls, value: tuple[RouteEntityRequirement, ...]
+    ) -> tuple[RouteEntityRequirement, ...]:
+        entity_types = tuple(item.entity_type for item in value)
+        if len(set(entity_types)) != len(entity_types):
+            raise ValueError("v2 route entity requirements must not repeat a type")
+        if entity_types != tuple(sorted(entity_types)):
+            raise ValueError("v2 route entity requirements must be canonically ordered")
+        return value
+
+    @field_validator("required_output_relations")
+    @classmethod
+    def _relation_requirements_are_canonical(
+        cls, value: tuple[RouteRelationRequirement, ...]
+    ) -> tuple[RouteRelationRequirement, ...]:
+        relation_types = tuple(item.relation_type for item in value)
+        if len(set(relation_types)) != len(relation_types):
+            raise ValueError("v2 route relation requirements must not repeat a type")
+        if relation_types != tuple(sorted(relation_types)):
+            raise ValueError("v2 route relation requirements must be canonically ordered")
+        return value
+
+    @model_validator(mode="after")
+    def _enabled_route_is_executable(self) -> "RouteSpecV2":
+        if self.availability == "enabled" and (
+            not self.allowed_operations
+            or not self.allowed_entity_types
+            or not self.allowed_relation_types
+            or self.entry_validator_id is None
+            or self.exit_validator_id is None
+            or self.instruction_bundle_id is None
+            or self.instruction_bundle_hash is None
+        ):
+            raise ValueError(
+                "enabled v2 routes require operation/entity/relation allowlists "
+                "and a hashed instruction bundle"
+            )
+        unknown_outputs = {
+            item.entity_type for item in self.required_output_entities
+        }.difference(self.allowed_entity_types)
+        if unknown_outputs:
+            raise ValueError(
+                "required v2 output entity types must be allowed route outputs"
+            )
+        unknown_relations = {
+            item.relation_type for item in self.required_output_relations
+        }.difference(self.allowed_relation_types)
+        if unknown_relations:
+            raise ValueError(
+                "required v2 output relation types must be allowed route outputs"
+            )
+        return self
+
+
+class RouteRegistryV2(StrictModel):
+    registry_version: Literal[2] = 2
+    aliases: dict[StableId, StableId] = Field(default_factory=dict)
+    routes: Annotated[tuple[RouteSpecV2, ...], Field(min_length=1)]
+
+    @model_validator(mode="after")
+    def _route_ids_are_unique(self) -> "RouteRegistryV2":
+        route_ids = [route.route_id for route in self.routes]
+        if len(set(route_ids)) != len(route_ids):
+            raise ValueError("route registry contains duplicate exact IDs")
+        return self
+
+
+RouteSpecLike: TypeAlias = RouteSpec | RouteSpecV2
+RouteRegistryLike: TypeAlias = RouteRegistry | RouteRegistryV2
 
 
 class StaleDependencyEvidence(StrictModel):

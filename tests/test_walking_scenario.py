@@ -13,6 +13,7 @@ from tests.helpers import SOURCE_ROOT  # noqa: F401
 
 from econ_theorist.cli import main
 from econ_theorist.codec import canonical_json_bytes, sha256_digest, transaction_bytes
+from econ_theorist.context import compile_context, make_context_manifest
 from econ_theorist.models import (
     Actor,
     ArtifactRegistration,
@@ -28,18 +29,25 @@ from econ_theorist.models import (
     RegisterArtifactOp,
     RelationVersion,
     RelationVersionRef,
+    RouteRun,
     ScientificStatus,
     SemanticFacetRef,
     SupersedeEntityOp,
     SupersedeRelationOp,
     Transaction,
 )
+from econ_theorist.policy import (
+    ROUTE_REGISTRY_V1_HASH,
+    load_route_registry_by_hash,
+    route_spec,
+)
 from econ_theorist.project import init_project
 from econ_theorist.runs import (
     RunError,
-    begin_run,
+    begin_run as _begin_run,
     compiled_context_path,
     context_path,
+    run_directory,
     run_path,
     transaction_bindings,
 )
@@ -59,6 +67,13 @@ from econ_theorist.runtime.replay import (
     replay,
 )
 from econ_theorist.staging import StagingError, commit_run, stage_candidate
+
+
+def begin_run(*args: object, **kwargs: object) -> RouteRun:
+    """Run Phase 1 regression scenarios under their frozen policy catalog."""
+
+    kwargs.setdefault("route_registry_hash", ROUTE_REGISTRY_V1_HASH)
+    return _begin_run(*args, **kwargs)  # type: ignore[arg-type]
 
 
 def make_entity(
@@ -178,6 +193,87 @@ class WalkingScenarioTests(unittest.TestCase):
         store.install_bytes("transactions", digest, body)
         HeadStore(self.layout).replace(snapshot.head, digest)
         return digest
+
+    def test_phase1_context_and_history_replay_under_frozen_v1_catalog(self) -> None:
+        snapshot = init_project(
+            self.root, name="Frozen v1 replay", actor_id="human_owner"
+        )
+        actor = Actor(kind="agent", actor_id="agent_historical_v1")
+        registry = load_route_registry_by_hash(ROUTE_REGISTRY_V1_HASH)
+        route = route_spec("frame.question_and_benchmarks", registry)
+        compiled = compile_context(
+            snapshot,
+            route=route,
+            actor=actor,
+            purpose="research_framing",
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            budget_units=4000,
+        )
+        manifest = make_context_manifest(
+            compiled,
+            context_manifest_id="ctx_historical_v1",
+            snapshot=snapshot,
+            route=route,
+            actor=actor,
+            purpose="research_framing",
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            focus_entity_ids=(),
+            budget_units=4000,
+            created_at="2026-07-11T00:05:00Z",
+        )
+        self.assertEqual(manifest.route_registry_hash, ROUTE_REGISTRY_V1_HASH)
+        run = RouteRun(
+            route_run_id="run_historical_v1",
+            project_id=snapshot.project_id,
+            base_revision=snapshot.head,
+            route_id=route.route_id,
+            route_version=route.route_version,
+            actor=actor,
+            purpose="research_framing",
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            context_manifest_id=manifest.context_manifest_id,
+            context_hash=compiled.context_hash,
+            status="running",
+            created_at=manifest.created_at,
+        )
+        directory = run_directory(self.layout, run.route_run_id)
+        directory.mkdir(parents=True)
+        run_path(self.layout, run.route_run_id).write_bytes(canonical_json_bytes(run))
+        context_path(self.layout, run.route_run_id).write_bytes(
+            canonical_json_bytes(manifest)
+        )
+        compiled_context_path(self.layout, run.route_run_id).write_bytes(
+            compiled.encoded
+        )
+
+        proposal = make_entity(
+            snapshot.project_id,
+            "ent_historical_v1_question",
+            "ResearchQuestion",
+            formal="Historical Phase 1 contexts remain replayable.",
+        )
+        transaction = Transaction(
+            **transaction_bindings(self.layout, run.route_run_id),
+            transaction_id="txn_historical_v1_route",
+            origin="route_run",
+            project_id=snapshot.project_id,
+            base_revision=snapshot.head,
+            route_run_id=run.route_run_id,
+            route_id=run.route_id,
+            actor=actor,
+            intent="Commit a transaction bound to the frozen Phase 1 registry.",
+            operations=(CreateEntityOp(entity=proposal),),
+            created_at="2026-07-11T00:05:01Z",
+            parent_transaction_hash=snapshot.head,
+        )
+        committed = commit_transaction(self.layout, transaction)
+        self.assertEqual(committed.status, "committed")
+        replayed = replay(self.layout)
+        self.assertEqual(replayed.head, committed.transaction_digest)
+        self.assertEqual(replayed.current_entities[proposal.entity_id], 1)
 
     def test_run_creation_status_cannot_be_rewritten_into_history(self) -> None:
         snapshot = init_project(

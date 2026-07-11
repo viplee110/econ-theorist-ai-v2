@@ -1,0 +1,166 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "TransformOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "exact_forward_map_ref": {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        "kind": {
+          "enum": [
+            "semantic_rename",
+            "label_permutation",
+            "timing_change",
+            "information_change",
+            "parameter_transform"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "operation_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Operation Id",
+          "type": "string"
+        },
+        "public_description": {
+          "minLength": 1,
+          "title": "Public Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operation_id",
+        "kind",
+        "public_description",
+        "exact_forward_map_ref"
+      ],
+      "title": "TransformOperation",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/transformed-variant-manifest.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "attempt_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Attempt Id",
+      "type": "string"
+    },
+    "base_case_manifest_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "generated_at": {
+      "minLength": 1,
+      "title": "Generated At",
+      "type": "string"
+    },
+    "hidden_inverse_map_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "implementation_freeze_ref": {
+      "$ref": "#/$defs/DecisionVersionRef"
+    },
+    "invariant_signature_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "operations": {
+      "items": {
+        "$ref": "#/$defs/TransformOperation"
+      },
+      "minItems": 1,
+      "title": "Operations",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "transformed_brief_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    }
+  },
+  "required": [
+    "attempt_id",
+    "base_case_manifest_ref",
+    "transformed_brief_ref",
+    "operations",
+    "hidden_inverse_map_ref",
+    "invariant_signature_ref",
+    "implementation_freeze_ref",
+    "generated_at"
+  ],
+  "title": "TransformedVariantManifest",
+  "type": "object"
+}

@@ -1,0 +1,5 @@
+Verify each proof obligation independently against the exact claim, assumptions, and formal model.
+Separate formal derivation, numerical checks, boundary counterexamples, and semantic interpretation evidence.
+Reject universal verification based only on finite enumeration, simulation, or numerical agreement.
+Produce a VerificationBundle that records failures and disputes as explicitly as successes.
+Cite the exact governing ResearchQuestion as transaction evidence and keep every output and relation endpoint in that gate scope.

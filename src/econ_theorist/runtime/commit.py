@@ -18,12 +18,18 @@ from typing import Literal
 
 from ..codec import canonical_json_bytes, sha256_digest, transaction_bytes
 from ..errors import RuntimeStoreError
+from ..legacy_boundary import (
+    snapshot_has_phase2_material,
+    transaction_introduces_phase2_material,
+)
 from ..models import (
     ArtifactRegistration,
+    ContextManifest,
     RegisterArtifactOp,
     Snapshot,
     Transaction,
 )
+from ..policy import ROUTE_REGISTRY_V1_HASH
 from .faults import inject_fault
 from .layout import StoreLayout
 from .lock import ExclusiveFileLock
@@ -534,6 +540,49 @@ def _prepare_provenance(
     return tuple(prepared)
 
 
+def _bound_route_registry_hash(
+    transaction: Transaction,
+    provenance: tuple[PreparedProvenance, ...],
+) -> str | None:
+    """Extract the exact catalog identity already bound by the transaction."""
+
+    if transaction.origin != "route_run":
+        return None
+    manifests = [item for item in provenance if item.label == "manifest"]
+    if len(manifests) != 1:
+        raise CandidateError("route candidate lacks one exact context manifest")
+    item = manifests[0]
+    if item.digest != transaction.context_manifest_hash:
+        raise CandidateError("route candidate binds a different context manifest")
+    try:
+        manifest = ContextManifest.model_validate_json(item.data, strict=True)
+    except ValueError as exc:
+        raise CandidateError("route candidate manifest fails its strict schema") from exc
+    if canonical_json_bytes(manifest) != item.data:
+        raise CandidateError("route candidate manifest is not canonical JSON")
+    return manifest.route_registry_hash
+
+
+def _validate_live_registry_boundary(
+    base_snapshot: Snapshot | None,
+    transaction: Transaction,
+    route_registry_hash: str | None,
+) -> None:
+    """Reject live policy downgrade without changing historical replay."""
+
+    if route_registry_hash != ROUTE_REGISTRY_V1_HASH:
+        return
+    if base_snapshot is not None and snapshot_has_phase2_material(base_snapshot):
+        raise CandidateError(
+            "frozen v1 routes are replay-only after Phase 2 material enters a project"
+        )
+    if transaction_introduces_phase2_material(transaction):
+        raise CandidateError(
+            "frozen v1 live writes cannot create or mutate packed Phase 2 "
+            "entities or register blind candidate locks"
+        )
+
+
 def _revalidate_prepared_payloads(
     prepared: PreparedCandidate,
 ) -> None:
@@ -668,14 +717,22 @@ def preflight_candidate(
         raise CandidateBaseError(
             f"replay returned {base_snapshot.head}, expected pinned head {head}"
         )
-    candidate_snapshot = validate_candidate(base_snapshot, transaction)
+    provenance = _prepare_provenance(layout, transaction)
+    route_registry_hash = _bound_route_registry_hash(transaction, provenance)
+    _validate_live_registry_boundary(
+        base_snapshot, transaction, route_registry_hash
+    )
+    candidate_snapshot = validate_candidate(
+        base_snapshot,
+        transaction,
+        route_registry_hash=route_registry_hash,
+    )
     if candidate_snapshot.head != digest:
         raise CandidateError(
             "candidate validator returned a snapshot for a different transaction"
         )
 
     artifacts = _prepare_artifacts(layout, transaction, staged_artifacts)
-    provenance = _prepare_provenance(layout, transaction)
     conflicts = _validate_human_artifacts(layout, base_snapshot, artifacts)
     inject_fault("after_staging")
     prepared = PreparedCandidate(
@@ -754,7 +811,18 @@ def commit_prepared(
             _assert_virgin_store(layout)
         replay, validate_candidate = _replay_api()
         base_snapshot = None if actual_head is None else replay(layout)
-        committed_snapshot = validate_candidate(base_snapshot, transaction)
+        locked_provenance = _prepare_provenance(layout, transaction)
+        route_registry_hash = _bound_route_registry_hash(
+            transaction, locked_provenance
+        )
+        _validate_live_registry_boundary(
+            base_snapshot, transaction, route_registry_hash
+        )
+        committed_snapshot = validate_candidate(
+            base_snapshot,
+            transaction,
+            route_registry_hash=route_registry_hash,
+        )
         if committed_snapshot.head != digest:
             raise CandidateError(
                 "lock-time validation produced a different transaction digest"
@@ -782,7 +850,6 @@ def commit_prepared(
             raise CandidateArtifactError(
                 "staged artifact bytes changed after candidate preflight"
             )
-        locked_provenance = _prepare_provenance(layout, transaction)
         if locked_provenance != prepared.provenance:
             raise CandidateError(
                 "route/context provenance changed after candidate preflight"

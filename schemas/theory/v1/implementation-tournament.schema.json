@@ -1,0 +1,182 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "ImplementationPairComparison": {
+      "additionalProperties": false,
+      "properties": {
+        "fidelity_difference": {
+          "minLength": 1,
+          "title": "Fidelity Difference",
+          "type": "string"
+        },
+        "left_model_ref": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "mapping_transparency_difference": {
+          "minLength": 1,
+          "title": "Mapping Transparency Difference",
+          "type": "string"
+        },
+        "minimality_difference": {
+          "minLength": 1,
+          "title": "Minimality Difference",
+          "type": "string"
+        },
+        "proof_risk_difference": {
+          "minLength": 1,
+          "title": "Proof Risk Difference",
+          "type": "string"
+        },
+        "right_model_ref": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "theorem_leverage_difference": {
+          "minLength": 1,
+          "title": "Theorem Leverage Difference",
+          "type": "string"
+        }
+      },
+      "required": [
+        "left_model_ref",
+        "right_model_ref",
+        "fidelity_difference",
+        "minimality_difference",
+        "proof_risk_difference",
+        "mapping_transparency_difference",
+        "theorem_leverage_difference"
+      ],
+      "title": "ImplementationPairComparison",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/implementation-tournament.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "candidate_model_refs": {
+      "items": {
+        "$ref": "#/$defs/EntityVersionRef"
+      },
+      "minItems": 1,
+      "title": "Candidate Model Refs",
+      "type": "array"
+    },
+    "comparisons": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ImplementationPairComparison"
+      },
+      "title": "Comparisons",
+      "type": "array"
+    },
+    "contrast_model_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EntityVersionRef"
+      },
+      "title": "Contrast Model Refs",
+      "type": "array"
+    },
+    "contrast_waiver_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "economic_argument_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "proposed_selected_model_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "selected_mechanism_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "selection_rationale": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Selection Rationale"
+    }
+  },
+  "required": [
+    "selected_mechanism_ref",
+    "economic_argument_graph_ref",
+    "candidate_model_refs"
+  ],
+  "title": "ImplementationTournament",
+  "type": "object"
+}

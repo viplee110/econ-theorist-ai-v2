@@ -1,0 +1,201 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/verification-record.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "assumption_map_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "checked_at": {
+      "minLength": 1,
+      "title": "Checked At",
+      "type": "string"
+    },
+    "checked_refs": {
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          {
+            "$ref": "#/$defs/ArtifactDependencyRef"
+          },
+          {
+            "$ref": "#/$defs/DecisionVersionRef"
+          }
+        ]
+      },
+      "minItems": 1,
+      "title": "Checked Refs",
+      "type": "array"
+    },
+    "claim_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "evidence_refs": {
+      "items": {
+        "$ref": "#/$defs/ArtifactDependencyRef"
+      },
+      "minItems": 1,
+      "title": "Evidence Refs",
+      "type": "array"
+    },
+    "formal_model_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "limitations": {
+      "minLength": 1,
+      "title": "Limitations",
+      "type": "string"
+    },
+    "method": {
+      "enum": [
+        "analytic_proof",
+        "formal_proof",
+        "symbolic_identity",
+        "exhaustive_finite_proof",
+        "finite_example",
+        "enumeration",
+        "simulation",
+        "counterexample",
+        "semantic_audit",
+        "mechanism_audit"
+      ],
+      "title": "Method",
+      "type": "string"
+    },
+    "obligation_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "outcome": {
+      "enum": [
+        "discharged",
+        "failed",
+        "inconclusive",
+        "falsified"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "verifier": {
+      "$ref": "#/$defs/Actor"
+    }
+  },
+  "required": [
+    "obligation_ref",
+    "claim_graph_ref",
+    "formal_model_ref",
+    "assumption_map_ref",
+    "verifier",
+    "method",
+    "outcome",
+    "checked_refs",
+    "evidence_refs",
+    "limitations",
+    "checked_at"
+  ],
+  "title": "VerificationRecord",
+  "type": "object"
+}

@@ -17,7 +17,13 @@ from .models import (
     Transaction,
 )
 from .policy import AUTHORITY_RANK, route_spec
-from .runs import read_run, run_directory, safe_run_id, transaction_bindings
+from .runs import (
+    read_context,
+    read_run,
+    run_directory,
+    safe_run_id,
+    transaction_bindings,
+)
 from .runtime import StoreLayout, atomic_write_text, fsync_directory
 from .runtime.commit import CommitResult, StagedArtifact, commit_transaction
 from .runtime.layout import UnsafeStorePath, assert_safe_store_path
@@ -110,8 +116,16 @@ def _load_transaction(path: str | Path) -> Transaction:
     return transaction
 
 
-def _validate_route_ceiling(run: RouteRun, transaction: Transaction) -> None:
-    route = route_spec(run.route_id)
+def _validate_route_ceiling(
+    layout: StoreLayout, run: RouteRun, transaction: Transaction
+) -> None:
+    manifest = read_context(layout, run.route_run_id)
+    from .policy import load_route_registry_by_hash
+
+    route = route_spec(
+        run.route_id,
+        load_route_registry_by_hash(manifest.route_registry_hash),
+    )
     if transaction.origin != "route_run":
         raise StagingError("scientific route candidates require origin=route_run")
     for operation in transaction.operations:
@@ -170,7 +184,7 @@ def stage_candidate(
         raise StagingError(
             "candidate must match the run ID, project, pinned head, and actor"
         )
-    _validate_route_ceiling(run, transaction)
+    _validate_route_ceiling(layout, run, transaction)
     _validate_provenance_binding(layout, run, transaction)
     body = transaction_bytes(transaction)
     digest = sha256_digest(body)
@@ -254,7 +268,7 @@ def commit_run(
         or transaction.actor != run.actor
     ):
         raise StagingError("staged candidate no longer matches its immutable run")
-    _validate_route_ceiling(run, transaction)
+    _validate_route_ceiling(layout, run, transaction)
     _validate_provenance_binding(layout, run, transaction)
     staged: list[StagedArtifact] = []
     for operation in transaction.operations:

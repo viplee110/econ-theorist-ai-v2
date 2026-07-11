@@ -1,0 +1,255 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/validated-argument-package.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "absorption_assessment_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "assumption_map_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "benchmark_set_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "claim_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "closest_theory_map_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "economic_argument_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "economic_nugget": {
+      "minLength": 1,
+      "title": "Economic Nugget",
+      "type": "string"
+    },
+    "evaluation_attempt_id": {
+      "anyOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Evaluation Attempt Id"
+    },
+    "example_suite_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "formal_model_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "formalization_map_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "g5_dossier_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "generator_actor": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Actor"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "implementation_tournament_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "novelty_claim_mode": {
+      "enum": [
+        "qualified",
+        "none"
+      ],
+      "title": "Novelty Claim Mode",
+      "type": "string"
+    },
+    "pre_result_brief_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "prediction_register_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "primitive_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "prior_gate_decision_refs": {
+      "items": {
+        "$ref": "#/$defs/DecisionVersionRef"
+      },
+      "maxItems": 4,
+      "minItems": 4,
+      "title": "Prior Gate Decision Refs",
+      "type": "array"
+    },
+    "prohibited_overclaims": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Prohibited Overclaims",
+      "type": "array"
+    },
+    "qualified_novelty": {
+      "minLength": 1,
+      "title": "Qualified Novelty",
+      "type": "string"
+    },
+    "question_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "release_mode": {
+      "enum": [
+        "production_candidate",
+        "evaluation_only"
+      ],
+      "title": "Release Mode",
+      "type": "string"
+    },
+    "result_portfolio_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "selected_mechanism_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "serious_rejected_rival_refs": {
+      "items": {
+        "$ref": "#/$defs/EntityVersionRef"
+      },
+      "title": "Serious Rejected Rival Refs",
+      "type": "array"
+    },
+    "unresolved_risks": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Unresolved Risks",
+      "type": "array"
+    },
+    "verification_bundle_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    }
+  },
+  "required": [
+    "question_ref",
+    "benchmark_set_ref",
+    "primitive_graph_ref",
+    "selected_mechanism_ref",
+    "serious_rejected_rival_refs",
+    "prediction_register_ref",
+    "example_suite_ref",
+    "economic_argument_graph_ref",
+    "implementation_tournament_ref",
+    "formal_model_ref",
+    "formalization_map_ref",
+    "assumption_map_ref",
+    "claim_graph_ref",
+    "verification_bundle_ref",
+    "closest_theory_map_ref",
+    "absorption_assessment_ref",
+    "result_portfolio_ref",
+    "prior_gate_decision_refs",
+    "g5_dossier_ref",
+    "economic_nugget",
+    "qualified_novelty",
+    "unresolved_risks",
+    "prohibited_overclaims",
+    "release_mode",
+    "novelty_claim_mode"
+  ],
+  "title": "ValidatedArgumentPackage",
+  "type": "object"
+}

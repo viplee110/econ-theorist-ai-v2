@@ -1,0 +1,198 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "FormalObject": {
+      "additionalProperties": false,
+      "properties": {
+        "central": {
+          "title": "Central",
+          "type": "boolean"
+        },
+        "definition": {
+          "minLength": 1,
+          "title": "Definition",
+          "type": "string"
+        },
+        "object_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Object Id",
+          "type": "string"
+        },
+        "object_kind": {
+          "enum": [
+            "agent",
+            "state",
+            "parameter",
+            "choice",
+            "strategy",
+            "information",
+            "belief",
+            "constraint",
+            "payoff",
+            "technology",
+            "solution_object",
+            "outcome"
+          ],
+          "title": "Object Kind",
+          "type": "string"
+        },
+        "symbol": {
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "symbol",
+        "object_kind",
+        "definition",
+        "central"
+      ],
+      "title": "FormalObject",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/theory/v1/formal-model.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "choice_or_strategy_spaces": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Choice Or Strategy Spaces",
+      "type": "array"
+    },
+    "feasibility": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Feasibility",
+      "type": "array"
+    },
+    "formal_objects": {
+      "items": {
+        "$ref": "#/$defs/FormalObject"
+      },
+      "minItems": 1,
+      "title": "Formal Objects",
+      "type": "array"
+    },
+    "full_specification_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "information_and_beliefs": {
+      "default": [],
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Information And Beliefs",
+      "type": "array"
+    },
+    "outcome_definitions": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Outcome Definitions",
+      "type": "array"
+    },
+    "primitive_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "question_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "selected_mechanism_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "solution_concept": {
+      "minLength": 1,
+      "title": "Solution Concept",
+      "type": "string"
+    },
+    "timing": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Timing",
+      "type": "array"
+    }
+  },
+  "required": [
+    "question_ref",
+    "selected_mechanism_ref",
+    "primitive_graph_ref",
+    "formal_objects",
+    "timing",
+    "choice_or_strategy_spaces",
+    "feasibility",
+    "solution_concept",
+    "outcome_definitions",
+    "full_specification_ref"
+  ],
+  "title": "FormalModel",
+  "type": "object"
+}

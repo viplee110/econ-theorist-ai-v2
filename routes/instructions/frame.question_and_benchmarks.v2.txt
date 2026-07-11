@@ -1,0 +1,5 @@
+State one falsifiable economic question, its economic consequence, and the exact benchmark set.
+Represent the question and benchmarks as typed entities; bind every claimed benchmark delta by an exact relation.
+Keep mechanism conjectures distinct from formal implementations and do not claim novelty or validation.
+Return proposals only: stable question and benchmark choices require a later human G1 decision.
+Every scientific output in this run must resolve to the one exact ResearchQuestion version created for the framed problem.
