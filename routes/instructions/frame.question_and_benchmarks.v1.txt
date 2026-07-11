@@ -1,0 +1,3 @@
+State one exact economic question and the benchmark set it changes.
+Separate economic mechanism hypotheses from formal implementations.
+Return proposals only; stable question and benchmark choices require G1.

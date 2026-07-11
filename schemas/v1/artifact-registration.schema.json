@@ -1,0 +1,145 @@
+{
+  "$defs": {
+    "ArtifactVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version"
+      ],
+      "title": "ArtifactVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/v1/artifact-registration.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "access_compartments": {
+      "default": [
+        "project_research"
+      ],
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Access Compartments",
+      "type": "array"
+    },
+    "artifact_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Artifact Id",
+      "type": "string"
+    },
+    "byte_size": {
+      "minimum": 0,
+      "title": "Byte Size",
+      "type": "integer"
+    },
+    "content_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "created_at": {
+      "minLength": 1,
+      "title": "Created At",
+      "type": "string"
+    },
+    "expected_base_hash": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expected Base Hash"
+    },
+    "human_owned": {
+      "default": false,
+      "title": "Human Owned",
+      "type": "boolean"
+    },
+    "logical_name": {
+      "minLength": 1,
+      "title": "Logical Name",
+      "type": "string"
+    },
+    "logical_path": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Logical Path"
+    },
+    "media_type": {
+      "minLength": 1,
+      "title": "Media Type",
+      "type": "string"
+    },
+    "privacy": {
+      "default": "project_private",
+      "enum": [
+        "public",
+        "project_private",
+        "restricted",
+        "local_only"
+      ],
+      "title": "Privacy",
+      "type": "string"
+    },
+    "project_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "supersedes": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactVersionRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "version": {
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "artifact_id",
+    "version",
+    "project_id",
+    "logical_name",
+    "media_type",
+    "content_hash",
+    "byte_size",
+    "created_at"
+  ],
+  "title": "ArtifactRegistration",
+  "type": "object"
+}

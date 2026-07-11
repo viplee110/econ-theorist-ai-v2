@@ -2,7 +2,9 @@
 
 ## Current phase
 
-This repository is in Architecture v0.1. Until the architecture is reviewed, prefer design documents, schemas-as-specification, fixtures, and evaluation definitions over production implementation.
+This repository is implementing the Phase 1 walking substrate against Architecture v0.1. Keep changes inside the executable contract in `docs/implementation/phase1_contract.md` until the Phase 1 branch is reviewed. Do not add Phase 2 discovery prompts, model-provider calls, manuscript generation, multi-agent orchestration, databases, or UI scaffolding to solve a Phase 1 problem.
+
+The canonical Phase 1 verification command is `python -m unittest discover -s tests -v`; committed JSON schemas must also match `python scripts/export_schemas.py --check`.
 
 ## Scope
 

@@ -1,0 +1,473 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactPrivacySubject": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact": {
+          "$ref": "#/$defs/ArtifactVersionRef"
+        },
+        "subject_type": {
+          "const": "artifact",
+          "default": "artifact",
+          "title": "Subject Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact"
+      ],
+      "title": "ArtifactPrivacySubject",
+      "type": "object"
+    },
+    "ArtifactVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version"
+      ],
+      "title": "ArtifactVersionRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityPrivacySubject": {
+      "additionalProperties": false,
+      "properties": {
+        "entity": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "subject_type": {
+          "const": "entity",
+          "default": "entity",
+          "title": "Subject Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity"
+      ],
+      "title": "EntityPrivacySubject",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "PrivacyChange": {
+      "additionalProperties": false,
+      "description": "One exact requested release of an immutable canonical object version.",
+      "properties": {
+        "from_privacy": {
+          "enum": [
+            "public",
+            "project_private",
+            "restricted",
+            "local_only"
+          ],
+          "title": "From Privacy",
+          "type": "string"
+        },
+        "subject": {
+          "discriminator": {
+            "mapping": {
+              "artifact": "#/$defs/ArtifactPrivacySubject",
+              "entity": "#/$defs/EntityPrivacySubject",
+              "relation": "#/$defs/RelationPrivacySubject"
+            },
+            "propertyName": "subject_type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/EntityPrivacySubject"
+            },
+            {
+              "$ref": "#/$defs/RelationPrivacySubject"
+            },
+            {
+              "$ref": "#/$defs/ArtifactPrivacySubject"
+            }
+          ],
+          "title": "Subject"
+        },
+        "to_privacy": {
+          "enum": [
+            "public",
+            "project_private",
+            "restricted",
+            "local_only"
+          ],
+          "title": "To Privacy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject",
+        "from_privacy",
+        "to_privacy"
+      ],
+      "title": "PrivacyChange",
+      "type": "object"
+    },
+    "RelationPrivacySubject": {
+      "additionalProperties": false,
+      "properties": {
+        "relation": {
+          "$ref": "#/$defs/RelationVersionRef"
+        },
+        "subject_type": {
+          "const": "relation",
+          "default": "relation",
+          "title": "Subject Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "relation"
+      ],
+      "title": "RelationPrivacySubject",
+      "type": "object"
+    },
+    "RelationVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "relation_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Relation Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "relation_id",
+        "version"
+      ],
+      "title": "RelationVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/v1/decision.schema.json",
+  "additionalProperties": false,
+  "description": "Immutable authority evidence; effective_revision is replay-derived.",
+  "properties": {
+    "access_compartments": {
+      "default": [
+        "project_research"
+      ],
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Access Compartments",
+      "type": "array"
+    },
+    "affected_scopes": {
+      "default": [],
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Affected Scopes",
+      "type": "array"
+    },
+    "decided_at": {
+      "minLength": 1,
+      "title": "Decided At",
+      "type": "string"
+    },
+    "decider": {
+      "$ref": "#/$defs/Actor"
+    },
+    "decision_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Decision Id",
+      "type": "string"
+    },
+    "decision_kind": {
+      "enum": [
+        "G1_question_benchmark",
+        "G2_mechanism",
+        "G3_formal_base",
+        "G4_result_investment",
+        "G5_argument_validation",
+        "primitive_promotion",
+        "solution_concept",
+        "main_result_scope",
+        "novelty_contribution",
+        "argument_spine",
+        "narrative_material_order",
+        "theory_mode",
+        "ambition",
+        "field",
+        "audience",
+        "venue_overlay",
+        "submission_constraints",
+        "target_profile",
+        "voice_charter",
+        "manuscript_version_promotion",
+        "privacy_declassification",
+        "external_release",
+        "submission_handoff",
+        "external_communication",
+        "destructive_cleanup"
+      ],
+      "title": "Decision Kind",
+      "type": "string"
+    },
+    "dissent_refs": {
+      "default": [],
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Dissent Refs",
+      "type": "array"
+    },
+    "evidence_refs": {
+      "default": [],
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Evidence Refs",
+      "type": "array"
+    },
+    "machine_outcome": {
+      "anyOf": [
+        {
+          "enum": [
+            "approve",
+            "deny"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Machine Outcome"
+    },
+    "options": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Options",
+      "type": "array"
+    },
+    "privacy": {
+      "default": "project_private",
+      "enum": [
+        "public",
+        "project_private",
+        "restricted",
+        "local_only"
+      ],
+      "title": "Privacy",
+      "type": "string"
+    },
+    "privacy_change": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PrivacyChange"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "project_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "question": {
+      "minLength": 1,
+      "title": "Question",
+      "type": "string"
+    },
+    "rationale": {
+      "minLength": 1,
+      "title": "Rationale",
+      "type": "string"
+    },
+    "recommendation": {
+      "minLength": 1,
+      "title": "Recommendation",
+      "type": "string"
+    },
+    "required_authority": {
+      "enum": [
+        "L0",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "title": "Required Authority",
+      "type": "string"
+    },
+    "scope_ref": {
+      "anyOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Scope Ref"
+    },
+    "selected_option": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Selected Option"
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "provisional",
+        "confirmed",
+        "rejected",
+        "superseded"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "subject_ref": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Subject Ref",
+      "type": "string"
+    },
+    "supersedes": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DecisionVersionRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "unresolved_risks": {
+      "default": [],
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Unresolved Risks",
+      "type": "array"
+    },
+    "version": {
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "decision_id",
+    "version",
+    "project_id",
+    "decision_kind",
+    "subject_ref",
+    "question",
+    "options",
+    "recommendation",
+    "rationale",
+    "required_authority",
+    "decider",
+    "decided_at",
+    "status"
+  ],
+  "title": "Decision",
+  "type": "object"
+}

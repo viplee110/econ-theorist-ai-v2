@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "econ-theorist-ai"
+version = "0.1.0"
+description = "A theory-only, provenance-preserving research substrate"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Yang Chen" }]
+dependencies = [
+  "pydantic==2.13.4",
+  "pydantic-core==2.46.4",
+]
+
+[project.scripts]
+etai = "econ_theorist.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.data-files]
+"share/econ-theorist/routes" = ["routes/registry.v1.json"]
+"share/econ-theorist/routes/instructions" = [
+  "routes/instructions/frame.question_and_benchmarks.v1.txt",
+  "routes/instructions/repair.dependency.v1.txt",
+  "routes/instructions/theory_kernel.v1.json",
+]

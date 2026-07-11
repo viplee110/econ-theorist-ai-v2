@@ -1,0 +1,272 @@
+"""Versioned authority and exact-route policies for Phase 1."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from functools import lru_cache
+from importlib.metadata import PackageNotFoundError, distribution, version as package_version
+from pathlib import Path
+from types import MappingProxyType
+from typing import Any, Mapping
+
+from .codec import canonical_json_bytes, sha256_digest
+from .errors import AuthorityError, RegistryError
+from .models import (
+    FACET_ORDER,
+    AuthorityLevel,
+    Decision,
+    DecisionKind,
+    Facet,
+    RouteRegistry,
+    RouteSpec,
+)
+
+FACETS: tuple[Facet, ...] = FACET_ORDER
+DECISION_REGISTRY_VERSION = 1
+ROUTE_REGISTRY_HASH = "d9c84001420bd63a82418ee3cfe1776895be69936e921aa8c4790a8966aa6913"
+SELECTOR_VERSION = "context_selector.v1"
+KERNEL_VERSION = "theory_kernel.v1"
+KERNEL_HASH = "1670162bdca5e8b31017c2cb42c48d96bfc627921361904a3c8fe67ee94aca71"
+ISOLATION_POLICY = "isolated_route.v1"
+VALIDATOR_VERSION = "pydantic_2.13.4"
+PINNED_PYDANTIC_VERSION = "2.13.4"
+PINNED_PYDANTIC_CORE_VERSION = "2.46.4"
+
+
+@dataclass(frozen=True, slots=True)
+class DecisionRule:
+    minimum_authority: AuthorityLevel
+    requires_human: bool = True
+
+
+_L2_KINDS: tuple[DecisionKind, ...] = (
+    "G1_question_benchmark",
+    "G2_mechanism",
+    "G3_formal_base",
+    "G4_result_investment",
+    "G5_argument_validation",
+    "primitive_promotion",
+    "solution_concept",
+    "main_result_scope",
+    "novelty_contribution",
+    "argument_spine",
+    "narrative_material_order",
+    "theory_mode",
+    "ambition",
+    "field",
+    "audience",
+    "venue_overlay",
+    "submission_constraints",
+    "target_profile",
+    "voice_charter",
+    "manuscript_version_promotion",
+    "privacy_declassification",
+)
+_L3_KINDS: tuple[DecisionKind, ...] = (
+    "external_release",
+    "submission_handoff",
+    "external_communication",
+    "destructive_cleanup",
+)
+
+DECISION_REGISTRY: Mapping[DecisionKind, DecisionRule] = MappingProxyType(
+    {
+        **{kind: DecisionRule("L2") for kind in _L2_KINDS},
+        **{kind: DecisionRule("L3") for kind in _L3_KINDS},
+    }
+)
+DECISION_POLICY: Mapping[DecisionKind, AuthorityLevel] = MappingProxyType(
+    {kind: rule.minimum_authority for kind, rule in DECISION_REGISTRY.items()}
+)
+
+AUTHORITY_RANK: Mapping[AuthorityLevel, int] = MappingProxyType(
+    {"L0": 0, "L1": 1, "L2": 2, "L3": 3}
+)
+
+
+def validate_runtime_validator() -> None:
+    """Fail closed when canonical parsing runs under an unpinned validator."""
+
+    try:
+        actual_pydantic = package_version("pydantic")
+        actual_core = package_version("pydantic-core")
+    except PackageNotFoundError as exc:
+        raise RegistryError("the pinned canonical validator is unavailable") from exc
+    if (
+        actual_pydantic != PINNED_PYDANTIC_VERSION
+        or actual_core != PINNED_PYDANTIC_CORE_VERSION
+    ):
+        raise RegistryError(
+            "canonical validator mismatch: expected "
+            f"pydantic {PINNED_PYDANTIC_VERSION} / pydantic-core "
+            f"{PINNED_PYDANTIC_CORE_VERSION}, got pydantic {actual_pydantic} / "
+            f"pydantic-core {actual_core}"
+        )
+
+
+def minimum_authority_for_decision(kind: DecisionKind) -> AuthorityLevel:
+    try:
+        return DECISION_REGISTRY[kind].minimum_authority
+    except KeyError as exc:
+        raise AuthorityError(f"unregistered Decision kind: {kind}") from exc
+
+
+def validate_decision_authority(decision: Decision) -> None:
+    rule = DECISION_REGISTRY.get(decision.decision_kind)
+    if rule is None:
+        raise AuthorityError(f"unregistered Decision kind: {decision.decision_kind}")
+    if AUTHORITY_RANK[decision.required_authority] < AUTHORITY_RANK[rule.minimum_authority]:
+        raise AuthorityError(
+            f"{decision.decision_kind} requires at least {rule.minimum_authority}"
+        )
+    if (
+        rule.requires_human
+        and decision.status != "proposed"
+        and decision.decider.kind != "human"
+    ):
+        raise AuthorityError(
+            f"effective {decision.decision_kind} Decisions require a human decider"
+        )
+
+
+CORE_ROUTE_IDS: tuple[str, ...] = (
+    "frame.question_and_benchmarks",
+    "decompose.primitives",
+    "tournament.mechanisms",
+    "freeze.predictions",
+    "lab.micro_examples_and_ablations",
+    "promote.mechanism",
+    "tournament.implementations",
+    "promote.formal_base",
+    "discover.claims_and_boundaries",
+    "verify.claims_proofs_and_interpretation",
+    "audit.assumptions_generality_and_absorption",
+    "curate.result_portfolio",
+    "validate.argument_package",
+    "design.reader_path",
+    "compose.manuscript_unit",
+    "review.manuscript_unit",
+    "repair.dependency",
+)
+ENABLED_ROUTE_IDS = frozenset(
+    {"frame.question_and_benchmarks", "repair.dependency"}
+)
+
+
+def _default_registry_path() -> Path:
+    return _routes_root() / "registry.v1.json"
+
+
+def _routes_root() -> Path:
+    source_root = Path(__file__).resolve().parents[2] / "routes"
+    if (source_root / "registry.v1.json").is_file():
+        return source_root
+    try:
+        installed_root = Path(
+            distribution("econ-theorist-ai").locate_file(
+                "share/econ-theorist/routes"
+            )
+        )
+    except PackageNotFoundError as exc:
+        raise RegistryError(
+            "cannot locate source or installed route policy resources"
+        ) from exc
+    if not installed_root.is_dir():
+        raise RegistryError(
+            f"installed route policy resources are missing: {installed_root}"
+        )
+    return installed_root
+
+
+def validate_route_registry(registry: RouteRegistry) -> RouteRegistry:
+    ids = tuple(route.route_id for route in registry.routes)
+    if ids != CORE_ROUTE_IDS:
+        raise RegistryError("route registry must contain the exact ordered core IDs")
+    if registry.aliases:
+        raise RegistryError("Phase 1 registry has no implicit route aliases")
+    enabled = {route.route_id for route in registry.routes if route.availability == "enabled"}
+    if enabled != ENABLED_ROUTE_IDS:
+        raise RegistryError("only framing and dependency repair may be enabled in slice 1")
+    if any(route.authority_ceiling != "L1" for route in registry.routes):
+        raise RegistryError("Phase 1 routes may propose but not exercise L2/L3 authority")
+    if sha256_digest(canonical_json_bytes(registry)) != ROUTE_REGISTRY_HASH:
+        raise RegistryError("route registry differs from the pinned Phase 1 registry")
+    return registry
+
+
+@lru_cache(maxsize=4)
+def load_route_registry(path: str | Path | None = None) -> RouteRegistry:
+    validate_runtime_validator()
+    source = Path(path) if path is not None else _default_registry_path()
+    try:
+        payload = source.read_bytes()
+    except OSError as exc:
+        raise RegistryError(f"cannot read route registry: {source}") from exc
+    try:
+        registry = RouteRegistry.model_validate_json(payload, strict=True)
+    except ValueError as exc:
+        raise RegistryError(f"invalid route registry: {source}") from exc
+    return validate_route_registry(registry)
+
+
+def route_spec(route_id: str, registry: RouteRegistry | None = None) -> RouteSpec:
+    active_registry = registry or load_route_registry()
+    for route in active_registry.routes:
+        if route.route_id == route_id:
+            return route
+    raise RegistryError(f"unknown exact route ID: {route_id}")
+
+
+def instruction_bundle_bytes(route: RouteSpec) -> bytes:
+    """Load one enabled route's exact, content-addressed instruction bundle."""
+
+    if route.instruction_bundle_id is None or route.instruction_bundle_hash is None:
+        raise RegistryError(f"route {route.route_id!r} has no instruction bundle")
+    expected_id = f"{route.route_id}.v{route.route_version}"
+    if route.instruction_bundle_id != expected_id:
+        raise RegistryError(
+            f"route {route.route_id!r} has a noncanonical instruction bundle ID"
+        )
+    path = _routes_root() / "instructions" / f"{route.instruction_bundle_id}.txt"
+    try:
+        payload = path.read_bytes()
+    except OSError as exc:
+        raise RegistryError(f"cannot read route instruction bundle: {path}") from exc
+    if sha256_digest(payload) != route.instruction_bundle_hash:
+        raise RegistryError(
+            f"route instruction bundle hash mismatch: {route.instruction_bundle_id}"
+        )
+    try:
+        text = payload.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise RegistryError("route instruction bundle is not UTF-8") from exc
+    if "\r" in text or "\x00" in text:
+        raise RegistryError("route instruction bundle is not canonical LF UTF-8 text")
+    if not text.strip():
+        raise RegistryError("route instruction bundle is empty")
+    return payload
+
+
+@lru_cache(maxsize=1)
+def theory_kernel() -> Mapping[str, Any]:
+    """Load the independently versioned always-on theory kernel."""
+
+    path = _routes_root() / "instructions" / f"{KERNEL_VERSION}.json"
+    try:
+        payload = path.read_bytes()
+    except OSError as exc:
+        raise RegistryError(f"cannot read theory kernel: {path}") from exc
+    if sha256_digest(payload) != KERNEL_HASH:
+        raise RegistryError("theory kernel hash does not match the pinned policy")
+    import json
+
+    try:
+        decoded = json.loads(payload.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError) as exc:
+        raise RegistryError("theory kernel is not canonical UTF-8 JSON") from exc
+    canonical_payload = payload[:-1] if payload.endswith(b"\n") else payload
+    if not isinstance(decoded, dict) or canonical_json_bytes(decoded) != canonical_payload:
+        raise RegistryError(
+            "theory kernel must be one canonical JSON object with at most one LF"
+        )
+    return MappingProxyType(decoded)

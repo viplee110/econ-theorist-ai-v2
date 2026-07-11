@@ -1,8 +1,8 @@
 # Implementation plan
 
-Status: Architecture v0.1
+Status: Architecture v0.1 with Phase 1 implementation candidate
 
-Current phase: Phase 0 — architecture freeze
+Current phase: Phase 1 — walking substrate
 
 ## 1. Delivery strategy
 
@@ -41,6 +41,8 @@ The first useful system is not a manuscript generator. It is a reliable theory-p
 ## 3. Phase 1 — walking substrate
 
 Build the smallest reliable runtime.
+
+Implementation status: the walking candidate and its adversarial acceptance suite are implemented on `agent/phase1-walking-substrate`. It remains a candidate until branch review and does not imply that later theory, authoring, or release capabilities exist.
 
 ### Initial persistent objects
 
@@ -167,6 +169,8 @@ Add only after the single-agent vertical slice is stable:
 ## 8. Phase 6 — comparative evaluation and hardening
 
 Run the preregistered compiler-only, end-to-end discovery, and revision comparisons on held-out theory cases under the full protocol in `evaluation.md`. Perform v2 ablations for the economic argument representation, reader contracts, mechanism/result packets, dependency invalidation, and craft retrieval.
+
+Before any external-release route is enabled, add and verify replayable private backups plus redacted public bundles/receipts on a different machine path. The Phase 1 walking candidate performs no export or external action.
 
 ### Exit criteria
 

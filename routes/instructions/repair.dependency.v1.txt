@@ -1,0 +1,3 @@
+Repair the named stale dependency at its exact upstream and downstream facets.
+Preserve claim quantifiers, assumption scope, dissent, and authority evidence.
+Return a candidate and unresolved conflicts; do not silently widen the repair.

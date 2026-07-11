@@ -1,0 +1,243 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/v1/context-manifest.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "actor": {
+      "$ref": "#/$defs/Actor"
+    },
+    "budget_units": {
+      "minimum": 1,
+      "title": "Budget Units",
+      "type": "integer"
+    },
+    "compartments": {
+      "default": [],
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Compartments",
+      "type": "array"
+    },
+    "context_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Context Hash",
+      "type": "string"
+    },
+    "context_manifest_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Context Manifest Id",
+      "type": "string"
+    },
+    "created_at": {
+      "minLength": 1,
+      "title": "Created At",
+      "type": "string"
+    },
+    "decision_registry_version": {
+      "minimum": 1,
+      "title": "Decision Registry Version",
+      "type": "integer"
+    },
+    "focus_entity_ids": {
+      "default": [],
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Focus Entity Ids",
+      "type": "array"
+    },
+    "instruction_bundle_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Instruction Bundle Hash",
+      "type": "string"
+    },
+    "instruction_bundle_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Instruction Bundle Id",
+      "type": "string"
+    },
+    "isolation_policy": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Isolation Policy",
+      "type": "string"
+    },
+    "kernel_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Kernel Hash",
+      "type": "string"
+    },
+    "kernel_version": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Kernel Version",
+      "type": "string"
+    },
+    "manifest_schema": {
+      "const": 1,
+      "default": 1,
+      "title": "Manifest Schema",
+      "type": "integer"
+    },
+    "omissions": {
+      "default": [],
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Omissions",
+      "type": "array"
+    },
+    "privacy_clearance": {
+      "default": "project_private",
+      "enum": [
+        "public",
+        "project_private",
+        "restricted",
+        "local_only"
+      ],
+      "title": "Privacy Clearance",
+      "type": "string"
+    },
+    "project_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "purpose": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Purpose",
+      "type": "string"
+    },
+    "route_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Route Id",
+      "type": "string"
+    },
+    "route_registry_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Route Registry Hash",
+      "type": "string"
+    },
+    "route_version": {
+      "minimum": 1,
+      "title": "Route Version",
+      "type": "integer"
+    },
+    "selected_entity_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EntityVersionRef"
+      },
+      "title": "Selected Entity Refs",
+      "type": "array"
+    },
+    "selector_version": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Selector Version",
+      "type": "string"
+    },
+    "source_head": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Source Head",
+      "type": "string"
+    },
+    "tokenizer_id": {
+      "const": "etai_lexical_v1",
+      "default": "etai_lexical_v1",
+      "title": "Tokenizer Id",
+      "type": "string"
+    },
+    "used_units": {
+      "minimum": 0,
+      "title": "Used Units",
+      "type": "integer"
+    },
+    "validator_version": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Validator Version",
+      "type": "string"
+    },
+    "write_allowlist": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Write Allowlist",
+      "type": "array"
+    }
+  },
+  "required": [
+    "context_manifest_id",
+    "project_id",
+    "source_head",
+    "route_id",
+    "route_version",
+    "route_registry_hash",
+    "decision_registry_version",
+    "validator_version",
+    "selector_version",
+    "kernel_version",
+    "kernel_hash",
+    "instruction_bundle_id",
+    "instruction_bundle_hash",
+    "isolation_policy",
+    "write_allowlist",
+    "purpose",
+    "actor",
+    "budget_units",
+    "used_units",
+    "context_hash",
+    "created_at"
+  ],
+  "title": "ContextManifest",
+  "type": "object"
+}

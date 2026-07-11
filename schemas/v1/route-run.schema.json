@@ -1,0 +1,136 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/v1/route-run.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "actor": {
+      "$ref": "#/$defs/Actor"
+    },
+    "base_revision": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Base Revision",
+      "type": "string"
+    },
+    "compartments": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Compartments",
+      "type": "array"
+    },
+    "context_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Context Hash",
+      "type": "string"
+    },
+    "context_manifest_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Context Manifest Id",
+      "type": "string"
+    },
+    "created_at": {
+      "minLength": 1,
+      "title": "Created At",
+      "type": "string"
+    },
+    "focus_entity_ids": {
+      "default": [],
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Focus Entity Ids",
+      "type": "array"
+    },
+    "privacy_clearance": {
+      "enum": [
+        "public",
+        "project_private",
+        "restricted",
+        "local_only"
+      ],
+      "title": "Privacy Clearance",
+      "type": "string"
+    },
+    "project_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "purpose": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Purpose",
+      "type": "string"
+    },
+    "route_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Route Id",
+      "type": "string"
+    },
+    "route_run_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Route Run Id",
+      "type": "string"
+    },
+    "route_version": {
+      "minimum": 1,
+      "title": "Route Version",
+      "type": "integer"
+    },
+    "run_schema": {
+      "const": 1,
+      "default": 1,
+      "title": "Run Schema",
+      "type": "integer"
+    },
+    "status": {
+      "const": "running",
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "route_run_id",
+    "project_id",
+    "base_revision",
+    "route_id",
+    "route_version",
+    "actor",
+    "purpose",
+    "compartments",
+    "privacy_clearance",
+    "context_manifest_id",
+    "context_hash",
+    "status",
+    "created_at"
+  ],
+  "title": "RouteRun",
+  "type": "object"
+}

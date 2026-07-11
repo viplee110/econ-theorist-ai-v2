@@ -1,0 +1,23 @@
+{
+  "aliases": {},
+  "registry_version": 1,
+  "routes": [
+    {"allowed_operations":["entity.create","relation.create","artifact.register","decision.record","blocker.record","route.outcome"],"allowed_purposes":["research_framing"],"authority_ceiling":"L1","availability":"enabled","instruction_bundle_hash":"153a7671bc7801f0934d189f9a53a00ae540f709f1dedae61209ded804359ff5","instruction_bundle_id":"frame.question_and_benchmarks.v1","required_compartments":["project_research"],"route_id":"frame.question_and_benchmarks","route_version":1},
+    {"allowed_purposes":["research_discovery"],"authority_ceiling":"L1","availability":"not_implemented","required_compartments":["project_research"],"route_id":"decompose.primitives","route_version":1},
+    {"allowed_purposes":["research_discovery"],"authority_ceiling":"L1","availability":"not_implemented","required_compartments":["project_research"],"route_id":"tournament.mechanisms","route_version":1},
+    {"allowed_purposes":["research_discovery"],"authority_ceiling":"L1","availability":"not_implemented","required_compartments":["project_research"],"route_id":"freeze.predictions","route_version":1},
+    {"allowed_purposes":["research_discovery"],"authority_ceiling":"L1","availability":"not_implemented","required_compartments":["project_research"],"route_id":"lab.micro_examples_and_ablations","route_version":1},
+    {"allowed_purposes":["research_discovery"],"authority_ceiling":"L1","availability":"not_implemented","required_compartments":["project_research"],"route_id":"promote.mechanism","route_version":1},
+    {"allowed_purposes":["research_discovery"],"authority_ceiling":"L1","availability":"not_implemented","required_compartments":["project_research"],"route_id":"tournament.implementations","route_version":1},
+    {"allowed_purposes":["research_discovery"],"authority_ceiling":"L1","availability":"not_implemented","required_compartments":["project_research"],"route_id":"promote.formal_base","route_version":1},
+    {"allowed_purposes":["research_discovery"],"authority_ceiling":"L1","availability":"not_implemented","required_compartments":["project_research"],"route_id":"discover.claims_and_boundaries","route_version":1},
+    {"allowed_purposes":["research_verification"],"authority_ceiling":"L1","availability":"not_implemented","required_compartments":["project_research"],"route_id":"verify.claims_proofs_and_interpretation","route_version":1},
+    {"allowed_purposes":["research_verification"],"authority_ceiling":"L1","availability":"not_implemented","required_compartments":["project_research"],"route_id":"audit.assumptions_generality_and_absorption","route_version":1},
+    {"allowed_purposes":["research_discovery"],"authority_ceiling":"L1","availability":"not_implemented","required_compartments":["project_research"],"route_id":"curate.result_portfolio","route_version":1},
+    {"allowed_purposes":["research_verification"],"authority_ceiling":"L1","availability":"not_implemented","required_compartments":["project_research"],"route_id":"validate.argument_package","route_version":1},
+    {"allowed_purposes":["research_authoring"],"authority_ceiling":"L1","availability":"not_implemented","required_compartments":["project_research"],"route_id":"design.reader_path","route_version":1},
+    {"allowed_purposes":["research_authoring"],"authority_ceiling":"L1","availability":"not_implemented","required_compartments":["project_research"],"route_id":"compose.manuscript_unit","route_version":1},
+    {"allowed_purposes":["research_review"],"authority_ceiling":"L1","availability":"not_implemented","required_compartments":["project_research"],"route_id":"review.manuscript_unit","route_version":1},
+    {"allowed_operations":["entity.supersede","relation.create","relation.supersede","artifact.register","decision.record","blocker.record","route.outcome"],"allowed_purposes":["research_repair"],"authority_ceiling":"L1","availability":"enabled","instruction_bundle_hash":"96a41ba7e8f62d4a99f48f518c13157495d6230fc419038e046059d4aa909315","instruction_bundle_id":"repair.dependency.v1","required_compartments":["project_research"],"route_id":"repair.dependency","route_version":1}
+  ]
+}

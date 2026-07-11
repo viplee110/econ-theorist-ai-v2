@@ -29,7 +29,7 @@ No capability is considered migrated merely because its wording appears in a pro
 
 ## 2. Capability ledger
 
-All rows below have Architecture v0.1 migration status `mapped_design`: a v2 owner and parity test are specified, but no capability is yet `implemented` or `parity_verified`. Implementation must advance status explicitly rather than treating this design table as proof of migration.
+Architecture v0.1 initially classified every row as `mapped_design`. Phase implementations advance only the capabilities named in the implementation-status table below; every unlisted row remains `mapped_design`. No capability becomes migrated merely because a generic schema can spell its name.
 
 | ID | V1 evidence | Valuable capability | Disposition | V2 owner | Parity or replacement test |
 |---|---|---|---|---|---|
@@ -72,6 +72,18 @@ All rows below have Architecture v0.1 migration status `mapped_design`: a v2 own
 | `V1-RESEARCHER-MEMORY` | README optional cross-project memory | Retain methods, negative knowledge, proof techniques, and postmortems as priors | Optional and private | Local researcher-memory adapter | Project evidence and current human decisions override memory; an outside-view route can challenge the profile |
 | `V1-EXAMPLES` | `examples/full_walkthrough_toy_project/`, model-base and kill/pivot examples | Demonstrate v1 artifact shapes and negative routing | Fixture | Migration and regression cases | Existing examples are never used as Top-5 prose anchors; model examples are replaced before claiming micro-example parity |
 | `V1-LEGAL` | `LICENSE`, `NOTICE`, `CITATION.cff` | Apache-2.0 licensing and attribution | Preserve | Repository root metadata | License remains Apache-2.0; project/version metadata is updated without weakening notices |
+
+### 2.1 Implementation status after the Phase 1 candidate
+
+| Capability | Status | Executable evidence | Remaining work |
+|---|---|---|---|
+| `V1-HUMAN-GATES` | `implemented_partial` | strict immutable Decision records; L2/L3 authority registry; `decide`; supersession and authority-dependent stale tests | Phase 2 must bind G1–G5 to typed theory objects and decision-complete gate dossiers |
+| `V1-PROVISIONAL-AUTO` | `implemented_partial` | agent routes are capped at L1; an agent cannot commit effective L2/L3 Decisions; candidates survive stale-base loss | later routes must preserve the same boundary through theory discovery and authoring |
+| `V1-INFO-ISOLATION` | `implemented_partial` | exact-head ContextManifest, purpose/compartment/privacy checks, deterministic omission ledger | blind verifier, cold-reader, and literature contexts arrive with their typed routes |
+| `V1-LOW-TOKEN` | `implemented_partial` | versioned bounded kernel, exact focus/ancestor selection, deterministic budget failure, explicit omission ledger, and one generated status view | provider adapters must recompile with their declared tokenizer; full route/context budget evaluation is required before parity is claimed |
+| `V1-VERSION-CONTROL` | `implemented_partial` | expected-base hashes, H0/H1/H2 reconciliation evidence, immutable candidates, head-race and crash recovery tests | git remains an optional file-level adapter; no automatic branch or merge behavior is active |
+| `V1-TOOLCHAIN` | `implemented_partial` | portable `doctor` reports required and optional capabilities and explains soft degradation | adapter-specific version probes and exact verification-run provenance remain to be added with those adapters |
+| `V1-LEGAL` | `parity_verified` | Apache-2.0 `LICENSE`, `NOTICE`, and `CITATION.cff` remain present | update release metadata when a public version is cut |
 
 ## 3. Deliberate retirements
 

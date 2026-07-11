@@ -1,0 +1,111 @@
+"""Phase 1 runtime primitives.
+
+Higher layers compose these small APIs; none of them independently changes
+canonical scientific state.
+"""
+
+from .faults import (
+    DEFAULT_FAULT_EXIT_CODE,
+    FAULT_EXIT_CODE_ENV,
+    FAULT_MODE_ENV,
+    FAULT_POINT_ENV,
+    KNOWN_FAULT_POINTS,
+    InjectedFault,
+    fault_enabled,
+    fault_point,
+    inject_fault,
+)
+from .layout import STORE_DIRECTORY, StoreLayout, initialize_layout
+from .lock import ExclusiveFileLock, LockError, LockTimeout, exclusive_lock
+from .commit import (
+    CommitResult,
+    PreparedCandidate,
+    ReconciliationConflict,
+    StagedArtifact,
+    commit_prepared,
+    commit_transaction,
+    preflight_candidate,
+    reconstruct_reconciliation_conflicts,
+)
+from .freshness import facet_semantic_hash, stale_reason_chains
+from .objects import (
+    AtomicWriteError,
+    ContentCollision,
+    DigestMismatch,
+    ExistingObjectCorrupt,
+    HeadChanged,
+    HeadFormatError,
+    HeadStore,
+    ImmutableObjectConflict,
+    IntegrityError,
+    InvalidDigest,
+    ObjectInstall,
+    ObjectNotFound,
+    ObjectStore,
+    StoreError,
+    atomic_write_bytes,
+    atomic_write_text,
+    fsync_directory,
+    normalize_sha256,
+    sha256_hex,
+)
+from .recovery import RecoveryReport, recover
+from .render import render_current, render_status, write_snapshot, write_status_view
+from .replay import replay, replay_at, validate_candidate
+
+__all__ = [
+    "AtomicWriteError",
+    "ContentCollision",
+    "CommitResult",
+    "DEFAULT_FAULT_EXIT_CODE",
+    "DigestMismatch",
+    "ExistingObjectCorrupt",
+    "ExclusiveFileLock",
+    "FAULT_EXIT_CODE_ENV",
+    "FAULT_MODE_ENV",
+    "FAULT_POINT_ENV",
+    "HeadChanged",
+    "HeadFormatError",
+    "HeadStore",
+    "ImmutableObjectConflict",
+    "InjectedFault",
+    "IntegrityError",
+    "InvalidDigest",
+    "KNOWN_FAULT_POINTS",
+    "LockError",
+    "LockTimeout",
+    "ObjectInstall",
+    "ObjectNotFound",
+    "ObjectStore",
+    "PreparedCandidate",
+    "ReconciliationConflict",
+    "RecoveryReport",
+    "STORE_DIRECTORY",
+    "StoreError",
+    "StoreLayout",
+    "StagedArtifact",
+    "atomic_write_bytes",
+    "atomic_write_text",
+    "commit_prepared",
+    "commit_transaction",
+    "exclusive_lock",
+    "fault_enabled",
+    "facet_semantic_hash",
+    "fault_point",
+    "fsync_directory",
+    "initialize_layout",
+    "inject_fault",
+    "normalize_sha256",
+    "preflight_candidate",
+    "reconstruct_reconciliation_conflicts",
+    "recover",
+    "render_current",
+    "render_status",
+    "replay",
+    "replay_at",
+    "sha256_hex",
+    "stale_reason_chains",
+    "validate_candidate",
+    "write_snapshot",
+    "write_status_view",
+]

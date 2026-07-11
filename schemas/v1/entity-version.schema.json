@@ -1,0 +1,303 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "FacetPayloads": {
+      "additionalProperties": false,
+      "description": "Generic Phase 1 payload partitioned into the five semantic facets.",
+      "properties": {
+        "authority": {
+          "additionalProperties": true,
+          "title": "Authority",
+          "type": "object"
+        },
+        "economic_interpretation": {
+          "additionalProperties": true,
+          "title": "Economic Interpretation",
+          "type": "object"
+        },
+        "formal": {
+          "additionalProperties": true,
+          "title": "Formal",
+          "type": "object"
+        },
+        "literature_novelty": {
+          "additionalProperties": true,
+          "title": "Literature Novelty",
+          "type": "object"
+        },
+        "terminology_presentation": {
+          "additionalProperties": true,
+          "title": "Terminology Presentation",
+          "type": "object"
+        }
+      },
+      "title": "FacetPayloads",
+      "type": "object"
+    },
+    "LiteratureStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "coverage": {
+          "enum": [
+            "not_started",
+            "partial",
+            "current",
+            "needs_refresh"
+          ],
+          "title": "Coverage",
+          "type": "string"
+        },
+        "novelty": {
+          "enum": [
+            "unassessed",
+            "unresolved",
+            "differentiated",
+            "absorbed",
+            "disputed"
+          ],
+          "title": "Novelty",
+          "type": "string"
+        }
+      },
+      "required": [
+        "coverage",
+        "novelty"
+      ],
+      "title": "LiteratureStatus",
+      "type": "object"
+    },
+    "ScientificStatus": {
+      "additionalProperties": false,
+      "description": "Stored dimensions only; acceptance and freshness are projections.",
+      "properties": {
+        "formal_validity": {
+          "anyOf": [
+            {
+              "enum": [
+                "not_applicable",
+                "unassessed",
+                "exploratory_only",
+                "partially_checked",
+                "verified_in_scope",
+                "failed",
+                "disputed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Formal Validity"
+        },
+        "interpretation_validity": {
+          "anyOf": [
+            {
+              "enum": [
+                "not_applicable",
+                "unassessed",
+                "hypothesized",
+                "example_supported",
+                "stress_tested",
+                "validated",
+                "failed",
+                "disputed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Interpretation Validity"
+        },
+        "lifecycle": {
+          "default": "proposed",
+          "enum": [
+            "proposed",
+            "active",
+            "superseded",
+            "retired"
+          ],
+          "title": "Lifecycle",
+          "type": "string"
+        },
+        "literature": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LiteratureStatus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "ScientificStatus",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/v1/entity-version.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "access_compartments": {
+      "default": [
+        "project_research"
+      ],
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Access Compartments",
+      "type": "array"
+    },
+    "artifact_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ArtifactDependencyRef"
+      },
+      "title": "Artifact Refs",
+      "type": "array"
+    },
+    "created_at": {
+      "minLength": 1,
+      "title": "Created At",
+      "type": "string"
+    },
+    "entity_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Entity Id",
+      "type": "string"
+    },
+    "entity_type": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Entity Type",
+      "type": "string"
+    },
+    "facets": {
+      "$ref": "#/$defs/FacetPayloads"
+    },
+    "privacy": {
+      "default": "project_private",
+      "enum": [
+        "public",
+        "project_private",
+        "restricted",
+        "local_only"
+      ],
+      "title": "Privacy",
+      "type": "string"
+    },
+    "project_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "scope_ref": {
+      "anyOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Scope Ref"
+    },
+    "status": {
+      "$ref": "#/$defs/ScientificStatus"
+    },
+    "summary": {
+      "minLength": 1,
+      "title": "Summary",
+      "type": "string"
+    },
+    "supersedes": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "title": {
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "version": {
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "entity_id",
+    "entity_type",
+    "version",
+    "project_id",
+    "title",
+    "summary",
+    "status",
+    "facets",
+    "created_at"
+  ],
+  "title": "EntityVersion",
+  "type": "object"
+}

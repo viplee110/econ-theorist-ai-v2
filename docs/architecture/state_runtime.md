@@ -406,6 +406,8 @@ planned
 
 Completion does not imply commitment. A run may produce useful artifacts while its candidate state transition is rejected.
 
+The lifecycle above is logical, not permission to rewrite one creation record. In the Phase 1 local substrate, immutable `run.json` records only the transition into `running`; later operational outcomes live in noncanonical sidecars, while admissible scientific outcomes require a committed `RouteOutcome`. A lock-time `stale_base` result is operational and can never be asserted as a canonical RouteOutcome.
+
 ### 8.3 Context compilation
 
 The compiler takes:
@@ -514,7 +516,7 @@ Runs may execute concurrently against a pinned revision, but Phase 1 serializes 
 | competing head update | keep losing candidate, return `stale_base`, preserve both run records |
 | external human edit of a tracked manuscript | never overwrite; register the new file version or present a three-way reconciliation proposal |
 
-Recovery is idempotent. Phase 1 executes no external action: it can only produce a candidate bundle whose exact checksum may receive a separate `L3` authorization.
+Recovery is idempotent. Phase 1 executes no external action and produces only local candidate transactions plus registered local artifacts. It neither constructs a release bundle nor submits a bundle checksum for `L3` handoff authorization. Private-backup/public-release bundle construction, cross-machine validation, checksum-bound authorization, and external handoff are deferred until the release capabilities in Section 12 are implemented and enabled.
 
 ## 11. Physical layout and portability
 
@@ -561,7 +563,9 @@ The default for new research content is `project_private` in `project_research`.
 
 Privacy propagates conservatively: a derived artifact cannot receive a more permissive label without a registered declassification Decision of the required kind and authority. Legal or license restrictions cannot be waived by project authority. Credentials and secrets are never stored in canonical state, transactions, prompts, or provenance logs.
 
-Public craft resources store citations and derived functional patterns, not copied copyrighted papers or unpublished manuscripts. Export produces either a **full private backup** with replayable authorized history or a **redacted public release bundle** with permitted artifacts and a non-replayable receipt that records omissions without exposing private transaction payloads, hashes, paths, or summaries. Mixed-private transactions are never copied wholesale into a public bundle. Phase 1 only builds and checks a bundle; external handoff occurs outside the replayable core and requires an `L3` Decision naming its exact checksum.
+Privacy joins are persistent across bare current references: if a Decision subject/evidence or an Entity/Relation scope later becomes more restrictive, an older referencing record cannot enter a lower-clearance context merely because it was admissible when first written. Derived stale notices carry their complete exact source-evidence closure, so privacy and compartment checks reach the root change even across historical entity versions. If a superseding Entity version leaves an affected facet or JSON Pointer region semantically unchanged, its inherited staleness remains visible on the current version, and that cross-version semantic bridge participates in invalidating-DAG cycle checks. JSON Pointer ancestor and descendant paths count as overlapping regions in both freshness propagation and invalidating-cycle checks.
+
+Public craft resources store citations and derived functional patterns, not copied copyrighted papers or unpublished manuscripts. Export must eventually produce either a **full private backup** with replayable authorized history or a **redacted public release bundle** with permitted artifacts and a non-replayable receipt that records omissions without exposing private transaction payloads, hashes, paths, or summaries. Mixed-private transactions are never copied wholesale into a public bundle. The Phase 1 walking candidate does not implement export and enables no external-release route. Bundle construction and cross-machine validation are required before such a route can be enabled; external handoff remains outside the replayable core and requires an `L3` Decision naming its exact checksum.
 
 ## 13. Runtime invariants
 
@@ -592,11 +596,13 @@ Architecture v0.1 needs a small substrate, not a large platform. The first verti
 - `commit`: validate and atomically commit one candidate transaction under the exclusive lock;
 - `status`: replay/materialize state and render one compact human view;
 - `recover`: inspect heads, replay history, repair caches, and quarantine incomplete work;
-- `export`: create either a replayable private backup or a redacted release bundle/receipt with checksums.
+- `export` (deferred until before external release is enabled): create either a replayable private backup or a redacted release bundle/receipt with checksums.
 
 Route execution can initially be a thin wrapper around these primitives. Search indexes, queues, dashboards, vector databases, distributed locks, and general workflow engines are deferred until an observed bottleneck justifies them.
 
-## 15. Required tests before implementation promotion
+## 15. Required tests before enabling or promoting the corresponding capabilities
+
+This section is the cumulative architecture-level verification matrix. A delivery slice must pass the tests applicable to the capabilities it implements. Tests for explicitly deferred capabilities—such as export, cross-machine backup replay, proof-verifier or cold-reader isolation, multi-agent lineage, and later scientific-state scenarios—become mandatory before those capabilities are enabled or promoted; their presence below does not claim that the Phase 1 walking candidate implements or has passed them. The walking candidate's implemented boundary and executable acceptance matrix are recorded in `../implementation/phase1_contract.md`.
 
 ### 15.1 Structural tests
 
