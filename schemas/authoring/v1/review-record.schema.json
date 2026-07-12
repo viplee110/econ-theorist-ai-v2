@@ -1,0 +1,626 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "ColdReaderAssessment": {
+      "additionalProperties": false,
+      "properties": {
+        "assumption_role_recovery_passed": {
+          "title": "Assumption Role Recovery Passed",
+          "type": "boolean"
+        },
+        "boundary_discrimination_passed": {
+          "title": "Boundary Discrimination Passed",
+          "type": "boolean"
+        },
+        "exact_scope_recovery_passed": {
+          "title": "Exact Scope Recovery Passed",
+          "type": "boolean"
+        },
+        "near_transfer_passed": {
+          "title": "Near Transfer Passed",
+          "type": "boolean"
+        },
+        "probe_results": {
+          "items": {
+            "$ref": "#/$defs/ColdReaderProbeResult"
+          },
+          "maxItems": 5,
+          "minItems": 5,
+          "title": "Probe Results",
+          "type": "array"
+        },
+        "question_and_benchmark_retell_passed": {
+          "title": "Question And Benchmark Retell Passed",
+          "type": "boolean"
+        },
+        "response_artifact_ref": {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        "role": {
+          "const": "cold_reader",
+          "default": "cold_reader",
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_and_benchmark_retell_passed",
+        "exact_scope_recovery_passed",
+        "assumption_role_recovery_passed",
+        "boundary_discrimination_passed",
+        "near_transfer_passed",
+        "response_artifact_ref",
+        "probe_results"
+      ],
+      "title": "ColdReaderAssessment",
+      "type": "object"
+    },
+    "ColdReaderProbeResult": {
+      "additionalProperties": false,
+      "properties": {
+        "answer_key_criterion_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Answer Key Criterion Hash",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "question_benchmark_retell",
+            "exact_scope_recovery",
+            "assumption_role_recovery",
+            "boundary_discrimination",
+            "near_transfer"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "passed",
+            "failed"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "probe_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Probe Id",
+          "type": "string"
+        },
+        "rationale": {
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "response_excerpt_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Response Excerpt Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "probe_id",
+        "kind",
+        "outcome",
+        "response_excerpt_hash",
+        "answer_key_criterion_hash",
+        "rationale"
+      ],
+      "title": "ColdReaderProbeResult",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EconomicReaderAssessment": {
+      "additionalProperties": false,
+      "properties": {
+        "boundary_is_economically_interpretable": {
+          "title": "Boundary Is Economically Interpretable",
+          "type": "boolean"
+        },
+        "diagnostic_example_or_witness_present": {
+          "title": "Diagnostic Example Or Witness Present",
+          "type": "boolean"
+        },
+        "explanation_is_not_restatement": {
+          "title": "Explanation Is Not Restatement",
+          "type": "boolean"
+        },
+        "mechanism_or_conceptual_logic_reconstructible": {
+          "title": "Mechanism Or Conceptual Logic Reconstructible",
+          "type": "boolean"
+        },
+        "question_and_benchmark_reconstructible": {
+          "title": "Question And Benchmark Reconstructible",
+          "type": "boolean"
+        },
+        "reconstructions": {
+          "items": {
+            "$ref": "#/$defs/EconomicReconstruction"
+          },
+          "minItems": 1,
+          "title": "Reconstructions",
+          "type": "array"
+        },
+        "role": {
+          "const": "economic_reader",
+          "default": "economic_reader",
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_and_benchmark_reconstructible",
+        "explanation_is_not_restatement",
+        "mechanism_or_conceptual_logic_reconstructible",
+        "diagnostic_example_or_witness_present",
+        "boundary_is_economically_interpretable",
+        "reconstructions"
+      ],
+      "title": "EconomicReaderAssessment",
+      "type": "object"
+    },
+    "EconomicReconstruction": {
+      "additionalProperties": false,
+      "description": "What an isolated economic reader could reconstruct from the prose.",
+      "properties": {
+        "affected_margin": {
+          "minLength": 32,
+          "title": "Affected Margin",
+          "type": "string"
+        },
+        "boundary_assertion_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Boundary Assertion Ids",
+          "type": "array"
+        },
+        "claim_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "claim_projection_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Claim Projection Id",
+          "type": "string"
+        },
+        "diagnostic_assertion_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Diagnostic Assertion Ids",
+          "type": "array"
+        },
+        "evidence_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "explanatory_delta_from_formal_statement": {
+          "minLength": 32,
+          "title": "Explanatory Delta From Formal Statement",
+          "type": "string"
+        },
+        "mechanism_assertion_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Mechanism Assertion Ids",
+          "type": "array"
+        },
+        "mechanism_steps": {
+          "items": {
+            "minLength": 24,
+            "type": "string"
+          },
+          "minItems": 3,
+          "title": "Mechanism Steps",
+          "type": "array"
+        },
+        "near_transfer_prediction": {
+          "minLength": 32,
+          "title": "Near Transfer Prediction",
+          "type": "string"
+        },
+        "operative_force": {
+          "minLength": 32,
+          "title": "Operative Force",
+          "type": "string"
+        },
+        "question_and_benchmark": {
+          "minLength": 32,
+          "title": "Question And Benchmark",
+          "type": "string"
+        },
+        "result_packet_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Result Packet Id",
+          "type": "string"
+        },
+        "serious_rival_and_separator": {
+          "minLength": 32,
+          "title": "Serious Rival And Separator",
+          "type": "string"
+        }
+      },
+      "required": [
+        "claim_projection_id",
+        "claim_id",
+        "result_packet_id",
+        "question_and_benchmark",
+        "operative_force",
+        "affected_margin",
+        "serious_rival_and_separator",
+        "mechanism_steps",
+        "mechanism_assertion_ids",
+        "diagnostic_assertion_ids",
+        "boundary_assertion_ids",
+        "near_transfer_prediction",
+        "explanatory_delta_from_formal_statement",
+        "evidence_refs"
+      ],
+      "title": "EconomicReconstruction",
+      "type": "object"
+    },
+    "EntailmentCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "assertion_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Assertion Id",
+          "type": "string"
+        },
+        "assumptions_preserved": {
+          "title": "Assumptions Preserved",
+          "type": "boolean"
+        },
+        "conclusion_relation": {
+          "enum": [
+            "equivalent",
+            "weaker",
+            "stronger",
+            "unsupported",
+            "inconclusive",
+            "explicit_conjecture"
+          ],
+          "title": "Conclusion Relation",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "passed",
+            "failed"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "rationale": {
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "scope_relation": {
+          "enum": [
+            "equal",
+            "subset",
+            "stronger",
+            "incomparable"
+          ],
+          "title": "Scope Relation",
+          "type": "string"
+        },
+        "source_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Source Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "assertion_id",
+        "scope_relation",
+        "conclusion_relation",
+        "assumptions_preserved",
+        "source_refs",
+        "outcome",
+        "rationale"
+      ],
+      "title": "EntailmentCheck",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "FormalFidelityAssessment": {
+      "additionalProperties": false,
+      "properties": {
+        "assumptions_preserved": {
+          "title": "Assumptions Preserved",
+          "type": "boolean"
+        },
+        "entailment_checks": {
+          "items": {
+            "$ref": "#/$defs/EntailmentCheck"
+          },
+          "minItems": 1,
+          "title": "Entailment Checks",
+          "type": "array"
+        },
+        "numerical_evidence_bounded": {
+          "title": "Numerical Evidence Bounded",
+          "type": "boolean"
+        },
+        "proof_language_honest": {
+          "title": "Proof Language Honest",
+          "type": "boolean"
+        },
+        "role": {
+          "const": "formal_fidelity",
+          "default": "formal_fidelity",
+          "title": "Role",
+          "type": "string"
+        },
+        "scope_preserved": {
+          "title": "Scope Preserved",
+          "type": "boolean"
+        },
+        "theorem_statement_exact": {
+          "title": "Theorem Statement Exact",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "theorem_statement_exact",
+        "scope_preserved",
+        "assumptions_preserved",
+        "proof_language_honest",
+        "numerical_evidence_bounded",
+        "entailment_checks"
+      ],
+      "title": "FormalFidelityAssessment",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/authoring/v1/review-record.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "adjudicator": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Actor"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "answer_key_artifact_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "assessment": {
+      "discriminator": {
+        "mapping": {
+          "cold_reader": "#/$defs/ColdReaderAssessment",
+          "economic_reader": "#/$defs/EconomicReaderAssessment",
+          "formal_fidelity": "#/$defs/FormalFidelityAssessment"
+        },
+        "propertyName": "role"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/FormalFidelityAssessment"
+        },
+        {
+          "$ref": "#/$defs/EconomicReaderAssessment"
+        },
+        {
+          "$ref": "#/$defs/ColdReaderAssessment"
+        }
+      ],
+      "title": "Assessment"
+    },
+    "assignment_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "canonical_writer": {
+      "$ref": "#/$defs/Actor"
+    },
+    "context_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Context Hash",
+      "type": "string"
+    },
+    "finding_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EntityVersionRef"
+      },
+      "title": "Finding Refs",
+      "type": "array"
+    },
+    "manuscript_unit_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "reader_response_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "reviewed_artifact_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "reviewed_at": {
+      "minLength": 1,
+      "title": "Reviewed At",
+      "type": "string"
+    },
+    "reviewer": {
+      "$ref": "#/$defs/Actor"
+    },
+    "role": {
+      "enum": [
+        "formal_fidelity",
+        "economic_reader",
+        "cold_reader"
+      ],
+      "title": "Role",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "assignment_ref",
+    "manuscript_unit_ref",
+    "reviewed_artifact_ref",
+    "role",
+    "reviewer",
+    "canonical_writer",
+    "context_hash",
+    "assessment",
+    "reviewed_at"
+  ],
+  "title": "ReviewRecord",
+  "type": "object"
+}

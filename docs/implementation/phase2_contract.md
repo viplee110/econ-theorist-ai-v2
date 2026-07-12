@@ -1,8 +1,10 @@
 # Phase 2 Theory-Kernel Vertical Slice Contract
 
-Status: implementation candidate complete; branch review and merge pending
+Status: accepted and merged into `main`
 
 Branch: `agent/phase2-theory-kernel-slice`
+
+Accepted commit: `6a14d52e4655dc8b7d5a42e43467f4c58faba510`
 
 Accepted Phase 1 base: `3ce5c6b8c92fbcbefb361b319a70894e173b119f`
 

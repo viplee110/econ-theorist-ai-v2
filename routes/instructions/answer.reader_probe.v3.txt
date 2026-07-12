@@ -1,0 +1,4 @@
+Act only as the cold respondent named by the exact cold-reader CriticAssignment and answer one exact ReaderProbeSet after reading only its frozen ManuscriptUnit and declared target-reader background.
+Produce exactly one ReaderResponse with an answer to every visible probe and no post-hoc revision of the manuscript or probe set.
+Fail closed if the context contains the sealed answer key, authoring rationale, Paper IR, ResultPackets, transfer answer, gold prose, gate logs, raw assurance material, other reviews, or probe-designer/adjudicator-only context.
+Bind the response to exact manuscript, probe-set, respondent, assignment, context-manifest, and attempt revisions.

@@ -10,6 +10,11 @@ from typing import TypeAlias
 
 from pydantic import ValidationError as PydanticValidationError
 
+from ..authoring_validation import (
+    AuthoringValidationError,
+    validate_authoring_projection,
+    validate_phase3_route_transaction,
+)
 from ..context import compile_context, make_context_manifest
 from ..codec import (
     canonical_json_bytes,
@@ -18,6 +23,7 @@ from ..codec import (
     transaction_digest,
 )
 from ..errors import EconTheoristError, RuntimeStoreError
+from ..legacy_boundary import snapshot_has_phase3_material
 from ..models import (
     ArtifactDependencyRef,
     ArtifactPrivacySubject,
@@ -44,6 +50,7 @@ from ..models import (
     RouteOutcome,
     RouteRun,
     RouteSpecV2,
+    RouteSpecV3,
     RetireEntityOp,
     RetireRelationOp,
     Snapshot,
@@ -58,11 +65,12 @@ from ..policy import (
     ISOLATION_POLICY,
     KERNEL_HASH,
     KERNEL_VERSION,
-    SELECTOR_VERSION,
     VALIDATOR_VERSION,
+    V3_NATIVE_ROUTE_IDS,
     decision_registry_version_for_route,
     load_route_registry_by_hash,
     route_spec,
+    selector_version_for_route,
     validate_decision_authority,
     validate_runtime_validator,
 )
@@ -417,7 +425,7 @@ def _validate_operational_provenance(
         or manifest.decision_registry_version
         != decision_registry_version_for_route(route)
         or manifest.validator_version != VALIDATOR_VERSION
-        or manifest.selector_version != SELECTOR_VERSION
+        or manifest.selector_version != selector_version_for_route(route)
         or manifest.kernel_version != KERNEL_VERSION
         or manifest.kernel_hash != KERNEL_HASH
         or manifest.instruction_bundle_id != route.instruction_bundle_id
@@ -475,6 +483,39 @@ def _validate_operational_provenance(
     except PrivacyFlowError as exc:
         raise ChainIntegrityError(
             "committed route output violates its compiled-context privacy join"
+        ) from exc
+    # A ReDerivationRecord's declared hashes are not evidence by themselves.
+    # Resolve its actor, blind-context, producer, and exact-parent declarations
+    # against the immutable provenance objects while the transaction's base is
+    # still explicit.  Commit invokes this function only after installing the
+    # current provenance triple and before advancing the head; replay invokes
+    # it for the same reachable bytes.
+    from .phase3_lineage import (
+        Phase3LineageError,
+        validate_phase3_focus_entity_evidence,
+        validate_phase3_operational_lineage,
+    )
+
+    try:
+        if isinstance(route, RouteSpecV3) and route.route_id in V3_NATIVE_ROUTE_IDS:
+            validate_phase3_focus_entity_evidence(
+                base_snapshot, run, transaction
+            )
+        validate_phase3_operational_lineage(layout, base_snapshot, transaction)
+    except Phase3LineageError as exc:
+        raise ChainIntegrityError(
+            f"committed Phase 3 operational lineage is inadmissible: {exc}"
+        ) from exc
+    from .phase3_artifacts import (
+        Phase3ArtifactError,
+        validate_phase3_operational_artifacts,
+    )
+
+    try:
+        validate_phase3_operational_artifacts(layout, base_snapshot, transaction)
+    except Phase3ArtifactError as exc:
+        raise ChainIntegrityError(
+            f"committed Phase 3 artifact bytes are inadmissible: {exc}"
         ) from exc
     return manifest.route_registry_hash
 
@@ -2399,7 +2440,19 @@ def validate_candidate(
     ):
         registry = load_route_registry_by_hash(route_registry_hash)
         bound_route = route_spec(transaction.route_id, registry)
-        if isinstance(bound_route, RouteSpecV2):
+        if (
+            isinstance(bound_route, RouteSpecV3)
+            and bound_route.route_id in V3_NATIVE_ROUTE_IDS
+        ):
+            try:
+                validate_phase3_route_transaction(
+                    snapshot, transaction, bound_route
+                )
+            except AuthoringValidationError as exc:
+                raise CandidateValidationError(
+                    f"Phase 3 route contract rejected the transaction: {exc}"
+                ) from exc
+        elif isinstance(bound_route, RouteSpecV2):
             try:
                 validate_phase2_route_transaction(snapshot, transaction, bound_route)
             except TheoryValidationError as exc:
@@ -2456,6 +2509,13 @@ def validate_candidate(
         except TheoryValidationError as exc:
             raise CandidateValidationError(
                 f"Phase 2 theory projection is inadmissible: {exc}"
+            ) from exc
+    if snapshot_has_phase3_material(provisional):
+        try:
+            validate_authoring_projection(provisional)
+        except AuthoringValidationError as exc:
+            raise CandidateValidationError(
+                f"Phase 3 authoring projection is inadmissible: {exc}"
             ) from exc
     derived = derive_entity_statuses(
         entity_versions=provisional.entity_versions,

@@ -491,6 +491,24 @@ class Decision(StrictModel):
                 raise ValueError(
                     "non-effective privacy Decisions cannot carry a machine outcome"
                 )
+        elif self.decision_kind == "manuscript_version_promotion":
+            if self.privacy_change is not None:
+                raise ValueError(
+                    "manuscript promotion Decisions cannot carry a privacy_change"
+                )
+            if self.status in {"provisional", "confirmed"}:
+                if self.machine_outcome not in {"approve", "deny"}:
+                    raise ValueError(
+                        "effective manuscript promotion requires approve or deny outcome"
+                    )
+                if self.selected_option != self.machine_outcome:
+                    raise ValueError(
+                        "manuscript promotion selected_option must equal machine_outcome"
+                    )
+            elif self.machine_outcome is not None:
+                raise ValueError(
+                    "non-effective manuscript promotion cannot carry a machine outcome"
+                )
         elif self.decision_kind in GATE_DECISION_KINDS:
             if self.privacy_change is not None:
                 raise ValueError("G1-G5 Decisions cannot carry a privacy_change")
@@ -1024,8 +1042,33 @@ class RouteRegistryV2(StrictModel):
         return self
 
 
-RouteSpecLike: TypeAlias = RouteSpec | RouteSpecV2
-RouteRegistryLike: TypeAlias = RouteRegistry | RouteRegistryV2
+class RouteSpecV3(RouteSpecV2):
+    """Catalog-bound Phase 3 route contract.
+
+    Registry v3 deliberately carries the unchanged Phase 2 routes with their
+    original route and instruction versions.  Parsing every entry as this
+    type still binds those unchanged semantics to the v3 catalog hash, while
+    the Phase 3-native assurance and authoring routes advance to version 3.
+    """
+
+    route_version: Literal[2, 3] = 2
+
+
+class RouteRegistryV3(StrictModel):
+    registry_version: Literal[3] = 3
+    aliases: dict[StableId, StableId] = Field(default_factory=dict)
+    routes: Annotated[tuple[RouteSpecV3, ...], Field(min_length=1)]
+
+    @model_validator(mode="after")
+    def _route_ids_are_unique(self) -> "RouteRegistryV3":
+        route_ids = [route.route_id for route in self.routes]
+        if len(set(route_ids)) != len(route_ids):
+            raise ValueError("route registry contains duplicate exact IDs")
+        return self
+
+
+RouteSpecLike: TypeAlias = RouteSpec | RouteSpecV2 | RouteSpecV3
+RouteRegistryLike: TypeAlias = RouteRegistry | RouteRegistryV2 | RouteRegistryV3
 
 
 class StaleDependencyEvidence(StrictModel):

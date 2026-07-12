@@ -1,0 +1,478 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "ConsequentialSpan": {
+      "additionalProperties": false,
+      "properties": {
+        "assertion_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Assertion Id",
+          "type": "string"
+        },
+        "assumption_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Assumption Ids",
+          "type": "array"
+        },
+        "claim_graph_ref": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "claim_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "claim_projection_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Claim Projection Id",
+          "type": "string"
+        },
+        "location": {
+          "$ref": "#/$defs/ManuscriptLocation"
+        },
+        "presentation": {
+          "enum": [
+            "theorem_statement",
+            "economic_interpretation",
+            "mechanism_explanation",
+            "evidence_description",
+            "consequence",
+            "conjecture"
+          ],
+          "title": "Presentation",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "formal_statement",
+            "economic_translation",
+            "mechanism_or_conceptual_explanation",
+            "example_or_witness",
+            "assumption_interpretation",
+            "boundary",
+            "proof_roadmap",
+            "literature_comparison",
+            "consequence",
+            "conjecture"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "scope": {
+          "minLength": 1,
+          "title": "Scope",
+          "type": "string"
+        },
+        "source_fields": {
+          "items": {
+            "$ref": "#/$defs/SemanticFacetRef"
+          },
+          "minItems": 1,
+          "title": "Source Fields",
+          "type": "array"
+        },
+        "support_refs": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "title": "Support Refs",
+          "type": "array"
+        },
+        "text_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Text Hash",
+          "type": "string"
+        },
+        "wording_strength": {
+          "enum": [
+            "exact",
+            "entailed_equivalent",
+            "entailed_weaker",
+            "explicit_conjecture"
+          ],
+          "title": "Wording Strength",
+          "type": "string"
+        }
+      },
+      "required": [
+        "assertion_id",
+        "role",
+        "claim_projection_id",
+        "claim_graph_ref",
+        "claim_id",
+        "source_fields",
+        "scope",
+        "assumption_ids",
+        "location",
+        "text_hash",
+        "wording_strength",
+        "presentation"
+      ],
+      "title": "ConsequentialSpan",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "ManuscriptLocation": {
+      "additionalProperties": false,
+      "properties": {
+        "end_offset": {
+          "minimum": 1,
+          "title": "End Offset",
+          "type": "integer"
+        },
+        "start_offset": {
+          "minimum": 0,
+          "title": "Start Offset",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start_offset",
+        "end_offset"
+      ],
+      "title": "ManuscriptLocation",
+      "type": "object"
+    },
+    "SemanticFacetRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "facet": {
+          "enum": [
+            "formal",
+            "economic_interpretation",
+            "literature_novelty",
+            "terminology_presentation",
+            "authority"
+          ],
+          "title": "Facet",
+          "type": "string"
+        },
+        "field_path": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field Path"
+        },
+        "semantic_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Semantic Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version",
+        "facet",
+        "semantic_hash"
+      ],
+      "title": "SemanticFacetRef",
+      "type": "object"
+    },
+    "TerminologyRealization": {
+      "additionalProperties": false,
+      "properties": {
+        "first_use_assertion_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "First Use Assertion Id",
+          "type": "string"
+        },
+        "formal_symbol": {
+          "minLength": 1,
+          "title": "Formal Symbol",
+          "type": "string"
+        },
+        "object_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Object Id",
+          "type": "string"
+        },
+        "realized_name": {
+          "minLength": 1,
+          "title": "Realized Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "realized_name",
+        "formal_symbol",
+        "first_use_assertion_id"
+      ],
+      "title": "TerminologyRealization",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/authoring/v1/manuscript-unit.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "canonical_writer": {
+      "$ref": "#/$defs/Actor"
+    },
+    "composed_at": {
+      "minLength": 1,
+      "title": "Composed At",
+      "type": "string"
+    },
+    "integration_generation": {
+      "minimum": 1,
+      "title": "Integration Generation",
+      "type": "integer"
+    },
+    "manuscript_artifact_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "paper_ir_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "previous_manuscript_artifact_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "previous_manuscript_unit_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "reader_path_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "result_contract_set_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "revision_brief_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "section_contract_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Section Contract Id",
+      "type": "string"
+    },
+    "source_state_revision": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Source State Revision",
+      "type": "string"
+    },
+    "spans": {
+      "items": {
+        "$ref": "#/$defs/ConsequentialSpan"
+      },
+      "minItems": 1,
+      "title": "Spans",
+      "type": "array"
+    },
+    "submission_source_artifact_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "submission_source_unit_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "terminology": {
+      "items": {
+        "$ref": "#/$defs/TerminologyRealization"
+      },
+      "minItems": 1,
+      "title": "Terminology",
+      "type": "array"
+    },
+    "unit_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Unit Id",
+      "type": "string"
+    },
+    "writer_output_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Writer Output Hash",
+      "type": "string"
+    },
+    "writer_role_packet_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Writer Role Packet Hash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "unit_id",
+    "paper_ir_ref",
+    "reader_path_ref",
+    "result_contract_set_ref",
+    "section_contract_id",
+    "manuscript_artifact_ref",
+    "source_state_revision",
+    "canonical_writer",
+    "writer_role_packet_hash",
+    "writer_output_hash",
+    "integration_generation",
+    "spans",
+    "terminology",
+    "composed_at"
+  ],
+  "title": "ManuscriptUnit",
+  "type": "object"
+}

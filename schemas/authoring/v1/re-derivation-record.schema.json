@@ -1,0 +1,350 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "DerivationStep": {
+      "additionalProperties": false,
+      "properties": {
+        "dependency_step_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Dependency Step Ids",
+          "type": "array"
+        },
+        "justification": {
+          "minLength": 1,
+          "title": "Justification",
+          "type": "string"
+        },
+        "source_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Source Refs",
+          "type": "array"
+        },
+        "statement": {
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        },
+        "step_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Step Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "step_id",
+        "statement",
+        "justification",
+        "source_refs"
+      ],
+      "title": "DerivationStep",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "RunProvenanceBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "compiled_context_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Compiled Context Hash",
+          "type": "string"
+        },
+        "context_manifest_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Context Manifest Hash",
+          "type": "string"
+        },
+        "route_run_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Route Run Hash",
+          "type": "string"
+        },
+        "route_run_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Route Run Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "route_run_id",
+        "route_run_hash",
+        "context_manifest_hash",
+        "compiled_context_hash"
+      ],
+      "title": "RunProvenanceBinding",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/authoring/v1/re-derivation-record.schema.json",
+  "additionalProperties": false,
+  "description": "One blind re-derivation bound to exact scientific revisions.",
+  "properties": {
+    "assumption_map_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "claim_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "claim_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Claim Id",
+      "type": "string"
+    },
+    "comparison_to_claim": {
+      "enum": [
+        "equivalent",
+        "gap",
+        "contradicts",
+        "inconclusive"
+      ],
+      "title": "Comparison To Claim",
+      "type": "string"
+    },
+    "compiled_context_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Compiled Context Hash",
+      "type": "string"
+    },
+    "context_manifest_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Context Manifest Hash",
+      "type": "string"
+    },
+    "derivation_artifact_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "derivation_steps": {
+      "items": {
+        "$ref": "#/$defs/DerivationStep"
+      },
+      "minItems": 1,
+      "title": "Derivation Steps",
+      "type": "array"
+    },
+    "derived_conclusion": {
+      "minLength": 1,
+      "title": "Derived Conclusion",
+      "type": "string"
+    },
+    "excluded_proof_artifact_refs": {
+      "items": {
+        "$ref": "#/$defs/ArtifactDependencyRef"
+      },
+      "minItems": 1,
+      "title": "Excluded Proof Artifact Refs",
+      "type": "array"
+    },
+    "formal_model_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "limitations": {
+      "minLength": 1,
+      "title": "Limitations",
+      "type": "string"
+    },
+    "obligation_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "originating_verifier": {
+      "$ref": "#/$defs/Actor"
+    },
+    "originating_verifier_run": {
+      "$ref": "#/$defs/RunProvenanceBinding"
+    },
+    "outcome": {
+      "enum": [
+        "agrees",
+        "gap_found",
+        "falsified",
+        "inconclusive"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "package_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "parent_runs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/RunProvenanceBinding"
+      },
+      "title": "Parent Runs",
+      "type": "array"
+    },
+    "performed_at": {
+      "minLength": 1,
+      "title": "Performed At",
+      "type": "string"
+    },
+    "proof_author": {
+      "$ref": "#/$defs/Actor"
+    },
+    "proof_author_output_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "proof_author_run": {
+      "$ref": "#/$defs/RunProvenanceBinding"
+    },
+    "rederiver": {
+      "$ref": "#/$defs/Actor"
+    },
+    "route_run_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Route Run Hash",
+      "type": "string"
+    },
+    "route_run_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Route Run Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "verification_record_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    }
+  },
+  "required": [
+    "package_ref",
+    "claim_graph_ref",
+    "claim_id",
+    "obligation_ref",
+    "formal_model_ref",
+    "assumption_map_ref",
+    "verification_record_ref",
+    "originating_verifier",
+    "originating_verifier_run",
+    "proof_author",
+    "proof_author_output_ref",
+    "proof_author_run",
+    "rederiver",
+    "route_run_id",
+    "route_run_hash",
+    "derivation_artifact_ref",
+    "derivation_steps",
+    "derived_conclusion",
+    "comparison_to_claim",
+    "context_manifest_hash",
+    "compiled_context_hash",
+    "excluded_proof_artifact_refs",
+    "outcome",
+    "limitations",
+    "performed_at"
+  ],
+  "title": "ReDerivationRecord",
+  "type": "object"
+}

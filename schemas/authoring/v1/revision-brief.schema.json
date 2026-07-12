@@ -1,0 +1,179 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "RevisionInstruction": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "correct_formal_expression",
+            "narrow_scope",
+            "restore_assumption",
+            "repair_explanation",
+            "replace_example_or_witness",
+            "repair_reader_path",
+            "stabilize_terminology",
+            "add_boundary",
+            "remove_governance_language",
+            "request_human_decision"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "blocking": {
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "finding_ref": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "instruction_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Instruction Id",
+          "type": "string"
+        },
+        "requirement": {
+          "minLength": 1,
+          "title": "Requirement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "instruction_id",
+        "finding_ref",
+        "action",
+        "requirement",
+        "blocking"
+      ],
+      "title": "RevisionInstruction",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/authoring/v1/revision-brief.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "brief_artifact_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "finding_refs": {
+      "items": {
+        "$ref": "#/$defs/EntityVersionRef"
+      },
+      "minItems": 1,
+      "title": "Finding Refs",
+      "type": "array"
+    },
+    "instructions": {
+      "items": {
+        "$ref": "#/$defs/RevisionInstruction"
+      },
+      "minItems": 1,
+      "title": "Instructions",
+      "type": "array"
+    },
+    "manuscript_unit_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "prepared_at": {
+      "minLength": 1,
+      "title": "Prepared At",
+      "type": "string"
+    },
+    "prepared_by": {
+      "$ref": "#/$defs/Actor"
+    },
+    "review_closure_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "manuscript_unit_ref",
+    "review_closure_ref",
+    "finding_refs",
+    "instructions",
+    "brief_artifact_ref",
+    "prepared_by",
+    "prepared_at"
+  ],
+  "title": "RevisionBrief",
+  "type": "object"
+}

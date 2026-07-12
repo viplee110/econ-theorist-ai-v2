@@ -1,0 +1,4 @@
+Consume one exact current AssuranceBundle, one exact current ManuscriptUnit, and exactly three fresh ReviewRecords for formal fidelity, economic reading, and adjudicated cold-reader transfer, together with their exact ReviewFinding references.
+Apply AUTHORING-READY-0.1 noncompensatorily and produce exactly one ReviewClosure; preview can never become authoring-ready.
+When a blocking finding is repairable without changing scientific scope or human decisions, also produce at most one RevisionBrief addressed to the canonical writer and bound to exact spans, findings, and source revisions.
+Otherwise preserve the blocker or identify the exact human decision requirement; do not average failures, rewrite prose, reuse stale reviews, or close against mismatched manuscript revisions.

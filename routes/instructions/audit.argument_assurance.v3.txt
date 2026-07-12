@@ -1,0 +1,5 @@
+Audit every exact current ReDerivationRecord against the same ValidatedArgumentPackage, claim graph, formal model, assumption map, proof obligations, verification bundle, proof artifacts, and reproducible tool receipts.
+Require the assurance actor to be independent where the contract demands it and bind every proof audit or symbolic/counterexample receipt to exact claim, obligation, assumption, model, artifact, tool, code, input, and output revisions.
+Treat finite examples, grids, simulations, and failure to find a counterexample only as corroboration or falsification; a symbolic certificate discharges only its exact identity and covered domain.
+Produce exactly one AssuranceBundle with the headline result, complete re-derivation set, audits, bounded evidentiary roles, unresolved issues, criticality, and exact freshness dependencies.
+Expose to later authoring only accepted statements, assumption roles, economic argument, boundary, and reader-facing proof roadmap, never raw transcripts or originating proof persuasion.

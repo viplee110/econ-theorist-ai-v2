@@ -1,0 +1,215 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "ReaderProbeDescriptor": {
+      "additionalProperties": false,
+      "description": "Public probe metadata; the answer criterion remains in the sealed key.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "question_benchmark_retell",
+            "exact_scope_recovery",
+            "assumption_role_recovery",
+            "boundary_discrimination",
+            "near_transfer"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "probe_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Probe Id",
+          "type": "string"
+        },
+        "prompt_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Prompt Hash",
+          "type": "string"
+        },
+        "target_assertion_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Target Assertion Ids",
+          "type": "array"
+        },
+        "target_contract_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Target Contract Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "probe_id",
+        "kind",
+        "prompt_hash"
+      ],
+      "title": "ReaderProbeDescriptor",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/authoring/v1/reader-probe-set.schema.json",
+  "additionalProperties": false,
+  "description": "Sealed cold-reader probes over one exact frozen manuscript unit.",
+  "properties": {
+    "adjudicator": {
+      "$ref": "#/$defs/Actor"
+    },
+    "answer_key_artifact_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "assignment_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "canonical_writer": {
+      "$ref": "#/$defs/Actor"
+    },
+    "context_manifest_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Context Manifest Hash",
+      "type": "string"
+    },
+    "frozen_manuscript_artifact_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "manuscript_unit_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "probe_artifact_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "probe_designer": {
+      "$ref": "#/$defs/Actor"
+    },
+    "probes": {
+      "items": {
+        "$ref": "#/$defs/ReaderProbeDescriptor"
+      },
+      "maxItems": 5,
+      "minItems": 5,
+      "title": "Probes",
+      "type": "array"
+    },
+    "respondent": {
+      "$ref": "#/$defs/Actor"
+    },
+    "route_run_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Route Run Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "sealed_at": {
+      "minLength": 1,
+      "title": "Sealed At",
+      "type": "string"
+    },
+    "transfer_objective": {
+      "minLength": 1,
+      "title": "Transfer Objective",
+      "type": "string"
+    }
+  },
+  "required": [
+    "assignment_ref",
+    "manuscript_unit_ref",
+    "frozen_manuscript_artifact_ref",
+    "probe_designer",
+    "respondent",
+    "adjudicator",
+    "canonical_writer",
+    "transfer_objective",
+    "probes",
+    "probe_artifact_ref",
+    "answer_key_artifact_ref",
+    "route_run_id",
+    "context_manifest_hash",
+    "sealed_at"
+  ],
+  "title": "ReaderProbeSet",
+  "type": "object"
+}

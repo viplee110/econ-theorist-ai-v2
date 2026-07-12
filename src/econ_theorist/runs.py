@@ -13,18 +13,32 @@ from .codec import canonical_json_bytes, sha256_digest
 from .context import compile_context, make_context_manifest, units_for_bytes
 from .errors import IntegrityError, RuntimeStoreError
 from .ids import new_id, utc_now
-from .legacy_boundary import snapshot_has_phase2_material
-from .models import Actor, ContextManifest, PrivacyLabel, RouteRun, RouteSpecV2, Snapshot
+from .legacy_boundary import snapshot_has_phase2_material, snapshot_has_phase3_material
+from .authoring_validation import (
+    AuthoringValidationError,
+    validate_phase3_route_entry,
+)
+from .models import (
+    Actor,
+    ContextManifest,
+    PrivacyLabel,
+    RouteRun,
+    RouteSpecV2,
+    RouteSpecV3,
+    Snapshot,
+)
 from .policy import (
     ISOLATION_POLICY,
     KERNEL_HASH,
     KERNEL_VERSION,
-    SELECTOR_VERSION,
     VALIDATOR_VERSION,
     ROUTE_REGISTRY_V1_HASH,
+    ROUTE_REGISTRY_V2_HASH,
+    V3_NATIVE_ROUTE_IDS,
     decision_registry_version_for_route,
     instruction_bundle_bytes,
     registry_hash_for_route,
+    selector_version_for_route,
 )
 from .route_registry import authorize_route, get_route, validate_privacy_clearance
 from .theory_validation import TheoryValidationError, validate_phase2_route_entry
@@ -260,7 +274,21 @@ def begin_run(
         raise RouteEntryError(
             "frozen v1 routes are replay-only after Phase 2 material enters a project"
         )
-    if isinstance(route, RouteSpecV2):
+    if (
+        registry_hash_for_route(route) == ROUTE_REGISTRY_V2_HASH
+        and snapshot_has_phase3_material(snapshot)
+    ):
+        raise RouteEntryError(
+            "frozen v2 routes are replay-only after Phase 3 material enters a project"
+        )
+    if isinstance(route, RouteSpecV3) and route.route_id in V3_NATIVE_ROUTE_IDS:
+        try:
+            validate_phase3_route_entry(snapshot, route, focus_tuple, actor=actor)
+        except AuthoringValidationError as exc:
+            raise RouteEntryError(
+                f"Phase 3 route entry rejected {route.route_id}: {exc}"
+            ) from exc
+    elif isinstance(route, RouteSpecV2):
         try:
             validate_phase2_route_entry(
                 snapshot, route, focus_tuple, actor=actor
@@ -399,7 +427,7 @@ def read_context(layout: StoreLayout, route_run_id: str) -> ContextManifest:
     if (
         manifest.decision_registry_version
         != decision_registry_version_for_route(route)
-        or manifest.selector_version != SELECTOR_VERSION
+        or manifest.selector_version != selector_version_for_route(route)
         or manifest.kernel_version != KERNEL_VERSION
         or manifest.kernel_hash != KERNEL_HASH
         or manifest.validator_version != VALIDATOR_VERSION
@@ -458,7 +486,16 @@ def provenance_bytes(layout: StoreLayout, route_run_id: str) -> dict[str, bytes]
         privacy_clearance=run.privacy_clearance,
         route_registry_hash=manifest.route_registry_hash,
     )
-    if isinstance(route, RouteSpecV2):
+    if isinstance(route, RouteSpecV3) and route.route_id in V3_NATIVE_ROUTE_IDS:
+        try:
+            validate_phase3_route_entry(
+                snapshot, route, run.focus_entity_ids, actor=run.actor
+            )
+        except AuthoringValidationError as exc:
+            raise RouteEntryError(
+                f"Phase 3 route entry no longer recompiles: {exc}"
+            ) from exc
+    elif isinstance(route, RouteSpecV2):
         try:
             validate_phase2_route_entry(
                 snapshot, route, run.focus_entity_ids, actor=run.actor

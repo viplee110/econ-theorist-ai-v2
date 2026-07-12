@@ -1,0 +1,203 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "HumanEffortEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "active_minutes": {
+          "minimum": 1,
+          "title": "Active Minutes",
+          "type": "integer"
+        },
+        "affected_assertion_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Affected Assertion Ids",
+          "type": "array"
+        },
+        "after_artifact_ref": {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        "before_artifact_ref": {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        "category": {
+          "enum": [
+            "formal_correction",
+            "mechanism_intuition_repair",
+            "assumption_interpretation",
+            "reader_path_result_hierarchy",
+            "literature_positioning",
+            "voice_language",
+            "formatting_only",
+            "deletion_or_scope_reduction"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "disposition": {
+          "enum": [
+            "accepted_unchanged",
+            "light_edit",
+            "substantial_rewrite",
+            "deleted"
+          ],
+          "title": "Disposition",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "note": {
+          "minLength": 1,
+          "title": "Note",
+          "type": "string"
+        },
+        "occurred_at": {
+          "minLength": 1,
+          "title": "Occurred At",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "occurred_at",
+        "active_minutes",
+        "affected_assertion_ids",
+        "disposition",
+        "severity",
+        "category",
+        "before_artifact_ref",
+        "after_artifact_ref",
+        "note"
+      ],
+      "title": "HumanEffortEvent",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/authoring/v1/human-effort-record.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "events": {
+      "items": {
+        "$ref": "#/$defs/HumanEffortEvent"
+      },
+      "minItems": 1,
+      "title": "Events",
+      "type": "array"
+    },
+    "human": {
+      "$ref": "#/$defs/Actor"
+    },
+    "manuscript_unit_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "recorded_at": {
+      "minLength": 1,
+      "title": "Recorded At",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "manuscript_unit_ref",
+    "human",
+    "events",
+    "recorded_at"
+  ],
+  "title": "HumanEffortRecord",
+  "type": "object"
+}

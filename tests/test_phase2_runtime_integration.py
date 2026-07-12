@@ -26,7 +26,11 @@ from econ_theorist.models import (
     ScientificStatus,
     Transaction,
 )
-from econ_theorist.policy import ROUTE_REGISTRY_V1_HASH, ROUTE_REGISTRY_V2_HASH
+from econ_theorist.policy import (
+    ROUTE_REGISTRY_V1_HASH,
+    ROUTE_REGISTRY_V2_HASH,
+    ROUTE_REGISTRY_V3_HASH,
+)
 from econ_theorist.project import init_project
 from econ_theorist.runs import (
     RouteEntryError,
@@ -246,11 +250,11 @@ class Phase2RuntimeIntegrationTests(unittest.TestCase):
             path,
         )
 
-    def test_active_v2_rejects_untyped_research_question_at_commit(self) -> None:
+    def test_active_catalog_preserves_phase2_rejection_of_untyped_question(self) -> None:
         run = self._begin()
         self.assertEqual(
             read_context(self.layout, run.route_run_id).route_registry_hash,
-            ROUTE_REGISTRY_V2_HASH,
+            ROUTE_REGISTRY_V3_HASH,
         )
         transaction = self._transaction(
             run, self._question(typed=False), include_outcome=True
@@ -267,7 +271,7 @@ class Phase2RuntimeIntegrationTests(unittest.TestCase):
         self.assertEqual(unchanged.head, self.snapshot.head)
         self.assertNotIn("question.runtime", unchanged.current_entities)
 
-    def test_active_v2_rejects_typed_output_without_route_outcome(self) -> None:
+    def test_active_catalog_preserves_phase2_route_outcome_requirement(self) -> None:
         run = self._begin()
         transaction = self._transaction(
             run,

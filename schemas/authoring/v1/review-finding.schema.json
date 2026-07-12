@@ -1,0 +1,226 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/authoring/v1/review-finding.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "assertion_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Assertion Ids",
+      "type": "array"
+    },
+    "assignment_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "blocking": {
+      "title": "Blocking",
+      "type": "boolean"
+    },
+    "category": {
+      "enum": [
+        "formal_fidelity",
+        "scope",
+        "assumption",
+        "proof_language",
+        "economic_explanation",
+        "example_or_witness",
+        "reader_prerequisite",
+        "terminology",
+        "boundary",
+        "transfer",
+        "governance_leakage",
+        "other"
+      ],
+      "title": "Category",
+      "type": "string"
+    },
+    "critic": {
+      "$ref": "#/$defs/Actor"
+    },
+    "evidence_refs": {
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          {
+            "$ref": "#/$defs/ArtifactDependencyRef"
+          },
+          {
+            "$ref": "#/$defs/DecisionVersionRef"
+          }
+        ]
+      },
+      "minItems": 1,
+      "title": "Evidence Refs",
+      "type": "array"
+    },
+    "finding_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Finding Id",
+      "type": "string"
+    },
+    "manuscript_unit_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "recommended_repair": {
+      "minLength": 1,
+      "title": "Recommended Repair",
+      "type": "string"
+    },
+    "reported_at": {
+      "minLength": 1,
+      "title": "Reported At",
+      "type": "string"
+    },
+    "reviewed_artifact_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "role": {
+      "enum": [
+        "formal_fidelity",
+        "economic_reader",
+        "cold_reader"
+      ],
+      "title": "Role",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "severity": {
+      "enum": [
+        "info",
+        "warning",
+        "error",
+        "critical"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "summary": {
+      "minLength": 1,
+      "title": "Summary",
+      "type": "string"
+    }
+  },
+  "required": [
+    "finding_id",
+    "assignment_ref",
+    "manuscript_unit_ref",
+    "reviewed_artifact_ref",
+    "role",
+    "critic",
+    "category",
+    "severity",
+    "assertion_ids",
+    "evidence_refs",
+    "summary",
+    "recommended_repair",
+    "blocking",
+    "reported_at"
+  ],
+  "title": "ReviewFinding",
+  "type": "object"
+}

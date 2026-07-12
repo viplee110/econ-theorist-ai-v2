@@ -6,9 +6,15 @@ The project is designed for pure and applied theory. It does not provide econome
 
 ## Current status
 
-The repository contains **Architecture v0.1**, the accepted **Phase 1 walking substrate**, and a **Phase 2 implementation candidate pending branch review**. Phase 1 is a local, provider-neutral scientific state kernel: it initializes a theory project, preserves immutable transactions and Decisions, compiles bounded route contexts, commits under an exclusive lock, derives facet-level staleness, protects human-owned files, renders noncanonical views, and recovers from interrupted commits. Its acceptance suite includes real two-process head races, abrupt subprocess exits on both sides of the atomic-head boundary, adversarial authority/privacy tests, and Windows junction/reparse checks. Phase 1 was reviewed and merged into `main`.
+The repository contains **Architecture v0.1**, the accepted **Phase 1 walking substrate**, the accepted **Phase 2 theory-kernel vertical slice**, and the implemented **Phase 3 assurance and authoring vertical slice**. Phase 1 is a local, provider-neutral scientific state kernel: it initializes a theory project, preserves immutable transactions and Decisions, compiles bounded route contexts, commits under an exclusive lock, derives facet-level staleness, protects human-owned files, renders noncanonical views, and recovers from interrupted commits. Its acceptance suite includes real two-process head races, abrupt subprocess exits on both sides of the atomic-head boundary, adversarial authority/privacy tests, and Windows junction/reparse checks.
 
-Registry v2 contains 19 routes: 16 are enabled (13 theory routes, dependency repair, and two sealed blind-evaluation routes), while `design.reader_path`, `compose.manuscript_unit`, and `review.manuscript_unit` remain `not_implemented`. Phase 2 supplies provider-neutral scientific semantics and a replayable runtime contract; it does not itself call an AI provider, generate a paper, or compile a manuscript. No claim is made that the system can guarantee publication at Econometrica, a Top-5 journal, or a leading field journal. Those venues define an ambition and evaluation burden, not a style template or an acceptance promise.
+Frozen registry v2 contains 19 routes: 16 are enabled (13 theory routes, dependency repair, and two sealed blind-evaluation routes), while its three authoring placeholders remain `not_implemented`. Registry v3 adds ten native assurance, authoring, cold-reader, closure, and effort routes without changing historical v1/v2 meanings. Each native route validates the exact input IDs, revisions, and lineage in its immutable run focus; satisfying only entity types and counts is insufficient, and a same-type foreign Paper IR, contract, probe, review, or assurance object fails closed. For assurance, the VAP is the authority root: its internal ClaimGraph, FormalModel, AssumptionMap, and VerificationBundle refs must match exactly; every verified obligation/record pair must belong to that bundle and have exactly one same-package re-derivation. The provider-visible selected refs and blind packet are a separate projection and may exclude the VAP even though the immutable focus retains its authority binding. The real Phase 3 gold chain extends the accepted Phase 2 ObjectStore history through three obligation-scoped blind re-derivations, a multi-record assurance bundle, Paper IR and reader contracts, and an actual manuscript artifact. Its first manuscript fails the economic-reader and cold-reader transfer gates, receives a typed `RevisionBrief`, is superseded by the same canonical writer, and reaches `authoring_ready` only after fresh formal, economic, and cold-reader reviews pass.
+
+Phase 3 validation reads and binds the immutable artifact bytes themselves--including re-derivation transcripts, proof-audit and harness records, manuscript text, and the separately sealed probe, answer key, and response--rather than trusting payload-declared hashes. Every non-whitespace manuscript-body character must belong to a typed prose span, and economic-reader and cold-reader coverage closes separately for every `ResultPacket`. `authoring_ready` requires the entire exact dependency chain to remain current and fresh, not merely the terminal review records. The writer cannot see cold probes or keys, the respondent cannot see the key, and append-only human-effort telemetry records active intervention separately from unattended compute. The comprehensive gold suffix currently has a noticeable replay and validation cost; reducing that cost without weakening byte, lineage, or isolation checks is a later optimization item.
+
+The local `submission` compiler is implemented, but it is intentionally narrow: it may promote an exact current authoring-ready working unit only with the governing human Decision and may change formatting and span offsets, never wording, typed meaning, or scientific scope. It does not execute an external submission. Phase 3 also binds a harness's exact executable predicate and receipt to a declared obligation, but cannot by itself prove that the predicate is semantically equivalent to the obligation's natural-language meaning; that mapping is an explicit Phase 4 hardening boundary.
+
+Phase 3 establishes a trustworthy one-result-block authoring core, not a complete-paper compiler or a publication guarantee. Phase 4's field/audience/venue profiles and theory craft-retrieval system remain to be implemented. No claim is made that the system can guarantee publication at Econometrica, a Top-5 journal, or a leading field journal. Those venues define an ambition and evaluation burden, not a style template or an acceptance promise.
 
 ## Design thesis
 
@@ -43,6 +49,7 @@ A typed canonical state, dependency graph, decision history, and route-specific 
 - [Implementation plan](docs/architecture/implementation_plan.md)
 - [Phase 1 executable contract](docs/implementation/phase1_contract.md)
 - [Phase 2 executable contract](docs/implementation/phase2_contract.md)
+- [Phase 3 executable contract](docs/implementation/phase3_contract.md)
 
 Each detailed document owns one part of the design. `ARCHITECTURE.md` defines the cross-cutting constitution and points to those owners; it does not duplicate their full specifications.
 
@@ -80,6 +87,7 @@ Run the deterministic test suite from a source checkout with:
 python -m unittest discover -s tests -v
 python scripts/export_schemas.py --check
 python scripts/export_theory_schemas.py --check
+python scripts/export_authoring_schemas.py --check
 ```
 
 ## License

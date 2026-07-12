@@ -1,9 +1,10 @@
-"""Live-write boundary between the frozen v1 substrate and Phase 2 state.
+"""Live-write boundaries between frozen catalogs and newer typed state.
 
 Historical v1 transactions remain replayable under their exact catalog.  A
 new v1 run, however, must not create or mutate packed Phase 2 payloads, register
 a blind candidate lock, or operate after Phase 2 material has entered the
-project.  Those writes must use the active v2 scientific contracts.
+project. Phase 2 likewise becomes replay-only after authoring material enters
+the project. Those writes must use the active catalog's scientific contracts.
 """
 
 from __future__ import annotations
@@ -17,6 +18,7 @@ from .models import (
     Transaction,
 )
 from .theory import is_packed_theory_entity
+from .authoring import is_packed_authoring_entity
 
 
 CANDIDATE_LOCK_MEDIA_TYPE = (
@@ -53,9 +55,29 @@ def transaction_introduces_phase2_material(transaction: Transaction) -> bool:
     return False
 
 
+def snapshot_has_phase3_material(snapshot: Snapshot) -> bool:
+    """Whether reachable history contains a packed Phase 3 authoring payload."""
+
+    return any(
+        is_packed_authoring_entity(item) for item in snapshot.entity_versions
+    )
+
+
+def transaction_introduces_phase3_material(transaction: Transaction) -> bool:
+    """Whether a candidate attempts a Phase 3 write under an older catalog."""
+
+    return any(
+        isinstance(operation, (CreateEntityOp, SupersedeEntityOp))
+        and is_packed_authoring_entity(operation.entity)
+        for operation in transaction.operations
+    )
+
+
 __all__ = [
     "CANDIDATE_LOCK_MEDIA_TYPE",
     "is_candidate_lock",
     "snapshot_has_phase2_material",
+    "snapshot_has_phase3_material",
     "transaction_introduces_phase2_material",
+    "transaction_introduces_phase3_material",
 ]

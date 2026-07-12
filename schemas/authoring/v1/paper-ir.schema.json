@@ -1,0 +1,532 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "ClaimProjection": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_wording_strength": {
+          "enum": [
+            "exact",
+            "entailed_equivalent",
+            "entailed_weaker"
+          ],
+          "title": "Allowed Wording Strength",
+          "type": "string"
+        },
+        "assumption_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Assumption Ids",
+          "type": "array"
+        },
+        "assumption_source_refs": {
+          "items": {
+            "$ref": "#/$defs/SemanticFacetRef"
+          },
+          "title": "Assumption Source Refs",
+          "type": "array"
+        },
+        "claim_graph_ref": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "claim_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "formal_statement": {
+          "minLength": 1,
+          "title": "Formal Statement",
+          "type": "string"
+        },
+        "formal_statement_source": {
+          "$ref": "#/$defs/SemanticFacetRef"
+        },
+        "permitted_locations": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Permitted Locations",
+          "type": "array"
+        },
+        "prohibited_extensions": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Prohibited Extensions",
+          "type": "array"
+        },
+        "projection_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Projection Id",
+          "type": "string"
+        },
+        "scope": {
+          "minLength": 1,
+          "title": "Scope",
+          "type": "string"
+        },
+        "scope_source": {
+          "$ref": "#/$defs/SemanticFacetRef"
+        },
+        "semantic_translation": {
+          "minLength": 1,
+          "title": "Semantic Translation",
+          "type": "string"
+        },
+        "translation_source": {
+          "$ref": "#/$defs/SemanticFacetRef"
+        }
+      },
+      "required": [
+        "projection_id",
+        "claim_graph_ref",
+        "claim_id",
+        "formal_statement",
+        "scope",
+        "assumption_ids",
+        "semantic_translation",
+        "formal_statement_source",
+        "scope_source",
+        "assumption_source_refs",
+        "translation_source",
+        "allowed_wording_strength",
+        "permitted_locations",
+        "prohibited_extensions"
+      ],
+      "title": "ClaimProjection",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EconomicOntologyEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_aliases": {
+          "default": [],
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Allowed Aliases",
+          "type": "array"
+        },
+        "economic_interpretation": {
+          "minLength": 1,
+          "title": "Economic Interpretation",
+          "type": "string"
+        },
+        "first_use_section_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "First Use Section Id",
+          "type": "string"
+        },
+        "forbidden_names": {
+          "default": [],
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Forbidden Names",
+          "type": "array"
+        },
+        "formal_symbol": {
+          "minLength": 1,
+          "title": "Formal Symbol",
+          "type": "string"
+        },
+        "mechanism_role": {
+          "minLength": 1,
+          "title": "Mechanism Role",
+          "type": "string"
+        },
+        "object_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Object Id",
+          "type": "string"
+        },
+        "preferred_economic_name": {
+          "minLength": 1,
+          "title": "Preferred Economic Name",
+          "type": "string"
+        },
+        "short_definition": {
+          "minLength": 1,
+          "title": "Short Definition",
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "formal_symbol",
+        "preferred_economic_name",
+        "short_definition",
+        "economic_interpretation",
+        "mechanism_role",
+        "first_use_section_id"
+      ],
+      "title": "EconomicOntologyEntry",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "NarrativeSpine": {
+      "additionalProperties": false,
+      "properties": {
+        "boundary_and_failure_conditions": {
+          "minLength": 1,
+          "title": "Boundary And Failure Conditions",
+          "type": "string"
+        },
+        "central_result": {
+          "minLength": 1,
+          "title": "Central Result",
+          "type": "string"
+        },
+        "economic_consequence_or_changed_practice": {
+          "minLength": 1,
+          "title": "Economic Consequence Or Changed Practice",
+          "type": "string"
+        },
+        "literature_update": {
+          "minLength": 1,
+          "title": "Literature Update",
+          "type": "string"
+        },
+        "natural_benchmark": {
+          "minLength": 1,
+          "title": "Natural Benchmark",
+          "type": "string"
+        },
+        "new_economic_or_conceptual_object": {
+          "minLength": 1,
+          "title": "New Economic Or Conceptual Object",
+          "type": "string"
+        },
+        "phenomenon_or_question": {
+          "minLength": 1,
+          "title": "Phenomenon Or Question",
+          "type": "string"
+        },
+        "source_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Source Refs",
+          "type": "array"
+        },
+        "unresolved_benchmark_delta": {
+          "minLength": 1,
+          "title": "Unresolved Benchmark Delta",
+          "type": "string"
+        },
+        "why_not_immediate": {
+          "minLength": 1,
+          "title": "Why Not Immediate",
+          "type": "string"
+        }
+      },
+      "required": [
+        "phenomenon_or_question",
+        "natural_benchmark",
+        "unresolved_benchmark_delta",
+        "new_economic_or_conceptual_object",
+        "central_result",
+        "why_not_immediate",
+        "boundary_and_failure_conditions",
+        "economic_consequence_or_changed_practice",
+        "literature_update",
+        "source_refs"
+      ],
+      "title": "NarrativeSpine",
+      "type": "object"
+    },
+    "SemanticFacetRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "facet": {
+          "enum": [
+            "formal",
+            "economic_interpretation",
+            "literature_novelty",
+            "terminology_presentation",
+            "authority"
+          ],
+          "title": "Facet",
+          "type": "string"
+        },
+        "field_path": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field Path"
+        },
+        "semantic_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Semantic Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version",
+        "facet",
+        "semantic_hash"
+      ],
+      "title": "SemanticFacetRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/authoring/v1/paper-ir.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "assurance_bundle_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "built_at": {
+      "minLength": 1,
+      "title": "Built At",
+      "type": "string"
+    },
+    "canonical_writer": {
+      "$ref": "#/$defs/Actor"
+    },
+    "claim_projections": {
+      "items": {
+        "$ref": "#/$defs/ClaimProjection"
+      },
+      "minItems": 1,
+      "title": "Claim Projections",
+      "type": "array"
+    },
+    "compiler_mode": {
+      "enum": [
+        "preview",
+        "working",
+        "submission"
+      ],
+      "title": "Compiler Mode",
+      "type": "string"
+    },
+    "g5_decision_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DecisionVersionRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "language": {
+      "minLength": 1,
+      "title": "Language",
+      "type": "string"
+    },
+    "manuscript_version_promotion_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DecisionVersionRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "narrative_spine": {
+      "$ref": "#/$defs/NarrativeSpine"
+    },
+    "ontology": {
+      "items": {
+        "$ref": "#/$defs/EconomicOntologyEntry"
+      },
+      "minItems": 1,
+      "title": "Ontology",
+      "type": "array"
+    },
+    "package_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "preview_label": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Preview Label"
+    },
+    "resolved_profile_manifest_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source_state_revision": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Source State Revision",
+      "type": "string"
+    },
+    "upstream_projection_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Upstream Projection Hash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "compiler_mode",
+    "package_ref",
+    "source_state_revision",
+    "upstream_projection_hash",
+    "language",
+    "resolved_profile_manifest_ref",
+    "claim_projections",
+    "ontology",
+    "narrative_spine",
+    "canonical_writer",
+    "built_at"
+  ],
+  "title": "PaperIR",
+  "type": "object"
+}

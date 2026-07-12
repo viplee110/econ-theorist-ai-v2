@@ -1,0 +1,137 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/authoring/v1/reader-response.schema.json",
+  "additionalProperties": false,
+  "description": "A respondent output that deliberately has no answer-key field.",
+  "properties": {
+    "answered_probe_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "minItems": 5,
+      "title": "Answered Probe Ids",
+      "type": "array"
+    },
+    "context_manifest_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Context Manifest Hash",
+      "type": "string"
+    },
+    "manuscript_unit_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "probe_set_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "respondent": {
+      "$ref": "#/$defs/Actor"
+    },
+    "response_artifact_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "route_run_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Route Run Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "submitted_at": {
+      "minLength": 1,
+      "title": "Submitted At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "probe_set_ref",
+    "manuscript_unit_ref",
+    "respondent",
+    "answered_probe_ids",
+    "response_artifact_ref",
+    "route_run_id",
+    "context_manifest_hash",
+    "submitted_at"
+  ],
+  "title": "ReaderResponse",
+  "type": "object"
+}

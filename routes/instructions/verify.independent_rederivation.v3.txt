@@ -1,0 +1,4 @@
+Consume exactly one ProofObligation and re-derive it from its current claim, model, assumptions, and admissible definitions in a blind context that excludes the originating proof narrative and verifier persuasion.
+Bind the actor, inputs, claim scope, assumption set, model revision, proof obligation, derivation steps, conclusion, unresolved issues, and independence evidence in exactly one immutable ReDerivationRecord.
+Do not read or reconstruct hidden originating proof prose, widen the claim, substitute numerical agreement for derivation, or let an actor from the originating verification satisfy independence.
+Record a failure, limitation, or counterexample exactly when found; inability to re-derive is assurance evidence and must never be silently repaired into success.

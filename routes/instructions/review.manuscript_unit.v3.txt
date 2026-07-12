@@ -1,0 +1,5 @@
+Execute exactly one assigned formal-fidelity or economic-reader review of one exact current ManuscriptUnit.
+Require actor, CriticAssignment, role, and sealed context to agree; forbid the canonical writer, the cold-reader lane actors, and access to any other critic's findings.
+Produce exactly one immutable ReviewRecord and zero or more passage-level ReviewFindings with role-specific tests, never revised prose, a closure, a revision brief, or human-effort evidence.
+The formal critic checks exact claim, scope, assumptions, proof status, and evidentiary roles; the economic reader checks reconstructible non-restatement logic, diagnostic examples, boundaries, reader order, terminology, and system-language leakage.
+Preserve uncertainty and create blocking findings rather than silently changing science or compensating one failed dimension with another.

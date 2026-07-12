@@ -1,0 +1,783 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "AssumptionContract": {
+      "additionalProperties": false,
+      "properties": {
+        "assumption_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Assumption Id",
+          "type": "string"
+        },
+        "economic_content": {
+          "minLength": 1,
+          "title": "Economic Content",
+          "type": "string"
+        },
+        "failure_without": {
+          "minLength": 1,
+          "title": "Failure Without",
+          "type": "string"
+        },
+        "first_needed_section_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "First Needed Section Id",
+          "type": "string"
+        },
+        "formal_source": {
+          "$ref": "#/$defs/SemanticFacetRef"
+        },
+        "foundation": {
+          "enum": [
+            "primitive",
+            "reduced_form"
+          ],
+          "title": "Foundation",
+          "type": "string"
+        },
+        "proof_steps": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Proof Steps",
+          "type": "array"
+        },
+        "satisfying_example_refs": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "title": "Satisfying Example Refs",
+          "type": "array"
+        },
+        "supported_claim_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Supported Claim Ids",
+          "type": "array"
+        },
+        "weaker_condition_status": {
+          "minLength": 1,
+          "title": "Weaker Condition Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "assumption_id",
+        "formal_source",
+        "economic_content",
+        "supported_claim_ids",
+        "proof_steps",
+        "foundation",
+        "failure_without",
+        "weaker_condition_status",
+        "first_needed_section_id"
+      ],
+      "title": "AssumptionContract",
+      "type": "object"
+    },
+    "CharacterizationBoundsModule": {
+      "additionalProperties": false,
+      "properties": {
+        "archetype": {
+          "const": "characterization_bounds",
+          "default": "characterization_bounds",
+          "title": "Archetype",
+          "type": "string"
+        },
+        "interpretation_of_conditions": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "necessity_witness": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "object_characterized": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "sufficiency_witness": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "tightness_or_independence": {
+          "$ref": "#/$defs/ContractElement"
+        }
+      },
+      "required": [
+        "object_characterized",
+        "necessity_witness",
+        "sufficiency_witness",
+        "tightness_or_independence",
+        "interpretation_of_conditions"
+      ],
+      "title": "CharacterizationBoundsModule",
+      "type": "object"
+    },
+    "ComparativeStaticsThresholdModule": {
+      "additionalProperties": false,
+      "properties": {
+        "archetype": {
+          "const": "comparative_statics_threshold",
+          "default": "comparative_statics_threshold",
+          "title": "Archetype",
+          "type": "string"
+        },
+        "competing_effects": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "monotonicity_domain": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "perturbation": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "reversal_or_boundary_witness": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "threshold_or_regime_logic": {
+          "$ref": "#/$defs/ContractElement"
+        }
+      },
+      "required": [
+        "perturbation",
+        "competing_effects",
+        "monotonicity_domain",
+        "threshold_or_regime_logic",
+        "reversal_or_boundary_witness"
+      ],
+      "title": "ComparativeStaticsThresholdModule",
+      "type": "object"
+    },
+    "ConceptRepresentationFoundationModule": {
+      "additionalProperties": false,
+      "properties": {
+        "archetype": {
+          "const": "concept_representation_foundation",
+          "default": "concept_representation_foundation",
+          "title": "Archetype",
+          "type": "string"
+        },
+        "changed_conclusion_or_modeling_practice": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "concept_axioms_or_representation": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "economic_identity": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "representation_or_independence_burden": {
+          "$ref": "#/$defs/ContractElement"
+        }
+      },
+      "required": [
+        "concept_axioms_or_representation",
+        "economic_identity",
+        "representation_or_independence_burden",
+        "changed_conclusion_or_modeling_practice"
+      ],
+      "title": "ConceptRepresentationFoundationModule",
+      "type": "object"
+    },
+    "ContractElement": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "minLength": 1,
+          "title": "Content",
+          "type": "string"
+        },
+        "source_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Source Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "content",
+        "source_refs"
+      ],
+      "title": "ContractElement",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "DesignImplementationImpossibilityModule": {
+      "additionalProperties": false,
+      "properties": {
+        "archetype": {
+          "const": "design_implementation_impossibility",
+          "default": "design_implementation_impossibility",
+          "title": "Archetype",
+          "type": "string"
+        },
+        "construction_or_minimal_conflict": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "decisive_relaxation": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "incentive_feasibility_map": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "objective_or_desiderata": {
+          "$ref": "#/$defs/ContractElement"
+        }
+      },
+      "required": [
+        "objective_or_desiderata",
+        "incentive_feasibility_map",
+        "construction_or_minimal_conflict",
+        "decisive_relaxation"
+      ],
+      "title": "DesignImplementationImpossibilityModule",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "LayerContract": {
+      "additionalProperties": false,
+      "properties": {
+        "applicability": {
+          "enum": [
+            "applicable",
+            "not_applicable"
+          ],
+          "title": "Applicability",
+          "type": "string"
+        },
+        "content": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content"
+        },
+        "not_applicable_reason": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Not Applicable Reason"
+        },
+        "source_refs": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "title": "Source Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "applicability"
+      ],
+      "title": "LayerContract",
+      "type": "object"
+    },
+    "MechanismExplanationModule": {
+      "additionalProperties": false,
+      "properties": {
+        "ablation": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "affected_margin": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "archetype": {
+          "const": "mechanism_explanation",
+          "default": "mechanism_explanation",
+          "title": "Archetype",
+          "type": "string"
+        },
+        "failure_case": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "initiating_force": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "separating_example": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "serious_rival": {
+          "$ref": "#/$defs/ContractElement"
+        }
+      },
+      "required": [
+        "initiating_force",
+        "affected_margin",
+        "serious_rival",
+        "separating_example",
+        "ablation",
+        "failure_case"
+      ],
+      "title": "MechanismExplanationModule",
+      "type": "object"
+    },
+    "ProofRoadmapContract": {
+      "additionalProperties": false,
+      "properties": {
+        "assumption_roles": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Assumption Roles",
+          "type": "array"
+        },
+        "claim_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "key_decomposition_or_monotonicity_step": {
+          "minLength": 1,
+          "title": "Key Decomposition Or Monotonicity Step",
+          "type": "string"
+        },
+        "main_technical_obstacle": {
+          "minLength": 1,
+          "title": "Main Technical Obstacle",
+          "type": "string"
+        },
+        "method_or_certificate": {
+          "minLength": 1,
+          "title": "Method Or Certificate",
+          "type": "string"
+        },
+        "object_constructed_or_compared": {
+          "minLength": 1,
+          "title": "Object Constructed Or Compared",
+          "type": "string"
+        },
+        "proof_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Proof Refs",
+          "type": "array"
+        },
+        "roadmap_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Roadmap Id",
+          "type": "string"
+        },
+        "scope_not_established": {
+          "minLength": 1,
+          "title": "Scope Not Established",
+          "type": "string"
+        }
+      },
+      "required": [
+        "roadmap_id",
+        "claim_id",
+        "object_constructed_or_compared",
+        "key_decomposition_or_monotonicity_step",
+        "assumption_roles",
+        "main_technical_obstacle",
+        "method_or_certificate",
+        "scope_not_established",
+        "proof_refs"
+      ],
+      "title": "ProofRoadmapContract",
+      "type": "object"
+    },
+    "ResultPacket": {
+      "additionalProperties": false,
+      "properties": {
+        "archetype_explanation": {
+          "$ref": "#/$defs/LayerContract"
+        },
+        "archetype_module": {
+          "discriminator": {
+            "mapping": {
+              "characterization_bounds": "#/$defs/CharacterizationBoundsModule",
+              "comparative_statics_threshold": "#/$defs/ComparativeStaticsThresholdModule",
+              "concept_representation_foundation": "#/$defs/ConceptRepresentationFoundationModule",
+              "design_implementation_impossibility": "#/$defs/DesignImplementationImpossibilityModule",
+              "mechanism_explanation": "#/$defs/MechanismExplanationModule",
+              "robustness_invariance_equivalence": "#/$defs/RobustnessInvarianceEquivalenceModule"
+            },
+            "propertyName": "archetype"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/MechanismExplanationModule"
+            },
+            {
+              "$ref": "#/$defs/ComparativeStaticsThresholdModule"
+            },
+            {
+              "$ref": "#/$defs/CharacterizationBoundsModule"
+            },
+            {
+              "$ref": "#/$defs/RobustnessInvarianceEquivalenceModule"
+            },
+            {
+              "$ref": "#/$defs/DesignImplementationImpossibilityModule"
+            },
+            {
+              "$ref": "#/$defs/ConceptRepresentationFoundationModule"
+            }
+          ],
+          "title": "Archetype Module"
+        },
+        "boundary": {
+          "$ref": "#/$defs/LayerContract"
+        },
+        "claim_graph_ref": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "claim_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "claim_projection_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Claim Projection Id",
+          "type": "string"
+        },
+        "consequence": {
+          "$ref": "#/$defs/LayerContract"
+        },
+        "economic_translation": {
+          "$ref": "#/$defs/LayerContract"
+        },
+        "formal_statement_and_scope": {
+          "$ref": "#/$defs/LayerContract"
+        },
+        "packet_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Packet Id",
+          "type": "string"
+        },
+        "pre_result_expectation": {
+          "$ref": "#/$defs/LayerContract"
+        },
+        "primary_archetype": {
+          "enum": [
+            "mechanism_explanation",
+            "comparative_statics_threshold",
+            "characterization_bounds",
+            "robustness_invariance_equivalence",
+            "design_implementation_impossibility",
+            "concept_representation_foundation"
+          ],
+          "title": "Primary Archetype",
+          "type": "string"
+        },
+        "proof_roadmap": {
+          "$ref": "#/$defs/LayerContract"
+        },
+        "question": {
+          "$ref": "#/$defs/LayerContract"
+        }
+      },
+      "required": [
+        "packet_id",
+        "claim_projection_id",
+        "claim_graph_ref",
+        "claim_id",
+        "primary_archetype",
+        "question",
+        "pre_result_expectation",
+        "formal_statement_and_scope",
+        "economic_translation",
+        "archetype_explanation",
+        "boundary",
+        "proof_roadmap",
+        "consequence",
+        "archetype_module"
+      ],
+      "title": "ResultPacket",
+      "type": "object"
+    },
+    "RobustnessInvarianceEquivalenceModule": {
+      "additionalProperties": false,
+      "properties": {
+        "archetype": {
+          "const": "robustness_invariance_equivalence",
+          "default": "robustness_invariance_equivalence",
+          "title": "Archetype",
+          "type": "string"
+        },
+        "economically_meaningful_variation": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "environments_mapped": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "failure_boundary": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "mapping": {
+          "$ref": "#/$defs/ContractElement"
+        },
+        "preserved_object_or_claim": {
+          "$ref": "#/$defs/ContractElement"
+        }
+      },
+      "required": [
+        "environments_mapped",
+        "preserved_object_or_claim",
+        "mapping",
+        "economically_meaningful_variation",
+        "failure_boundary"
+      ],
+      "title": "RobustnessInvarianceEquivalenceModule",
+      "type": "object"
+    },
+    "SemanticFacetRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "facet": {
+          "enum": [
+            "formal",
+            "economic_interpretation",
+            "literature_novelty",
+            "terminology_presentation",
+            "authority"
+          ],
+          "title": "Facet",
+          "type": "string"
+        },
+        "field_path": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field Path"
+        },
+        "semantic_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Semantic Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version",
+        "facet",
+        "semantic_hash"
+      ],
+      "title": "SemanticFacetRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/authoring/v1/result-contract-set.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "assumption_contracts": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AssumptionContract"
+      },
+      "title": "Assumption Contracts",
+      "type": "array"
+    },
+    "assumption_map_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "built_at": {
+      "minLength": 1,
+      "title": "Built At",
+      "type": "string"
+    },
+    "claim_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "economic_argument_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "example_suite_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "paper_ir_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "proof_roadmaps": {
+      "items": {
+        "$ref": "#/$defs/ProofRoadmapContract"
+      },
+      "minItems": 1,
+      "title": "Proof Roadmaps",
+      "type": "array"
+    },
+    "reader_path_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "result_packets": {
+      "items": {
+        "$ref": "#/$defs/ResultPacket"
+      },
+      "minItems": 1,
+      "title": "Result Packets",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "verification_bundle_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    }
+  },
+  "required": [
+    "paper_ir_ref",
+    "reader_path_ref",
+    "claim_graph_ref",
+    "assumption_map_ref",
+    "economic_argument_graph_ref",
+    "example_suite_ref",
+    "verification_bundle_ref",
+    "result_packets",
+    "proof_roadmaps",
+    "built_at"
+  ],
+  "title": "ResultContractSet",
+  "type": "object"
+}

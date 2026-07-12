@@ -1,8 +1,10 @@
 # Implementation plan
 
-Status: Architecture v0.1 with accepted Phase 1 implementation
+Status: Architecture v0.1 with accepted Phase 1 and Phase 2 implementations and an implemented Phase 3 vertical slice
 
-Current phase: Phase 2 — theory-kernel vertical slice
+Current implementation milestone: Phase 3 — assurance and authoring vertical slice
+
+Next capability phase: Phase 4 — profile and craft system
 
 ## 1. Delivery strategy
 
@@ -91,10 +93,10 @@ init
 
 ## 4. Phase 2 — theory-kernel vertical slice
 
-Implementation status: the vertical-slice candidate is implemented on
-`agent/phase2-theory-kernel-slice` and has passed its local acceptance suite;
-branch review and merge remain pending. This is a semantic/runtime milestone,
-not evidence that an AI generator has reached publication quality.
+Implementation status: the vertical slice was reviewed and merged into `main`
+at `6a14d52e4655dc8b7d5a42e43467f4c58faba510`. Phase 2 is accepted as a
+semantic/runtime milestone, not as evidence that an AI generator has reached
+publication quality.
 
 Implement only the objects and routes needed for one complete theoretical argument:
 
@@ -133,7 +135,24 @@ The first case should be synthetic or based on public theory material and must b
 
 ## 5. Phase 3 — assurance and authoring vertical slice
 
-Add:
+Implementation status: the executable vertical slice in
+`docs/implementation/phase3_contract.md` is implemented. Registry v3 preserves
+the frozen v1/v2 policy meanings while enabling the assurance, authoring,
+cold-reader, closure, and effort routes required by this slice.
+
+All ten Phase 3-native routes validate exact input IDs, revisions, and lineage
+in their immutable run focus in addition to registry type/cardinality. That
+focus's current `EntityVersion` set equals all `EntityVersion` evidence in the
+transaction; same-type objects from a foreign authoring chain fail closed. The
+provider-visible refs are a narrower privacy projection and may exclude the VAP
+for blind re-derivation. Assurance nevertheless treats the VAP as authority:
+its `ClaimGraph`, `FormalModel`, `AssumptionMap`, and `VerificationBundle` refs
+must match exactly. Each re-derivation selects one obligation/verification pair
+from that bundle, the assurance audit forms a same-package bijection over all
+bundle `VerificationRecord`s, and review closure explicitly selects the exact
+current `AssuranceBundle` governing its manuscript.
+
+Implemented:
 
 - independent re-derivation;
 - symbolic checks and counterexample harness;
@@ -143,19 +162,68 @@ Add:
 - layered claim expressions and entailment checks;
 - one canonical writer plus isolated fidelity/economic-reader critics.
 
+The real gold chain continues the accepted Phase 2 ObjectStore history. It
+performs three obligation-scoped blind re-derivations and a multi-record
+assurance audit, then composes a first manuscript that fails the economic and
+cold-reader gates. A typed revision brief returns only the unresolved work to
+the same canonical writer; the superseding manuscript reaches
+`authoring_ready` only after fresh formal, economic, and cold-reader review.
+Re-derivation, audit, harness, manuscript, probe, sealed-key, response, and
+revision-brief claims are checked against their actual immutable artifact
+bytes. Cold-reader contexts enforce writer/probe/key separation, and
+append-only telemetry records active human minutes and semantic edit category.
+Every non-whitespace manuscript-body character is covered by a typed span;
+economic-reader and cold-reader acceptance is closed per `ResultPacket`; and
+readiness requires every upstream scientific, assurance, authoring, artifact,
+and review dependency to remain current and fresh.
+
+The long Phase 3 gold suffix has a visible performance cost from repeated
+replay plus operational lineage and artifact-byte validation. Safe incremental
+or cached validation is a later optimization task, not a reason to weaken the
+acceptance predicate.
+
 Working and submission compilation consume the exact G5-approved `ValidatedArgumentPackage` revision. Preview compilation may consume a bounded provisional package but cannot promote it.
+
+The local submission compiler consumes an exact authoring-ready working unit
+and its effective human promotion Decision. It permits formatting and derived
+offset changes only; wording, typed assertions, source bindings, and scientific
+content must remain unchanged. External submission execution remains an L3
+deferral.
+
+This milestone establishes a trustworthy one-result-block authoring core. It
+does not establish complete-paper capability, held-out superiority to v1, or
+acceptance probability at Econometrica, a Top-5, or a leading field journal.
 
 ### Exit criteria
 
 - a central result can be traced from reader-facing prose to claim, assumptions, mechanism, example, proof status, and evidence revisions;
 - a theorem statement remains formal while nearby prose supplies benchmark, translation, mechanism, boundary, and proof roadmap as needed;
+- every non-whitespace manuscript-body character has one typed span, and every
+  ResultPacket independently receives economic-reader and cold-reader coverage;
+- authoring readiness fails when any member of its exact dependency chain is
+  superseded or stale;
+- all native routes reject same-type foreign inputs; re-derivation accepts one
+  exact `ProofObligation` and closure explicitly consumes its exact
+  `AssuranceBundle`;
+- immutable focus equals complete transaction EntityVersion evidence, while
+  blind provider visibility may omit VAP prose; assurance binds the VAP's exact
+  internal refs and a re-derivation bijection over its `VerificationRecord`s;
 - changing the theorem scope invalidates all stronger prose but not unrelated sections;
 - cold-reader retell and prediction-transfer tests are executable;
 - substantive human-edit categories and time can be recorded.
 
 ## 6. Phase 4 — profile and craft system
 
-Add the versioned universal quality floor, theory modes, result archetypes, fields, audience breadth, and soft venue overlays. Populate a theory-only craft library with structural cards derived from permitted sources.
+Implementation status: not yet implemented. Phase 3 supplies only the minimal
+universal authoring profile needed to exercise its vertical slice.
+
+Add the versioned universal quality floor, theory modes, result archetypes,
+fields, audience breadth, and soft venue overlays. Populate a theory-only craft
+library with structural cards derived from permitted sources. Harden the typed
+semantic mapping from each natural-language proof obligation to the exact
+executable harness predicate, including checks against vacuous, narrowed, or
+otherwise non-equivalent encodings; Phase 3 currently guarantees only integrity
+and reproducibility of the declared predicate.
 
 ### Exit criteria
 

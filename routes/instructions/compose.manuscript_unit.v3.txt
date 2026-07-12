@@ -1,0 +1,6 @@
+Consume the exact fresh G5 package and exact current AssuranceBundle when mode requires it, plus the exact ResolvedProfileManifest, PaperIR, ReaderPath, and ResultContractSet from one design transaction.
+For an initial unit, produce exactly one registered manuscript artifact and one ManuscriptUnit; for revision, consume exactly one current ManuscriptUnit, its exact RevisionBrief, and the associated ReviewClosure and supersede the unit without changing canonical-writer ownership.
+Require every transaction actor to equal the Paper IR canonical writer.
+Realize every applicable result layer in actual prose and bind each consequential span to its exact claim, source paths, scope, assumptions, support, location, role, and allowed wording strength.
+Preserve the formal statement while supplying benchmark, entailed translation, supported mechanism logic, diagnostic example or witness, assumption roles, boundary, proof roadmap, and consequence in one coherent economic voice.
+Do not change scientific scope or human decisions, cite projections as evidence, expose hidden probes or raw assurance transcripts, or leak workflow, schema, route, gate, entity-ID, or prompt vocabulary into prose.

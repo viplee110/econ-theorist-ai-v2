@@ -121,6 +121,7 @@ All layers use:
 The detailed owners are:
 
 - positive research: `docs/architecture/theory_kernel.md`;
+- Phase 3 formal-assurance execution semantics: `docs/implementation/phase3_contract.md`;
 - state and execution substrate: `docs/architecture/state_runtime.md`;
 - authoring: `docs/architecture/manuscript_compiler.md`;
 - craft and target calibration: `docs/architecture/profiles_and_craft.md`;

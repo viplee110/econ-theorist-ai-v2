@@ -1,0 +1,9 @@
+{
+  "accepted_commit": "6a14d52e4655dc8b7d5a42e43467f4c58faba510",
+  "gold_fixture_hash": "c2cdcb504749bbed81acf6caf88352eabeba797ab41d425833f36ca2f6647c00",
+  "instruction_directory_hash": "36721f3799aca3570a06381b1b123a90974b678c5ad276bb554afa4dbcca51a4",
+  "route_registry_v2_file_hash": "3279ca4de2408dfe56766b2339616d00ebab4071d9a34d2874753d9f029ff55d",
+  "schema_directory_hash": "a417ceabdc9f9786e797d44dd9c6faa9d30f38bdeb07975de5c097168ea57f6a",
+  "theory_model_schema_hash": "8508aada49118441c6aa155624f6f1a4380b4fc69cd609a9bdf30ebe2e362e41",
+  "theory_payload_count": 26
+}

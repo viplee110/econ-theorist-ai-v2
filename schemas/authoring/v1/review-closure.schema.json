@@ -1,0 +1,273 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "AuthoringReadyCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "check_id": {
+          "enum": [
+            "exact_g5_and_profile",
+            "assurance_pass",
+            "exact_span_trace",
+            "layer_realization",
+            "scope_and_assumptions",
+            "bounded_evidentiary_language",
+            "formal_fidelity",
+            "economic_explanation",
+            "cold_reader_transfer",
+            "reader_dag_and_terminology",
+            "no_governance_or_probe_leakage",
+            "canonical_integration",
+            "blocking_findings"
+          ],
+          "title": "Check Id",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "outcome": {
+          "enum": [
+            "passed",
+            "failed"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "rationale": {
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "check_id",
+        "outcome",
+        "evidence_refs",
+        "rationale"
+      ],
+      "title": "AuthoringReadyCheck",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/authoring/v1/review-closure.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "assurance_bundle_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "blocking_finding_ids": {
+      "default": [],
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Blocking Finding Ids",
+      "type": "array"
+    },
+    "checks": {
+      "items": {
+        "$ref": "#/$defs/AuthoringReadyCheck"
+      },
+      "maxItems": 13,
+      "minItems": 13,
+      "title": "Checks",
+      "type": "array"
+    },
+    "closure_actor": {
+      "$ref": "#/$defs/Actor"
+    },
+    "cold_reader_review_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "compiler_mode": {
+      "enum": [
+        "preview",
+        "working",
+        "submission"
+      ],
+      "title": "Compiler Mode",
+      "type": "string"
+    },
+    "economic_reader_review_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "evaluated_at": {
+      "minLength": 1,
+      "title": "Evaluated At",
+      "type": "string"
+    },
+    "formal_fidelity_review_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "manuscript_unit_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "paper_ir_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "predicate_version": {
+      "const": "AUTHORING-READY-0.1",
+      "default": "AUTHORING-READY-0.1",
+      "title": "Predicate Version",
+      "type": "string"
+    },
+    "reader_path_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "result_contract_set_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "revision_brief_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "status": {
+      "enum": [
+        "authoring_ready",
+        "blocked"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "compiler_mode",
+    "paper_ir_ref",
+    "reader_path_ref",
+    "result_contract_set_ref",
+    "assurance_bundle_ref",
+    "manuscript_unit_ref",
+    "formal_fidelity_review_ref",
+    "economic_reader_review_ref",
+    "cold_reader_review_ref",
+    "closure_actor",
+    "checks",
+    "status",
+    "evaluated_at"
+  ],
+  "title": "ReviewClosure",
+  "type": "object"
+}

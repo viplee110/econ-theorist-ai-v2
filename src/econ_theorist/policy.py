@@ -1,4 +1,4 @@
-"""Versioned authority and exact-route policies for Phase 1."""
+"""Versioned authority and exact-route policies through Phase 3."""
 
 from __future__ import annotations
 
@@ -21,22 +21,29 @@ from .models import (
     RouteRegistry,
     RouteRegistryLike,
     RouteRegistryV2,
+    RouteRegistryV3,
     RouteSpec,
     RouteSpecLike,
     RouteSpecV2,
+    RouteSpecV3,
 )
 
 FACETS: tuple[Facet, ...] = FACET_ORDER
 DECISION_REGISTRY_V1_VERSION = 1
 DECISION_REGISTRY_V2_VERSION = 1
+DECISION_REGISTRY_V3_VERSION = 1
 # Backward-compatible alias for frozen Phase 1 context bytes.
 DECISION_REGISTRY_VERSION = DECISION_REGISTRY_V1_VERSION
 ROUTE_REGISTRY_V1_HASH = "d9c84001420bd63a82418ee3cfe1776895be69936e921aa8c4790a8966aa6913"
 # Filled only after the complete v2 catalog and every instruction bundle are
 # content-addressed.  The value is a policy identifier, not a mutable checksum.
 ROUTE_REGISTRY_V2_HASH = "cd6e4147ea639f0c3016e88783afcf090ccd8383b70d6efe314599d3909bfa40"
-ROUTE_REGISTRY_HASH = ROUTE_REGISTRY_V2_HASH
-SELECTOR_VERSION = "context_selector.v1"
+ROUTE_REGISTRY_V3_HASH = "a914276d613e970d68f2ccb5799ad7e912c2edd5b47d098cfbb1f109055ad6cf"
+ROUTE_REGISTRY_HASH = ROUTE_REGISTRY_V3_HASH
+SELECTOR_VERSION_V1 = "context_selector.v1"
+SELECTOR_VERSION_V3 = "context_selector.v2"
+# Frozen compatibility alias used by historical v1/v2 validation paths.
+SELECTOR_VERSION = SELECTOR_VERSION_V1
 KERNEL_VERSION = "theory_kernel.v1"
 KERNEL_HASH = "1670162bdca5e8b31017c2cb42c48d96bfc627921361904a3c8fe67ee94aca71"
 ISOLATION_POLICY = "isolated_route.v1"
@@ -124,6 +131,8 @@ def minimum_authority_for_decision(kind: DecisionKind) -> AuthorityLevel:
 
 
 def decision_registry_version_for_route(route: RouteSpecLike) -> int:
+    if isinstance(route, RouteSpecV3):
+        return DECISION_REGISTRY_V3_VERSION
     if isinstance(route, RouteSpecV2):
         return DECISION_REGISTRY_V2_VERSION
     return DECISION_REGISTRY_V1_VERSION
@@ -173,19 +182,54 @@ V2_ROUTE_IDS: tuple[str, ...] = (
     "evaluate.blind_argument_package",
     *V1_ROUTE_IDS[1:],
 )
+_V3_ASSURANCE_INDEX = V2_ROUTE_IDS.index(
+    "verify.claims_proofs_and_interpretation"
+) + 1
+_V3_REVIEW_END = V2_ROUTE_IDS.index("review.manuscript_unit") + 1
+V3_ROUTE_IDS: tuple[str, ...] = (
+    *V2_ROUTE_IDS[:_V3_ASSURANCE_INDEX],
+    "verify.independent_rederivation",
+    "audit.argument_assurance",
+    *V2_ROUTE_IDS[_V3_ASSURANCE_INDEX:_V3_REVIEW_END],
+    "prepare.reader_probe",
+    "answer.reader_probe",
+    "adjudicate.reader_probe",
+    "close.manuscript_review",
+    "record.human_effort",
+    *V2_ROUTE_IDS[_V3_REVIEW_END:],
+)
+V3_NATIVE_ROUTE_IDS = frozenset(
+    {
+        "verify.independent_rederivation",
+        "audit.argument_assurance",
+        "design.reader_path",
+        "compose.manuscript_unit",
+        "review.manuscript_unit",
+        "prepare.reader_probe",
+        "answer.reader_probe",
+        "adjudicate.reader_probe",
+        "close.manuscript_review",
+        "record.human_effort",
+    }
+)
 V1_ENABLED_ROUTE_IDS = frozenset(
     {"frame.question_and_benchmarks", "repair.dependency"}
 )
 V2_ENABLED_ROUTE_IDS = frozenset(V2_ROUTE_IDS).difference(
     {"design.reader_path", "compose.manuscript_unit", "review.manuscript_unit"}
 )
+V3_ENABLED_ROUTE_IDS = frozenset(V3_ROUTE_IDS)
 ROUTE_REGISTRY_HASHES: Mapping[int, str] = MappingProxyType(
-    {1: ROUTE_REGISTRY_V1_HASH, 2: ROUTE_REGISTRY_V2_HASH}
+    {
+        1: ROUTE_REGISTRY_V1_HASH,
+        2: ROUTE_REGISTRY_V2_HASH,
+        3: ROUTE_REGISTRY_V3_HASH,
+    }
 )
 
 
 def _default_registry_path() -> Path:
-    return _routes_root() / "registry.v2.json"
+    return _routes_root() / "registry.v3.json"
 
 
 def _routes_root() -> Path:
@@ -227,9 +271,11 @@ def registry_hash(registry: RouteRegistryLike) -> str:
 
 def validate_route_registry(registry: RouteRegistryLike) -> RouteRegistryLike:
     ids = tuple(route.route_id for route in registry.routes)
-    expected_ids = (
-        V1_ROUTE_IDS if registry.registry_version == 1 else V2_ROUTE_IDS
-    )
+    expected_ids = {
+        1: V1_ROUTE_IDS,
+        2: V2_ROUTE_IDS,
+        3: V3_ROUTE_IDS,
+    }[registry.registry_version]
     if ids != expected_ids:
         raise RegistryError(
             f"route registry v{registry.registry_version} must contain its exact ordered route IDs"
@@ -237,17 +283,40 @@ def validate_route_registry(registry: RouteRegistryLike) -> RouteRegistryLike:
     if registry.aliases:
         raise RegistryError("route registries have no implicit route aliases")
     enabled = {route.route_id for route in registry.routes if route.availability == "enabled"}
-    expected_enabled = (
-        V1_ENABLED_ROUTE_IDS
-        if registry.registry_version == 1
-        else V2_ENABLED_ROUTE_IDS
-    )
+    expected_enabled = {
+        1: V1_ENABLED_ROUTE_IDS,
+        2: V2_ENABLED_ROUTE_IDS,
+        3: V3_ENABLED_ROUTE_IDS,
+    }[registry.registry_version]
     if enabled != expected_enabled:
         raise RegistryError(
             f"route registry v{registry.registry_version} has the wrong enabled set"
         )
     if any(route.authority_ceiling != "L1" for route in registry.routes):
         raise RegistryError("routes may propose but not exercise L2/L3 authority")
+    if registry.registry_version == 3:
+        versions = {route.route_id: route.route_version for route in registry.routes}
+        wrong_versions = {
+            route_id: route_version
+            for route_id, route_version in versions.items()
+            if (route_id in V3_NATIVE_ROUTE_IDS) != (route_version == 3)
+        }
+        if wrong_versions:
+            raise RegistryError(
+                "registry v3 must advance only its ten native routes to version 3"
+            )
+
+        frozen_v2 = load_route_registry(_routes_root() / "registry.v2.json")
+        frozen_by_id = {route.route_id: route for route in frozen_v2.routes}
+        for route in registry.routes:
+            if route.route_id in V3_NATIVE_ROUTE_IDS:
+                continue
+            if route.model_dump(mode="json") != frozen_by_id[route.route_id].model_dump(
+                mode="json"
+            ):
+                raise RegistryError(
+                    f"registry v3 route {route.route_id!r} differs from frozen v2 semantics"
+                )
     registry_hash(registry)
     return registry
 
@@ -271,6 +340,8 @@ def load_route_registry(path: str | Path | None = None) -> RouteRegistryLike:
             )
         elif version == 2:
             registry = RouteRegistryV2.model_validate_json(payload, strict=True)
+        elif version == 3:
+            registry = RouteRegistryV3.model_validate_json(payload, strict=True)
         else:
             raise ValueError(f"unsupported registry_version: {version!r}")
     except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
@@ -309,9 +380,19 @@ def route_spec_by_hash(route_id: str, route_registry_hash: str) -> RouteSpecLike
 def registry_hash_for_route(route: RouteSpecLike) -> str:
     if isinstance(route, RouteSpec):
         return ROUTE_REGISTRY_V1_HASH
+    if isinstance(route, RouteSpecV3):
+        return ROUTE_REGISTRY_V3_HASH
     if isinstance(route, RouteSpecV2):
         return ROUTE_REGISTRY_V2_HASH
     raise RegistryError(f"unsupported route specification type: {type(route).__name__}")
+
+
+def selector_version_for_route(route: RouteSpecLike) -> str:
+    """Return the exact selector policy without changing historical manifests."""
+
+    if isinstance(route, RouteSpecV3) and route.route_id in V3_NATIVE_ROUTE_IDS:
+        return SELECTOR_VERSION_V3
+    return SELECTOR_VERSION_V1
 
 
 def instruction_bundle_bytes(route: RouteSpecLike) -> bytes:

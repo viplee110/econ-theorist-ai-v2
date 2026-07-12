@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+from collections.abc import Mapping
 from pathlib import Path
 
 from tests.helpers import REPOSITORY_ROOT  # noqa: F401  # installs src
@@ -167,6 +168,18 @@ class Phase2GoldRuntimeChainTests(unittest.TestCase):
         )
         self.route_counter = 0
 
+    def _after_fresh_g5(self, handoff: Mapping[str, object]) -> bool:
+        """Optional continuation point for later-phase real-store acceptance tests.
+
+        The Phase 2 test itself returns ``False`` and continues into its sealed
+        absorption mutation.  A later-phase subclass may consume the exact
+        local scientific objects and return ``True`` after completing its own
+        continuation, without weakening or duplicating the Phase 2 setup.
+        """
+
+        del handoff
+        return False
+
     def _entity(
         self,
         entity_id: str,
@@ -235,6 +248,9 @@ class Phase2GoldRuntimeChainTests(unittest.TestCase):
         authority_basis: tuple[str, ...] = (),
         focus_entity_ids: tuple[str, ...] = (),
         created_at: str,
+        actor: Actor = AGENT,
+        compartments: tuple[str, ...] = ("project_research",),
+        route_registry_hash: str = ROUTE_REGISTRY_V2_HASH,
     ) -> tuple[RouteRun, Snapshot]:
         """Run the real begin -> stage -> preflight -> commit -> replay path."""
 
@@ -244,27 +260,28 @@ class Phase2GoldRuntimeChainTests(unittest.TestCase):
             self.layout,
             before,
             route_id=route_id,
-            actor=AGENT,
+            actor=actor,
             purpose=purpose,
-            compartments=("project_research",),
+            compartments=compartments,
             focus_entity_ids=focus_entity_ids,
             budget_units=32_000,
             route_run_id=f"run.gold.{self.route_counter}",
             context_manifest_id=f"context.gold.{self.route_counter}",
             created_at=created_at,
-            route_registry_hash=ROUTE_REGISTRY_V2_HASH,
+            route_registry_hash=route_registry_hash,
         )
         context = read_context(self.layout, run.route_run_id)
-        self.assertEqual(context.route_registry_hash, ROUTE_REGISTRY_V2_HASH)
+        self.assertEqual(context.route_registry_hash, route_registry_hash)
         selected_refs = set(context.selected_entity_refs)
-        for entity_id in focus_entity_ids:
-            self.assertIn(
-                EntityVersionRef(
-                    entity_id=entity_id,
-                    version=before.current_entities[entity_id],
-                ),
-                selected_refs,
-            )
+        if run.route_version < 3:
+            for entity_id in focus_entity_ids:
+                self.assertIn(
+                    EntityVersionRef(
+                        entity_id=entity_id,
+                        version=before.current_entities[entity_id],
+                    ),
+                    selected_refs,
+                )
 
         candidate_refs = (
             *(eref(item) for item in outputs),
@@ -316,7 +333,7 @@ class Phase2GoldRuntimeChainTests(unittest.TestCase):
             base_revision=run.base_revision,
             route_run_id=run.route_run_id,
             route_id=run.route_id,
-            actor=AGENT,
+            actor=actor,
             intent=f"Advance the gold case through {route_id}.",
             changed_facets=tuple(changed_facets),
             operations=(
@@ -376,14 +393,15 @@ class Phase2GoldRuntimeChainTests(unittest.TestCase):
         self.assertEqual(after.head, committed.head_after)
         for output in outputs:
             self.assertEqual(after.current_entities[output.entity_id], output.version)
-            self.assertEqual(parse_theory_entity(output), parse_theory_entity(
-                next(
-                    item
-                    for item in after.entity_versions
-                    if item.entity_id == output.entity_id
-                    and item.version == output.version
-                )
-            ))
+            replayed_output = next(
+                item
+                for item in after.entity_versions
+                if item.entity_id == output.entity_id
+                and item.version == output.version
+            )
+            self.assertEqual(
+                canonical_json_bytes(replayed_output), canonical_json_bytes(output)
+            )
         for relation in relations:
             self.assertEqual(
                 after.current_relations[relation.relation_id], relation.version
@@ -3430,6 +3448,11 @@ class Phase2GoldRuntimeChainTests(unittest.TestCase):
                 g5.decision_id,
             }.issubset(effective_gate_ids)
         )
+
+        if self._after_fresh_g5(
+            {key: value for key, value in locals().items() if key != "self"}
+        ):
+            return
 
         sealed_comparator_bytes = canonical_json_bytes(
             fixture_payload["evaluator"]["absorption_decoy"]

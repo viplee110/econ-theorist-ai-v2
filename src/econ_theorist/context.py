@@ -30,17 +30,19 @@ from .models import (
     RiskOrBlocker,
     RouteSpecLike,
     RouteSpecV2,
+    RouteSpecV3,
     Snapshot,
 )
 from .policy import (
     ISOLATION_POLICY,
     KERNEL_HASH,
     KERNEL_VERSION,
-    SELECTOR_VERSION,
     VALIDATOR_VERSION,
+    V3_NATIVE_ROUTE_IDS,
     decision_registry_version_for_route,
     instruction_bundle_bytes,
     registry_hash_for_route,
+    selector_version_for_route,
     theory_kernel,
 )
 from .route_registry import clearance_allows
@@ -59,6 +61,7 @@ _HOLDOUT_PURPOSES = frozenset(_EVALUATION_ROUTE_PURPOSES.values())
 _EVALUATION_FOCUS_ENTITY_TYPES = frozenset(
     {"BlindCaseManifest", "TransformedVariantManifest"}
 )
+_PHASE3_NATIVE_ROUTE_IDS = V3_NATIVE_ROUTE_IDS
 
 
 class ContextCompilationError(PolicyError):
@@ -1197,6 +1200,376 @@ def _evaluation_context_inputs(
     return tuple(artifact_records), tuple(decisions)
 
 
+_PHASE3_VISIBLE_ENTITY_TYPES: Mapping[str, frozenset[str]] = {
+    "verify.independent_rederivation": frozenset(
+        {"AssumptionMap", "ClaimGraph", "FormalModel", "ProofObligation"}
+    ),
+    "audit.argument_assurance": frozenset(
+        {
+            "AssumptionMap",
+            "ClaimGraph",
+            "FormalModel",
+            "ProofObligation",
+            "ReDerivationRecord",
+            "ValidatedArgumentPackage",
+            "VerificationBundle",
+            "VerificationRecord",
+        }
+    ),
+    "design.reader_path": frozenset(
+        {
+            "AssumptionMap",
+            "AssuranceBundle",
+            "BenchmarkSet",
+            "ClaimGraph",
+            "ClosestTheoryMap",
+            "EconomicArgumentGraph",
+            "ExampleSuite",
+            "FormalModel",
+            "ResearchQuestion",
+            "ResultPortfolio",
+            "ValidatedArgumentPackage",
+            "VerificationBundle",
+        }
+    ),
+    "compose.manuscript_unit": frozenset(
+        {
+            "AssumptionMap",
+            "BenchmarkSet",
+            "ClaimGraph",
+            "ClosestTheoryMap",
+            "EconomicArgumentGraph",
+            "ExampleSuite",
+            "FormalModel",
+            "ManuscriptUnit",
+            "PaperIR",
+            "ReaderPath",
+            "ResolvedProfileManifest",
+            "ResultContractSet",
+            "ResultPortfolio",
+            "RevisionBrief",
+        }
+    ),
+    "review.manuscript_unit": frozenset(
+        {
+            "AssumptionMap",
+            "ClaimGraph",
+            "CriticAssignment",
+            "EconomicArgumentGraph",
+            "ExampleSuite",
+            "ManuscriptUnit",
+            "PaperIR",
+            "ResultContractSet",
+        }
+    ),
+    "prepare.reader_probe": frozenset(
+        {"CriticAssignment", "ManuscriptUnit", "ReaderPath"}
+    ),
+    "answer.reader_probe": frozenset(
+        {"CriticAssignment", "ManuscriptUnit", "ReaderProbeSet"}
+    ),
+    "adjudicate.reader_probe": frozenset(
+        {
+            "CriticAssignment",
+            "ManuscriptUnit",
+            "ReaderProbeSet",
+            "ReaderResponse",
+        }
+    ),
+    "close.manuscript_review": frozenset(
+        {
+            "AssuranceBundle",
+            "ManuscriptUnit",
+            "PaperIR",
+            "ReviewFinding",
+            "ReviewRecord",
+        }
+    ),
+    "record.human_effort": frozenset(
+        {"HumanEffortRecord", "ManuscriptUnit"}
+    ),
+}
+
+_PHASE3_PACKET_KINDS: Mapping[str, str] = {
+    "verify.independent_rederivation": "independent_rederivation",
+    "audit.argument_assurance": "assurance_audit",
+    "design.reader_path": "authoring_planner",
+    "compose.manuscript_unit": "canonical_writer",
+    "review.manuscript_unit": "assigned_critic",
+    "prepare.reader_probe": "probe_designer",
+    "answer.reader_probe": "cold_reader",
+    "adjudicate.reader_probe": "reader_adjudicator",
+    "close.manuscript_review": "deterministic_review_closure",
+    "record.human_effort": "human_effort_reporter",
+}
+
+_ROLE_CONSTRAINTS: Mapping[str, tuple[str, ...]] = {
+    "independent_rederivation": (
+        "Derive from the formal statement, model, assumptions, and obligations only.",
+        "Do not infer correctness from an originating proof or proposed explanation.",
+    ),
+    "assurance_audit": (
+        "Compare the sealed independent derivation with exact proof evidence.",
+        "A finite search may falsify but cannot prove a universal statement.",
+    ),
+    "authoring_planner": (
+        "Plan reader updates from the accepted economic argument and exact result scope.",
+        "Do not create a new scientific claim or journal-specific template.",
+    ),
+    "canonical_writer": (
+        "Use one coherent economic voice and stable terminology.",
+        "Preserve formal scope, assumptions, boundaries, and evidentiary roles.",
+        "Explain the benchmark, operative margin, diagnostic example, and proof roadmap.",
+    ),
+    "assigned_critic": (
+        "Diagnose the frozen manuscript unit; do not rewrite it.",
+        "Treat proposed explanations as claims to test, not facts to inherit.",
+    ),
+    "probe_designer": (
+        "Create post-freeze retell, scope, boundary, and near-transfer probes.",
+        "Keep the concrete probes and answer key unavailable to the writer.",
+    ),
+    "cold_reader": (
+        "Answer from the manuscript and declared reader background only.",
+        "Do not assume access to an answer key, author rationale, or other reviews.",
+    ),
+    "reader_adjudicator": (
+        "Judge the exact response against the sealed key without changing either.",
+    ),
+    "deterministic_review_closure": (
+        "Apply every noncompensatory readiness check to exact current evidence.",
+    ),
+    "human_effort_reporter": (
+        "Record active human time and semantic edit categories without estimation.",
+    ),
+}
+
+
+def _phase3_payload(entity: EntityVersion) -> BaseModel:
+    from .authoring import is_packed_authoring_entity, parse_authoring_entity
+    from .theory import is_packed_theory_entity, parse_theory_entity
+
+    if is_packed_authoring_entity(entity):
+        return parse_authoring_entity(entity)
+    if is_packed_theory_entity(entity):
+        return parse_theory_entity(entity)
+    raise ContextCompilationError(
+        f"Phase 3 focus is not a packed typed entity: {entity.entity_id}@{entity.version}"
+    )
+
+
+def _walk_artifact_refs(value: object) -> Iterable[ArtifactDependencyRef]:
+    if isinstance(value, ArtifactDependencyRef):
+        yield value
+        return
+    if isinstance(value, BaseModel):
+        for field_name in type(value).model_fields:
+            yield from _walk_artifact_refs(getattr(value, field_name))
+        return
+    if isinstance(value, Mapping):
+        for nested in value.values():
+            yield from _walk_artifact_refs(nested)
+        return
+    if isinstance(value, (tuple, list)):
+        for nested in value:
+            yield from _walk_artifact_refs(nested)
+
+
+def _strip_role_internal(value: object) -> object:
+    """Remove governance/provenance keys from the provider-facing role packet."""
+
+    if isinstance(value, Mapping):
+        result: dict[str, object] = {}
+        for key, nested in value.items():
+            lowered = key.lower()
+            if (
+                lowered in {
+                    "schema_version",
+                    "source_state_revision",
+                    "upstream_projection_hash",
+                    "context_manifest_hash",
+                    "compiled_context_hash",
+                    "route_run_id",
+                    "g5_decision_ref",
+                    "g4_decision_ref",
+                    "manuscript_version_promotion_ref",
+                    "answer_key_artifact_ref",
+                }
+                or lowered.endswith("_ref")
+                or lowered.endswith("_refs")
+                or lowered.endswith("_id")
+                or lowered.endswith("_ids")
+                or lowered.endswith("_hash")
+            ):
+                continue
+            result[key] = _strip_role_internal(nested)
+        return result
+    if isinstance(value, (tuple, list)):
+        return tuple(_strip_role_internal(item) for item in value)
+    return value
+
+
+def _phase3_artifact_refs(
+    route_id: str, parsed: tuple[tuple[EntityVersion, BaseModel], ...]
+) -> tuple[ArtifactDependencyRef, ...]:
+    from .authoring import (
+        ManuscriptUnit,
+        ReaderProbeSet,
+        ReaderResponse,
+        RevisionBrief,
+    )
+
+    selected: dict[tuple[str, int], ArtifactDependencyRef] = {}
+
+    def add(reference: ArtifactDependencyRef) -> None:
+        key = (reference.artifact_id, reference.version)
+        prior = selected.get(key)
+        if prior is not None and prior.content_hash != reference.content_hash:
+            raise ContextCompilationError(
+                "Phase 3 context repeats an artifact version with conflicting hashes"
+            )
+        selected[key] = reference
+
+    if route_id == "audit.argument_assurance":
+        for _, payload in parsed:
+            for reference in _walk_artifact_refs(payload):
+                add(reference)
+    else:
+        for _, payload in parsed:
+            if isinstance(payload, ManuscriptUnit) and route_id in {
+                "compose.manuscript_unit",
+                "review.manuscript_unit",
+                "prepare.reader_probe",
+                "answer.reader_probe",
+                "adjudicate.reader_probe",
+                "record.human_effort",
+            }:
+                add(payload.manuscript_artifact_ref)
+            if isinstance(payload, RevisionBrief) and route_id == "compose.manuscript_unit":
+                add(payload.brief_artifact_ref)
+            if isinstance(payload, ReaderProbeSet):
+                if route_id in {"answer.reader_probe", "adjudicate.reader_probe"}:
+                    add(payload.probe_artifact_ref)
+                if route_id == "adjudicate.reader_probe":
+                    add(payload.answer_key_artifact_ref)
+            if isinstance(payload, ReaderResponse) and route_id == "adjudicate.reader_probe":
+                add(payload.response_artifact_ref)
+    return tuple(selected[key] for key in sorted(selected))
+
+
+def _phase3_context_inputs(
+    snapshot: Snapshot,
+    *,
+    route: RouteSpecV3,
+    actor: Actor,
+    focus_entity_ids: tuple[str, ...],
+    layout: StoreLayout | None,
+    clearance: PrivacyLabel,
+    grants: frozenset[str],
+    purpose: str,
+) -> tuple[
+    dict[tuple[str, int], EntityVersion],
+    tuple[dict[str, Any], ...],
+    dict[str, Any],
+]:
+    if layout is None:
+        raise ContextCompilationError(
+            "Phase 3 role context compilation requires the canonical StoreLayout"
+        )
+    visible_types = _PHASE3_VISIBLE_ENTITY_TYPES.get(route.route_id)
+    packet_kind = _PHASE3_PACKET_KINDS.get(route.route_id)
+    if visible_types is None or packet_kind is None:
+        raise ContextCompilationError(f"unknown Phase 3 role route: {route.route_id}")
+    current = _current_entities(snapshot)
+    by_id = {entity.entity_id: entity for entity in current.values()}
+    entities: dict[tuple[str, int], EntityVersion] = {}
+    parsed: list[tuple[EntityVersion, BaseModel]] = []
+    for entity_id in focus_entity_ids:
+        entity = by_id.get(entity_id)
+        if entity is None:
+            raise ContextCompilationError(
+                f"Phase 3 focus entity is not current: {entity_id}"
+            )
+        if entity.entity_type not in visible_types:
+            # Some exact inputs, notably the G5 package for blind re-derivation,
+            # are checked at entry but intentionally absent from role context.
+            continue
+        if not _entity_accessible(
+            entity, clearance=clearance, grants=grants, purpose=purpose
+        ):
+            raise ContextAccessError(
+                f"Phase 3 focus entity is not readable: {entity.entity_id}@{entity.version}"
+            )
+        payload = _phase3_payload(entity)
+        entities[_entity_key(entity)] = entity
+        parsed.append((entity, payload))
+    if not parsed:
+        raise ContextCompilationError("Phase 3 role context selected no visible exact input")
+
+    artifact_refs = _phase3_artifact_refs(route.route_id, tuple(parsed))
+    artifact_index = {
+        (item.artifact_id, item.version): item for item in snapshot.artifacts
+    }
+    from .runtime.objects import ObjectStore
+
+    store = ObjectStore(layout)
+    full_artifacts: list[dict[str, Any]] = []
+    role_artifacts: list[dict[str, Any]] = []
+    for reference in artifact_refs:
+        registration = artifact_index.get((reference.artifact_id, reference.version))
+        if registration is None or registration.content_hash != reference.content_hash:
+            raise ContextCompilationError(
+                f"Phase 3 artifact is unresolved or hash-mismatched: "
+                f"{reference.artifact_id}@{reference.version}"
+            )
+        if not _privacy_record_accessible(
+            registration,
+            clearance=clearance,
+            grants=grants,
+            purpose=purpose,
+        ):
+            raise ContextAccessError(
+                f"Phase 3 artifact is not readable: "
+                f"{registration.artifact_id}@{registration.version}"
+            )
+        data = store.read_bytes("artifacts", registration.content_hash, verify=True)
+        if len(data) != registration.byte_size:
+            raise ContextCompilationError("Phase 3 artifact byte_size mismatch")
+        encoded = base64.b64encode(data).decode("ascii")
+        full_artifacts.append(
+            {
+                "registration": registration.model_dump(mode="json"),
+                "content_encoding": "base64",
+                "content_base64": encoded,
+            }
+        )
+        role_artifacts.append(
+            {
+                "logical_name": registration.logical_name,
+                "media_type": registration.media_type,
+                "content_encoding": "base64",
+                "content_base64": encoded,
+            }
+        )
+
+    semantic_inputs = tuple(
+        {
+            "kind": entity.entity_type,
+            "content": _strip_role_internal(payload.model_dump(mode="json")),
+        }
+        for entity, payload in parsed
+    )
+    role_packet = {
+        "packet_schema": "econ-theorist/role-packet/v1",
+        "packet_kind": packet_kind,
+        "actor_kind": actor.kind,
+        "constraints": _ROLE_CONSTRAINTS[packet_kind],
+        "semantic_inputs": semantic_inputs,
+        "artifacts": tuple(role_artifacts),
+    }
+    return entities, tuple(full_artifacts), role_packet
+
+
 def _payload(
     snapshot: Snapshot,
     *,
@@ -1213,6 +1586,7 @@ def _payload(
     exact_evaluation: bool = False,
     evaluation_artifacts: tuple[dict[str, Any], ...] = (),
     evaluation_decisions: tuple[Decision, ...] = (),
+    phase3_role_packet: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     selected_ids = frozenset(entity.entity_id for entity in entities.values())
     relevant_decisions = (
@@ -1395,6 +1769,16 @@ def _payload(
                 ),
             }
         )
+    if phase3_role_packet is not None:
+        payload.update(
+            {
+                "phase3_selector": {
+                    "mode": "exact_role_packet.v1",
+                    "provider_must_receive_role_packet_only": True,
+                },
+                "phase3_role_packet": dict(phase3_role_packet),
+            }
+        )
     return payload
 
 
@@ -1412,7 +1796,6 @@ def compile_context(
 ) -> CompiledContext:
     """Compile a deterministic exact-version context without touching disk."""
 
-    del actor  # actor is recorded by the manifest; it does not alter scientific bytes.
     if isinstance(budget_units, bool) or not isinstance(budget_units, int):
         raise ContextBudgetError("budget_units must be an integer")
     if budget_units < 1:
@@ -1429,6 +1812,52 @@ def compile_context(
         raise ContextCompilationError("focus entity IDs must be unique")
     grants = frozenset(grants_tuple)
     focus = tuple(sorted(focus_tuple))
+
+    if isinstance(route, RouteSpecV3) and route.route_id in _PHASE3_NATIVE_ROUTE_IDS:
+        exact_entities, phase3_artifacts, role_packet = _phase3_context_inputs(
+            snapshot,
+            route=route,
+            actor=actor,
+            focus_entity_ids=focus,
+            layout=layout,
+            clearance=privacy_clearance,
+            grants=grants,
+            purpose=purpose,
+        )
+        payload = _payload(
+            snapshot,
+            route=route,
+            purpose=purpose,
+            focus_entity_ids=focus,
+            budget_units=budget_units,
+            entities=exact_entities,
+            relations={},
+            decisions=(),
+            omissions=(),
+            clearance=privacy_clearance,
+            grants=grants,
+            phase3_role_packet=role_packet,
+        )
+        payload["phase3_artifacts"] = phase3_artifacts
+        encoded = canonical_json_bytes(payload)
+        used_units = units_for_bytes(encoded)
+        if used_units > budget_units:
+            raise ContextBudgetError(
+                f"required exact Phase 3 role context needs {used_units} "
+                f"{TOKENIZER_ID} units; budget is {budget_units}"
+            )
+        selected_refs = tuple(
+            EntityVersionRef(entity_id=entity.entity_id, version=entity.version)
+            for entity in sorted(exact_entities.values(), key=_entity_key)
+        )
+        return CompiledContext(
+            payload=payload,
+            encoded=encoded,
+            context_hash=sha256_digest(encoded),
+            selected_entity_refs=selected_refs,
+            omissions=(),
+            used_units=used_units,
+        )
 
     expected_evaluation_purpose = _EVALUATION_ROUTE_PURPOSES.get(route.route_id)
     if expected_evaluation_purpose is not None:
@@ -1621,7 +2050,7 @@ def make_context_manifest(
         route_version=route.route_version,
         route_registry_hash=registry_hash_for_route(route),
         decision_registry_version=decision_registry_version_for_route(route),
-        selector_version=SELECTOR_VERSION,
+        selector_version=selector_version_for_route(route),
         kernel_version=KERNEL_VERSION,
         kernel_hash=KERNEL_HASH,
         validator_version=VALIDATOR_VERSION,

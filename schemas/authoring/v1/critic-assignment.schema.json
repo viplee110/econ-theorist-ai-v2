@@ -1,0 +1,263 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "InformationGrant": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "information_kind": {
+          "enum": [
+            "formal_claim",
+            "assumptions",
+            "examples",
+            "economic_argument",
+            "reader_background",
+            "transfer_objective",
+            "manuscript_unit",
+            "paper_ir_contract"
+          ],
+          "title": "Information Kind",
+          "type": "string"
+        },
+        "source_refs": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "title": "Source Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "information_kind",
+        "description"
+      ],
+      "title": "InformationGrant",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/authoring/v1/critic-assignment.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "adjudicator": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Actor"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "allowed_information": {
+      "items": {
+        "$ref": "#/$defs/InformationGrant"
+      },
+      "minItems": 1,
+      "title": "Allowed Information",
+      "type": "array"
+    },
+    "assigned_actor": {
+      "$ref": "#/$defs/Actor"
+    },
+    "assignment_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Assignment Id",
+      "type": "string"
+    },
+    "canonical_writer": {
+      "$ref": "#/$defs/Actor"
+    },
+    "forbidden_context": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Forbidden Context",
+      "type": "array"
+    },
+    "paper_ir_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "probe_designer": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Actor"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "reader_path_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "result_contract_set_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "role": {
+      "enum": [
+        "formal_fidelity",
+        "economic_reader",
+        "cold_reader"
+      ],
+      "title": "Role",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "sealed_at": {
+      "minLength": 1,
+      "title": "Sealed At",
+      "type": "string"
+    },
+    "sealed_context_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Sealed Context Hash",
+      "type": "string"
+    },
+    "transfer_objective": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Transfer Objective"
+    }
+  },
+  "required": [
+    "assignment_id",
+    "role",
+    "paper_ir_ref",
+    "reader_path_ref",
+    "result_contract_set_ref",
+    "assigned_actor",
+    "canonical_writer",
+    "allowed_information",
+    "forbidden_context",
+    "sealed_context_hash",
+    "sealed_at"
+  ],
+  "title": "CriticAssignment",
+  "type": "object"
+}

@@ -20,7 +20,9 @@ from ..codec import canonical_json_bytes, sha256_digest, transaction_bytes
 from ..errors import RuntimeStoreError
 from ..legacy_boundary import (
     snapshot_has_phase2_material,
+    snapshot_has_phase3_material,
     transaction_introduces_phase2_material,
+    transaction_introduces_phase3_material,
 )
 from ..models import (
     ArtifactRegistration,
@@ -29,7 +31,7 @@ from ..models import (
     Snapshot,
     Transaction,
 )
-from ..policy import ROUTE_REGISTRY_V1_HASH
+from ..policy import ROUTE_REGISTRY_V1_HASH, ROUTE_REGISTRY_V2_HASH
 from .faults import inject_fault
 from .layout import StoreLayout
 from .lock import ExclusiveFileLock
@@ -570,17 +572,28 @@ def _validate_live_registry_boundary(
 ) -> None:
     """Reject live policy downgrade without changing historical replay."""
 
-    if route_registry_hash != ROUTE_REGISTRY_V1_HASH:
+    if route_registry_hash == ROUTE_REGISTRY_V1_HASH:
+        if base_snapshot is not None and snapshot_has_phase2_material(base_snapshot):
+            raise CandidateError(
+                "frozen v1 routes are replay-only after Phase 2 material enters a project"
+            )
+        if transaction_introduces_phase2_material(
+            transaction
+        ) or transaction_introduces_phase3_material(transaction):
+            raise CandidateError(
+                "frozen v1 live writes cannot create or mutate packed Phase 2/3 "
+                "entities or register blind candidate locks"
+            )
         return
-    if base_snapshot is not None and snapshot_has_phase2_material(base_snapshot):
-        raise CandidateError(
-            "frozen v1 routes are replay-only after Phase 2 material enters a project"
-        )
-    if transaction_introduces_phase2_material(transaction):
-        raise CandidateError(
-            "frozen v1 live writes cannot create or mutate packed Phase 2 "
-            "entities or register blind candidate locks"
-        )
+    if route_registry_hash == ROUTE_REGISTRY_V2_HASH:
+        if base_snapshot is not None and snapshot_has_phase3_material(base_snapshot):
+            raise CandidateError(
+                "frozen v2 routes are replay-only after Phase 3 material enters a project"
+            )
+        if transaction_introduces_phase3_material(transaction):
+            raise CandidateError(
+                "frozen v2 live writes cannot create or mutate packed Phase 3 entities"
+            )
 
 
 def _revalidate_prepared_payloads(

@@ -25,6 +25,7 @@ where = ["src"]
 "share/econ-theorist/routes" = [
   "routes/registry.v1.json",
   "routes/registry.v2.json",
+  "routes/registry.v3.json",
 ]
 "share/econ-theorist/routes/instructions" = [
   "routes/instructions/frame.question_and_benchmarks.v1.txt",
@@ -46,4 +47,14 @@ where = ["src"]
   "routes/instructions/validate.argument_package.v2.txt",
   "routes/instructions/verify.claims_proofs_and_interpretation.v2.txt",
   "routes/instructions/theory_kernel.v1.json",
+  "routes/instructions/adjudicate.reader_probe.v3.txt",
+  "routes/instructions/answer.reader_probe.v3.txt",
+  "routes/instructions/audit.argument_assurance.v3.txt",
+  "routes/instructions/close.manuscript_review.v3.txt",
+  "routes/instructions/compose.manuscript_unit.v3.txt",
+  "routes/instructions/design.reader_path.v3.txt",
+  "routes/instructions/prepare.reader_probe.v3.txt",
+  "routes/instructions/record.human_effort.v3.txt",
+  "routes/instructions/review.manuscript_unit.v3.txt",
+  "routes/instructions/verify.independent_rederivation.v3.txt",
 ]

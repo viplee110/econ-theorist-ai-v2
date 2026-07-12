@@ -1,0 +1,199 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "SemanticFacetRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "facet": {
+          "enum": [
+            "formal",
+            "economic_interpretation",
+            "literature_novelty",
+            "terminology_presentation",
+            "authority"
+          ],
+          "title": "Facet",
+          "type": "string"
+        },
+        "field_path": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field Path"
+        },
+        "semantic_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Semantic Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version",
+        "facet",
+        "semantic_hash"
+      ],
+      "title": "SemanticFacetRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/authoring/v1/resolved-profile-manifest.schema.json",
+  "additionalProperties": false,
+  "description": "Minimal Phase 3 universal-floor projection, not a Phase 4 profile stack.",
+  "properties": {
+    "ambition": {
+      "minLength": 1,
+      "title": "Ambition",
+      "type": "string"
+    },
+    "ambition_decision_ref": {
+      "$ref": "#/$defs/DecisionVersionRef"
+    },
+    "audience_decision_ref": {
+      "$ref": "#/$defs/DecisionVersionRef"
+    },
+    "g4_decision_ref": {
+      "$ref": "#/$defs/DecisionVersionRef"
+    },
+    "primary_audience": {
+      "minLength": 1,
+      "title": "Primary Audience",
+      "type": "string"
+    },
+    "primary_result_archetype": {
+      "enum": [
+        "mechanism_explanation",
+        "comparative_statics_threshold",
+        "characterization_bounds",
+        "robustness_invariance_equivalence",
+        "design_implementation_impossibility",
+        "concept_representation_foundation"
+      ],
+      "title": "Primary Result Archetype",
+      "type": "string"
+    },
+    "profile_artifact_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "projection_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Projection Hash",
+      "type": "string"
+    },
+    "resolved_at": {
+      "minLength": 1,
+      "title": "Resolved At",
+      "type": "string"
+    },
+    "result_archetype_source": {
+      "$ref": "#/$defs/SemanticFacetRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source_state_revision": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Source State Revision",
+      "type": "string"
+    },
+    "theory_mode": {
+      "minLength": 1,
+      "title": "Theory Mode",
+      "type": "string"
+    },
+    "theory_mode_decision_ref": {
+      "$ref": "#/$defs/DecisionVersionRef"
+    },
+    "universal_floor_version": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Universal Floor Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "universal_floor_version",
+    "theory_mode",
+    "theory_mode_decision_ref",
+    "ambition",
+    "ambition_decision_ref",
+    "primary_result_archetype",
+    "result_archetype_source",
+    "g4_decision_ref",
+    "primary_audience",
+    "audience_decision_ref",
+    "source_state_revision",
+    "profile_artifact_ref",
+    "projection_hash",
+    "resolved_at"
+  ],
+  "title": "ResolvedProfileManifest",
+  "type": "object"
+}

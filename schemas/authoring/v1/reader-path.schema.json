@@ -1,0 +1,410 @@
+{
+  "$defs": {
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "ReaderBeliefState": {
+      "additionalProperties": false,
+      "properties": {
+        "default_expectation": {
+          "minLength": 1,
+          "title": "Default Expectation",
+          "type": "string"
+        },
+        "delivered_knowledge_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Delivered Knowledge Ids",
+          "type": "array"
+        },
+        "known_on_entry": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Known On Entry",
+          "type": "array"
+        },
+        "live_question": {
+          "minLength": 1,
+          "title": "Live Question",
+          "type": "string"
+        },
+        "misconception_risks": {
+          "default": [],
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Misconception Risks",
+          "type": "array"
+        },
+        "state_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "State Id",
+          "type": "string"
+        },
+        "support_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Support Refs",
+          "type": "array"
+        },
+        "transfer_objective": {
+          "minLength": 1,
+          "title": "Transfer Objective",
+          "type": "string"
+        },
+        "unresolved_on_exit": {
+          "minLength": 1,
+          "title": "Unresolved On Exit",
+          "type": "string"
+        },
+        "update": {
+          "minLength": 1,
+          "title": "Update",
+          "type": "string"
+        }
+      },
+      "required": [
+        "state_id",
+        "known_on_entry",
+        "default_expectation",
+        "live_question",
+        "update",
+        "delivered_knowledge_ids",
+        "support_refs",
+        "transfer_objective",
+        "unresolved_on_exit"
+      ],
+      "title": "ReaderBeliefState",
+      "type": "object"
+    },
+    "ReaderKnowledgeItem": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "minLength": 1,
+          "title": "Content",
+          "type": "string"
+        },
+        "knowledge_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Knowledge Id",
+          "type": "string"
+        },
+        "origin": {
+          "enum": [
+            "target_audience_background",
+            "delivered_update"
+          ],
+          "title": "Origin",
+          "type": "string"
+        },
+        "producer_state_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Producer State Id"
+        }
+      },
+      "required": [
+        "knowledge_id",
+        "content",
+        "origin"
+      ],
+      "title": "ReaderKnowledgeItem",
+      "type": "object"
+    },
+    "ReaderStateEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "source_state_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Source State Id",
+          "type": "string"
+        },
+        "target_state_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Target State Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_state_id",
+        "target_state_id"
+      ],
+      "title": "ReaderStateEdge",
+      "type": "object"
+    },
+    "SectionContract": {
+      "additionalProperties": false,
+      "properties": {
+        "appendix_boundary": {
+          "enum": [
+            "main_text",
+            "appendix",
+            "mixed"
+          ],
+          "title": "Appendix Boundary",
+          "type": "string"
+        },
+        "central_question": {
+          "minLength": 1,
+          "title": "Central Question",
+          "type": "string"
+        },
+        "claims_introduced": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Claims Introduced",
+          "type": "array"
+        },
+        "economic_object_ids_to_interpret": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Economic Object Ids To Interpret",
+          "type": "array"
+        },
+        "entry_state_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entry State Id",
+          "type": "string"
+        },
+        "exit_state_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Exit State Id",
+          "type": "string"
+        },
+        "forbidden_detours": {
+          "default": [],
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Forbidden Detours",
+          "type": "array"
+        },
+        "open_question_for_next_section": {
+          "minLength": 1,
+          "title": "Open Question For Next Section",
+          "type": "string"
+        },
+        "reader_cost_constraint": {
+          "minLength": 1,
+          "title": "Reader Cost Constraint",
+          "type": "string"
+        },
+        "reader_update_on_exit": {
+          "minLength": 1,
+          "title": "Reader Update On Exit",
+          "type": "string"
+        },
+        "required_claim_projection_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Required Claim Projection Ids",
+          "type": "array"
+        },
+        "role": {
+          "enum": [
+            "introduction",
+            "model_motivation",
+            "model",
+            "result_block",
+            "extension",
+            "conclusion",
+            "appendix"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "section_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Section Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "section_id",
+        "role",
+        "entry_state_id",
+        "exit_state_id",
+        "central_question",
+        "required_claim_projection_ids",
+        "claims_introduced",
+        "economic_object_ids_to_interpret",
+        "reader_update_on_exit",
+        "open_question_for_next_section",
+        "reader_cost_constraint",
+        "appendix_boundary"
+      ],
+      "title": "SectionContract",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/authoring/v1/reader-path.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "built_at": {
+      "minLength": 1,
+      "title": "Built At",
+      "type": "string"
+    },
+    "knowledge_items": {
+      "items": {
+        "$ref": "#/$defs/ReaderKnowledgeItem"
+      },
+      "minItems": 1,
+      "title": "Knowledge Items",
+      "type": "array"
+    },
+    "ordered_section_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Ordered Section Ids",
+      "type": "array"
+    },
+    "paper_ir_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "reader_states": {
+      "items": {
+        "$ref": "#/$defs/ReaderBeliefState"
+      },
+      "minItems": 2,
+      "title": "Reader States",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "section_contracts": {
+      "items": {
+        "$ref": "#/$defs/SectionContract"
+      },
+      "minItems": 1,
+      "title": "Section Contracts",
+      "type": "array"
+    },
+    "state_edges": {
+      "items": {
+        "$ref": "#/$defs/ReaderStateEdge"
+      },
+      "minItems": 1,
+      "title": "State Edges",
+      "type": "array"
+    }
+  },
+  "required": [
+    "paper_ir_ref",
+    "knowledge_items",
+    "reader_states",
+    "state_edges",
+    "section_contracts",
+    "ordered_section_ids",
+    "built_at"
+  ],
+  "title": "ReaderPath",
+  "type": "object"
+}

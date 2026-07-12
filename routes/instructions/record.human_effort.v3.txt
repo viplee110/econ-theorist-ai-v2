@@ -1,0 +1,4 @@
+Accept only a human reporter and one exact ManuscriptUnit, with at most one current HumanEffortRecord version for that same unit and collaboration episode.
+Create the first record or supersede it by preserving every prior event byte-for-byte and appending only later active-time and semantic-edit events.
+Record affected unit, active minutes, edit disposition, severity, and the exact formal, intuition, assumption, reader-path, literature, voice, formatting, deletion, or scope-reduction category.
+Exclude unattended computation, inferred activity, overwritten events, negative time, duplicate event identities, and edits attributed to an actor who did not report them.
