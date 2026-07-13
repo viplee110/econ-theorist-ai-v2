@@ -1,0 +1,2930 @@
+{
+  "authoring_contract_schema": "econ-theorist/candidate-authoring-contract/v1",
+  "work_packet_hash": "f253bd89ffd59475395af795ea2a06ae19bffcc1a024a9f4405c1269c18c84eb",
+  "packet_schema": "econ-theorist/work-packet/v1",
+  "packet_compiler_version": 1,
+  "engine_version": "0.1.0",
+  "engine_semantics_hash": "9c146cf348730d2bfd4c7564cef5c8ba4cee23e9056649e690620b8f39dcf808",
+  "transaction_bindings": {
+    "binding_schema": "econ-theorist/candidate-transaction-bindings/v1",
+    "transaction_schema": 1,
+    "origin": "route_run",
+    "project_id": "prj_2d5d22e2c13f7946f54faa4023878692a0884786abeb89c5",
+    "base_revision": "29deae00e48c5b36f83937daf4749590030b7939f7aacb57a00f5f03ba2525ac",
+    "parent_transaction_hash": "29deae00e48c5b36f83937daf4749590030b7939f7aacb57a00f5f03ba2525ac",
+    "route_run_id": "run_op_357299f80dea59a15b799194f8727f32c500408d32bb117e",
+    "route_id": "frame.question_and_benchmarks",
+    "route_run_hash": "372baa32b0b122fdbdbb4ab29c7896acc0a76f4d30878086d74ffb1e6453cd8e",
+    "context_manifest_hash": "f2dc3b8c30cc32fc655b18308b9db821dcbcb9b577565bb2c399d41afa0ee058",
+    "compiled_context_hash": "aa55c40797d015186996409476e547a15ff63be8433ce1e6d0c2e460bc9e6d20",
+    "actor": {
+      "kind": "agent",
+      "actor_id": "scientific_agent"
+    },
+    "privacy": "public",
+    "access_compartments": [
+      "project_research"
+    ],
+    "created_at": "2026-07-13T20:05:57.815521Z"
+  },
+  "output_locations": {
+    "output_locations_schema": "econ-theorist/candidate-output-locations/v1",
+    "candidate_logical_path": ".econ-theorist/staging/run_op_357299f80dea59a15b799194f8727f32c500408d32bb117e/candidate.json",
+    "shadow_logical_root": ".econ-theorist/operational/v1/runs/run_op_357299f80dea59a15b799194f8727f32c500408d32bb117e/shadow"
+  },
+  "transaction_json_schema": {
+    "$defs": {
+      "Actor": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "human",
+              "agent",
+              "deterministic_tool"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "actor_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Actor Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "actor_id"
+        ],
+        "title": "Actor",
+        "type": "object"
+      },
+      "ArtifactDependencyRef": {
+        "additionalProperties": false,
+        "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+        "properties": {
+          "artifact_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1,
+            "title": "Version",
+            "type": "integer"
+          },
+          "content_hash": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Content Hash",
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "version",
+          "content_hash"
+        ],
+        "title": "ArtifactDependencyRef",
+        "type": "object"
+      },
+      "ArtifactPrivacySubject": {
+        "additionalProperties": false,
+        "properties": {
+          "subject_type": {
+            "const": "artifact",
+            "default": "artifact",
+            "title": "Subject Type",
+            "type": "string"
+          },
+          "artifact": {
+            "$ref": "#/$defs/ArtifactVersionRef"
+          }
+        },
+        "required": [
+          "artifact"
+        ],
+        "title": "ArtifactPrivacySubject",
+        "type": "object"
+      },
+      "ArtifactRegistration": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1,
+            "title": "Version",
+            "type": "integer"
+          },
+          "project_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Project Id",
+            "type": "string"
+          },
+          "logical_name": {
+            "minLength": 1,
+            "title": "Logical Name",
+            "type": "string"
+          },
+          "media_type": {
+            "minLength": 1,
+            "title": "Media Type",
+            "type": "string"
+          },
+          "content_hash": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "byte_size": {
+            "minimum": 0,
+            "title": "Byte Size",
+            "type": "integer"
+          },
+          "privacy": {
+            "default": "project_private",
+            "enum": [
+              "public",
+              "project_private",
+              "restricted",
+              "local_only"
+            ],
+            "title": "Privacy",
+            "type": "string"
+          },
+          "access_compartments": {
+            "default": [
+              "project_research"
+            ],
+            "items": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            "title": "Access Compartments",
+            "type": "array"
+          },
+          "human_owned": {
+            "default": false,
+            "title": "Human Owned",
+            "type": "boolean"
+          },
+          "logical_path": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Logical Path"
+          },
+          "expected_base_hash": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Expected Base Hash"
+          },
+          "created_at": {
+            "minLength": 1,
+            "title": "Created At",
+            "type": "string"
+          },
+          "supersedes": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ArtifactVersionRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "artifact_id",
+          "version",
+          "project_id",
+          "logical_name",
+          "media_type",
+          "content_hash",
+          "byte_size",
+          "created_at"
+        ],
+        "title": "ArtifactRegistration",
+        "type": "object"
+      },
+      "ArtifactVersionRef": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "version"
+        ],
+        "title": "ArtifactVersionRef",
+        "type": "object"
+      },
+      "BlockerRef": {
+        "additionalProperties": false,
+        "properties": {
+          "blocker_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Blocker Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "blocker_id"
+        ],
+        "title": "BlockerRef",
+        "type": "object"
+      },
+      "ChangedFacets": {
+        "additionalProperties": false,
+        "properties": {
+          "entity_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "previous_version": {
+            "minimum": 1,
+            "title": "Previous Version",
+            "type": "integer"
+          },
+          "new_version": {
+            "minimum": 2,
+            "title": "New Version",
+            "type": "integer"
+          },
+          "facets": {
+            "items": {
+              "enum": [
+                "formal",
+                "economic_interpretation",
+                "literature_novelty",
+                "terminology_presentation",
+                "authority"
+              ],
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Facets",
+            "type": "array"
+          }
+        },
+        "required": [
+          "entity_id",
+          "previous_version",
+          "new_version",
+          "facets"
+        ],
+        "title": "ChangedFacets",
+        "type": "object"
+      },
+      "CreateEntityOp": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "entity.create",
+            "default": "entity.create",
+            "title": "Op",
+            "type": "string"
+          },
+          "entity": {
+            "$ref": "#/$defs/EntityVersion"
+          }
+        },
+        "required": [
+          "entity"
+        ],
+        "title": "CreateEntityOp",
+        "type": "object"
+      },
+      "CreateRelationOp": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "relation.create",
+            "default": "relation.create",
+            "title": "Op",
+            "type": "string"
+          },
+          "relation": {
+            "$ref": "#/$defs/RelationVersion"
+          }
+        },
+        "required": [
+          "relation"
+        ],
+        "title": "CreateRelationOp",
+        "type": "object"
+      },
+      "Decision": {
+        "additionalProperties": false,
+        "description": "Immutable authority evidence; effective_revision is replay-derived.",
+        "properties": {
+          "decision_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Decision Id",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1,
+            "title": "Version",
+            "type": "integer"
+          },
+          "project_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Project Id",
+            "type": "string"
+          },
+          "decision_kind": {
+            "enum": [
+              "G1_question_benchmark",
+              "G2_mechanism",
+              "G3_formal_base",
+              "G4_result_investment",
+              "G5_argument_validation",
+              "primitive_promotion",
+              "solution_concept",
+              "main_result_scope",
+              "novelty_contribution",
+              "argument_spine",
+              "narrative_material_order",
+              "theory_mode",
+              "ambition",
+              "field",
+              "audience",
+              "venue_overlay",
+              "submission_constraints",
+              "target_profile",
+              "voice_charter",
+              "manuscript_version_promotion",
+              "privacy_declassification",
+              "external_release",
+              "submission_handoff",
+              "external_communication",
+              "destructive_cleanup"
+            ],
+            "title": "Decision Kind",
+            "type": "string"
+          },
+          "subject_ref": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Subject Ref",
+            "type": "string"
+          },
+          "scope_ref": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scope Ref"
+          },
+          "question": {
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Options",
+            "type": "array"
+          },
+          "selected_option": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Selected Option"
+          },
+          "machine_outcome": {
+            "anyOf": [
+              {
+                "enum": [
+                  "approve",
+                  "deny"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Machine Outcome"
+          },
+          "privacy_change": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PrivacyChange"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "recommendation": {
+            "minLength": 1,
+            "title": "Recommendation",
+            "type": "string"
+          },
+          "rationale": {
+            "minLength": 1,
+            "title": "Rationale",
+            "type": "string"
+          },
+          "evidence_refs": {
+            "default": [],
+            "items": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            "title": "Evidence Refs",
+            "type": "array"
+          },
+          "dissent_refs": {
+            "default": [],
+            "items": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            "title": "Dissent Refs",
+            "type": "array"
+          },
+          "unresolved_risks": {
+            "default": [],
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "title": "Unresolved Risks",
+            "type": "array"
+          },
+          "required_authority": {
+            "enum": [
+              "L0",
+              "L1",
+              "L2",
+              "L3"
+            ],
+            "title": "Required Authority",
+            "type": "string"
+          },
+          "decider": {
+            "$ref": "#/$defs/Actor"
+          },
+          "decided_at": {
+            "minLength": 1,
+            "title": "Decided At",
+            "type": "string"
+          },
+          "affected_scopes": {
+            "default": [],
+            "items": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            "title": "Affected Scopes",
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "proposed",
+              "provisional",
+              "confirmed",
+              "rejected",
+              "superseded"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "privacy": {
+            "default": "project_private",
+            "enum": [
+              "public",
+              "project_private",
+              "restricted",
+              "local_only"
+            ],
+            "title": "Privacy",
+            "type": "string"
+          },
+          "access_compartments": {
+            "default": [
+              "project_research"
+            ],
+            "items": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            "title": "Access Compartments",
+            "type": "array"
+          },
+          "supersedes": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "decision_id",
+          "version",
+          "project_id",
+          "decision_kind",
+          "subject_ref",
+          "question",
+          "options",
+          "recommendation",
+          "rationale",
+          "required_authority",
+          "decider",
+          "decided_at",
+          "status"
+        ],
+        "title": "Decision",
+        "type": "object"
+      },
+      "DecisionVersionRef": {
+        "additionalProperties": false,
+        "properties": {
+          "decision_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Decision Id",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "decision_id",
+          "version"
+        ],
+        "title": "DecisionVersionRef",
+        "type": "object"
+      },
+      "EntityPrivacySubject": {
+        "additionalProperties": false,
+        "properties": {
+          "subject_type": {
+            "const": "entity",
+            "default": "entity",
+            "title": "Subject Type",
+            "type": "string"
+          },
+          "entity": {
+            "$ref": "#/$defs/EntityVersionRef"
+          }
+        },
+        "required": [
+          "entity"
+        ],
+        "title": "EntityPrivacySubject",
+        "type": "object"
+      },
+      "EntityVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "entity_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "entity_type": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1,
+            "title": "Version",
+            "type": "integer"
+          },
+          "project_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Project Id",
+            "type": "string"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "summary": {
+            "minLength": 1,
+            "title": "Summary",
+            "type": "string"
+          },
+          "scope_ref": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scope Ref"
+          },
+          "status": {
+            "$ref": "#/$defs/ScientificStatus"
+          },
+          "facets": {
+            "$ref": "#/$defs/FacetPayloads"
+          },
+          "artifact_refs": {
+            "default": [],
+            "items": {
+              "$ref": "#/$defs/ArtifactDependencyRef"
+            },
+            "title": "Artifact Refs",
+            "type": "array"
+          },
+          "privacy": {
+            "default": "project_private",
+            "enum": [
+              "public",
+              "project_private",
+              "restricted",
+              "local_only"
+            ],
+            "title": "Privacy",
+            "type": "string"
+          },
+          "access_compartments": {
+            "default": [
+              "project_research"
+            ],
+            "items": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            "title": "Access Compartments",
+            "type": "array"
+          },
+          "created_at": {
+            "minLength": 1,
+            "title": "Created At",
+            "type": "string"
+          },
+          "supersedes": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "entity_id",
+          "entity_type",
+          "version",
+          "project_id",
+          "title",
+          "summary",
+          "status",
+          "facets",
+          "created_at"
+        ],
+        "title": "EntityVersion",
+        "type": "object"
+      },
+      "EntityVersionRef": {
+        "additionalProperties": false,
+        "properties": {
+          "entity_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "entity_id",
+          "version"
+        ],
+        "title": "EntityVersionRef",
+        "type": "object"
+      },
+      "FacetPathRef": {
+        "additionalProperties": false,
+        "properties": {
+          "entity_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1,
+            "title": "Version",
+            "type": "integer"
+          },
+          "facet": {
+            "enum": [
+              "formal",
+              "economic_interpretation",
+              "literature_novelty",
+              "terminology_presentation",
+              "authority"
+            ],
+            "title": "Facet",
+            "type": "string"
+          },
+          "field_path": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Field Path"
+          }
+        },
+        "required": [
+          "entity_id",
+          "version",
+          "facet"
+        ],
+        "title": "FacetPathRef",
+        "type": "object"
+      },
+      "FacetPayloads": {
+        "additionalProperties": false,
+        "description": "Generic Phase 1 payload partitioned into the five semantic facets.",
+        "properties": {
+          "formal": {
+            "additionalProperties": true,
+            "title": "Formal",
+            "type": "object"
+          },
+          "economic_interpretation": {
+            "additionalProperties": true,
+            "title": "Economic Interpretation",
+            "type": "object"
+          },
+          "literature_novelty": {
+            "additionalProperties": true,
+            "title": "Literature Novelty",
+            "type": "object"
+          },
+          "terminology_presentation": {
+            "additionalProperties": true,
+            "title": "Terminology Presentation",
+            "type": "object"
+          },
+          "authority": {
+            "additionalProperties": true,
+            "title": "Authority",
+            "type": "object"
+          }
+        },
+        "title": "FacetPayloads",
+        "type": "object"
+      },
+      "LiteratureStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "coverage": {
+            "enum": [
+              "not_started",
+              "partial",
+              "current",
+              "needs_refresh"
+            ],
+            "title": "Coverage",
+            "type": "string"
+          },
+          "novelty": {
+            "enum": [
+              "unassessed",
+              "unresolved",
+              "differentiated",
+              "absorbed",
+              "disputed"
+            ],
+            "title": "Novelty",
+            "type": "string"
+          }
+        },
+        "required": [
+          "coverage",
+          "novelty"
+        ],
+        "title": "LiteratureStatus",
+        "type": "object"
+      },
+      "Precondition": {
+        "additionalProperties": false,
+        "properties": {
+          "entity": {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          "expected_semantic_hashes": {
+            "additionalProperties": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "propertyNames": {
+              "enum": [
+                "formal",
+                "economic_interpretation",
+                "literature_novelty",
+                "terminology_presentation",
+                "authority"
+              ]
+            },
+            "title": "Expected Semantic Hashes",
+            "type": "object"
+          }
+        },
+        "required": [
+          "entity"
+        ],
+        "title": "Precondition",
+        "type": "object"
+      },
+      "PrivacyChange": {
+        "additionalProperties": false,
+        "description": "One exact requested release of an immutable canonical object version.",
+        "properties": {
+          "subject": {
+            "discriminator": {
+              "mapping": {
+                "artifact": "#/$defs/ArtifactPrivacySubject",
+                "entity": "#/$defs/EntityPrivacySubject",
+                "relation": "#/$defs/RelationPrivacySubject"
+              },
+              "propertyName": "subject_type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/EntityPrivacySubject"
+              },
+              {
+                "$ref": "#/$defs/RelationPrivacySubject"
+              },
+              {
+                "$ref": "#/$defs/ArtifactPrivacySubject"
+              }
+            ],
+            "title": "Subject"
+          },
+          "from_privacy": {
+            "enum": [
+              "public",
+              "project_private",
+              "restricted",
+              "local_only"
+            ],
+            "title": "From Privacy",
+            "type": "string"
+          },
+          "to_privacy": {
+            "enum": [
+              "public",
+              "project_private",
+              "restricted",
+              "local_only"
+            ],
+            "title": "To Privacy",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject",
+          "from_privacy",
+          "to_privacy"
+        ],
+        "title": "PrivacyChange",
+        "type": "object"
+      },
+      "RecordBlockerOp": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "blocker.record",
+            "default": "blocker.record",
+            "title": "Op",
+            "type": "string"
+          },
+          "blocker": {
+            "$ref": "#/$defs/RiskOrBlocker"
+          }
+        },
+        "required": [
+          "blocker"
+        ],
+        "title": "RecordBlockerOp",
+        "type": "object"
+      },
+      "RecordDecisionOp": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "decision.record",
+            "default": "decision.record",
+            "title": "Op",
+            "type": "string"
+          },
+          "decision": {
+            "$ref": "#/$defs/Decision"
+          }
+        },
+        "required": [
+          "decision"
+        ],
+        "title": "RecordDecisionOp",
+        "type": "object"
+      },
+      "RecordRouteOutcomeOp": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "route.outcome",
+            "default": "route.outcome",
+            "title": "Op",
+            "type": "string"
+          },
+          "outcome": {
+            "$ref": "#/$defs/RouteOutcome"
+          }
+        },
+        "required": [
+          "outcome"
+        ],
+        "title": "RecordRouteOutcomeOp",
+        "type": "object"
+      },
+      "RegisterArtifactOp": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "artifact.register",
+            "default": "artifact.register",
+            "title": "Op",
+            "type": "string"
+          },
+          "artifact": {
+            "$ref": "#/$defs/ArtifactRegistration"
+          }
+        },
+        "required": [
+          "artifact"
+        ],
+        "title": "RegisterArtifactOp",
+        "type": "object"
+      },
+      "RelationPrivacySubject": {
+        "additionalProperties": false,
+        "properties": {
+          "subject_type": {
+            "const": "relation",
+            "default": "relation",
+            "title": "Subject Type",
+            "type": "string"
+          },
+          "relation": {
+            "$ref": "#/$defs/RelationVersionRef"
+          }
+        },
+        "required": [
+          "relation"
+        ],
+        "title": "RelationPrivacySubject",
+        "type": "object"
+      },
+      "RelationVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "relation_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Relation Id",
+            "type": "string"
+          },
+          "relation_type": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Relation Type",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1,
+            "title": "Version",
+            "type": "integer"
+          },
+          "project_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Project Id",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          "target": {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          "dependency_mode": {
+            "default": "trace_only",
+            "enum": [
+              "hard",
+              "scope_sensitive",
+              "evidentiary",
+              "presentation",
+              "trace_only"
+            ],
+            "title": "Dependency Mode",
+            "type": "string"
+          },
+          "upstream": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/SemanticFacetRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "downstream": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/FacetPathRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "scope_ref": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scope Ref"
+          },
+          "scope_overlap": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ScopeOverlapEvidence"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "privacy": {
+            "default": "project_private",
+            "enum": [
+              "public",
+              "project_private",
+              "restricted",
+              "local_only"
+            ],
+            "title": "Privacy",
+            "type": "string"
+          },
+          "access_compartments": {
+            "default": [
+              "project_research"
+            ],
+            "items": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            "title": "Access Compartments",
+            "type": "array"
+          },
+          "created_at": {
+            "minLength": 1,
+            "title": "Created At",
+            "type": "string"
+          },
+          "supersedes": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/RelationVersionRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "relation_id",
+          "relation_type",
+          "version",
+          "project_id",
+          "source",
+          "target",
+          "created_at"
+        ],
+        "title": "RelationVersion",
+        "type": "object"
+      },
+      "RelationVersionRef": {
+        "additionalProperties": false,
+        "properties": {
+          "relation_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Relation Id",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "relation_id",
+          "version"
+        ],
+        "title": "RelationVersionRef",
+        "type": "object"
+      },
+      "RetireEntityOp": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "entity.retire",
+            "default": "entity.retire",
+            "title": "Op",
+            "type": "string"
+          },
+          "entity": {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          "reason": {
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity",
+          "reason"
+        ],
+        "title": "RetireEntityOp",
+        "type": "object"
+      },
+      "RetireRelationOp": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "relation.retire",
+            "default": "relation.retire",
+            "title": "Op",
+            "type": "string"
+          },
+          "relation": {
+            "$ref": "#/$defs/RelationVersionRef"
+          },
+          "reason": {
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "relation",
+          "reason"
+        ],
+        "title": "RetireRelationOp",
+        "type": "object"
+      },
+      "RiskOrBlocker": {
+        "additionalProperties": false,
+        "properties": {
+          "blocker_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Blocker Id",
+            "type": "string"
+          },
+          "project_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Project Id",
+            "type": "string"
+          },
+          "kind": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Kind",
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "info",
+              "warning",
+              "error",
+              "critical"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "summary": {
+            "minLength": 1,
+            "title": "Summary",
+            "type": "string"
+          },
+          "affected_refs": {
+            "default": [],
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EntityVersionRef"
+                },
+                {
+                  "$ref": "#/$defs/RelationVersionRef"
+                },
+                {
+                  "$ref": "#/$defs/DecisionVersionRef"
+                },
+                {
+                  "$ref": "#/$defs/ArtifactDependencyRef"
+                },
+                {
+                  "$ref": "#/$defs/BlockerRef"
+                }
+              ]
+            },
+            "title": "Affected Refs",
+            "type": "array"
+          },
+          "required_route": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Required Route"
+          },
+          "created_at": {
+            "minLength": 1,
+            "title": "Created At",
+            "type": "string"
+          },
+          "privacy": {
+            "default": "project_private",
+            "enum": [
+              "public",
+              "project_private",
+              "restricted",
+              "local_only"
+            ],
+            "title": "Privacy",
+            "type": "string"
+          },
+          "access_compartments": {
+            "default": [
+              "project_research"
+            ],
+            "items": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            "title": "Access Compartments",
+            "type": "array"
+          }
+        },
+        "required": [
+          "blocker_id",
+          "project_id",
+          "kind",
+          "severity",
+          "summary",
+          "created_at"
+        ],
+        "title": "RiskOrBlocker",
+        "type": "object"
+      },
+      "RouteOutcome": {
+        "additionalProperties": false,
+        "properties": {
+          "route_run_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Route Run Id",
+            "type": "string"
+          },
+          "route_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Route Id",
+            "type": "string"
+          },
+          "outcome": {
+            "enum": [
+              "completed_with_candidate",
+              "failed",
+              "interrupted",
+              "validated",
+              "rejected",
+              "superseded"
+            ],
+            "title": "Outcome",
+            "type": "string"
+          },
+          "rationale": {
+            "minLength": 1,
+            "title": "Rationale",
+            "type": "string"
+          },
+          "candidate_refs": {
+            "default": [],
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EntityVersionRef"
+                },
+                {
+                  "$ref": "#/$defs/RelationVersionRef"
+                },
+                {
+                  "$ref": "#/$defs/DecisionVersionRef"
+                },
+                {
+                  "$ref": "#/$defs/ArtifactDependencyRef"
+                },
+                {
+                  "$ref": "#/$defs/BlockerRef"
+                }
+              ]
+            },
+            "title": "Candidate Refs",
+            "type": "array"
+          },
+          "validator_report_refs": {
+            "default": [],
+            "items": {
+              "$ref": "#/$defs/ArtifactDependencyRef"
+            },
+            "title": "Validator Report Refs",
+            "type": "array"
+          },
+          "privacy": {
+            "default": "project_private",
+            "enum": [
+              "public",
+              "project_private",
+              "restricted",
+              "local_only"
+            ],
+            "title": "Privacy",
+            "type": "string"
+          },
+          "access_compartments": {
+            "default": [
+              "project_research"
+            ],
+            "items": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            "title": "Access Compartments",
+            "type": "array"
+          }
+        },
+        "required": [
+          "route_run_id",
+          "route_id",
+          "outcome",
+          "rationale"
+        ],
+        "title": "RouteOutcome",
+        "type": "object"
+      },
+      "ScientificStatus": {
+        "additionalProperties": false,
+        "description": "Stored dimensions only; acceptance and freshness are projections.",
+        "properties": {
+          "lifecycle": {
+            "default": "proposed",
+            "enum": [
+              "proposed",
+              "active",
+              "superseded",
+              "retired"
+            ],
+            "title": "Lifecycle",
+            "type": "string"
+          },
+          "formal_validity": {
+            "anyOf": [
+              {
+                "enum": [
+                  "not_applicable",
+                  "unassessed",
+                  "exploratory_only",
+                  "partially_checked",
+                  "verified_in_scope",
+                  "failed",
+                  "disputed"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Formal Validity"
+          },
+          "interpretation_validity": {
+            "anyOf": [
+              {
+                "enum": [
+                  "not_applicable",
+                  "unassessed",
+                  "hypothesized",
+                  "example_supported",
+                  "stress_tested",
+                  "validated",
+                  "failed",
+                  "disputed"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Interpretation Validity"
+          },
+          "literature": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/LiteratureStatus"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "title": "ScientificStatus",
+        "type": "object"
+      },
+      "ScopeOverlapEvidence": {
+        "additionalProperties": false,
+        "description": "Typed exact scope versions supporting one scope-sensitive dependency.",
+        "properties": {
+          "source_scope": {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          "target_scope": {
+            "$ref": "#/$defs/EntityVersionRef"
+          }
+        },
+        "required": [
+          "source_scope",
+          "target_scope"
+        ],
+        "title": "ScopeOverlapEvidence",
+        "type": "object"
+      },
+      "SemanticFacetRef": {
+        "additionalProperties": false,
+        "properties": {
+          "entity_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1,
+            "title": "Version",
+            "type": "integer"
+          },
+          "facet": {
+            "enum": [
+              "formal",
+              "economic_interpretation",
+              "literature_novelty",
+              "terminology_presentation",
+              "authority"
+            ],
+            "title": "Facet",
+            "type": "string"
+          },
+          "field_path": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Field Path"
+          },
+          "semantic_hash": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Semantic Hash",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity_id",
+          "version",
+          "facet",
+          "semantic_hash"
+        ],
+        "title": "SemanticFacetRef",
+        "type": "object"
+      },
+      "StatusTransition": {
+        "additionalProperties": false,
+        "properties": {
+          "entity": {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          "dimension": {
+            "enum": [
+              "lifecycle",
+              "formal_validity",
+              "interpretation_validity",
+              "literature.coverage",
+              "literature.novelty"
+            ],
+            "title": "Dimension",
+            "type": "string"
+          },
+          "from_value": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "From Value"
+          },
+          "to_value": {
+            "minLength": 1,
+            "title": "To Value",
+            "type": "string"
+          },
+          "evidence_refs": {
+            "default": [],
+            "items": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            "title": "Evidence Refs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "entity",
+          "dimension",
+          "to_value"
+        ],
+        "title": "StatusTransition",
+        "type": "object"
+      },
+      "StatusTransitionOp": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "status.transition",
+            "default": "status.transition",
+            "title": "Op",
+            "type": "string"
+          },
+          "transition": {
+            "$ref": "#/$defs/StatusTransition"
+          }
+        },
+        "required": [
+          "transition"
+        ],
+        "title": "StatusTransitionOp",
+        "type": "object"
+      },
+      "SupersedeDecisionOp": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "decision.supersede",
+            "default": "decision.supersede",
+            "title": "Op",
+            "type": "string"
+          },
+          "previous": {
+            "$ref": "#/$defs/DecisionVersionRef"
+          },
+          "decision": {
+            "$ref": "#/$defs/Decision"
+          }
+        },
+        "required": [
+          "previous",
+          "decision"
+        ],
+        "title": "SupersedeDecisionOp",
+        "type": "object"
+      },
+      "SupersedeEntityOp": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "entity.supersede",
+            "default": "entity.supersede",
+            "title": "Op",
+            "type": "string"
+          },
+          "previous": {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          "entity": {
+            "$ref": "#/$defs/EntityVersion"
+          }
+        },
+        "required": [
+          "previous",
+          "entity"
+        ],
+        "title": "SupersedeEntityOp",
+        "type": "object"
+      },
+      "SupersedeRelationOp": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "relation.supersede",
+            "default": "relation.supersede",
+            "title": "Op",
+            "type": "string"
+          },
+          "previous": {
+            "$ref": "#/$defs/RelationVersionRef"
+          },
+          "relation": {
+            "$ref": "#/$defs/RelationVersion"
+          }
+        },
+        "required": [
+          "previous",
+          "relation"
+        ],
+        "title": "SupersedeRelationOp",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Canonical transaction body.  Its digest is intentionally absent.",
+    "properties": {
+      "transaction_id": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "title": "Transaction Id",
+        "type": "string"
+      },
+      "transaction_schema": {
+        "const": 1,
+        "default": 1,
+        "title": "Transaction Schema",
+        "type": "integer"
+      },
+      "origin": {
+        "enum": [
+          "genesis",
+          "route_run",
+          "human_decision"
+        ],
+        "title": "Origin",
+        "type": "string"
+      },
+      "project_id": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "title": "Project Id",
+        "type": "string"
+      },
+      "base_revision": {
+        "anyOf": [
+          {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Base Revision"
+      },
+      "route_run_id": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "title": "Route Run Id",
+        "type": "string"
+      },
+      "route_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Route Id"
+      },
+      "route_run_hash": {
+        "anyOf": [
+          {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Route Run Hash"
+      },
+      "context_manifest_hash": {
+        "anyOf": [
+          {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Context Manifest Hash"
+      },
+      "compiled_context_hash": {
+        "anyOf": [
+          {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Compiled Context Hash"
+      },
+      "actor": {
+        "$ref": "#/$defs/Actor"
+      },
+      "intent": {
+        "minLength": 1,
+        "title": "Intent",
+        "type": "string"
+      },
+      "preconditions": {
+        "default": [],
+        "items": {
+          "$ref": "#/$defs/Precondition"
+        },
+        "title": "Preconditions",
+        "type": "array"
+      },
+      "changed_facets": {
+        "default": [],
+        "items": {
+          "$ref": "#/$defs/ChangedFacets"
+        },
+        "title": "Changed Facets",
+        "type": "array"
+      },
+      "operations": {
+        "items": {
+          "discriminator": {
+            "mapping": {
+              "artifact.register": "#/$defs/RegisterArtifactOp",
+              "blocker.record": "#/$defs/RecordBlockerOp",
+              "decision.record": "#/$defs/RecordDecisionOp",
+              "decision.supersede": "#/$defs/SupersedeDecisionOp",
+              "entity.create": "#/$defs/CreateEntityOp",
+              "entity.retire": "#/$defs/RetireEntityOp",
+              "entity.supersede": "#/$defs/SupersedeEntityOp",
+              "relation.create": "#/$defs/CreateRelationOp",
+              "relation.retire": "#/$defs/RetireRelationOp",
+              "relation.supersede": "#/$defs/SupersedeRelationOp",
+              "route.outcome": "#/$defs/RecordRouteOutcomeOp",
+              "status.transition": "#/$defs/StatusTransitionOp"
+            },
+            "propertyName": "op"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/CreateEntityOp"
+            },
+            {
+              "$ref": "#/$defs/SupersedeEntityOp"
+            },
+            {
+              "$ref": "#/$defs/RetireEntityOp"
+            },
+            {
+              "$ref": "#/$defs/CreateRelationOp"
+            },
+            {
+              "$ref": "#/$defs/SupersedeRelationOp"
+            },
+            {
+              "$ref": "#/$defs/RetireRelationOp"
+            },
+            {
+              "$ref": "#/$defs/StatusTransitionOp"
+            },
+            {
+              "$ref": "#/$defs/RecordDecisionOp"
+            },
+            {
+              "$ref": "#/$defs/SupersedeDecisionOp"
+            },
+            {
+              "$ref": "#/$defs/RegisterArtifactOp"
+            },
+            {
+              "$ref": "#/$defs/RecordRouteOutcomeOp"
+            },
+            {
+              "$ref": "#/$defs/RecordBlockerOp"
+            }
+          ]
+        },
+        "minItems": 1,
+        "title": "Operations",
+        "type": "array"
+      },
+      "evidence_refs": {
+        "default": [],
+        "items": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntityVersionRef"
+            },
+            {
+              "$ref": "#/$defs/RelationVersionRef"
+            },
+            {
+              "$ref": "#/$defs/DecisionVersionRef"
+            },
+            {
+              "$ref": "#/$defs/ArtifactDependencyRef"
+            },
+            {
+              "$ref": "#/$defs/BlockerRef"
+            }
+          ]
+        },
+        "title": "Evidence Refs",
+        "type": "array"
+      },
+      "authority_basis": {
+        "default": [],
+        "items": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "type": "string"
+        },
+        "title": "Authority Basis",
+        "type": "array"
+      },
+      "privacy": {
+        "default": "project_private",
+        "enum": [
+          "public",
+          "project_private",
+          "restricted",
+          "local_only"
+        ],
+        "title": "Privacy",
+        "type": "string"
+      },
+      "access_compartments": {
+        "default": [
+          "project_research"
+        ],
+        "items": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "type": "string"
+        },
+        "title": "Access Compartments",
+        "type": "array"
+      },
+      "created_at": {
+        "minLength": 1,
+        "title": "Created At",
+        "type": "string"
+      },
+      "parent_transaction_hash": {
+        "anyOf": [
+          {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Parent Transaction Hash"
+      }
+    },
+    "required": [
+      "transaction_id",
+      "origin",
+      "project_id",
+      "base_revision",
+      "route_run_id",
+      "actor",
+      "intent",
+      "operations",
+      "created_at",
+      "parent_transaction_hash"
+    ],
+    "title": "Transaction",
+    "type": "object"
+  },
+  "payload_schemas": [
+    {
+      "payload_contract_schema": "econ-theorist/candidate-payload-schema/v1",
+      "entity_type": "BenchmarkSet",
+      "min_count": 1,
+      "max_count": 1,
+      "owner_facet": "economic_interpretation",
+      "empty_facets": [
+        "formal",
+        "literature_novelty",
+        "terminology_presentation",
+        "authority"
+      ],
+      "payload_schema_id": "econ_theorist.theory/BenchmarkSet/v1",
+      "payload_json_schema": {
+        "$defs": {
+          "ArtifactDependencyRef": {
+            "additionalProperties": false,
+            "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+                "title": "Artifact Id",
+                "type": "string"
+              },
+              "version": {
+                "minimum": 1,
+                "title": "Version",
+                "type": "integer"
+              },
+              "content_hash": {
+                "pattern": "^[0-9a-f]{64}$",
+                "title": "Content Hash",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "version",
+              "content_hash"
+            ],
+            "title": "ArtifactDependencyRef",
+            "type": "object"
+          },
+          "BenchmarkRecord": {
+            "additionalProperties": false,
+            "properties": {
+              "benchmark_id": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+                "title": "Benchmark Id",
+                "type": "string"
+              },
+              "label": {
+                "minLength": 1,
+                "title": "Label",
+                "type": "string"
+              },
+              "exact_primitives": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "minItems": 1,
+                "title": "Exact Primitives",
+                "type": "array"
+              },
+              "timing": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "minItems": 1,
+                "title": "Timing",
+                "type": "array"
+              },
+              "solution_concept": {
+                "minLength": 1,
+                "title": "Solution Concept",
+                "type": "string"
+              },
+              "prediction": {
+                "minLength": 1,
+                "title": "Prediction",
+                "type": "string"
+              },
+              "unresolved_delta": {
+                "minLength": 1,
+                "title": "Unresolved Delta",
+                "type": "string"
+              },
+              "exact_values": {
+                "default": [],
+                "items": {
+                  "$ref": "#/$defs/RationalAssignment"
+                },
+                "title": "Exact Values",
+                "type": "array"
+              },
+              "evidence_refs": {
+                "default": [],
+                "items": {
+                  "$ref": "#/$defs/ArtifactDependencyRef"
+                },
+                "title": "Evidence Refs",
+                "type": "array"
+              }
+            },
+            "required": [
+              "benchmark_id",
+              "label",
+              "exact_primitives",
+              "timing",
+              "solution_concept",
+              "prediction",
+              "unresolved_delta"
+            ],
+            "title": "BenchmarkRecord",
+            "type": "object"
+          },
+          "EntityVersionRef": {
+            "additionalProperties": false,
+            "properties": {
+              "entity_id": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+                "title": "Entity Id",
+                "type": "string"
+              },
+              "version": {
+                "minimum": 1,
+                "title": "Version",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "entity_id",
+              "version"
+            ],
+            "title": "EntityVersionRef",
+            "type": "object"
+          },
+          "RationalAssignment": {
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+                "title": "Symbol",
+                "type": "string"
+              },
+              "value": {
+                "$ref": "#/$defs/ReducedRational"
+              }
+            },
+            "required": [
+              "symbol",
+              "value"
+            ],
+            "title": "RationalAssignment",
+            "type": "object"
+          },
+          "ReducedRational": {
+            "additionalProperties": false,
+            "description": "An exact canonical rational: positive denominator and reduced terms.",
+            "properties": {
+              "numerator": {
+                "title": "Numerator",
+                "type": "integer"
+              },
+              "denominator": {
+                "minimum": 1,
+                "title": "Denominator",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "numerator",
+              "denominator"
+            ],
+            "title": "ReducedRational",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "question_ref": {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          "benchmarks": {
+            "items": {
+              "$ref": "#/$defs/BenchmarkRecord"
+            },
+            "minItems": 1,
+            "title": "Benchmarks",
+            "type": "array"
+          },
+          "exact_question_delta": {
+            "minLength": 1,
+            "title": "Exact Question Delta",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question_ref",
+          "benchmarks",
+          "exact_question_delta"
+        ],
+        "title": "BenchmarkSet",
+        "type": "object"
+      }
+    },
+    {
+      "payload_contract_schema": "econ-theorist/candidate-payload-schema/v1",
+      "entity_type": "ResearchQuestion",
+      "min_count": 1,
+      "max_count": 1,
+      "owner_facet": "economic_interpretation",
+      "empty_facets": [
+        "formal",
+        "literature_novelty",
+        "terminology_presentation",
+        "authority"
+      ],
+      "payload_schema_id": "econ_theorist.theory/ResearchQuestion/v1",
+      "payload_json_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "phenomenon": {
+            "minLength": 1,
+            "title": "Phenomenon",
+            "type": "string"
+          },
+          "object_to_explain": {
+            "minLength": 1,
+            "title": "Object To Explain",
+            "type": "string"
+          },
+          "unresolved_delta": {
+            "minLength": 1,
+            "title": "Unresolved Delta",
+            "type": "string"
+          },
+          "importance": {
+            "minLength": 1,
+            "title": "Importance",
+            "type": "string"
+          },
+          "kill_condition": {
+            "minLength": 1,
+            "title": "Kill Condition",
+            "type": "string"
+          },
+          "proposed_scope": {
+            "minLength": 1,
+            "title": "Proposed Scope",
+            "type": "string"
+          },
+          "candidate_archetypes": {
+            "items": {
+              "enum": [
+                "mechanism_explanation",
+                "comparative_statics_threshold",
+                "characterization_bounds",
+                "robustness_invariance_equivalence",
+                "design_implementation_impossibility",
+                "concept_representation_foundation"
+              ],
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Candidate Archetypes",
+            "type": "array"
+          },
+          "prohibited_claims": {
+            "default": [],
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "title": "Prohibited Claims",
+            "type": "array"
+          }
+        },
+        "required": [
+          "phenomenon",
+          "object_to_explain",
+          "unresolved_delta",
+          "importance",
+          "kill_condition",
+          "proposed_scope",
+          "candidate_archetypes"
+        ],
+        "title": "ResearchQuestion",
+        "type": "object"
+      }
+    }
+  ],
+  "output_contract": {
+    "output_contract_schema": "econ-theorist/candidate-route-output-contract/v1",
+    "route_id": "frame.question_and_benchmarks",
+    "route_version": 2,
+    "entry_validator_id": "theory_route_entry.v1",
+    "exit_validator_id": "theory_route_exit.v1",
+    "allowed_operation_classes": [
+      "artifact.register",
+      "blocker.record",
+      "decision.record",
+      "entity.create",
+      "relation.create",
+      "route.outcome"
+    ],
+    "allowed_entity_types": [
+      "BenchmarkSet",
+      "ResearchQuestion"
+    ],
+    "allowed_relation_types": [
+      "benchmark_delta",
+      "frames"
+    ],
+    "required_output_entities": [
+      {
+        "entity_type": "BenchmarkSet",
+        "min_count": 1,
+        "max_count": 1
+      },
+      {
+        "entity_type": "ResearchQuestion",
+        "min_count": 1,
+        "max_count": 1
+      }
+    ],
+    "required_output_relations": [
+      {
+        "relation_type": "benchmark_delta",
+        "min_count": 1,
+        "max_count": null
+      },
+      {
+        "relation_type": "frames",
+        "min_count": 1,
+        "max_count": null
+      }
+    ],
+    "required_route_outcome_count": 1,
+    "model_invariants": [
+      {
+        "model_invariant_schema": "econ-theorist/candidate-model-invariant/v1",
+        "invariant_id": "relation.trace_only_facets",
+        "model": "RelationVersion",
+        "condition": "dependency_mode == 'trace_only'",
+        "requirement": "upstream and downstream must both be null",
+        "repair_hint": "Use trace_only for provenance links; relation importance alone does not justify hard invalidation."
+      },
+      {
+        "model_invariant_schema": "econ-theorist/candidate-model-invariant/v1",
+        "invariant_id": "relation.invalidating_exact_facets",
+        "model": "RelationVersion",
+        "condition": "dependency_mode != 'trace_only'",
+        "requirement": "upstream must bind the exact source entity/version and downstream must bind the exact target entity/version",
+        "repair_hint": "Either add both exact facet endpoints or change a provenance-only link to trace_only."
+      },
+      {
+        "model_invariant_schema": "econ-theorist/candidate-model-invariant/v1",
+        "invariant_id": "relation.scope_sensitive_xor",
+        "model": "RelationVersion",
+        "condition": "dependency_mode == 'scope_sensitive'",
+        "requirement": "exactly one of scope_ref or scope_overlap is required; other modes must omit scope_overlap",
+        "repair_hint": "Choose exact scope equality or typed overlap evidence, but never both."
+      },
+      {
+        "model_invariant_schema": "econ-theorist/candidate-model-invariant/v1",
+        "invariant_id": "relation.version_chain",
+        "model": "RelationVersion",
+        "condition": "all relation versions",
+        "requirement": "version 1 omits supersedes; version n > 1 supersedes version n - 1 with the same relation_id",
+        "repair_hint": "Bind the exact immediately preceding immutable relation version."
+      }
+    ],
+    "relation_json_schema": {
+      "$defs": {
+        "EntityVersionRef": {
+          "additionalProperties": false,
+          "properties": {
+            "entity_id": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "title": "Entity Id",
+              "type": "string"
+            },
+            "version": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "entity_id",
+            "version"
+          ],
+          "title": "EntityVersionRef",
+          "type": "object"
+        },
+        "FacetPathRef": {
+          "additionalProperties": false,
+          "properties": {
+            "entity_id": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "title": "Entity Id",
+              "type": "string"
+            },
+            "version": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            },
+            "facet": {
+              "enum": [
+                "formal",
+                "economic_interpretation",
+                "literature_novelty",
+                "terminology_presentation",
+                "authority"
+              ],
+              "title": "Facet",
+              "type": "string"
+            },
+            "field_path": {
+              "anyOf": [
+                {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Field Path"
+            }
+          },
+          "required": [
+            "entity_id",
+            "version",
+            "facet"
+          ],
+          "title": "FacetPathRef",
+          "type": "object"
+        },
+        "RelationVersionRef": {
+          "additionalProperties": false,
+          "properties": {
+            "relation_id": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "title": "Relation Id",
+              "type": "string"
+            },
+            "version": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "relation_id",
+            "version"
+          ],
+          "title": "RelationVersionRef",
+          "type": "object"
+        },
+        "ScopeOverlapEvidence": {
+          "additionalProperties": false,
+          "description": "Typed exact scope versions supporting one scope-sensitive dependency.",
+          "properties": {
+            "source_scope": {
+              "$ref": "#/$defs/EntityVersionRef"
+            },
+            "target_scope": {
+              "$ref": "#/$defs/EntityVersionRef"
+            }
+          },
+          "required": [
+            "source_scope",
+            "target_scope"
+          ],
+          "title": "ScopeOverlapEvidence",
+          "type": "object"
+        },
+        "SemanticFacetRef": {
+          "additionalProperties": false,
+          "properties": {
+            "entity_id": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "title": "Entity Id",
+              "type": "string"
+            },
+            "version": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            },
+            "facet": {
+              "enum": [
+                "formal",
+                "economic_interpretation",
+                "literature_novelty",
+                "terminology_presentation",
+                "authority"
+              ],
+              "title": "Facet",
+              "type": "string"
+            },
+            "field_path": {
+              "anyOf": [
+                {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Field Path"
+            },
+            "semantic_hash": {
+              "pattern": "^[0-9a-f]{64}$",
+              "title": "Semantic Hash",
+              "type": "string"
+            }
+          },
+          "required": [
+            "entity_id",
+            "version",
+            "facet",
+            "semantic_hash"
+          ],
+          "title": "SemanticFacetRef",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "relation_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Relation Id",
+          "type": "string"
+        },
+        "relation_type": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Relation Type",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "project_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "target": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "dependency_mode": {
+          "default": "trace_only",
+          "enum": [
+            "hard",
+            "scope_sensitive",
+            "evidentiary",
+            "presentation",
+            "trace_only"
+          ],
+          "title": "Dependency Mode",
+          "type": "string"
+        },
+        "upstream": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SemanticFacetRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "downstream": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FacetPathRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "scope_ref": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scope Ref"
+        },
+        "scope_overlap": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ScopeOverlapEvidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "privacy": {
+          "default": "project_private",
+          "enum": [
+            "public",
+            "project_private",
+            "restricted",
+            "local_only"
+          ],
+          "title": "Privacy",
+          "type": "string"
+        },
+        "access_compartments": {
+          "default": [
+            "project_research"
+          ],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Access Compartments",
+          "type": "array"
+        },
+        "created_at": {
+          "minLength": 1,
+          "title": "Created At",
+          "type": "string"
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RelationVersionRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "relation_id",
+        "relation_type",
+        "version",
+        "project_id",
+        "source",
+        "target",
+        "created_at"
+      ],
+      "title": "RelationVersion",
+      "type": "object"
+    },
+    "route_outcome_json_schema": {
+      "$defs": {
+        "ArtifactDependencyRef": {
+          "additionalProperties": false,
+          "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+          "properties": {
+            "artifact_id": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "version": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            },
+            "content_hash": {
+              "pattern": "^[0-9a-f]{64}$",
+              "title": "Content Hash",
+              "type": "string"
+            }
+          },
+          "required": [
+            "artifact_id",
+            "version",
+            "content_hash"
+          ],
+          "title": "ArtifactDependencyRef",
+          "type": "object"
+        },
+        "BlockerRef": {
+          "additionalProperties": false,
+          "properties": {
+            "blocker_id": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "title": "Blocker Id",
+              "type": "string"
+            }
+          },
+          "required": [
+            "blocker_id"
+          ],
+          "title": "BlockerRef",
+          "type": "object"
+        },
+        "DecisionVersionRef": {
+          "additionalProperties": false,
+          "properties": {
+            "decision_id": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "title": "Decision Id",
+              "type": "string"
+            },
+            "version": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "decision_id",
+            "version"
+          ],
+          "title": "DecisionVersionRef",
+          "type": "object"
+        },
+        "EntityVersionRef": {
+          "additionalProperties": false,
+          "properties": {
+            "entity_id": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "title": "Entity Id",
+              "type": "string"
+            },
+            "version": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "entity_id",
+            "version"
+          ],
+          "title": "EntityVersionRef",
+          "type": "object"
+        },
+        "RelationVersionRef": {
+          "additionalProperties": false,
+          "properties": {
+            "relation_id": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "title": "Relation Id",
+              "type": "string"
+            },
+            "version": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "relation_id",
+            "version"
+          ],
+          "title": "RelationVersionRef",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "route_run_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Route Run Id",
+          "type": "string"
+        },
+        "route_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Route Id",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "completed_with_candidate",
+            "failed",
+            "interrupted",
+            "validated",
+            "rejected",
+            "superseded"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "rationale": {
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "candidate_refs": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/RelationVersionRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/BlockerRef"
+              }
+            ]
+          },
+          "title": "Candidate Refs",
+          "type": "array"
+        },
+        "validator_report_refs": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ArtifactDependencyRef"
+          },
+          "title": "Validator Report Refs",
+          "type": "array"
+        },
+        "privacy": {
+          "default": "project_private",
+          "enum": [
+            "public",
+            "project_private",
+            "restricted",
+            "local_only"
+          ],
+          "title": "Privacy",
+          "type": "string"
+        },
+        "access_compartments": {
+          "default": [
+            "project_research"
+          ],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Access Compartments",
+          "type": "array"
+        }
+      },
+      "required": [
+        "route_run_id",
+        "route_id",
+        "outcome",
+        "rationale"
+      ],
+      "title": "RouteOutcome",
+      "type": "object"
+    }
+  },
+  "authoring_instructions": [
+    "Use work_packet.instruction_text and work_packet.compiled_context for scientific judgment; this authoring contract supplies mechanics only.",
+    "Write one bare Transaction JSON object, not a candidate wrapper, at output_locations.candidate_logical_path; write helper files only below output_locations.shadow_logical_root.",
+    "Copy every field in transaction_bindings that also appears in transaction_json_schema exactly into the Transaction (binding_schema is contract metadata), including base_revision and created_at; choose only transaction_id, intent, preconditions, changed_facets, operations, evidence_refs, and authority_basis as the route and schemas require.",
+    "For each typed entity, put {schema: payload_schema_id, payload: <schema-valid object>} in owner_facet and set every listed empty_facet to an empty object.",
+    "Set every new EntityVersion and RelationVersion project_id, privacy, access_compartments, and created_at exactly to the corresponding transaction_bindings values; never rely on privacy or compartment defaults.",
+    "Use only output_contract allowed operation, entity, and relation types; satisfy every output cardinality and the exact scientific exit conditions in work_packet.instruction_text.",
+    "JSON Schema is necessary but not sufficient: obey output_contract.model_invariants exactly and use the bridge's structured candidate diagnostics for any remaining model-level repair.",
+    "Include exactly one route.outcome operation bound to transaction_bindings.route_run_id and transaction_bindings.route_id, with the same privacy and access compartments; candidate_refs must enumerate every exact canonical object produced by the Transaction, including any entity, relation, artifact, blocker, or other schema-permitted reference required by the route validator.",
+    "Do not fabricate a human decision or approval; obey every work_packet.forbidden_actions entry and stop if the route requires unavailable human authority.",
+    "The candidate source may be ordinary readable UTF-8 JSON and may end with a newline. The bridge validates it as a strict Transaction and computes the digest from engine-canonical Transaction bytes; do not hash the source file bytes or put a digest inside the object."
+  ]
+}

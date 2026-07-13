@@ -1,0 +1,204 @@
+{
+  "evidence_schema": "econ-theorist/phase5a2-codex-public-pilot-evidence/v1",
+  "case_id": "phase5a2-public-codex-framing-001",
+  "claim_scope": "host_workflow_conformance_only",
+  "engine_runs": [
+    {
+      "role": "scientific_framing",
+      "engine_commit": "528b943704466c7e7ab2ec39112e5195e01864ee",
+      "wheel_sha256": "a30a881cb905f7c10c0ac1f3b9b66f9d25281bb6118544addd6011a301306586",
+      "host_facts_file": "host_facts.json"
+    },
+    {
+      "role": "postcommit_continuation",
+      "engine_commit": "56279a91c9599ef282ef23ddeef8dcf7a2367410",
+      "wheel_sha256": "9fffd76853021173e8c92409646990498d7ce7ed70329ef4067c09d61cae8b54",
+      "host_facts_file": "continuation_host_facts.json"
+    }
+  ],
+  "bindings": {
+    "project_id": "prj_2d5d22e2c13f7946f54faa4023878692a0884786abeb89c5",
+    "route_id": "frame.question_and_benchmarks",
+    "route_run_id": "run_op_357299f80dea59a15b799194f8727f32c500408d32bb117e",
+    "base_head": "29deae00e48c5b36f83937daf4749590030b7939f7aacb57a00f5f03ba2525ac",
+    "work_packet_hash": "f253bd89ffd59475395af795ea2a06ae19bffcc1a024a9f4405c1269c18c84eb",
+    "candidate_authoring_contract_hash": "3bfd1978d6fb36832fc984b7eeb4cd845a56016de88745df0e393b1884bb5d7c",
+    "delivery_envelope_hash": "716908fcec6daa82c0ea1a14f0e0cd82c27bc84fda47825ef87757577f5f5c51",
+    "transaction_digest": "812f925afecb6bc262659ec377404f5ed48a1248167f7ee973e0fb7b8b3b9902",
+    "head_after": "812f925afecb6bc262659ec377404f5ed48a1248167f7ee973e0fb7b8b3b9902"
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "candidate_file": "candidate_attempt_1.json",
+      "candidate_file_sha256": "586d4edb3ae2035dc1fb7f074a98eecdfaa693848b7484f14e18316e08f93052",
+      "structured_repair": false,
+      "outcome": "committed"
+    }
+  ],
+  "permission_recovery": {
+    "raw_request_digest": "93fa2ed1bea7590dbd769adc33b8b3f669546c21ad6c20d59ceec924adcab9b3",
+    "first_response_file": "start_permission_denied.redacted.json",
+    "authorized_response_file": "initial_ready_summary.json",
+    "first_response_mutated": false,
+    "classification": "host_filesystem_permission_not_scientific_repair",
+    "authorized_response_kind": "semantic_reconstruction_summary"
+  },
+  "exact_retries": [
+    {
+      "operation": "complete",
+      "raw_request_digest": "4c2723f224feabf78c749f764018146f0a8078e7282c8837c53f284234039334",
+      "first_response_file": "completion_response_attempt_1.json",
+      "retry_response_file": "completion_exact_retry_response.json",
+      "response_json_equal": true,
+      "state_evidence_file": "state_summary.json"
+    },
+    {
+      "operation": "start_or_resume_continuation",
+      "raw_request_digest": "2a1a0d960383d626e79d68ee4a7e52b3b6dd6fa2629dee093c0a632487999ec8",
+      "retry_outcome": "ready",
+      "route_id": "decompose.primitives",
+      "route_run_id": "run_op_61fea7b6c4da60cd814028101cf17ac0c1997f80a3c631cc",
+      "work_packet_hash": "e6599433ad5f73b5ab2a197b0bef7a7e953490fded670b07bf6c35792f5f60a5",
+      "candidate_authoring_contract_hash": "ca0c75dfd334fc20e0cde9b57e32f475362b87d54ec1febc2a2e3f8ba5cee833",
+      "state_evidence_file": "state_summary.json",
+      "raw_bridge_response_committed": false,
+      "classification": "state_summary_backed_continuation_smoke",
+      "response_equality_claimed": false
+    }
+  ],
+  "repair_evidence": {
+    "file": "repair_history.v1.json",
+    "successful_pilot_structured_repair_count": 0,
+    "classification": "historical_failure_analysis_and_regression_backed"
+  },
+  "quality_evidence": {
+    "file": "quality_audit.md",
+    "classification": "model_based_diagnostic_design_input_only",
+    "excluded_from_workflow_acceptance_claim": true
+  },
+  "redaction": {
+    "raw_requests_committed": false,
+    "replaced_json_pointer": "/project_root",
+    "replacement": "$PILOT_ROOT",
+    "redacted_request_files": [
+      "start_request.redacted.json",
+      "completion_request.redacted.json",
+      "continuation_request.redacted.json"
+    ],
+    "redacted_response_files": [
+      "start_permission_denied.redacted.json"
+    ],
+    "response_replacement_json_pointer": "/diagnostics/0/message",
+    "response_replacement": "[WinError 5] Access is denied: '$OPERATIONAL_HOME/<project-hash>'",
+    "note": "Redacted request projections have their own file hashes and cannot recompute raw engine request digests. The original raw ready response was not retained intact; the accepted bundle instead stores the exact immutable WorkPacket, a deterministic historical-head authoring-contract reconstruction, and an explicit summary. Raw digests are bound by engine responses or the state summary.",
+    "raw_ready_response_committed": false
+  },
+  "artifacts": [
+    {
+      "path": "candidate_attempt_1.json",
+      "sha256": "586d4edb3ae2035dc1fb7f074a98eecdfaa693848b7484f14e18316e08f93052",
+      "bytes": 18512
+    },
+    {
+      "path": "case.md",
+      "sha256": "22ebfa81cbe9a3ef3d70f864037192d9f48070b7b4dd124a08954c3794861af8",
+      "bytes": 2368
+    },
+    {
+      "path": "completion_exact_retry_response.json",
+      "sha256": "319ffbf93f932fc46d4e82bf84f60352e1c0aecd56fe92928042c0dc06823f5c",
+      "bytes": 1463
+    },
+    {
+      "path": "completion_request.redacted.json",
+      "sha256": "137e2774b85c84e47bf72f16a601532596716175534fa81641f4ef4c03b2abed",
+      "bytes": 626
+    },
+    {
+      "path": "completion_response_attempt_1.json",
+      "sha256": "319ffbf93f932fc46d4e82bf84f60352e1c0aecd56fe92928042c0dc06823f5c",
+      "bytes": 1463
+    },
+    {
+      "path": "continuation_host_facts.json",
+      "sha256": "9f53e52bdf1fad1541fb85250bd3c5eabd0549bd592e52cc858c0e52bdb925d6",
+      "bytes": 651
+    },
+    {
+      "path": "continuation_request.redacted.json",
+      "sha256": "5ab6244f4b1801fb83a470e2d610ee4c7aa8a6da4907cf4456f0ffda02570c84",
+      "bytes": 578
+    },
+    {
+      "path": "host_facts.json",
+      "sha256": "67aef3078d8071a5a8d01fb4afdf2786dece45548343ad61824dbc09a8dd6fa0",
+      "bytes": 638
+    },
+    {
+      "path": "initial_candidate_authoring_contract.json",
+      "sha256": "81a47ec7b551cf6f00eee2dce1cbe981bfac0db46763bd66b6d918859b14700a",
+      "bytes": 81044
+    },
+    {
+      "path": "initial_ready_summary.json",
+      "sha256": "1c3bc9a8fbf4ae449d573bd717757c1532db64bac468c4424f42c7b6fd72d20b",
+      "bytes": 1552
+    },
+    {
+      "path": "initial_work_packet.json",
+      "sha256": "11d7560ccfbe9c9b776d6be8ac40cd91b4889164b5cb6ed1cd1cee1649e918af",
+      "bytes": 10170
+    },
+    {
+      "path": "pilot_report.md",
+      "sha256": "727a7da0a4b6a214cee2bff074588d093329f167ab2eedc6a7a77b92bd9ae0dd",
+      "bytes": 6138
+    },
+    {
+      "path": "quality_audit.md",
+      "sha256": "584b236aee09c394b5bad0de7d9a36fc218a3d93ed7489586cf46e4706a99e71",
+      "bytes": 3673
+    },
+    {
+      "path": "repair_history.v1.json",
+      "sha256": "5e1425bc5d973da31ab68e2677c7c090ea260bfa4769b562f5b5fe9834e542af",
+      "bytes": 1853
+    },
+    {
+      "path": "start_permission_denied.redacted.json",
+      "sha256": "01f26bc2740577c8cfc3e9652b228fcc15284ecb3d7ae0b6f43c9e9fbd63fa1e",
+      "bytes": 808
+    },
+    {
+      "path": "start_request.redacted.json",
+      "sha256": "bd53377ff6582ab850c822af6a1cd31258a594debaa6ed49712adfd4decfa176",
+      "bytes": 2002
+    },
+    {
+      "path": "state_summary.json",
+      "sha256": "417f8e0698d4319e0e135ee85b4aeddd775b5da9514899a39a99893d399630cc",
+      "bytes": 2011
+    }
+  ],
+  "limitations": [
+    "public project and provider-visible content only",
+    "prepared checkout rather than first-ever installation",
+    "one framing route rather than a complete paper workflow",
+    "no positive private, restricted, local_only, hidden, or sealed Codex route",
+    "no Claude Code or Cursor parity evidence",
+    "no v1/v2 superiority, lower-human-effort, Top-5, or publication claim",
+    "the scientific pilot used 528b943; the post-pilot navigation fix used 56279a9",
+    "the original raw ready response was not retained intact; initial packet and contract evidence are explicitly reconstructed"
+  ],
+  "initial_ready_evidence": {
+    "kind": "semantic_reconstruction_from_immutable_operational_records",
+    "summary_file": "initial_ready_summary.json",
+    "work_packet_file": "initial_work_packet.json",
+    "candidate_authoring_contract_file": "initial_candidate_authoring_contract.json",
+    "work_packet_hash": "f253bd89ffd59475395af795ea2a06ae19bffcc1a024a9f4405c1269c18c84eb",
+    "candidate_authoring_contract_hash": "3bfd1978d6fb36832fc984b7eeb4cd845a56016de88745df0e393b1884bb5d7c",
+    "reconstruction_engine_commit": "528b943704466c7e7ab2ec39112e5195e01864ee",
+    "raw_ready_response_committed": false
+  }
+}

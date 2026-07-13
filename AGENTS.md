@@ -2,19 +2,25 @@
 
 ## Current phase
 
-Phases 1--4 and the reviewed Phase 5A.0 contract are accepted on `main`; the
-contract was merged by `2192956`. The Phase 5A.1 generic IDE-neutral machine
-facade and its local acceptance evidence are complete in the current tree.
-Phase 5A.2--one real Codex route--is the next executable slice. The normative
-owner remains `docs/implementation/phase5a_contract.md`, and the public
-transport is documented in `docs/implementation/machine_protocol_v1.md`.
+Phases 1--4, the reviewed Phase 5A.0 contract, and the Phase 5A.1 generic
+IDE-neutral machine facade are accepted on `main`. A Phase 5A.2 public Codex
+functional slice is recorded in the current tree: one prepared-checkout
+framing route completed WorkPacket delivery, model authorship, validation, and
+canonical commit. The full local research-ready gate remains open. The
+normative owner remains `docs/implementation/phase5a_contract.md`, and the
+public transport is documented in `docs/implementation/machine_protocol_v1.md`.
 
-Phase 5A.1 owns only the generic local machine facade: work packets, reliable
-candidate completion, exact retry, and ordinary recovery. Phase 5A.2 owns the
-real Codex handoff and completes the local research-ready gate. Do not claim a
-signed production installer or broad host parity from either slice.
-Public-distribution and hostile-environment hardening remain a later release
-profile and must not block local scientific use after the research-ready gate.
+Phase 5A.1 owns the generic local machine facade: work packets, reliable
+candidate completion, exact retry, and ordinary recovery. The recorded 5A.2
+slice owns only the public Codex projection and its pilot evidence; it does not
+establish positive private execution, clean first-use activation, complete
+paper generation, lower human effort, or research quality. Public-distribution
+and hostile-environment hardening remain a later release profile.
+
+The next executable scientific work is pilot-driven: add an economist-facing
+framing projection, benchmark-semantic audit, and mechanism-robustness checks,
+then run an exploratory v1/v2 revision comparison. Do not expand generic
+security infrastructure unless a concrete local-use failure requires it.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or
@@ -47,6 +53,11 @@ privacy-hygiene, recovery, and real-route tests in proportion to the local
 research profile. Supply-chain signing, hostile-host proofs, and full
 cross-platform matrices belong to the public-distribution profile. Report
 optional-tool skips separately; they are not passes.
+
+Bind every real-route evidence claim to the exact engine commit, wheel digest,
+and available model observation. Distinguish deterministic fixtures, real
+model pilots, and fixes made after a pilot; a post-pilot regression may not be
+reported as though the earlier model run exercised it.
 
 ## Scope
 

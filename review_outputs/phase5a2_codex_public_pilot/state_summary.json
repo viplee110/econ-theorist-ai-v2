@@ -1,0 +1,47 @@
+{
+  "evidence_schema": "econ-theorist/phase5a2-state-summary/v1",
+  "observed_at": "2026-07-13T20:39:26.9862873Z",
+  "before": {
+    "canonical_head": "812f925afecb6bc262659ec377404f5ed48a1248167f7ee973e0fb7b8b3b9902",
+    "canonical_transactions": 2,
+    "operational_runs": 2,
+    "completion_operations": 1,
+    "codex_open_operations": 2,
+    "codex_delivery_operations": 2,
+    "codex_completion_operations": 1
+  },
+  "completion_retry": {
+    "request_digest": "4c2723f224feabf78c749f764018146f0a8078e7282c8837c53f284234039334",
+    "outcome": "committed",
+    "route_run_id": "run_op_357299f80dea59a15b799194f8727f32c500408d32bb117e",
+    "transaction_digest": "812f925afecb6bc262659ec377404f5ed48a1248167f7ee973e0fb7b8b3b9902",
+    "head": "812f925afecb6bc262659ec377404f5ed48a1248167f7ee973e0fb7b8b3b9902"
+  },
+  "after_completion_retry": {
+    "canonical_head": "812f925afecb6bc262659ec377404f5ed48a1248167f7ee973e0fb7b8b3b9902",
+    "canonical_transactions": 2,
+    "operational_runs": 2,
+    "completion_operations": 1,
+    "codex_open_operations": 2,
+    "codex_delivery_operations": 2,
+    "codex_completion_operations": 1
+  },
+  "continuation_retry": {
+    "request_digest": "2a1a0d960383d626e79d68ee4a7e52b3b6dd6fa2629dee093c0a632487999ec8",
+    "outcome": "ready",
+    "route_run_id": "run_op_61fea7b6c4da60cd814028101cf17ac0c1997f80a3c631cc",
+    "route_id": "decompose.primitives",
+    "work_packet_hash": "e6599433ad5f73b5ab2a197b0bef7a7e953490fded670b07bf6c35792f5f60a5",
+    "candidate_authoring_contract_hash": "ca0c75dfd334fc20e0cde9b57e32f475362b87d54ec1febc2a2e3f8ba5cee833",
+    "head": "812f925afecb6bc262659ec377404f5ed48a1248167f7ee973e0fb7b8b3b9902"
+  },
+  "after_continuation_retry": {
+    "canonical_head": "812f925afecb6bc262659ec377404f5ed48a1248167f7ee973e0fb7b8b3b9902",
+    "canonical_transactions": 2,
+    "operational_runs": 2,
+    "completion_operations": 1,
+    "codex_open_operations": 2,
+    "codex_delivery_operations": 2,
+    "codex_completion_operations": 1
+  }
+}

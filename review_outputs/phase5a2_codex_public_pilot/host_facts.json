@@ -1,0 +1,16 @@
+{
+  "evidence_schema": "econ-theorist/phase5a2-host-facts/v1",
+  "session_id": "phase5a2-public-528b943-001",
+  "host_product": "OpenAI Codex",
+  "selected_model": "gpt-5",
+  "installed_models": [
+    "gpt-5"
+  ],
+  "observed_at": "2026-07-13T20:00:14.7938144Z",
+  "model_observation": "The active Codex system identifies the GPT-5 family; the exact provider build is unavailable to the task.",
+  "engine_commit": "528b943704466c7e7ab2ec39112e5195e01864ee",
+  "wheel_sha256": "a30a881cb905f7c10c0ac1f3b9b66f9d25281bb6118544addd6011a301306586",
+  "project_privacy": "public",
+  "scientific_model_contexts": 1,
+  "network_allowed": false
+}

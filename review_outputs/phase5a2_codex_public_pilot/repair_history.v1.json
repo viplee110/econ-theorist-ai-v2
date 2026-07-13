@@ -1,0 +1,32 @@
+{
+  "evidence_schema": "econ-theorist/phase5a2-repair-history/v1",
+  "scope": "historical blind-pilot defects plus regression-backed repairs",
+  "events": [
+    {
+      "engine_commit": "2b05b14ec7292523e22d0922a8a2c3437f639034",
+      "kind": "blind_pilot_failure",
+      "outcome": "no_canonical_commit",
+      "finding": "A JSON-Schema-valid candidate used hard relations without exact upstream and downstream facet endpoints. Domain-model validation failed, but the bridge returned only a generic CompletionError.",
+      "scientific_candidate_attempts": 3
+    },
+    {
+      "engine_commit": "528b943704466c7e7ab2ec39112e5195e01864ee",
+      "kind": "engine_repair",
+      "finding": "The authoring contract gained typed RelationVersion model invariants and candidate failures gained bounded structured codex_candidate_transaction_invalid diagnostics.",
+      "verification": "focused regression tests; the successful public framing pilot required zero repair cycles"
+    },
+    {
+      "engine_commit": "528b943704466c7e7ab2ec39112e5195e01864ee",
+      "kind": "postcommit_navigation_failure",
+      "outcome": "canonical_head_unchanged",
+      "finding": "An inapplicable repair.dependency probe raised RouteEntryError and prematurely stopped generic navigation before decompose.primitives could be considered."
+    },
+    {
+      "engine_commit": "56279a91c9599ef282ef23ddeef8dcf7a2367410",
+      "kind": "engine_repair",
+      "finding": "Navigation now continues after an individual route-entry rejection.",
+      "verification": "regression assertion plus final-wheel continuation and exact-retry smoke"
+    }
+  ],
+  "claim_boundary": "The successful pilot did not exercise a live structured repair. Actionable diagnostics are established by the historical failure analysis and regression tests, not by relabeling the one-attempt success."
+}

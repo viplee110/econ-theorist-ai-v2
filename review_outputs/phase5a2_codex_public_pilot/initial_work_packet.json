@@ -1,0 +1,214 @@
+{
+  "actor_role": "scientific_agent",
+  "allowed_operation_classes": [
+    "artifact.register",
+    "blocker.record",
+    "decision.record",
+    "entity.create",
+    "relation.create",
+    "route.outcome"
+  ],
+  "base_head": "29deae00e48c5b36f83937daf4749590030b7939f7aacb57a00f5f03ba2525ac",
+  "candidate_logical_path": ".econ-theorist/staging/run_op_357299f80dea59a15b799194f8727f32c500408d32bb117e/candidate.json",
+  "compartments": [
+    "project_research"
+  ],
+  "compiled_context": {
+    "blockers": [],
+    "budget": {
+      "estimator": "etai_lexical_v1",
+      "provider_token_count": false,
+      "units": 10000
+    },
+    "context_schema": "econ-theorist/compiled-context/v1",
+    "derived_status": {
+      "prj_2d5d22e2c13f7946f54faa4023878692a0884786abeb89c5": {
+        "acceptance_by_kind": {},
+        "acceptance_source_refs": {},
+        "freshness": {
+          "authority": "fresh",
+          "economic_interpretation": "fresh",
+          "formal": "fresh",
+          "literature_novelty": "fresh",
+          "terminology_presentation": "fresh"
+        },
+        "human_acceptance": "agent_proposed",
+        "stale_reasons": {}
+      }
+    },
+    "effective_decisions": [],
+    "entities": [
+      {
+        "access_compartments": [
+          "project_research"
+        ],
+        "artifact_refs": [],
+        "created_at": "2026-07-13T20:05:56.571324Z",
+        "entity_id": "prj_2d5d22e2c13f7946f54faa4023878692a0884786abeb89c5",
+        "entity_type": "Project",
+        "facets": {
+          "authority": {
+            "scope": "economic_theory_only"
+          },
+          "economic_interpretation": {},
+          "formal": {},
+          "literature_novelty": {},
+          "terminology_presentation": {
+            "project_name": "Consumable Quality Certificates"
+          }
+        },
+        "privacy": "public",
+        "project_id": "prj_2d5d22e2c13f7946f54faa4023878692a0884786abeb89c5",
+        "scope_ref": null,
+        "status": {
+          "formal_validity": null,
+          "interpretation_validity": null,
+          "lifecycle": "active",
+          "literature": null
+        },
+        "summary": "A theory-only economic research project.",
+        "supersedes": null,
+        "title": "Consumable Quality Certificates",
+        "version": 1
+      }
+    ],
+    "focus_entity_ids": [],
+    "kernel": {
+      "content": {
+        "authority": "This route may explore and propose at L1. It cannot create human confirmation or alter a confirmed scientific scope.",
+        "budget_estimator": "etai_lexical_v1 is deterministic lexical accounting, not a provider token count.",
+        "domain": "economic_theory_only",
+        "scope": "Preserve exact assumptions, quantifiers, scope, dissent, and stale blockers. Generated context and candidates are noncanonical.",
+        "validity": "Formal truth, economic interpretation, literature novelty, human acceptance, and freshness are distinct."
+      },
+      "kernel_hash": "1670162bdca5e8b31017c2cb42c48d96bfc627921361904a3c8fe67ee94aca71",
+      "kernel_version": "theory_kernel.v1"
+    },
+    "omissions": [],
+    "project_id": "prj_2d5d22e2c13f7946f54faa4023878692a0884786abeb89c5",
+    "relations": [],
+    "route": {
+      "allowed_entity_types": [
+        "BenchmarkSet",
+        "ResearchQuestion"
+      ],
+      "allowed_operations": [
+        "artifact.register",
+        "blocker.record",
+        "decision.record",
+        "entity.create",
+        "relation.create",
+        "route.outcome"
+      ],
+      "allowed_relation_types": [
+        "benchmark_delta",
+        "frames"
+      ],
+      "authority_ceiling": "L1",
+      "entry_validator_id": "theory_route_entry.v1",
+      "exit_validator_id": "theory_route_exit.v1",
+      "instruction_bundle_hash": "d584a36d2bf11a743ed807ff824c4a46ad6309c5e66f0853f99bcc523dded207",
+      "instruction_bundle_id": "frame.question_and_benchmarks.v2",
+      "instructions": [
+        "State one falsifiable economic question, its economic consequence, and the exact benchmark set.",
+        "Represent the question and benchmarks as typed entities; bind every claimed benchmark delta by an exact relation.",
+        "Keep mechanism conjectures distinct from formal implementations and do not claim novelty or validation.",
+        "Return proposals only: stable question and benchmark choices require a later human G1 decision.",
+        "Every scientific output in this run must resolve to the one exact ResearchQuestion version created for the framed problem."
+      ],
+      "purpose": "research_framing",
+      "required_gate_kinds": [],
+      "required_input_entities": [],
+      "required_output_entities": [
+        {
+          "entity_type": "BenchmarkSet",
+          "max_count": 1,
+          "min_count": 1
+        },
+        {
+          "entity_type": "ResearchQuestion",
+          "max_count": 1,
+          "min_count": 1
+        }
+      ],
+      "required_output_relations": [
+        {
+          "max_count": null,
+          "min_count": 1,
+          "relation_type": "benchmark_delta"
+        },
+        {
+          "max_count": null,
+          "min_count": 1,
+          "relation_type": "frames"
+        }
+      ],
+      "route_id": "frame.question_and_benchmarks",
+      "route_registry_hash": "d81276ed9b7482768840ef89980d6cbb81361ca2ff84acee3ab7da7bb67eae7e",
+      "route_version": 2
+    },
+    "source_head": "29deae00e48c5b36f83937daf4749590030b7939f7aacb57a00f5f03ba2525ac",
+    "status_source_decisions": []
+  },
+  "compiled_context_hash": "aa55c40797d015186996409476e547a15ff63be8433ce1e6d0c2e460bc9e6d20",
+  "context_manifest_hash": "f2dc3b8c30cc32fc655b18308b9db821dcbcb9b577565bb2c399d41afa0ee058",
+  "context_selector_version": "context_selector.v1",
+  "engine_semantics_hash": "9c146cf348730d2bfd4c7564cef5c8ba4cee23e9056649e690620b8f39dcf808",
+  "engine_version": "0.1.0",
+  "focus_refs": [],
+  "forbidden_actions": [
+    "canonical_store_direct_write",
+    "human_decision_fabrication",
+    "human_owned_artifact_overwrite",
+    "undeclared_cross_project_read",
+    "undeclared_agent_delegation"
+  ],
+  "hidden_compartments": [],
+  "instruction_bundle_hash": "d584a36d2bf11a743ed807ff824c4a46ad6309c5e66f0853f99bcc523dded207",
+  "instruction_text": "State one falsifiable economic question, its economic consequence, and the exact benchmark set.\nRepresent the question and benchmarks as typed entities; bind every claimed benchmark delta by an exact relation.\nKeep mechanism conjectures distinct from formal implementations and do not claim novelty or validation.\nReturn proposals only: stable question and benchmark choices require a later human G1 decision.\nEvery scientific output in this run must resolve to the one exact ResearchQuestion version created for the framed problem.\n",
+  "navigation_candidate_digest": "f7bf3a3c3d0dc07624480d2986726240bd0d53d977781dbfc5f97567eb927755",
+  "omissions": [],
+  "packet_compiler_version": 1,
+  "packet_schema": "econ-theorist/work-packet/v1",
+  "pending_human_gate_refs": [],
+  "policy_hashes": {
+    "craft_corpus": "468571238038771dfd84ccc27fc9efcb9b562bdf887a49592701e3c33b8f813b",
+    "kernel": "1670162bdca5e8b31017c2cb42c48d96bfc627921361904a3c8fe67ee94aca71",
+    "profile_catalog": "f5959f8ba50f3ef2e8fac52d0af3465a361778fb1a79f6c83e5af91ce8e48158"
+  },
+  "privacy_clearance": "public",
+  "project_id": "prj_2d5d22e2c13f7946f54faa4023878692a0884786abeb89c5",
+  "purpose": "research_framing",
+  "required_output_entity_types": [
+    "BenchmarkSet",
+    "ResearchQuestion"
+  ],
+  "required_output_relation_types": [
+    "benchmark_delta",
+    "frames"
+  ],
+  "route_id": "frame.question_and_benchmarks",
+  "route_registry_hash": "d81276ed9b7482768840ef89980d6cbb81361ca2ff84acee3ab7da7bb67eae7e",
+  "route_run_hash": "372baa32b0b122fdbdbb4ab29c7896acc0a76f4d30878086d74ffb1e6453cd8e",
+  "route_run_id": "run_op_357299f80dea59a15b799194f8727f32c500408d32bb117e",
+  "route_version": 2,
+  "run_input": {
+    "actor_role": "scientific_agent",
+    "base_head": "29deae00e48c5b36f83937daf4749590030b7939f7aacb57a00f5f03ba2525ac",
+    "brief_schema": "econ-theorist/run-input-brief/v1",
+    "compartments": [
+      "project_research"
+    ],
+    "framing_intent": "An infinite sequence of short-lived buyers chooses between two long-lived sellers. In each period a seller privately observes whether its service capacity is high or low. A high-capacity seller may pay cost k for a truthful public certificate. A certificate remains visible until one buyer trades with that seller, at which point it is consumed. An uncertified seller may be high or low. Before choosing, a buyer can pay search cost c to inspect one uncertified seller's current capacity, can buy without inspecting, or can exit. A successful service gives the buyer value one; sellers earn a margin from a successful trade and discount future profits. Frame, without solving, whether lowering certificate cost k can make buyer search, allocative efficiency, or buyer surplus non-monotone because the endogenous stock and depletion of certificates changes the composition of the uncertified pool and the return to inspection. State an exact falsifiable question, why its answer matters economically, a kill condition, and exact benchmarks that separate the consumable-stock channel from mechanical cheaper certification and from endogenous buyer inspection. Do not claim a direction, novelty, proof, validation, or welfare result.",
+    "privacy": "public",
+    "profile_request": null,
+    "project_id": "prj_2d5d22e2c13f7946f54faa4023878692a0884786abeb89c5",
+    "requested_scope": "Initialize this root as a public theory project and complete only the first engine-selected framing route. Stop after the first canonical commit or a terminal block, and make no human-owned structural decision."
+  },
+  "run_input_brief_hash": "df027a1b332d748f924ba4a369b71f524d5d97ce7e5db7106598111a1498e516",
+  "shadow_logical_root": ".econ-theorist/operational/v1/runs/run_op_357299f80dea59a15b799194f8727f32c500408d32bb117e/shadow",
+  "stale_base_behavior": "stop_and_reinspect",
+  "supersedes_packet_hash": null,
+  "supersession_reason": null,
+  "validation_operation": "candidate.complete"
+}

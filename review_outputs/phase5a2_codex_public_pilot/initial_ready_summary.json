@@ -1,0 +1,19 @@
+{
+  "evidence_schema": "econ-theorist/phase5a2-initial-ready-summary/v1",
+  "reconstruction_kind": "semantic_reconstruction_from_immutable_operational_records",
+  "raw_bridge_response_committed": false,
+  "request_digest": "93fa2ed1bea7590dbd769adc33b8b3f669546c21ad6c20d59ceec924adcab9b3",
+  "outcome": "ready",
+  "project_id": "prj_2d5d22e2c13f7946f54faa4023878692a0884786abeb89c5",
+  "route_id": "frame.question_and_benchmarks",
+  "route_run_id": "run_op_357299f80dea59a15b799194f8727f32c500408d32bb117e",
+  "head": "29deae00e48c5b36f83937daf4749590030b7939f7aacb57a00f5f03ba2525ac",
+  "work_packet_hash": "f253bd89ffd59475395af795ea2a06ae19bffcc1a024a9f4405c1269c18c84eb",
+  "candidate_authoring_contract_hash": "3bfd1978d6fb36832fc984b7eeb4cd845a56016de88745df0e393b1884bb5d7c",
+  "delivery_envelope_hash": "716908fcec6daa82c0ea1a14f0e0cd82c27bc84fda47825ef87757577f5f5c51",
+  "candidate_logical_path": ".econ-theorist/staging/run_op_357299f80dea59a15b799194f8727f32c500408d32bb117e/candidate.json",
+  "work_packet_file": "initial_work_packet.json",
+  "candidate_authoring_contract_file": "initial_candidate_authoring_contract.json",
+  "reconstruction_engine_commit": "528b943704466c7e7ab2ec39112e5195e01864ee",
+  "reconstruction_note": "The original raw ready response was not retained intact. The exact stored WorkPacket was copied from the immutable operational record, and the authoring contract was deterministically recompiled at the historical base head with the scientific-run wheel. Both canonical hashes are independently reverified."
+}

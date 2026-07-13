@@ -1,12 +1,13 @@
 # Implementation plan
 
-Status: Architecture v0.1 with accepted Phase 1--4 implementations and the
-Phase 5A.0 host-bootstrap contract on `main`; the Phase 5A.1 generic machine
-facade and its local acceptance evidence are complete in the current tree
+Status: Architecture v0.1 with accepted Phase 1--4 implementations, the Phase
+5A.0 host-bootstrap contract, and the Phase 5A.1 generic machine facade on
+`main`; one Phase 5A.2 public Codex functional slice is recorded in the current
+tree, while the full local research-ready gate remains open
 
-Current implementation milestone: Phase 5A.2 -- one real
-Codex theory route from work packet through model-produced candidate,
-validation, and commit, followed immediately by an exploratory quality pilot
+Current implementation milestone: pilot-driven scientific strengthening --
+an economist-facing framing projection, benchmark-semantic audit, and
+mechanism-robustness checks, followed by an exploratory v1/v2 quality pilot
 
 ## 1. Delivery strategy
 
@@ -387,6 +388,16 @@ Required thin slices are:
    security/support claims, add signing, revocation, locked supply-chain,
    hostile-host, full platform, and expanded conformance evidence.
 
+The public part of 5A.2 is recorded in
+`../../review_outputs/phase5a2_codex_public_pilot/`: a prepared Codex checkout
+completed one public `frame.question_and_benchmarks` route and exact completion
+retry. A final-wheel continuation smoke selected `decompose.primitives`. This
+does not close the research-ready criteria below because positive non-public
+execution, clean first-use activation, and a broader real-workflow diagnostic
+remain unproved. A separate model-based diagnostic also found material
+benchmark and readability defects, so the next slices are selected by those
+failures rather than by generic infrastructure expansion.
+
 The ordinary researcher-facing interface is natural language. The machine
 layer remains a versioned `etai` protocol, and the terminal path remains
 available for automation, recovery, tests, and advanced users. A first-use
@@ -411,6 +422,10 @@ silently bypassing installation security or L2/L3 human authority.
 This gate permits exploratory v1/v2 pilots and the minimal Phase 5B lanes
 motivated by their failures. It does not establish cross-host parity, public
 release security, or comparative superiority.
+
+A bounded public diagnostic may run before the full gate only to expose
+scientific or interface failures. It does not authorize Phase 5B acceptance or
+Phase 6 comparative claims.
 
 #### Phase 5A public-distribution exit criteria
 

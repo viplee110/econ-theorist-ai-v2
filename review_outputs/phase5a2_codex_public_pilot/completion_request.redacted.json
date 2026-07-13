@@ -1,0 +1,13 @@
+{
+  "bridge_request_schema": "econ-theorist/codex-complete-request/v1",
+  "bridge_version": 1,
+  "operation": "complete",
+  "project_root": "$PILOT_ROOT",
+  "route_run_id": "run_op_357299f80dea59a15b799194f8727f32c500408d32bb117e",
+  "work_packet_hash": "f253bd89ffd59475395af795ea2a06ae19bffcc1a024a9f4405c1269c18c84eb",
+  "delivery_envelope_hash": "716908fcec6daa82c0ea1a14f0e0cd82c27bc84fda47825ef87757577f5f5c51",
+  "action": "stage_and_commit",
+  "transaction_path": ".econ-theorist/staging/run_op_357299f80dea59a15b799194f8727f32c500408d32bb117e/candidate.json",
+  "artifacts": {},
+  "expected_candidate_digest": null
+}

@@ -2,8 +2,8 @@
 
 Status: Phase 5A.0 design accepted on `main` by `2192956`; active deployment
 scope revised on 2026-07-13 to trusted local research use; the Phase 5A.1 local
-machine facade and its local acceptance evidence are complete in the current
-tree, but host-native research readiness remains Phase 5A.2 work and no
+machine facade and one Phase 5A.2 public Codex functional slice are complete in
+the current tree. The full host-native research-ready gate remains open and no
 public-release claim is made
 
 Phase 5A.1 implementation branch (historical): `agent/phase5a-machine-facade`
@@ -846,8 +846,10 @@ adapter may not change the evidence, authority, or acceptance predicate.
 The engine-owned host manifest is the source from which supported projections
 are generated or checked.
 
-- Codex may receive a bounded `AGENTS.md` integration or another supported
-  project instruction projection.
+- Codex currently uses `.agents/skills/econ-theorist-v2/SKILL.md` over the
+  installed `etai codex invoke` bridge. This prepared-checkout projection is
+  public-only and does not establish cold installation or an activation
+  handshake in an arbitrary paper directory.
 - Claude Code may receive a bounded `CLAUDE.md` integration and, when needed,
   project agent definitions.
 - Cursor may receive bounded project rules in its supported project-rule
@@ -1138,6 +1140,10 @@ Implementation proceeds in this order:
    security/support claims, add signing, revocation, fully locked dependency
    evidence, hostile-environment review, and expanded platform conformance.
 
+The current tree completes the prepared-checkout, public first-route subset of
+5A.2. Positive non-public execution, clean first-use activation, and the full
+gate below remain open.
+
 Each slice is independently reviewable. No host-specific shortcut may be
 promoted into the engine before a generic invariant and test justify it.
 
@@ -1164,6 +1170,9 @@ The local profile is accepted when:
 Passing this gate permits controlled Phase 5B work and exploratory quality
 pilots. It does not claim v2 superiority, lower human effort, broad host parity,
 or public-release security.
+
+This gate is not yet accepted. The recorded public functional slice satisfies
+the real-model first-route subset but not all privacy and first-use criteria.
 
 ### 15.2 Public-distribution-ready gate
 
@@ -1289,3 +1298,48 @@ This evidence establishes the generic local machine facade only. It does not
 establish natural-language Codex activation, a model-produced candidate, the
 local research-ready gate, v2 quality gains, or public-distribution readiness;
 those claims remain owned by Phase 5A.2 or later slices.
+
+## 19. Phase 5A.2 public Codex functional-slice evidence
+
+The recorded evidence is in
+[`../../review_outputs/phase5a2_codex_public_pilot`](../../review_outputs/phase5a2_codex_public_pilot/).
+It establishes a bounded public slice, not the complete gate in section 15.1:
+
+- a fresh-context Codex task in a prepared checkout was given one public
+  synthetic theory seed, the project skill, and bridge responses. Its
+  instructions prohibited source, tests, fixtures, gold answers, web access,
+  prior pilots, literature targets, and subagents, and its run report recorded
+  no read or use of them;
+- engine commit `528b943704466c7e7ab2ec39112e5195e01864ee` and wheel SHA-256
+  `a30a881cb905f7c10c0ac1f3b9b66f9d25281bb6118544addd6011a301306586`
+  completed `frame.question_and_benchmarks` from natural language through
+  WorkPacket delivery, one model-produced candidate, validation, and canonical
+  commit with zero scientific repairs or human scientific decisions;
+- replaying the exact completion request produced no duplicate transaction,
+  completion operation, or head advance;
+- the post-pilot navigation fix at
+  `56279a91c9599ef282ef23ddeef8dcf7a2367410`, packaged with wheel SHA-256
+  `9fffd76853021173e8c92409646990498d7ce7ed70329ef4067c09d61cae8b54`,
+  selected `decompose.primitives` on continuation, and a state-summary-backed
+  exact retry preserved the same operational run and canonical head;
+- an earlier blind failure exposed a JSON-Schema/domain-model gap and generic
+  completion error; the current bridge publishes typed relation invariants and
+  bounded `codex_candidate_transaction_invalid` repair diagnostics;
+- a separate model-based diagnostic gave the committed framing a holistic
+  6.3/10 assessment and found substantive fixed-inspection, frozen-ledger,
+  equilibrium-selection, and readability problems. Mechanical commit therefore
+  is not evidence of Top-5 quality or reduced expert intervention;
+- the current public-slice tree completes a 74-test focused Phase 5A suite with
+  one Windows symlink skip and a 486-test routine non-long suite with six
+  platform/optional skips, plus all six exporters, compilation of 138 Python
+  files, `doctor` with
+  `required_ok=true`, skill/YAML validation, Markdown-link validation, and
+  `git diff --check`.
+
+This slice does not demonstrate positive private, restricted, `local_only`,
+hidden, or sealed Codex execution; first-ever installation from an empty
+project; Claude Code or Cursor parity; a complete paper route; comparative
+v1/v2 superiority; lower human effort; publication readiness; or the complete
+local research-ready gate. Its immediate scientific follow-up is an
+economist-facing framing projection, benchmark-semantic audit, and
+mechanism-robustness checks before an exploratory v1/v2 revision pilot.

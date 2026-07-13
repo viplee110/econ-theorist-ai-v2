@@ -6,11 +6,18 @@ The project is designed for pure and applied theory. It does not provide econome
 
 ## Current status
 
-The repository contains **Architecture v0.1**, accepted **Phase 1--4 implementations**, and a completed **Phase 5A.1 local machine facade** in the current tree. Phase 5A.1 covers reliable scientific state, candidate validation, exact retry/recovery, a strict machine protocol, and proportionate privacy hygiene. **Phase 5A.2**, not 5A.1, owns the first real Codex theory route and completes the local research-ready gate. Signed public distribution, hostile-host security, and full Codex/Claude/Cursor parity are later release work.
+The repository contains **Architecture v0.1**, accepted **Phase 1--4 implementations**, the **Phase 5A.1 local machine facade**, and a recorded **Phase 5A.2 public Codex functional slice**. A thin project skill and the engine-owned `etai codex invoke` bridge carried one public framing request from natural language to an exact WorkPacket, a model-produced candidate, validation, and canonical commit. The full local research-ready gate remains open: positive non-public Codex execution, clean first-use activation, and broader host support have not been demonstrated. Signed public distribution and hostile-host security remain later release concerns.
 
-The system does **not yet** run a complete real-LLM paper workflow. The next evidence milestone is one Codex route from an exact WorkPacket to a model-produced candidate, canonical validation, and commit. After that milestone, development moves immediately to an exploratory v1/v2 revision pilot and uses the observed scientific failures--not additional generic infrastructure--to select the first Phase 5B lanes.
+The system does **not yet** run a complete real-LLM paper workflow. The first real Codex framing route committed mechanically, but a separate model-based diagnostic gave a holistic 6.3/10 assessment and found substantive benchmark semantics and readability defects. The next milestone is therefore scientific rather than infrastructural: produce an economist-facing framing memo from the same typed state, audit what each benchmark changes or holds fixed, rule out equilibrium-selection artifacts, and then run an exploratory v1/v2 revision pilot. The recorded requests, hashes, candidate, claim boundary, and audit are in [`review_outputs/phase5a2_codex_public_pilot`](review_outputs/phase5a2_codex_public_pilot/).
 
 Phase 5A.1 acceptance evidence includes a complete public-process fixture from initialization through packet delivery, validated candidate commit, and fresh-process retry; 60 focused Phase 5A tests; and the complete non-long regression selection with 472 tests passing and six reported platform/optional skips. All six current exporter checks, compilation, `doctor` (`required_ok=true`), Markdown-link validation, and `git diff --check` pass. The three hour-scale Phase 2/3/4 gold modules retain their previously accepted evidence and were intentionally excluded from this routine regression.
+
+The current public-slice tree completes a 74-test focused Phase 5A suite with one
+Windows symlink skip and the 486-test routine non-long selection with six
+reported platform/optional skips. All six exporters, compilation of 138 Python
+files, `doctor` (`required_ok=true`), skill/YAML validation, Markdown-link
+validation, and `git diff --check` also pass. The three hour-scale gold modules
+remain intentionally excluded from this routine run.
 
 Phase 1 is a local, provider-neutral scientific state kernel: it initializes a theory project, preserves immutable transactions and Decisions, compiles bounded route contexts, commits under an exclusive lock, derives facet-level staleness, protects human-owned files, renders noncanonical views, and recovers from interrupted commits.
 
@@ -30,12 +37,14 @@ The accepted Phase 4 checkpoint uses a deterministic writer fixture: it validate
 
 The uninterrupted final-code gold run is the primary end-to-end acceptance evidence. The earlier fresh segmented real-ObjectStore continuation remains additional historical-integrity evidence: it ran from frozen Phase 3 head `dfb04a...` through run 52, and independent verification at head `88b656...` found 87 entities, all 67 historical entities byte-identical, all 182 historical transaction/artifact/provenance files unchanged, `replay_at(final.head) == replay(final)`, exactly one current ready `ProfileCraftClosure`, and diagnostic coverage with all eight typed limitations preserved. The 6156.901-second runtime still identifies full-history replay as a performance target; it is no longer an uncompleted acceptance command. The internal phrase and voice checks are bounded controls over pinned internal derived fields; they are not plagiarism, copyright, authorship, or legal certification.
 
-Phase 4 establishes one trustworthy one-result-block repair loop, not a complete-paper compiler or a publication guarantee. Phase 5A first makes that core locally research-ready through natural-language onboarding and one real Codex vertical slice; Claude/Cursor parity and public-release hardening may follow without blocking scientific experiments. Phase 5B adds only the controlled scientific lanes justified by real pilot failures. Phase 6 owns confirmatory held-out v1/v2 quality, efficiency, and human-effort comparisons. No phase guarantees publication at Econometrica, a Top-5 journal, or a leading field journal; those venues define an ambition and evaluation burden, not a style template or acceptance promise.
+Phase 4 establishes one trustworthy one-result-block repair loop, not a complete-paper compiler or a publication guarantee. Phase 5A continues toward local research readiness through natural-language onboarding, real Codex execution, and the remaining privacy, authority, recovery, and first-use criteria; the recorded public route is not the full gate. Claude/Cursor parity and public-release hardening may follow without blocking bounded scientific diagnostics. Phase 5B adds only the controlled scientific lanes justified by real pilot failures. Phase 6 owns confirmatory held-out v1/v2 quality, efficiency, and human-effort comparisons. No phase guarantees publication at Econometrica, a Top-5 journal, or a leading field journal; those venues define an ambition and evaluation burden, not a style template or acceptance promise.
 
-The Phase 5A.1 IDE-neutral transport is documented in
+The Phase 5A machine transport and thin public Codex projection are documented in
 [`docs/implementation/machine_protocol_v1.md`](docs/implementation/machine_protocol_v1.md).
-It is an engine interface for adapters and advanced users; host-native
-one-sentence activation remains a later Phase 5A slice.
+The canonical protocol remains IDE-neutral. In a prepared checkout, the
+project skill now supports one-sentence public Codex activation; cold
+installation, positive private execution, and Claude Code/Cursor projections
+remain later work.
 
 ## Design thesis
 
@@ -86,11 +95,11 @@ The migration rule is strict: every high-value v1 capability must have a v2 owne
 
 Python 3.11+ is required. The canonical validator is pinned to Pydantic 2.13.4 and pydantic-core 2.46.4 so replay acceptance does not drift across validator upgrades.
 
-This is the current machine/developer path, not the intended ordinary
-researcher experience. Phase 5A targets natural-language onboarding from a
-supported host so the researcher does not have to open a shell or memorize
-these commands. That host bootstrap is specified but not yet implemented; the
-commands below remain the honest current interface.
+This remains the portable machine/developer path. A prepared Codex checkout
+also contains a thin project skill that can invoke the engine from a natural-
+language request; one public route has been recorded. The ordinary first-use
+installer and positive non-public path are not complete, so the commands below
+remain the dependable cross-host interface.
 
 For a provider-backed host, one-message onboarding may include a research
 question only when that content is public or a verified pre-model/account-level
@@ -134,7 +143,8 @@ python scripts/export_machine_schemas.py --check
 The Git repository, not an IDE conversation, is the durable development
 handoff. Before moving machines, commit and push the current branch;
 uncommitted files do not follow a clone. On the new computer, clone the
-repository and use `main` as the accepted Phase 1--4 plus Phase 5A.1 base:
+repository and use `main` as the accepted Phase 1--4, Phase 5A.1, and recorded
+public Phase 5A.2 functional-slice base:
 
 ```text
 git clone https://github.com/viplee110/econ-theorist-ai-v2.git

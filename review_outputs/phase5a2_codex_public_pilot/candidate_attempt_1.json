@@ -1,0 +1,279 @@
+{
+  "transaction_schema": 1,
+  "transaction_id": "txn_frame_consumable_certificates_001",
+  "origin": "route_run",
+  "project_id": "prj_2d5d22e2c13f7946f54faa4023878692a0884786abeb89c5",
+  "base_revision": "29deae00e48c5b36f83937daf4749590030b7939f7aacb57a00f5f03ba2525ac",
+  "route_run_id": "run_op_357299f80dea59a15b799194f8727f32c500408d32bb117e",
+  "route_id": "frame.question_and_benchmarks",
+  "route_run_hash": "372baa32b0b122fdbdbb4ab29c7896acc0a76f4d30878086d74ffb1e6453cd8e",
+  "context_manifest_hash": "f2dc3b8c30cc32fc655b18308b9db821dcbcb9b577565bb2c399d41afa0ee058",
+  "compiled_context_hash": "aa55c40797d015186996409476e547a15ff63be8433ce1e6d0c2e460bc9e6d20",
+  "actor": {
+    "kind": "agent",
+    "actor_id": "scientific_agent"
+  },
+  "privacy": "public",
+  "access_compartments": [
+    "project_research"
+  ],
+  "intent": "Propose one falsifiable comparative-statics question and an exact diagnostic benchmark set for consumable quality certificates, without solving or asserting any direction, validity, novelty, or welfare result.",
+  "preconditions": [],
+  "changed_facets": [],
+  "operations": [
+    {
+      "op": "entity.create",
+      "entity": {
+        "entity_id": "rq_consumable_certificate_comparative_statics",
+        "entity_type": "ResearchQuestion",
+        "version": 1,
+        "project_id": "prj_2d5d22e2c13f7946f54faa4023878692a0884786abeb89c5",
+        "scope_ref": null,
+        "artifact_refs": [],
+        "status": {
+          "lifecycle": "proposed",
+          "formal_validity": null,
+          "interpretation_validity": null,
+          "literature": null
+        },
+        "created_at": "2026-07-13T20:05:57.815521Z",
+        "supersedes": null,
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "title": "Can cheaper consumable certification generate non-monotone buyer outcomes?",
+        "summary": "A proposal to test whether certificate-stock depletion and the induced composition of the uncertified pool can overturn monotone comparative statics in certificate cost.",
+        "facets": {
+          "formal": {},
+          "economic_interpretation": {
+            "schema": "econ_theorist.theory/ResearchQuestion/v1",
+            "payload": {
+              "schema_version": 1,
+              "phenomenon": "The steady-state buyer inspection rate, successful-allocation probability, or ex ante buyer payoff net of inspection cost may have an interior reversal as the truthful-certificate cost k falls because issuance, certificate depletion after trade, and the high-capacity share among uncertified sellers jointly change the value of inspection.",
+              "object_to_explain": "Fix all non-k primitives and one k-invariant equilibrium-selection rule. For X(k) equal to the stationary probability of paid inspection S(k), the probability of successful service A(k), or buyer expected payoff U(k), determine whether there exist k1 < k2 < k3 for which [X(k2)-X(k1)] times [X(k3)-X(k2)] is strictly negative in the consumable-certificate game, and whether the reversal disappears in the channel-control benchmarks.",
+              "unresolved_delta": "It is unresolved whether any admissible common-primitives parameterization and selected stationary symmetric Markov-perfect equilibrium produces the strict sign reversal, which of S, A, or U reverses, and whether depletion-driven changes in the uncertified pool rather than cost accounting or a changing inspection policy are necessary for it.",
+              "importance": "Certificates are an endogenous, exhaustible information stock rather than a permanent label. Establishing the source of any reversal would distinguish the information-composition effect of certification from the direct saving in sellers' certification costs and from buyers' endogenous acquisition of information, which is necessary before interpreting a cheaper-certificate policy through search, matching, or buyer-payoff comparisons.",
+              "kill_condition": "Kill this proposed mechanism within the stated scope if a characterization of the selected stationary symmetric Markov-perfect equilibrium shows that each of S(k), A(k), and U(k) is weakly monotone on the admissible k interval for every fixed non-k primitive vector. Also reject a stock-depletion attribution for any computed reversal unless that reversal is absent when the certificate-stock and uncertified-composition law is frozen, and reject an endogenous-inspection attribution unless the full-model contrast differs from the fixed-inspection benchmark.",
+              "proposed_scope": "Two long-lived sellers and one short-lived buyer per period; seller capacity is H or L under one fixed public transition kernel, only H can buy a truthful one-unit certificate at cost k, an outstanding certificate publicly guarantees one successful service and is erased when its seller trades, an uncertified seller can be H or L, the buyer observes certificate states and may pay c to inspect one uncertified seller before buying from at most one seller or exiting, a successful service yields buyer value 1 and seller margin m, and sellers discount by delta. Compare k while holding c, m, delta, the capacity kernel, timing, public state, and a lexicographic stationary-strategy selection rule fixed. Treat all question and benchmark choices as L1 proposals for later human G1 review.",
+              "candidate_archetypes": [
+                "comparative_statics_threshold",
+                "mechanism_explanation"
+              ],
+              "prohibited_claims": [
+                "No direction of any comparative static is asserted.",
+                "No existence, uniqueness, proof, validation, or welfare conclusion is asserted.",
+                "No novelty or literature-positioning claim is asserted.",
+                "No reversal is attributed to certificate depletion without the declared paired controls."
+              ]
+            }
+          },
+          "literature_novelty": {},
+          "terminology_presentation": {},
+          "authority": {}
+        }
+      }
+    },
+    {
+      "op": "entity.create",
+      "entity": {
+        "entity_id": "bench_consumable_certificate_channels",
+        "entity_type": "BenchmarkSet",
+        "version": 1,
+        "project_id": "prj_2d5d22e2c13f7946f54faa4023878692a0884786abeb89c5",
+        "scope_ref": null,
+        "artifact_refs": [],
+        "status": {
+          "lifecycle": "proposed",
+          "formal_validity": null,
+          "interpretation_validity": null,
+          "literature": null
+        },
+        "created_at": "2026-07-13T20:05:57.815521Z",
+        "supersedes": null,
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "title": "Channel controls for consumable certificate comparative statics",
+        "summary": "Four common-primitives games that isolate depletion of the public certificate stock, pure certification-cost accounting, and endogenous buyer inspection.",
+        "facets": {
+          "formal": {},
+          "economic_interpretation": {
+            "schema": "econ_theorist.theory/BenchmarkSet/v1",
+            "payload": {
+              "schema_version": 1,
+              "question_ref": {
+                "entity_id": "rq_consumable_certificate_comparative_statics",
+                "version": 1
+              },
+              "benchmarks": [
+                {
+                  "benchmark_id": "full_consumable_endogenous",
+                  "label": "Full consumable stock with endogenous inspection",
+                  "exact_primitives": [
+                    "Two long-lived sellers, one short-lived buyer per period, capacities H or L under the fixed kernel P, buyer success value 1, exit payoff 0, inspection cost c, successful-trade seller margin m, seller discount factor delta, and certificate cost k.",
+                    "Only an H seller may issue a truthful public certificate; an outstanding certificate guarantees one successful service and its public stock indicator switches from one to zero immediately after trade with that seller.",
+                    "The buyer observes both certificate indicators, may inspect at most one uncertified seller at cost c, then buys from at most one seller or exits.",
+                    "All non-k primitives, the public state definition, and the equilibrium-selection rule are identical at every compared k."
+                  ],
+                  "exact_values": [],
+                  "timing": [
+                    "Public certificate stock is carried into the period and each seller observes its current private capacity.",
+                    "Eligible H sellers choose whether to pay k and issue; the buyer observes certificate states.",
+                    "The buyer chooses inspection, if any, observes the inspected uncertified capacity, then buys from one seller or exits.",
+                    "Service and payoffs realize; trade with a certified seller consumes that certificate; the capacity and certificate state then transition."
+                  ],
+                  "solution_concept": "Selected stationary symmetric Markov-perfect equilibrium, using one fixed lexicographic ordering of stationary strategy vectors for every k.",
+                  "prediction": "For each k, record S(k), A(k), U(k), the stationary certificate-stock distribution, and the stationary H share among uncertified sellers; test the exact adjacent-difference product for a strict sign reversal without presuming its sign.",
+                  "unresolved_delta": "Whether any of S, A, or U has a strict interior reversal and which state-composition movements accompany it."
+                },
+                {
+                  "benchmark_id": "nondepleting_public_labels",
+                  "label": "Nondepleting-certificate control",
+                  "exact_primitives": [
+                    "Use every primitive, information set, seller issuance choice, buyer action, payoff, capacity kernel, and equilibrium-selection rule from full_consumable_endogenous.",
+                    "Change only the certificate transition after trade: a trade leaves the public certificate indicator unchanged for the certified capacity spell instead of consuming it.",
+                    "Keep certification cost k and endogenous inspection available."
+                  ],
+                  "exact_values": [],
+                  "timing": [
+                    "Use the full-game timing through service and payoff realization.",
+                    "At the state transition, do not erase a certificate merely because its seller traded; apply the common exogenous capacity-spell expiration rule thereafter."
+                  ],
+                  "solution_concept": "Selected stationary symmetric Markov-perfect equilibrium under the same lexicographic selection rule.",
+                  "prediction": "Compare the sign pattern of each full-game finite difference with its nondepleting counterpart; this contrast turns off trade-induced certificate depletion while retaining endogenous issuance and inspection.",
+                  "unresolved_delta": "Whether removing only the trade-consumption transition eliminates, preserves, or changes any strict reversal."
+                },
+                {
+                  "benchmark_id": "frozen_stock_cost_ledger",
+                  "label": "Frozen stock and uncertified-composition cost control",
+                  "exact_primitives": [
+                    "Choose and declare a baseline k0 and import from the full game at k0 the seller issuance rule and the stationary transition kernel over certificate indicators and the H share among uncertified sellers.",
+                    "For every counterfactual k, hold that issuance rule and state-composition kernel exactly fixed; change k only as a debit in seller payoff accounting.",
+                    "Let buyers best respond to the unchanged public-state and uncertified-composition law; keep all buyer payoffs and information costs fixed."
+                  ],
+                  "exact_values": [],
+                  "timing": [
+                    "Draw the public certificate and uncertified-composition state from the fixed k0 kernel.",
+                    "Apply the fixed k0 issuance transition, let the buyer inspect or trade under the unchanged information environment, and debit the counterfactual k only to issuing sellers."
+                  ],
+                  "solution_concept": "Stationary buyer best response to the frozen k0 seller and state law; no seller re-optimization as k varies.",
+                  "prediction": "Use this as a zero-buyer-environment accounting control: any k contrast in S, A, or U is tested against an information state and buyer payoff problem that are fixed by construction, while seller certification expenditure alone changes.",
+                  "unresolved_delta": "Whether a full-game reversal survives once all k-induced certificate-stock and uncertified-composition responses are removed."
+                },
+                {
+                  "benchmark_id": "fixed_inspection_policy",
+                  "label": "Fixed-inspection-policy control",
+                  "exact_primitives": [
+                    "Use the consumable certificate transition, endogenous seller issuance, capacity kernel, payoffs, and equilibrium-selection rule from full_consumable_endogenous.",
+                    "Choose the same declared baseline k0 and freeze the buyer's state-contingent probability of paying c to inspect at its selected full-game k0 value for every counterfactual k.",
+                    "After the frozen inspection draw and any signal, permit the buyer's purchase-versus-exit action to be a best response; sellers continue to optimize against the fixed inspection rule."
+                  ],
+                  "exact_values": [],
+                  "timing": [
+                    "Follow the full-game timing, but replace the buyer's inspection decision node by the fixed k0 state-contingent randomization.",
+                    "Retain endogenous seller certification, purchase or exit after information, service, certificate consumption, and state transition."
+                  ],
+                  "solution_concept": "Stationary seller Markov best responses and buyer purchase-or-exit best responses subject to the exogenously fixed k0 inspection policy, with the common selection rule.",
+                  "prediction": "Compare A(k), U(k), certificate stocks, and uncertified composition with the full game while S(k) is fixed by construction; the difference diagnoses the endogenous inspection-response margin without asserting a direction.",
+                  "unresolved_delta": "Whether any full-game reversal requires adjustment of the inspection policy rather than only seller issuance and certificate-stock composition."
+                }
+              ],
+              "exact_question_delta": "The full game asks for a strict sign reversal in S, A, or U. The nondepleting game changes only trade-induced certificate erasure; the frozen-stock game holds issuance and the uncertified-composition kernel fixed while k changes only seller cost accounting; the fixed-inspection game holds the inspection policy fixed while preserving consumable stocks and endogenous seller issuance. These three paired deltas separately diagnose depletion, mechanical cheaper certification, and endogenous inspection."
+            }
+          },
+          "literature_novelty": {},
+          "terminology_presentation": {},
+          "authority": {}
+        }
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_rq_frames_certificate_benchmarks",
+        "relation_type": "frames",
+        "version": 1,
+        "project_id": "prj_2d5d22e2c13f7946f54faa4023878692a0884786abeb89c5",
+        "source": {
+          "entity_id": "rq_consumable_certificate_comparative_statics",
+          "version": 1
+        },
+        "target": {
+          "entity_id": "bench_consumable_certificate_channels",
+          "version": 1
+        },
+        "dependency_mode": "trace_only",
+        "upstream": null,
+        "downstream": null,
+        "created_at": "2026-07-13T20:05:57.815521Z",
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ]
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_benchmarks_delta_to_certificate_rq",
+        "relation_type": "benchmark_delta",
+        "version": 1,
+        "project_id": "prj_2d5d22e2c13f7946f54faa4023878692a0884786abeb89c5",
+        "source": {
+          "entity_id": "bench_consumable_certificate_channels",
+          "version": 1
+        },
+        "target": {
+          "entity_id": "rq_consumable_certificate_comparative_statics",
+          "version": 1
+        },
+        "dependency_mode": "trace_only",
+        "upstream": null,
+        "downstream": null,
+        "created_at": "2026-07-13T20:05:57.815521Z",
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ]
+      }
+    },
+    {
+      "op": "route.outcome",
+      "outcome": {
+        "route_run_id": "run_op_357299f80dea59a15b799194f8727f32c500408d32bb117e",
+        "route_id": "frame.question_and_benchmarks",
+        "outcome": "completed_with_candidate",
+        "rationale": "Proposes exactly one ResearchQuestion and one BenchmarkSet, links every benchmark delta back to that exact question version, and reserves all stable framing choices for later human G1 review.",
+        "candidate_refs": [
+          {
+            "entity_id": "rq_consumable_certificate_comparative_statics",
+            "version": 1
+          },
+          {
+            "entity_id": "bench_consumable_certificate_channels",
+            "version": 1
+          },
+          {
+            "relation_id": "rel_rq_frames_certificate_benchmarks",
+            "version": 1
+          },
+          {
+            "relation_id": "rel_benchmarks_delta_to_certificate_rq",
+            "version": 1
+          }
+        ],
+        "validator_report_refs": [],
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ]
+      }
+    }
+  ],
+  "evidence_refs": [],
+  "authority_basis": [],
+  "created_at": "2026-07-13T20:05:57.815521Z",
+  "parent_transaction_hash": "29deae00e48c5b36f83937daf4749590030b7939f7aacb57a00f5f03ba2525ac"
+}

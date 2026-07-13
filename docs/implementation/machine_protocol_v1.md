@@ -1,12 +1,13 @@
 # Machine protocol v1
 
-Status: Phase 5A.1 local machine facade implemented and verified; a real Codex
-projection and the local research-ready gate remain Phase 5A.2 work, while
+Status: Phase 5A.1 local machine facade implemented and verified; a thin
+public-only Codex projection and one real framing-route pilot are recorded in
+the current tree. The full local research-ready gate remains open, while
 signed/public-distribution hardening is optional 5A.5
 
-## Public transport
+## Host-neutral transport and Codex projection
 
-The only public structured transport is:
+The canonical host-neutral structured transport is:
 
 ```text
 etai machine invoke --request -
@@ -19,6 +20,24 @@ blocked operation is represented by `outcome`, not inferred from prose or
 standard error. The request is limited to 16 MiB. Ordinary terminal commands
 remain available as an advanced/manual compatibility surface, but official
 host projections use this protocol.
+
+The prepared-checkout Codex projection is:
+
+```text
+etai codex invoke --request -
+etai codex invoke --request REQUEST.json
+etai codex invoke --schema bundle
+```
+
+This is a thin engine-owned projection over the same machine operations. Its
+v1 start request binds one Codex session, exact root, optional public project
+initialization, and bounded research brief. It currently accepts public work
+only and fails closed before packet delivery for unsupported privacy. A ready
+response includes the exact WorkPacket plus a mechanical candidate-authoring
+contract: transaction bindings, output cardinalities, JSON Schemas, and typed
+cross-field model invariants. An invalid candidate returns bounded structured
+repair diagnostics rather than exposing a traceback or accepting direct
+canonical edits.
 
 The exported schemas are in [`schemas/machine/v1`](../../schemas/machine/v1/).
 The packaged [`host-manifest.v1.json`](../../machine/host-manifest.v1.json)
@@ -58,7 +77,7 @@ the operation. Reusing a key for different bytes is `conflict`.
 |---|---|---|
 | `bootstrap.plan` | none | descriptor, bounded HTTPS origins, environment and launcher paths; external trust evidence is adapter-injected |
 | `bootstrap.verify` | local operation receipt | no model parameters; a public-release verifier may inject exact evidence |
-| `project.bind_or_initialize` | conditional genesis | `initialize`, exact project name, and optional requested project id; local operational home/actor are host configuration |
+| `project.bind_or_initialize` | conditional genesis | `initialize`, exact project name, optional requested project id, and optional `project_privacy`; local operational home/actor are host configuration |
 | `project.inspect` | none | compartments, clearance, budget/scope and optional `RunInputBriefV1`; the Phase 5A actor is engine-owned |
 | `navigation.plan_next` | none | same navigation inputs as inspection |
 | `run.open_or_resume` | run-operational files | exact `NavigationCandidateV1` and its optional exact input brief |
@@ -133,7 +152,9 @@ obtain the same work-packet hash.
 6. The host writes only the packet's candidate/shadow paths, then calls
    `candidate.complete` or `host.finish`.
 
-This sequence is the engine contract used by the later Codex, Claude Code, and
-Cursor projections. Phase 5A.1 by itself does not claim one-sentence
-host-native activation, a signed production release, multi-agent execution, or
-improved research quality.
+This sequence remains the engine contract for Codex, Claude Code, Cursor, and
+other thin projections. The recorded Codex slice demonstrates one-sentence
+activation only in a prepared checkout and only for a public framing route. It
+does not establish cold installation, positive private execution, a signed
+production release, multi-agent execution, host parity, or improved research
+quality.
