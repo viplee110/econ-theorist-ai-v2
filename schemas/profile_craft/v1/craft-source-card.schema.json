@@ -1,0 +1,267 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/profile-craft/v1/craft-source-card.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "access_evidence_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "access_status": {
+      "enum": [
+        "verified_public",
+        "verified_licensed",
+        "project_owned",
+        "restricted_private",
+        "unverified",
+        "revoked"
+      ],
+      "title": "Access Status",
+      "type": "string"
+    },
+    "access_verified_at": {
+      "minLength": 1,
+      "title": "Access Verified At",
+      "type": "string"
+    },
+    "author_lineage_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Author Lineage Ids",
+      "type": "array"
+    },
+    "citation": {
+      "minLength": 1,
+      "title": "Citation",
+      "type": "string"
+    },
+    "confidence": {
+      "enum": [
+        "provisional",
+        "supported",
+        "strong"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "contains_reusable_prose": {
+      "const": false,
+      "default": false,
+      "title": "Contains Reusable Prose",
+      "type": "boolean"
+    },
+    "corpus_split": {
+      "enum": [
+        "anchor",
+        "contrast",
+        "development",
+        "evaluation_holdout",
+        "project_postmortem"
+      ],
+      "title": "Corpus Split",
+      "type": "string"
+    },
+    "derived_at": {
+      "minLength": 1,
+      "title": "Derived At",
+      "type": "string"
+    },
+    "derived_by": {
+      "$ref": "#/$defs/Actor"
+    },
+    "evidence_role": {
+      "enum": [
+        "matched_anchor",
+        "contrast",
+        "provisional"
+      ],
+      "title": "Evidence Role",
+      "type": "string"
+    },
+    "function_key": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Function Key",
+      "type": "string"
+    },
+    "functional_summary": {
+      "minLength": 24,
+      "title": "Functional Summary",
+      "type": "string"
+    },
+    "non_applicability": {
+      "items": {
+        "minLength": 24,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Non Applicability",
+      "type": "array"
+    },
+    "paper_family_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Paper Family Id",
+      "type": "string"
+    },
+    "paper_specific_nontransferable": {
+      "minLength": 24,
+      "title": "Paper Specific Nontransferable",
+      "type": "string"
+    },
+    "phrase_audit_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "phrase_audit_status": {
+      "const": "passed",
+      "default": "passed",
+      "title": "Phrase Audit Status",
+      "type": "string"
+    },
+    "reader_problem_key": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Reader Problem Key",
+      "type": "string"
+    },
+    "research_mode": {
+      "enum": [
+        "pure_theory",
+        "applied_theory",
+        "theory_methodology",
+        "empirical",
+        "mixed_empirical"
+      ],
+      "title": "Research Mode",
+      "type": "string"
+    },
+    "resource_version": {
+      "minimum": 1,
+      "title": "Resource Version",
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source_artifact_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "source_card_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Source Card Id",
+      "type": "string"
+    },
+    "source_content_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Source Content Hash",
+      "type": "string"
+    },
+    "source_locator": {
+      "minLength": 1,
+      "title": "Source Locator",
+      "type": "string"
+    },
+    "transferable_content": {
+      "minLength": 24,
+      "title": "Transferable Content",
+      "type": "string"
+    },
+    "writer_visibility": {
+      "const": "derived_card_only",
+      "default": "derived_card_only",
+      "title": "Writer Visibility",
+      "type": "string"
+    }
+  },
+  "required": [
+    "source_card_id",
+    "resource_version",
+    "citation",
+    "source_locator",
+    "source_content_hash",
+    "access_status",
+    "access_evidence_ref",
+    "access_verified_at",
+    "research_mode",
+    "evidence_role",
+    "corpus_split",
+    "paper_family_id",
+    "author_lineage_ids",
+    "reader_problem_key",
+    "function_key",
+    "functional_summary",
+    "transferable_content",
+    "paper_specific_nontransferable",
+    "confidence",
+    "non_applicability",
+    "phrase_audit_ref",
+    "derived_by",
+    "derived_at"
+  ],
+  "title": "CraftSourceCard",
+  "type": "object"
+}

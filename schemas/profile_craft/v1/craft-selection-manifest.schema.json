@@ -1,0 +1,743 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "CraftCandidateAudit": {
+      "additionalProperties": false,
+      "properties": {
+        "archetype_compatible": {
+          "title": "Archetype Compatible",
+          "type": "boolean"
+        },
+        "audience_compatible": {
+          "title": "Audience Compatible",
+          "type": "boolean"
+        },
+        "causal_class_compatible": {
+          "title": "Causal Class Compatible",
+          "type": "boolean"
+        },
+        "confidence_admissible": {
+          "title": "Confidence Admissible",
+          "type": "boolean"
+        },
+        "corpus_admissible": {
+          "title": "Corpus Admissible",
+          "type": "boolean"
+        },
+        "covered_requirement_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Covered Requirement Ids",
+          "type": "array"
+        },
+        "exclusion_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "function_mismatch",
+                "missing_semantic_inputs",
+                "archetype_mismatch",
+                "audience_mismatch",
+                "theory_mode_mismatch",
+                "field_mismatch",
+                "placement_mismatch",
+                "causal_class_mismatch",
+                "non_applicable",
+                "corpus_excluded",
+                "insufficient_confidence",
+                "redundant_not_minimal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exclusion Reason"
+        },
+        "field_compatible": {
+          "title": "Field Compatible",
+          "type": "boolean"
+        },
+        "functional_match": {
+          "enum": [
+            "exact",
+            "compatible",
+            "mismatch"
+          ],
+          "title": "Functional Match",
+          "type": "string"
+        },
+        "lexical_similarity_rank": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lexical Similarity Rank"
+        },
+        "move": {
+          "$ref": "#/$defs/CraftMove"
+        },
+        "move_ref": {
+          "$ref": "#/$defs/StaticResourceRef"
+        },
+        "non_applicability_triggered": {
+          "title": "Non Applicability Triggered",
+          "type": "boolean"
+        },
+        "placement_compatible": {
+          "title": "Placement Compatible",
+          "type": "boolean"
+        },
+        "requirement_coverages": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MoveRequirementCoverage"
+          },
+          "title": "Requirement Coverages",
+          "type": "array"
+        },
+        "selected": {
+          "title": "Selected",
+          "type": "boolean"
+        },
+        "semantic_inputs_present": {
+          "title": "Semantic Inputs Present",
+          "type": "boolean"
+        },
+        "theory_mode_compatible": {
+          "title": "Theory Mode Compatible",
+          "type": "boolean"
+        },
+        "triggered_non_applicability_rule_ids": {
+          "default": [],
+          "items": {
+            "enum": [
+              "upstream_science_unresolved",
+              "nonlocal_causal_class",
+              "semantic_inputs_unavailable",
+              "theory_mode_incompatible",
+              "field_incompatible",
+              "section_role_incompatible"
+            ],
+            "type": "string"
+          },
+          "title": "Triggered Non Applicability Rule Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "move_ref",
+        "move",
+        "functional_match",
+        "semantic_inputs_present",
+        "archetype_compatible",
+        "audience_compatible",
+        "theory_mode_compatible",
+        "field_compatible",
+        "placement_compatible",
+        "causal_class_compatible",
+        "non_applicability_triggered",
+        "corpus_admissible",
+        "confidence_admissible",
+        "selected"
+      ],
+      "title": "CraftCandidateAudit",
+      "type": "object"
+    },
+    "CraftMove": {
+      "additionalProperties": false,
+      "properties": {
+        "compatible_archetypes": {
+          "items": {
+            "enum": [
+              "mechanism_explanation",
+              "comparative_statics_threshold",
+              "characterization_bounds",
+              "robustness_invariance_equivalence",
+              "design_implementation_impossibility",
+              "concept_representation_foundation"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Compatible Archetypes",
+          "type": "array"
+        },
+        "compatible_audiences": {
+          "items": {
+            "enum": [
+              "general_economist",
+              "economic_theorist",
+              "field_specialist",
+              "theory_and_field_bridge",
+              "policy_or_design_literate_economist"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Compatible Audiences",
+          "type": "array"
+        },
+        "compatible_causal_classes": {
+          "items": {
+            "enum": [
+              "initial_planning",
+              "local_exposition",
+              "reader_path_design",
+              "target_profile_mismatch",
+              "scientific_content"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Compatible Causal Classes",
+          "type": "array"
+        },
+        "compatible_field_keys": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Compatible Field Keys",
+          "type": "array"
+        },
+        "compatible_theory_modes": {
+          "items": {
+            "enum": [
+              "pure_theory",
+              "applied_theory"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Compatible Theory Modes",
+          "type": "array"
+        },
+        "confidence": {
+          "enum": [
+            "provisional",
+            "supported",
+            "strong"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        },
+        "contrast_refs": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/StaticResourceRef"
+          },
+          "title": "Contrast Refs",
+          "type": "array"
+        },
+        "created_at": {
+          "minLength": 1,
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "$ref": "#/$defs/Actor"
+        },
+        "eligible_section_roles": {
+          "items": {
+            "enum": [
+              "introduction",
+              "model_motivation",
+              "model",
+              "result_block",
+              "extension",
+              "conclusion",
+              "appendix"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Eligible Section Roles",
+          "type": "array"
+        },
+        "failure_modes": {
+          "items": {
+            "minLength": 24,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Failure Modes",
+          "type": "array"
+        },
+        "function_key": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Function Key",
+          "type": "string"
+        },
+        "functional_name": {
+          "minLength": 1,
+          "title": "Functional Name",
+          "type": "string"
+        },
+        "intended_reader_update": {
+          "minLength": 24,
+          "title": "Intended Reader Update",
+          "type": "string"
+        },
+        "matched_anchor_refs": {
+          "items": {
+            "$ref": "#/$defs/StaticResourceRef"
+          },
+          "minItems": 1,
+          "title": "Matched Anchor Refs",
+          "type": "array"
+        },
+        "move_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Move Id",
+          "type": "string"
+        },
+        "non_applicability": {
+          "items": {
+            "minLength": 24,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Non Applicability",
+          "type": "array"
+        },
+        "non_applicability_rule_ids": {
+          "items": {
+            "enum": [
+              "upstream_science_unresolved",
+              "nonlocal_causal_class",
+              "semantic_inputs_unavailable",
+              "theory_mode_incompatible",
+              "field_incompatible",
+              "section_role_incompatible"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Non Applicability Rule Ids",
+          "type": "array"
+        },
+        "reader_problem_key": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Reader Problem Key",
+          "type": "string"
+        },
+        "required_semantic_inputs": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Semantic Inputs",
+          "type": "array"
+        },
+        "resource_version": {
+          "minimum": 1,
+          "title": "Resource Version",
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "source_phrase_material_included": {
+          "const": false,
+          "default": false,
+          "title": "Source Phrase Material Included",
+          "type": "boolean"
+        },
+        "supported_repair_actions": {
+          "items": {
+            "enum": [
+              "correct_formal_expression",
+              "narrow_scope",
+              "restore_assumption",
+              "repair_explanation",
+              "replace_example_or_witness",
+              "repair_reader_path",
+              "stabilize_terminology",
+              "add_boundary",
+              "remove_governance_language",
+              "request_human_decision"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Supported Repair Actions",
+          "type": "array"
+        },
+        "trigger_conditions": {
+          "items": {
+            "minLength": 24,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Trigger Conditions",
+          "type": "array"
+        },
+        "typical_placements": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Typical Placements",
+          "type": "array"
+        },
+        "valid_variants": {
+          "items": {
+            "minLength": 24,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Valid Variants",
+          "type": "array"
+        },
+        "voice_policy": {
+          "const": "functional_properties_only",
+          "default": "functional_properties_only",
+          "title": "Voice Policy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "move_id",
+        "resource_version",
+        "functional_name",
+        "reader_problem_key",
+        "function_key",
+        "trigger_conditions",
+        "required_semantic_inputs",
+        "supported_repair_actions",
+        "intended_reader_update",
+        "typical_placements",
+        "valid_variants",
+        "failure_modes",
+        "compatible_archetypes",
+        "compatible_audiences",
+        "compatible_theory_modes",
+        "compatible_field_keys",
+        "eligible_section_roles",
+        "compatible_causal_classes",
+        "non_applicability_rule_ids",
+        "matched_anchor_refs",
+        "confidence",
+        "non_applicability",
+        "created_by",
+        "created_at"
+      ],
+      "title": "CraftMove",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "MoveRequirementCoverage": {
+      "additionalProperties": false,
+      "properties": {
+        "action_supported": {
+          "title": "Action Supported",
+          "type": "boolean"
+        },
+        "available_semantic_input_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Available Semantic Input Ids",
+          "type": "array"
+        },
+        "covered": {
+          "title": "Covered",
+          "type": "boolean"
+        },
+        "missing_semantic_input_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Missing Semantic Input Ids",
+          "type": "array"
+        },
+        "repair_action": {
+          "enum": [
+            "correct_formal_expression",
+            "narrow_scope",
+            "restore_assumption",
+            "repair_explanation",
+            "replace_example_or_witness",
+            "repair_reader_path",
+            "stabilize_terminology",
+            "add_boundary",
+            "remove_governance_language",
+            "request_human_decision"
+          ],
+          "title": "Repair Action",
+          "type": "string"
+        },
+        "required_semantic_input_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Semantic Input Ids",
+          "type": "array"
+        },
+        "requirement_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Requirement Id",
+          "type": "string"
+        },
+        "semantic_inputs_available": {
+          "title": "Semantic Inputs Available",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "requirement_id",
+        "repair_action",
+        "required_semantic_input_ids",
+        "available_semantic_input_ids",
+        "missing_semantic_input_ids",
+        "action_supported",
+        "semantic_inputs_available",
+        "covered"
+      ],
+      "title": "MoveRequirementCoverage",
+      "type": "object"
+    },
+    "StaticResourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "resource_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Resource Id",
+          "type": "string"
+        },
+        "resource_kind": {
+          "enum": [
+            "profile_layer",
+            "profile_catalog",
+            "craft_source",
+            "craft_move",
+            "craft_corpus"
+          ],
+          "title": "Resource Kind",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "resource_kind",
+        "resource_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "StaticResourceRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/profile-craft/v1/craft-selection-manifest.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "candidates": {
+      "items": {
+        "$ref": "#/$defs/CraftCandidateAudit"
+      },
+      "maxItems": 64,
+      "minItems": 1,
+      "title": "Candidates",
+      "type": "array"
+    },
+    "corpus_release_ref": {
+      "$ref": "#/$defs/StaticResourceRef"
+    },
+    "diagnosed_reader_problem_key": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Diagnosed Reader Problem Key",
+      "type": "string"
+    },
+    "diagnosed_required_resolution_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Diagnosed Required Resolution Ids",
+      "type": "array"
+    },
+    "diagnosed_upstream_science_status": {
+      "enum": [
+        "resolved",
+        "unresolved"
+      ],
+      "title": "Diagnosed Upstream Science Status",
+      "type": "string"
+    },
+    "diagnosis_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Diagnosis Hash",
+      "type": "string"
+    },
+    "diagnosis_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "index_version": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Index Version",
+      "type": "string"
+    },
+    "minimality_kind": {
+      "const": "minimum_cardinality",
+      "default": "minimum_cardinality",
+      "title": "Minimality Kind",
+      "type": "string"
+    },
+    "outcome": {
+      "enum": [
+        "selected",
+        "abstained_upstream",
+        "abstained_no_fit"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "profile_stack_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Profile Stack Hash",
+      "type": "string"
+    },
+    "profile_stack_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "retriever_version": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Retriever Version",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "selected_at": {
+      "minLength": 1,
+      "title": "Selected At",
+      "type": "string"
+    },
+    "selected_by": {
+      "$ref": "#/$defs/Actor"
+    },
+    "selected_move_refs": {
+      "items": {
+        "$ref": "#/$defs/StaticResourceRef"
+      },
+      "title": "Selected Move Refs",
+      "type": "array"
+    },
+    "selection_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Selection Id",
+      "type": "string"
+    },
+    "selection_strategy": {
+      "const": "function_first_semantic_set_cover_v2",
+      "title": "Selection Strategy",
+      "type": "string"
+    },
+    "selector_version": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Selector Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "selection_id",
+    "diagnosis_ref",
+    "diagnosis_hash",
+    "diagnosed_reader_problem_key",
+    "diagnosed_required_resolution_ids",
+    "diagnosed_upstream_science_status",
+    "profile_stack_ref",
+    "profile_stack_hash",
+    "corpus_release_ref",
+    "selection_strategy",
+    "index_version",
+    "retriever_version",
+    "selector_version",
+    "candidates",
+    "selected_move_refs",
+    "outcome",
+    "selected_by",
+    "selected_at"
+  ],
+  "title": "CraftSelectionManifest",
+  "type": "object"
+}

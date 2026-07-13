@@ -1,6 +1,8 @@
-"""Provider-neutral canonical-writer boundary for Phase 3.
+"""Provider-neutral canonical-writer boundary for Phase 3 and Phase 4.
 
-The runtime passes only the clean ``phase3_role_packet`` to this interface.
+The runtime passes only the clean role packet to this interface. Phase 4 uses
+the same canonical writer with a narrower profiled packet containing selected
+functional moves but no anchor prose.
 Provider adapters can implement the protocol later; deterministic fixtures make
 the boundary executable in CI without credentials or network access.
 """
@@ -67,7 +69,10 @@ class DeterministicFixtureWriter:
             raise WriterBoundaryError("role_packet must be a mapping")
         if role_packet.get("packet_schema") != "econ-theorist/role-packet/v1":
             raise WriterBoundaryError("writer role packet has an unknown schema")
-        if role_packet.get("packet_kind") != "canonical_writer":
+        if role_packet.get("packet_kind") not in {
+            "canonical_writer",
+            "profiled_canonical_writer",
+        }:
             raise WriterBoundaryError("canonical writer received another role's packet")
         try:
             text = self._fixtures[manuscript_key]

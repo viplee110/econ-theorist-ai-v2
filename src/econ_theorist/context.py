@@ -31,6 +31,7 @@ from .models import (
     RouteSpecLike,
     RouteSpecV2,
     RouteSpecV3,
+    RouteSpecV4,
     Snapshot,
 )
 from .policy import (
@@ -39,6 +40,7 @@ from .policy import (
     KERNEL_VERSION,
     VALIDATOR_VERSION,
     V3_NATIVE_ROUTE_IDS,
+    V4_NATIVE_ROUTE_IDS,
     decision_registry_version_for_route,
     instruction_bundle_bytes,
     registry_hash_for_route,
@@ -62,6 +64,7 @@ _EVALUATION_FOCUS_ENTITY_TYPES = frozenset(
     {"BlindCaseManifest", "TransformedVariantManifest"}
 )
 _PHASE3_NATIVE_ROUTE_IDS = V3_NATIVE_ROUTE_IDS
+_PHASE4_NATIVE_ROUTE_IDS = V4_NATIVE_ROUTE_IDS
 
 
 class ContextCompilationError(PolicyError):
@@ -1303,6 +1306,112 @@ _PHASE3_PACKET_KINDS: Mapping[str, str] = {
     "record.human_effort": "human_effort_reporter",
 }
 
+_PHASE4_VISIBLE_ENTITY_TYPES: Mapping[str, frozenset[str]] = {
+    "map.obligation_predicate": frozenset(
+        {
+            "AssumptionMap",
+            "AssuranceBundle",
+            "ClaimGraph",
+            "FormalModel",
+            "ProofObligation",
+        }
+    ),
+    "audit.obligation_predicate": frozenset(
+        {
+            "AssumptionMap",
+            "AssuranceBundle",
+            "ClaimGraph",
+            "FormalModel",
+            "ObligationPredicateContract",
+            "ProofObligation",
+        }
+    ),
+    "resolve.profile_stack": frozenset(
+        {
+            "AssuranceBundle",
+            "PaperIR",
+            "PredicateMappingAudit",
+            "ReaderPath",
+            "ResolvedProfileManifest",
+            "ValidatedArgumentPackage",
+        }
+    ),
+    "diagnose.reader_problem": frozenset(
+        {
+            "ManuscriptUnit",
+            "PaperIR",
+            "ReaderPath",
+            "ResolvedProfileStack",
+            "ResultContractSet",
+            "ReviewClosure",
+            "ReviewFinding",
+            "ReviewRecord",
+            "RevisionBrief",
+        }
+    ),
+    "retrieve.craft_moves": frozenset(
+        {
+            "PaperIR",
+            "ReaderPath",
+            "ReaderProblemDiagnosis",
+            "ResolvedProfileStack",
+            "ResultContractSet",
+        }
+    ),
+    "compose.profiled_manuscript_unit": frozenset(
+        {
+            "AssuranceBundle",
+            "CraftSelectionManifest",
+            "ManuscriptUnit",
+            "PaperIR",
+            "ReaderPath",
+            "ReaderProblemDiagnosis",
+            "ResolvedProfileManifest",
+            "ResolvedProfileStack",
+            "ResultContractSet",
+            "ReviewClosure",
+            "RevisionBrief",
+            "ValidatedArgumentPackage",
+        }
+    ),
+    "review.craft_realization": frozenset(
+        {
+            "CraftSelectionManifest",
+            "ManuscriptUnit",
+            "PaperIR",
+            "ReaderPath",
+            "ReaderProblemDiagnosis",
+            "ResolvedProfileStack",
+            "ResultContractSet",
+            "ReviewClosure",
+            "ReviewRecord",
+        }
+    ),
+    "close.profile_craft_review": frozenset(
+        {
+            "CraftRealizationAssessment",
+            "CraftSelectionManifest",
+            "ManuscriptUnit",
+            "PredicateMappingAudit",
+            "ProfileCraftClosure",
+            "ReaderProblemDiagnosis",
+            "ResolvedProfileStack",
+            "ReviewClosure",
+        }
+    ),
+}
+
+_PHASE4_PACKET_KINDS: Mapping[str, str] = {
+    "map.obligation_predicate": "obligation_predicate_mapper",
+    "audit.obligation_predicate": "obligation_predicate_auditor",
+    "resolve.profile_stack": "profile_resolver",
+    "diagnose.reader_problem": "reader_problem_diagnostician",
+    "retrieve.craft_moves": "functional_craft_retriever",
+    "compose.profiled_manuscript_unit": "profiled_canonical_writer",
+    "review.craft_realization": "craft_realization_critic",
+    "close.profile_craft_review": "profile_craft_closure",
+}
+
 _ROLE_CONSTRAINTS: Mapping[str, tuple[str, ...]] = {
     "independent_rederivation": (
         "Derive from the formal statement, model, assumptions, and obligations only.",
@@ -1341,6 +1450,39 @@ _ROLE_CONSTRAINTS: Mapping[str, tuple[str, ...]] = {
     ),
     "human_effort_reporter": (
         "Record active human time and semantic edit categories without estimation.",
+    ),
+    "obligation_predicate_mapper": (
+        "Map every quantified domain, assumption, conclusion, and boundary clause explicitly.",
+        "A runnable predicate does not certify semantic equivalence or theorem truth.",
+    ),
+    "obligation_predicate_auditor": (
+        "Audit independently from the mapper and replay every registered negative mutant.",
+        "Reject vacuous, constant-true, narrowed-domain, or weakened encodings.",
+    ),
+    "profile_resolver": (
+        "Apply the universal floor and exact human target decisions before any soft overlay.",
+        "Reject and record target directives that alter science, discovery, scope, or voice.",
+    ),
+    "reader_problem_diagnostician": (
+        "Identify one exact failed reader update and its available semantic inputs.",
+        "Route unresolved science upstream instead of treating it as an exposition defect.",
+    ),
+    "functional_craft_retriever": (
+        "Select by reader function and semantic inputs, with matched and contrast evidence.",
+        "Exclude empirical templates, raw anchor prose, phrase banks, and holdouts.",
+    ),
+    "profiled_canonical_writer": (
+        "Use the project economics and one canonical voice, never an anchor's wording.",
+        "Preserve exact scope, assumptions, boundaries, and evidentiary roles.",
+        "Realize only the selected functional moves for the diagnosed reader update.",
+    ),
+    "craft_realization_critic": (
+        "Test whether the selected reader function was realized without rewriting the unit.",
+        "Do not reward visible templates, journal tone, abstraction, or theorem density.",
+    ),
+    "profile_craft_closure": (
+        "Apply every PROFILE-CRAFT-READY check noncompensatorily to exact current evidence.",
+        "Do not infer publication quality, legal compliance, or causal improvement.",
     ),
 }
 
@@ -1570,6 +1712,502 @@ def _phase3_context_inputs(
     return entities, tuple(full_artifacts), role_packet
 
 
+def _phase4_payload(entity: EntityVersion) -> BaseModel:
+    """Parse one exact Phase 4 input without widening older namespaces."""
+
+    from .profile_craft import (
+        is_packed_profile_craft_entity,
+        parse_profile_craft_entity,
+    )
+
+    if is_packed_profile_craft_entity(entity):
+        return parse_profile_craft_entity(entity)
+    return _phase3_payload(entity)
+
+
+def _phase4_role_content(
+    payload: BaseModel,
+    *,
+    packet_kind: str,
+    predicate_receipt: BaseModel | None = None,
+) -> object:
+    """Return the narrow provider-facing projection for a Phase 4 payload.
+
+    Project manifests retain exact IDs and hashes, while a writer receives
+    only active profile directives, the diagnosed reader update, and selected
+    copyright-safe functional moves.  In particular, no source card, anchor
+    locator, full corpus, or phrase material enters this projection.
+    """
+
+    from . import profile_craft as pc
+    from .authoring import AssuranceBundle
+
+    if isinstance(payload, AssuranceBundle) and predicate_receipt is not None:
+        obligation_ref = getattr(predicate_receipt, "obligation_ref", None)
+        return {
+            "headline_claim_id": payload.headline_claim_id,
+            "relevant_proof_audits": tuple(
+                _strip_role_internal(item.model_dump(mode="json"))
+                for item in payload.proof_audits
+                if item.obligation_ref == obligation_ref
+            ),
+            "selected_tool_receipt": _strip_role_internal(
+                predicate_receipt.model_dump(mode="json")
+            ),
+            "unresolved_issues": tuple(
+                _strip_role_internal(item.model_dump(mode="json"))
+                for item in payload.unresolved_issues
+            ),
+        }
+
+    if isinstance(payload, pc.ResolvedProfileStack):
+        if packet_kind == "profile_resolver":
+            return _strip_role_internal(payload.model_dump(mode="json"))
+        active = tuple(
+            {
+                "source_layer_kind": item.source_layer_kind,
+                "statement": item.directive.statement,
+                "strength": item.directive.strength,
+                "effect_scope": item.directive.effect_scope,
+                "directive_kind": item.directive.directive_kind,
+                "acceptance_criterion": {
+                    "criterion_id": item.directive.acceptance_criterion.criterion_id,
+                    "required_assertion_roles": (
+                        item.directive.acceptance_criterion.required_assertion_roles
+                    ),
+                    "required_review_signals": (
+                        item.directive.acceptance_criterion.required_review_signals
+                    ),
+                },
+                "non_applicability": item.directive.non_applicability,
+            }
+            for item in payload.directive_resolutions
+            if item.outcome == "active"
+        )
+        rejected = tuple(
+            {
+                "source_layer_kind": item.source_layer_kind,
+                "directive_kind": item.directive.directive_kind,
+                "conflict_key": item.directive.conflict_key,
+                "effect_scope": item.directive.effect_scope,
+                "strength": item.directive.strength,
+                "rejection_reason": item.rejection_reason,
+            }
+            for item in payload.directive_resolutions
+            if item.outcome == "rejected"
+        )
+        return {
+            "selected_layers": tuple(
+                {
+                    "layer_kind": item.layer_kind,
+                    "selection_key": item.selection_key,
+                    "source_status": item.source_status,
+                }
+                for item in payload.selected_layers
+            ),
+            "active_directives": active,
+            "rejected_conflicts": rejected,
+        }
+    if isinstance(payload, pc.ReaderProblemDiagnosis):
+        return {
+            "affected_sections": payload.affected_section_ids,
+            "affected_section_roles": payload.affected_section_roles,
+            "reader_problem": payload.reader_problem_key,
+            "diagnostic_categories": payload.diagnostic_categories,
+            "causal_class": payload.causal_class,
+            "required_updates": payload.required_resolution_ids,
+            "resolution_requirements": tuple(
+                {
+                    "requirement_id": item.requirement_id,
+                    "action": item.action,
+                    "affected_assertion_ids": item.affected_assertion_ids,
+                    "affected_section_ids": item.affected_section_ids,
+                    "required_semantic_input_ids": (
+                        item.required_semantic_input_ids
+                    ),
+                }
+                for item in payload.resolution_requirements
+            ),
+            "observed_problem": payload.observed_problem,
+            "required_semantic_inputs": payload.required_semantic_input_ids,
+            "semantic_input_bindings": tuple(
+                {
+                    "input_id": item.input_id,
+                    "source_kind": item.source_kind,
+                    "availability": item.availability,
+                    "explanation": item.explanation,
+                }
+                for item in payload.semantic_input_bindings
+            ),
+            "upstream_science_status": payload.upstream_science_status,
+            "craft_eligible": payload.craft_eligible,
+            "upstream_repair_route": payload.upstream_repair_route,
+        }
+    if isinstance(payload, pc.CraftSelectionManifest):
+        selected_moves = []
+        for candidate in payload.candidates:
+            if not candidate.selected:
+                continue
+            move = candidate.move
+            selected_moves.append(
+                {
+                    "functional_name": move.functional_name,
+                    "reader_problem": move.reader_problem_key,
+                    "function": move.function_key,
+                    "trigger_conditions": move.trigger_conditions,
+                    "required_semantic_inputs": move.required_semantic_inputs,
+                    "supported_repair_actions": move.supported_repair_actions,
+                    "intended_reader_update": move.intended_reader_update,
+                    "typical_placements": move.typical_placements,
+                    "eligible_section_roles": move.eligible_section_roles,
+                    "compatible_causal_classes": move.compatible_causal_classes,
+                    "valid_variants": move.valid_variants,
+                    "failure_modes": move.failure_modes,
+                    "non_applicability": move.non_applicability,
+                    "covered_requirement_ids": candidate.covered_requirement_ids,
+                }
+            )
+        return {
+            "selection_strategy": payload.selection_strategy,
+            "outcome": payload.outcome,
+            "diagnosed_reader_problem": payload.diagnosed_reader_problem_key,
+            "diagnosed_required_updates": payload.diagnosed_required_resolution_ids,
+            "selected_functional_moves": tuple(selected_moves),
+        }
+    if isinstance(payload, pc.CraftRealizationAssessment):
+        return {
+            "primary_audience": payload.primary_audience,
+            "required_directive_ids": payload.required_directive_ids,
+            "directive_acceptance_checks": tuple(
+                {
+                    "directive_id": item.directive_id,
+                    "criterion_id": item.criterion_id,
+                    "required_assertion_roles": item.required_assertion_roles,
+                    "realized_assertion_roles": item.realized_assertion_roles,
+                    "required_review_signals": item.required_review_signals,
+                    "observed_review_signals": item.observed_review_signals,
+                    "outcome": item.outcome,
+                    "explanation": item.explanation,
+                }
+                for item in payload.directive_acceptance_checks
+            ),
+            "required_resolution_ids": payload.required_resolution_ids,
+            "resolution_requirement_checks": tuple(
+                {
+                    "requirement_id": item.requirement_id,
+                    "repair_action": item.repair_action,
+                    "affected_assertion_ids": item.affected_assertion_ids,
+                    "affected_section_ids": item.affected_section_ids,
+                    "required_semantic_input_ids": (
+                        item.required_semantic_input_ids
+                    ),
+                    "realized_semantic_input_ids": (
+                        item.realized_semantic_input_ids
+                    ),
+                    "outcome": item.outcome,
+                    "explanation": item.explanation,
+                }
+                for item in payload.resolution_requirement_checks
+            ),
+            "target_reader_outcome": {
+                "primary_audience": payload.target_reader_outcome.primary_audience,
+                "benchmark_delta_reconstructible": (
+                    payload.target_reader_outcome.benchmark_delta_reconstructible
+                ),
+                "operative_force_reconstructible": (
+                    payload.target_reader_outcome.operative_force_reconstructible
+                ),
+                "boundary_reconstructible": (
+                    payload.target_reader_outcome.boundary_reconstructible
+                ),
+                "nearby_case_predictable": (
+                    payload.target_reader_outcome.nearby_case_predictable
+                ),
+                "outcome": payload.target_reader_outcome.outcome,
+                "explanation": payload.target_reader_outcome.explanation,
+            },
+            "move_realizations": tuple(
+                {
+                    "realized_semantic_input_ids": (
+                        item.realized_semantic_input_ids
+                    ),
+                    "realized_semantic_source_count": len(
+                        item.realized_semantic_source_refs
+                    ),
+                    "realized_function": item.realized_function,
+                    "intended_reader_update_delivered": (
+                        item.intended_reader_update_delivered
+                    ),
+                    "formal_fidelity_preserved": item.formal_fidelity_preserved,
+                    "explanation": item.explanation,
+                }
+                for item in payload.move_realizations
+            ),
+            "formal_fidelity_outcome": payload.formal_fidelity_outcome,
+            "phrase_leak_audit_outcome": payload.phrase_leak_audit_outcome,
+            "named_voice_imitation_outcome": payload.named_voice_imitation_outcome,
+            "empirical_template_contamination_outcome": (
+                payload.empirical_template_contamination_outcome
+            ),
+            "outcome": payload.outcome,
+        }
+    return _strip_role_internal(payload.model_dump(mode="json"))
+
+
+def _phase4_predicate_receipt(
+    parsed: tuple[tuple[EntityVersion, BaseModel], ...],
+) -> BaseModel:
+    """Select the one receipt bound to the exact focused proof obligation.
+
+    An assurance bundle can contain evidence for many obligations.  Predicate
+    mapping and audit packets must never inherit those unrelated artifacts.  A
+    mapping request without one unambiguous receipt is therefore rejected; an
+    audit may use its contract's code/predicate binding to disambiguate two
+    harness families for the same obligation.
+    """
+
+    from .authoring import AssuranceBundle
+    from .profile_craft import ObligationPredicateContract
+    from .theory import ProofObligation
+
+    obligations = tuple(
+        (entity, payload)
+        for entity, payload in parsed
+        if isinstance(payload, ProofObligation)
+    )
+    assurances = tuple(
+        payload for _, payload in parsed if isinstance(payload, AssuranceBundle)
+    )
+    contracts = tuple(
+        payload
+        for _, payload in parsed
+        if isinstance(payload, ObligationPredicateContract)
+    )
+    if len(obligations) != 1 or len(assurances) != 1:
+        raise ContextCompilationError(
+            "predicate context requires exactly one ProofObligation and one AssuranceBundle"
+        )
+    obligation_entity, _ = obligations[0]
+    obligation_ref = EntityVersionRef(
+        entity_id=obligation_entity.entity_id,
+        version=obligation_entity.version,
+    )
+    candidates = tuple(
+        item
+        for item in assurances[0].tool_receipts
+        if item.obligation_ref == obligation_ref
+    )
+    if len(contracts) > 1:
+        raise ContextCompilationError(
+            "predicate audit context requires exactly one mapping contract"
+        )
+    if len(contracts) == 1:
+        from .codec import object_digest
+
+        contract = contracts[0]
+        candidates = tuple(
+            item
+            for item in candidates
+            if item.receipt_id == contract.receipt_id
+            and object_digest(item) == contract.receipt_hash
+            and item.code_ref == contract.code_ref
+            and contract.predicate_artifact_ref == item.input_ref
+        )
+    if len(candidates) != 1:
+        raise ContextCompilationError(
+            "predicate context requires one unambiguous ToolHarnessReceipt for the focused obligation"
+        )
+    return candidates[0]
+
+
+def _phase4_artifact_refs(
+    route_id: str, parsed: tuple[tuple[EntityVersion, BaseModel], ...]
+) -> tuple[ArtifactDependencyRef, ...]:
+    from .authoring import ManuscriptUnit, RevisionBrief
+    from .profile_craft import (
+        CraftRealizationAssessment,
+        ObligationPredicateContract,
+    )
+
+    selected: dict[tuple[str, int], ArtifactDependencyRef] = {}
+
+    def add(reference: ArtifactDependencyRef) -> None:
+        key = (reference.artifact_id, reference.version)
+        prior = selected.get(key)
+        if prior is not None and prior.content_hash != reference.content_hash:
+            raise ContextCompilationError(
+                "Phase 4 context repeats an artifact version with conflicting hashes"
+            )
+        selected[key] = reference
+
+    if route_id in {
+        "map.obligation_predicate",
+        "audit.obligation_predicate",
+    }:
+        receipt = _phase4_predicate_receipt(parsed)
+        for field_name in (
+            "code_ref",
+            "input_ref",
+            "output_ref",
+            "receipt_ref",
+            "certificate_ref",
+            "witness_ref",
+        ):
+            reference = getattr(receipt, field_name)
+            if reference is not None:
+                add(reference)
+        for _, payload in parsed:
+            if isinstance(payload, ObligationPredicateContract):
+                for reference in _walk_artifact_refs(payload):
+                    add(reference)
+
+    for _, payload in parsed:
+        if isinstance(payload, ManuscriptUnit) and route_id in {
+            "diagnose.reader_problem",
+            "compose.profiled_manuscript_unit",
+            "review.craft_realization",
+            "close.profile_craft_review",
+        }:
+            add(payload.manuscript_artifact_ref)
+        # The diagnostician may inspect the exact brief attachment.  The writer
+        # receives only the typed, identity-stripped RevisionBrief projection:
+        # arbitrary brief bytes may contain reviewer/source identity metadata.
+        if isinstance(payload, RevisionBrief) and route_id == "diagnose.reader_problem":
+            add(payload.brief_artifact_ref)
+        if isinstance(payload, CraftRealizationAssessment) and route_id == "close.profile_craft_review":
+            add(payload.phrase_leak_audit_ref)
+    return tuple(selected[key] for key in sorted(selected))
+
+
+def _phase4_context_inputs(
+    snapshot: Snapshot,
+    *,
+    route: RouteSpecV4,
+    actor: Actor,
+    focus_entity_ids: tuple[str, ...],
+    layout: StoreLayout | None,
+    clearance: PrivacyLabel,
+    grants: frozenset[str],
+    purpose: str,
+) -> tuple[
+    dict[tuple[str, int], EntityVersion],
+    tuple[dict[str, Any], ...],
+    dict[str, Any],
+]:
+    if layout is None:
+        raise ContextCompilationError(
+            "Phase 4 role context compilation requires the canonical StoreLayout"
+        )
+    visible_types = _PHASE4_VISIBLE_ENTITY_TYPES.get(route.route_id)
+    packet_kind = _PHASE4_PACKET_KINDS.get(route.route_id)
+    if visible_types is None or packet_kind is None:
+        raise ContextCompilationError(f"unknown Phase 4 role route: {route.route_id}")
+    current = _current_entities(snapshot)
+    by_id = {entity.entity_id: entity for entity in current.values()}
+    entities: dict[tuple[str, int], EntityVersion] = {}
+    parsed: list[tuple[EntityVersion, BaseModel]] = []
+    for entity_id in focus_entity_ids:
+        entity = by_id.get(entity_id)
+        if entity is None:
+            raise ContextCompilationError(
+                f"Phase 4 focus entity is not current: {entity_id}"
+            )
+        if entity.entity_type not in visible_types:
+            continue
+        if not _entity_accessible(
+            entity, clearance=clearance, grants=grants, purpose=purpose
+        ):
+            raise ContextAccessError(
+                f"Phase 4 focus entity is not readable: {entity.entity_id}@{entity.version}"
+            )
+        payload = _phase4_payload(entity)
+        entities[_entity_key(entity)] = entity
+        parsed.append((entity, payload))
+    if not parsed:
+        raise ContextCompilationError("Phase 4 role context selected no visible exact input")
+
+    predicate_receipt: BaseModel | None = None
+    if route.route_id in {
+        "map.obligation_predicate",
+        "audit.obligation_predicate",
+    }:
+        predicate_receipt = _phase4_predicate_receipt(tuple(parsed))
+    artifact_refs = _phase4_artifact_refs(route.route_id, tuple(parsed))
+    artifact_index = {
+        (item.artifact_id, item.version): item for item in snapshot.artifacts
+    }
+    from .runtime.objects import ObjectStore
+
+    store = ObjectStore(layout)
+    full_artifacts: list[dict[str, Any]] = []
+    role_artifacts: list[dict[str, Any]] = []
+    for reference in artifact_refs:
+        registration = artifact_index.get((reference.artifact_id, reference.version))
+        if registration is None or registration.content_hash != reference.content_hash:
+            raise ContextCompilationError(
+                f"Phase 4 artifact is unresolved or hash-mismatched: "
+                f"{reference.artifact_id}@{reference.version}"
+            )
+        if not _privacy_record_accessible(
+            registration,
+            clearance=clearance,
+            grants=grants,
+            purpose=purpose,
+        ):
+            raise ContextAccessError(
+                f"Phase 4 artifact is not readable: "
+                f"{registration.artifact_id}@{registration.version}"
+            )
+        data = store.read_bytes("artifacts", registration.content_hash, verify=True)
+        if len(data) != registration.byte_size:
+            raise ContextCompilationError("Phase 4 artifact byte_size mismatch")
+        encoded = base64.b64encode(data).decode("ascii")
+        full_artifacts.append(
+            {
+                "registration": registration.model_dump(mode="json"),
+                "content_encoding": "base64",
+                "content_base64": encoded,
+            }
+        )
+        role_artifacts.append(
+            {
+                "logical_name": registration.logical_name,
+                "media_type": registration.media_type,
+                "content_encoding": "base64",
+                "content_base64": encoded,
+            }
+        )
+
+    semantic_inputs = tuple(
+        {
+            "kind": entity.entity_type,
+            "content": _phase4_role_content(
+                payload,
+                packet_kind=packet_kind,
+                predicate_receipt=predicate_receipt,
+            ),
+        }
+        for entity, payload in parsed
+    )
+    role_packet = {
+        "packet_schema": "econ-theorist/role-packet/v1",
+        "packet_kind": packet_kind,
+        "actor_kind": actor.kind,
+        "constraints": _ROLE_CONSTRAINTS[packet_kind],
+        "semantic_inputs": semantic_inputs,
+        "artifacts": tuple(role_artifacts),
+    }
+    if route.route_id == "resolve.profile_stack":
+        from .profile_craft_policy import profile_catalog_role_resource
+
+        role_packet["static_resources"] = (profile_catalog_role_resource(),)
+    elif route.route_id == "retrieve.craft_moves":
+        from .profile_craft_policy import craft_corpus_role_resource
+
+        role_packet["static_resources"] = (craft_corpus_role_resource(),)
+    return entities, tuple(full_artifacts), role_packet
+
+
 def _payload(
     snapshot: Snapshot,
     *,
@@ -1587,6 +2225,7 @@ def _payload(
     evaluation_artifacts: tuple[dict[str, Any], ...] = (),
     evaluation_decisions: tuple[Decision, ...] = (),
     phase3_role_packet: Mapping[str, Any] | None = None,
+    phase4_role_packet: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     selected_ids = frozenset(entity.entity_id for entity in entities.values())
     relevant_decisions = (
@@ -1779,6 +2418,17 @@ def _payload(
                 "phase3_role_packet": dict(phase3_role_packet),
             }
         )
+    if phase4_role_packet is not None:
+        payload.update(
+            {
+                "phase4_selector": {
+                    "mode": "exact_profile_craft_role_packet.v1",
+                    "provider_must_receive_role_packet_only": True,
+                    "raw_anchor_material_allowed": False,
+                },
+                "phase4_role_packet": dict(phase4_role_packet),
+            }
+        )
     return payload
 
 
@@ -1812,6 +2462,52 @@ def compile_context(
         raise ContextCompilationError("focus entity IDs must be unique")
     grants = frozenset(grants_tuple)
     focus = tuple(sorted(focus_tuple))
+
+    if isinstance(route, RouteSpecV4) and route.route_id in _PHASE4_NATIVE_ROUTE_IDS:
+        exact_entities, phase4_artifacts, role_packet = _phase4_context_inputs(
+            snapshot,
+            route=route,
+            actor=actor,
+            focus_entity_ids=focus,
+            layout=layout,
+            clearance=privacy_clearance,
+            grants=grants,
+            purpose=purpose,
+        )
+        payload = _payload(
+            snapshot,
+            route=route,
+            purpose=purpose,
+            focus_entity_ids=focus,
+            budget_units=budget_units,
+            entities=exact_entities,
+            relations={},
+            decisions=snapshot.decisions,
+            omissions=(),
+            clearance=privacy_clearance,
+            grants=grants,
+            phase4_role_packet=role_packet,
+        )
+        payload["phase4_artifacts"] = phase4_artifacts
+        encoded = canonical_json_bytes(payload)
+        used_units = units_for_bytes(encoded)
+        if used_units > budget_units:
+            raise ContextBudgetError(
+                f"required exact Phase 4 role context needs {used_units} "
+                f"{TOKENIZER_ID} units; budget is {budget_units}"
+            )
+        selected_refs = tuple(
+            EntityVersionRef(entity_id=entity.entity_id, version=entity.version)
+            for entity in sorted(exact_entities.values(), key=_entity_key)
+        )
+        return CompiledContext(
+            payload=payload,
+            encoded=encoded,
+            context_hash=sha256_digest(encoded),
+            selected_entity_refs=selected_refs,
+            omissions=(),
+            used_units=used_units,
+        )
 
     if isinstance(route, RouteSpecV3) and route.route_id in _PHASE3_NATIVE_ROUTE_IDS:
         exact_entities, phase3_artifacts, role_packet = _phase3_context_inputs(

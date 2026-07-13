@@ -877,6 +877,8 @@ class Phase3GoldRuntimeChainTests(Phase2GoldRuntimeChainTests):
         generation: int,
         ready: bool,
         created_at: str,
+        economic_ready: bool | None = None,
+        cold_ready: bool | None = None,
     ) -> tuple[EntityVersion, EntityVersion | None]:
         unit_payload = a.parse_authoring_entity(unit)
         paper_payload = a.parse_authoring_entity(paper)
@@ -900,8 +902,10 @@ class Phase3GoldRuntimeChainTests(Phase2GoldRuntimeChainTests):
             "scope_and_assumptions": True,
             "bounded_evidentiary_language": True,
             "formal_fidelity": True,
-            "economic_explanation": ready,
-            "cold_reader_transfer": ready,
+            "economic_explanation": (
+                ready if economic_ready is None else economic_ready
+            ),
+            "cold_reader_transfer": ready if cold_ready is None else cold_ready,
             "reader_dag_and_terminology": True,
             "no_governance_or_probe_leakage": True,
             "canonical_integration": True,

@@ -26,6 +26,7 @@ where = ["src"]
   "routes/registry.v1.json",
   "routes/registry.v2.json",
   "routes/registry.v3.json",
+  "routes/registry.v4.json",
 ]
 "share/econ-theorist/routes/instructions" = [
   "routes/instructions/frame.question_and_benchmarks.v1.txt",
@@ -57,4 +58,24 @@ where = ["src"]
   "routes/instructions/record.human_effort.v3.txt",
   "routes/instructions/review.manuscript_unit.v3.txt",
   "routes/instructions/verify.independent_rederivation.v3.txt",
+  "routes/instructions/map.obligation_predicate.v4.txt",
+  "routes/instructions/audit.obligation_predicate.v4.txt",
+  "routes/instructions/resolve.profile_stack.v4.txt",
+  "routes/instructions/diagnose.reader_problem.v4.txt",
+  "routes/instructions/retrieve.craft_moves.v4.txt",
+  "routes/instructions/compose.profiled_manuscript_unit.v4.txt",
+  "routes/instructions/review.craft_realization.v4.txt",
+  "routes/instructions/close.profile_craft_review.v4.txt",
+]
+"share/econ-theorist/profiles" = [
+  "profiles/catalog.v1.json",
+]
+"share/econ-theorist/craft" = [
+  "craft/corpus.v1.json",
+]
+"share/econ-theorist/craft/evidence" = [
+  "craft/evidence/kamenica_gentzkow_2011.metadata.json",
+  "craft/evidence/varian_1997_model_building.metadata.json",
+  "craft/evidence/synthetic_formal_first_contrast.md",
+  "craft/evidence/synthetic_empirical_decoy.md",
 ]

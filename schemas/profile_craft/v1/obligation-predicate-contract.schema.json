@@ -1,0 +1,504 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "PredicateClauseMapping": {
+      "additionalProperties": false,
+      "properties": {
+        "clause_kind": {
+          "enum": [
+            "domain",
+            "quantifier",
+            "assumption",
+            "antecedent",
+            "conclusion",
+            "boundary"
+          ],
+          "title": "Clause Kind",
+          "type": "string"
+        },
+        "explanation": {
+          "minLength": 24,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "obligation_clause_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Obligation Clause Id",
+          "type": "string"
+        },
+        "predicate_fragment_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Predicate Fragment Hash",
+          "type": "string"
+        },
+        "predicate_json_pointers": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Predicate Json Pointers",
+          "type": "array"
+        },
+        "relation": {
+          "enum": [
+            "exact",
+            "partial",
+            "omitted",
+            "narrowed",
+            "broadened"
+          ],
+          "title": "Relation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "obligation_clause_id",
+        "clause_kind",
+        "relation",
+        "predicate_json_pointers",
+        "predicate_fragment_hash",
+        "explanation"
+      ],
+      "title": "PredicateClauseMapping",
+      "type": "object"
+    },
+    "PredicateMutationTest": {
+      "additionalProperties": false,
+      "properties": {
+        "detected": {
+          "title": "Detected",
+          "type": "boolean"
+        },
+        "expected_to_fail": {
+          "const": true,
+          "default": true,
+          "title": "Expected To Fail",
+          "type": "boolean"
+        },
+        "mutated_predicate_ref": {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        "mutation_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Mutation Id",
+          "type": "string"
+        },
+        "mutation_kind": {
+          "enum": [
+            "empty_domain",
+            "constant_true",
+            "conclusion_flip",
+            "domain_narrowing",
+            "omitted_assumption",
+            "quantifier_flip",
+            "extra_assumption",
+            "boundary_omission",
+            "loose_tolerance"
+          ],
+          "title": "Mutation Kind",
+          "type": "string"
+        },
+        "result_ref": {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        }
+      },
+      "required": [
+        "mutation_id",
+        "mutation_kind",
+        "mutated_predicate_ref",
+        "result_ref",
+        "detected"
+      ],
+      "title": "PredicateMutationTest",
+      "type": "object"
+    },
+    "PredicateWitness": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_ref": {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        "case_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Case Id",
+          "type": "string"
+        },
+        "explanation": {
+          "minLength": 24,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "witness_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Witness Id",
+          "type": "string"
+        },
+        "witness_kind": {
+          "enum": [
+            "domain_member",
+            "antecedent_satisfying",
+            "predicate_falsifying",
+            "boundary"
+          ],
+          "title": "Witness Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "witness_id",
+        "case_id",
+        "witness_kind",
+        "artifact_ref",
+        "explanation"
+      ],
+      "title": "PredicateWitness",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/profile-craft/v1/obligation-predicate-contract.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "added_assumption_ids": {
+      "default": [],
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Added Assumption Ids",
+      "type": "array"
+    },
+    "antecedent_satisfiable": {
+      "title": "Antecedent Satisfiable",
+      "type": "boolean"
+    },
+    "assumption_map_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Assumption Map Hash",
+      "type": "string"
+    },
+    "assumption_map_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "assurance_bundle_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Assurance Bundle Hash",
+      "type": "string"
+    },
+    "assurance_bundle_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "claim_graph_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Claim Graph Hash",
+      "type": "string"
+    },
+    "claim_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "clause_mappings": {
+      "items": {
+        "$ref": "#/$defs/PredicateClauseMapping"
+      },
+      "minItems": 1,
+      "title": "Clause Mappings",
+      "type": "array"
+    },
+    "code_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "contract_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Contract Id",
+      "type": "string"
+    },
+    "coverage_class": {
+      "enum": [
+        "exact",
+        "partial",
+        "diagnostic",
+        "falsification_only"
+      ],
+      "title": "Coverage Class",
+      "type": "string"
+    },
+    "domain_relation": {
+      "enum": [
+        "equal",
+        "narrowed",
+        "broadened",
+        "incomparable"
+      ],
+      "title": "Domain Relation",
+      "type": "string"
+    },
+    "execution_scope": {
+      "enum": [
+        "symbolic_exact",
+        "exhaustive_finite",
+        "finite_sample",
+        "diagnostic"
+      ],
+      "title": "Execution Scope",
+      "type": "string"
+    },
+    "formal_model_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Formal Model Hash",
+      "type": "string"
+    },
+    "formal_model_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "limitations": {
+      "minLength": 24,
+      "title": "Limitations",
+      "type": "string"
+    },
+    "mapped_assumption_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Mapped Assumption Ids",
+      "type": "array"
+    },
+    "mapped_at": {
+      "minLength": 1,
+      "title": "Mapped At",
+      "type": "string"
+    },
+    "mapper": {
+      "$ref": "#/$defs/Actor"
+    },
+    "mutation_tests": {
+      "items": {
+        "$ref": "#/$defs/PredicateMutationTest"
+      },
+      "minItems": 1,
+      "title": "Mutation Tests",
+      "type": "array"
+    },
+    "obligation_assumption_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Obligation Assumption Ids",
+      "type": "array"
+    },
+    "obligation_clause_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Obligation Clause Ids",
+      "type": "array"
+    },
+    "obligation_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Obligation Hash",
+      "type": "string"
+    },
+    "obligation_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "predicate_artifact_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "predicate_can_return_false": {
+      "title": "Predicate Can Return False",
+      "type": "boolean"
+    },
+    "quantifier_relation": {
+      "enum": [
+        "equivalent",
+        "weakened",
+        "strengthened",
+        "incomparable"
+      ],
+      "title": "Quantifier Relation",
+      "type": "string"
+    },
+    "receipt_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Receipt Hash",
+      "type": "string"
+    },
+    "receipt_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Receipt Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "tolerance_evidence_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        {
+          "$ref": "#/$defs/DecisionVersionRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tolerance Evidence Ref"
+    },
+    "tolerance_policy": {
+      "enum": [
+        "exact",
+        "obligation_authorized",
+        "loose"
+      ],
+      "title": "Tolerance Policy",
+      "type": "string"
+    },
+    "witnesses": {
+      "items": {
+        "$ref": "#/$defs/PredicateWitness"
+      },
+      "minItems": 1,
+      "title": "Witnesses",
+      "type": "array"
+    }
+  },
+  "required": [
+    "contract_id",
+    "assurance_bundle_ref",
+    "assurance_bundle_hash",
+    "receipt_id",
+    "receipt_hash",
+    "obligation_ref",
+    "obligation_hash",
+    "claim_graph_ref",
+    "claim_graph_hash",
+    "formal_model_ref",
+    "formal_model_hash",
+    "assumption_map_ref",
+    "assumption_map_hash",
+    "obligation_clause_ids",
+    "obligation_assumption_ids",
+    "mapped_assumption_ids",
+    "clause_mappings",
+    "domain_relation",
+    "quantifier_relation",
+    "execution_scope",
+    "coverage_class",
+    "predicate_artifact_ref",
+    "code_ref",
+    "antecedent_satisfiable",
+    "predicate_can_return_false",
+    "witnesses",
+    "mutation_tests",
+    "tolerance_policy",
+    "mapper",
+    "mapped_at",
+    "limitations"
+  ],
+  "title": "ObligationPredicateContract",
+  "type": "object"
+}

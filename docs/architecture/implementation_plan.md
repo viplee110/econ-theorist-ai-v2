@@ -1,10 +1,10 @@
 # Implementation plan
 
-Status: Architecture v0.1 with accepted Phase 1 and Phase 2 implementations and an implemented Phase 3 vertical slice
+Status: Architecture v0.1 with accepted Phase 1--3 implementations and Phase 4 profile-and-craft implementation/semantic acceptance complete on `agent/phase4-profile-craft`; independent final adversarial branch review completed with no blocking findings, while commit and merge remain pending
 
-Current implementation milestone: Phase 3 — assurance and authoring vertical slice
+Current implementation milestone: Phase 4 — profile and craft vertical slice accepted by an uninterrupted full-genesis Phase 1→4 gold run, current focused/full non-gold checks, independent adversarial branch review, and segmented-store historical verification; next commit and merge without weakening the accepted predicates
 
-Next capability phase: Phase 4 — profile and craft system
+Next capability phase after Phase 4 acceptance: Phase 5 — controlled multi-agent lanes and optional adapters
 
 ## 1. Delivery strategy
 
@@ -214,24 +214,133 @@ acceptance probability at Econometrica, a Top-5, or a leading field journal.
 
 ## 6. Phase 4 — profile and craft system
 
-Implementation status: not yet implemented. Phase 3 supplies only the minimal
-universal authoring profile needed to exercise its vertical slice.
+Implementation status: implementation and semantic acceptance complete on
+`agent/phase4-profile-craft` against the frozen Phase 3 base. An independent
+final adversarial branch review found no blocking findings; commit and merge
+remain pending. `registry.v4.json`
+is an additive catalog: every v3 route
+entry and instruction remains byte-identical, and only these eight native v4
+routes are added:
 
-Add the versioned universal quality floor, theory modes, result archetypes,
-fields, audience breadth, and soft venue overlays. Populate a theory-only craft
-library with structural cards derived from permitted sources. Harden the typed
-semantic mapping from each natural-language proof obligation to the exact
-executable harness predicate, including checks against vacuous, narrowed, or
-otherwise non-equivalent encodings; Phase 3 currently guarantees only integrity
-and reproducibility of the declared predicate.
+```text
+map.obligation_predicate
+audit.obligation_predicate
+resolve.profile_stack
+diagnose.reader_problem
+retrieve.craft_moves
+compose.profiled_manuscript_unit
+review.craft_realization
+close.profile_craft_review
+```
+
+The implementation adds a separate strict `profile_craft` payload/schema
+namespace instead of changing Phase 1--3 objects. A pinned 18-card seed profile
+catalog supplies the universal floor, two theory modes, three ambition levels,
+six result archetypes, one provisional information-economics field calibration,
+and five audiences; no named-journal overlay is active. A separately pinned
+theory-only seed craft corpus supplies one supported functional move, two
+independent matched source lineages, one project-owned contrast, and an
+explicitly excluded empirical decoy. The writer sees only release-cleared
+internal functional projections and project semantic inputs, not source prose, anchor
+identity, corpus search results, or hidden reader probes and keys.
+
+Obligation mapping now exactly reruns the Phase 3 executable receipt and binds
+real immutable clause locators, witness, mutated-predicate, and mutation-result
+bytes. Clause locators are JSON Pointers into the executed predicate. Five
+mandatory downgrade controls are evaluated: empty domain, constant true,
+conclusion flip, and domain narrowing execute as recomputations; omitted
+assumption retains the same predicate bytes and becomes a typed unexecutable
+control with
+`execution_outcome=unencoded_assumption_not_executable` when the bare predicate
+has no assumption component. That outcome forces a warning and prohibits exact
+approval; it is not reported as an executed or killed mutant. The independent
+audit has two non-upgrading approval lanes: `approved_exact` is available only
+to exact coverage with the stronger nonvacuity evidence, while
+`approved_partial` may approve an honestly bounded partial or diagnostic
+mapping only after all executable controls are replayed and every unexecutable
+control is represented by a typed limitation. Those limitations are preserved
+in the audit and projected into Phase 4 closure; partial never becomes exact by
+omission downstream. In the real gold chain, the inherited finite
+counterexample scan therefore stays `diagnostic`/`approved_partial`; it is never
+promoted to a universal proof.
+
+The target profile binds four exact current human L2 Decisions together with
+the exact current Phase 3 package, Paper IR, reader path, and base profile
+manifest. Foreign, superseded, or stale bindings invalidate the stack and all
+dependent Phase 4 work. A fresh target-specific review fails the same canonical
+Phase 3 `ManuscriptUnit` v2 and produces a blocked `ReviewClosure` plus exact
+`RevisionBrief`. The diagnosis must project the exact blocking findings and
+instructions, typed causal class, affected section roles, resolution
+requirements, and four non-interchangeable semantic source selectors. Only a
+local-exposition failure enters retrieval. The function-first selector then
+computes a deterministic minimum-cardinality set cover v2 over those exact
+requirements, with a stable lexical tie break. The seed release currently
+contains one move with exact typed extractors for `mechanism_explanation` and
+`comparative_statics_threshold`; it is not evidence of broad archetype or
+craft coverage.
+The same canonical-writer identity then supersedes that same entity from v2 to
+v3; there is no `ProfiledManuscriptUnit` payload or alternative manuscript
+entity. Exact `governs`, `realizes`, `depends_on`, and historical trace relations
+carry the Phase 4 lineage. Fresh Phase 3 formal, economic, and cold-reader
+reviews, an internal derived-field n-gram phrase scan, and an independent
+`CraftRealizationAssessment` must then verify every requirement's assertion,
+section, and ordered Phase 4 semantic-source realization; every active directive's observable
+acceptance criterion; and target-reader recovery of the benchmark, operative
+force, boundary, and nearby case. Only a deterministic noncompensatory
+`ProfileCraftClosure` may then establish `PROFILE-CRAFT-READY-0.1`. Phrase,
+source-access, and voice controls are bounded internal safeguards, not
+plagiarism, copyright, authorship, or legal certification.
+
+Phase 4 semantic-input evidence is recorded independently on each
+`CraftMoveRealization` as an ordered input-to-`SemanticFacetRef` projection.
+It is deliberately not inserted into the frozen Phase 3
+`ConsequentialSpan.source_fields`: those fields continue to contain only the
+exact Phase 3 scientific projection sources allowed by the v1--v3 authoring
+contract.
+
+The current writer is a deterministic fixture. The checkpoint therefore tests
+the real ObjectStore, transaction, validation, failure-repair, review,
+freshness, and replay protocol without calling an external LLM, autonomously
+generating a paper, or establishing writing quality, Top-5 performance, legal
+compliance, or reduced human effort. Current acceptance evidence is an
+independent final adversarial branch review with no blocking findings; 82/82
+focused Phase 4 non-gold checks; 403 complete non-gold tests passing with five
+skips; an uninterrupted full-genesis Phase 1→4 gold test passing in 6156.901
+seconds; five exporter checks; `doctor` with
+`required_ok=true`; registry v4's 34 routes at
+`d81276ed9b7482768840ef89980d6cbb81361ca2ff84acee3ab7da7bb67eae7e`;
+compilation of 98 Python files; and `git diff --check`.
+
+The uninterrupted final-code gold test is the primary end-to-end acceptance
+evidence. A fresh segmented real-ObjectStore continuation remains additional
+historical-integrity evidence: it ran from frozen Phase 3 head
+`dfb04a...` through run 52. Independent verification at final head `88b656...`
+found 87 entities, all 67 historical entities byte-identical, all 182
+historical transaction/artifact/provenance files unchanged,
+`replay_at(final.head) == replay(final)`, exactly one current ready
+`ProfileCraftClosure`, and diagnostic coverage with all eight typed limitations
+preserved. The 6156.901-second uninterrupted runtime leaves full-history replay
+as a performance target, but the comprehensive acceptance command now passes.
+Performance work must preserve the validation predicate.
 
 ### Exit criteria
 
 - discovery behavior does not change merely because a venue overlay changes;
 - a target change affects only justified authoring/review dependencies;
 - craft retrieval uses matched and contrast anchors by function, not prose similarity;
-- source provenance, access status, confidence, non-applicability, and copyright-safe derived notes are recorded;
+- source provenance, access status, confidence, non-applicability, and internal copyright-risk controls are recorded without claiming legal certification;
 - empirical-paper templates cannot enter the core retrieval set.
+
+The accepted checkpoint additionally verifies real operational-artifact
+bytes, exact receipt replay, JSON Pointer clause binding, witness execution, four
+executable downgrade recomputations plus the typed omitted-assumption
+unexecutable control, writer/retriever context isolation, frozen catalog
+compatibility, historical replay, bounded partial-audit semantics, and
+target-only selective invalidation. Together with the fresh segmented chain and
+current regression evidence above, these establish the revised repair loop.
+They do not establish complete-paper coverage, a broad production craft corpus,
+held-out quality superiority, lower human effort, external-LLM performance, or
+publication readiness.
 
 ## 7. Phase 5 — controlled multi-agent and optional adapters
 
@@ -254,6 +363,11 @@ Add only after the single-agent vertical slice is stable:
 - optional adapters cannot weaken privacy, authority, or evidence semantics;
 - the core remains usable without any optional adapter.
 
+Phase 5 scales controlled search, criticism, and optional tooling. It does not
+replace the canonical writer with prose assembly by committee, turn agreement
+into proof, or establish Top-5 quality. Phase 4's single-writer repair and
+noncompensatory closure remain the floor.
+
 ## 8. Phase 6 — comparative evaluation and hardening
 
 Run the preregistered compiler-only, end-to-end discovery, and revision comparisons on held-out theory cases under the full protocol in `evaluation.md`. Perform v2 ablations for the economic argument representation, reader contracts, mechanism/result packets, dependency invalidation, and craft retrieval.
@@ -264,6 +378,12 @@ generator can actually recover high-quality theory more efficiently than the
 frozen baselines.
 
 Before any external-release route is enabled, add and verify replayable private backups plus redacted public bundles/receipts on a different machine path. The Phase 1 walking candidate performs no export or external action.
+
+Phase 6 is the first phase allowed to support comparative claims such as
+"better than v1," "less human intervention," or "closer to frontier-journal
+standards." It still does not submit a paper automatically. A real external
+communication or submission remains an L3 human-authorized action after the
+evaluation, backup, privacy, and release predicates pass.
 
 ### Exit criteria
 

@@ -2,9 +2,37 @@
 
 ## Current phase
 
-This repository is implementing the Phase 1 walking substrate against Architecture v0.1. Keep changes inside the executable contract in `docs/implementation/phase1_contract.md` until the Phase 1 branch is reviewed. Do not add Phase 2 discovery prompts, model-provider calls, manuscript generation, multi-agent orchestration, databases, or UI scaffolding to solve a Phase 1 problem.
+Phases 1--3 are accepted on `main`. This repository is implementing the first
+Phase 4 profile-and-craft vertical slice against
+`docs/implementation/phase4_contract.md`. The slice adds a separate
+`profile_craft` payload namespace, a frozen-superset `registry.v4.json`, typed
+obligation-to-predicate audits, deterministic profile resolution, reader-problem
+diagnosis, function-first craft retrieval, canonical-writer repair, and a
+Phase-4-specific closure layered on the existing Phase 3 authoring closure.
 
-The canonical Phase 1 verification command is `python -m unittest discover -s tests -v`; committed JSON schemas must also match `python scripts/export_schemas.py --check`.
+Do not modify Phase 1--3 payload meanings, committed schemas, registry or
+instruction bytes, frozen fixtures, or historical selector behavior to solve a
+Phase 4 problem. The ordinary v3 design, compose, review, reader-probe, and
+closure routes remain intact. Phase 4 adds only the native routes named in its
+contract. Static profile/craft catalogs stay separate from project manifests,
+and selected craft moves belong in `CraftSelectionManifest`, never in the
+resolved profile stack.
+
+The canonical repository verification command remains
+`python -m unittest discover -s tests -v`. Schema and pinned-resource
+verification requires all five accepted exporters:
+
+```text
+python scripts/export_schemas.py --check
+python scripts/export_theory_schemas.py --check
+python scripts/export_authoring_schemas.py --check
+python scripts/export_profile_craft_schemas.py --check
+python scripts/export_profile_craft_resources.py --check
+```
+
+Run `etai doctor` and the focused Phase 4 contract, downgrade,
+selective-invalidation, context-isolation, replay, and gold tests before
+requesting review. Report optional-tool skips separately; they are not passes.
 
 ## Scope
 

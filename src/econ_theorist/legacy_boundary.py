@@ -4,7 +4,8 @@ Historical v1 transactions remain replayable under their exact catalog.  A
 new v1 run, however, must not create or mutate packed Phase 2 payloads, register
 a blind candidate lock, or operate after Phase 2 material has entered the
 project. Phase 2 likewise becomes replay-only after authoring material enters
-the project. Those writes must use the active catalog's scientific contracts.
+the project, and Phase 3 becomes replay-only after profile/craft material
+enters it. Those writes must use the active catalog's exact contracts.
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ from .models import (
 )
 from .theory import is_packed_theory_entity
 from .authoring import is_packed_authoring_entity
+from .profile_craft import is_packed_profile_craft_entity
 
 
 CANDIDATE_LOCK_MEDIA_TYPE = (
@@ -73,11 +75,31 @@ def transaction_introduces_phase3_material(transaction: Transaction) -> bool:
     )
 
 
+def snapshot_has_phase4_material(snapshot: Snapshot) -> bool:
+    """Whether reachable history contains a packed Phase 4 payload."""
+
+    return any(
+        is_packed_profile_craft_entity(item) for item in snapshot.entity_versions
+    )
+
+
+def transaction_introduces_phase4_material(transaction: Transaction) -> bool:
+    """Whether a candidate attempts a Phase 4 write under an older catalog."""
+
+    return any(
+        isinstance(operation, (CreateEntityOp, SupersedeEntityOp))
+        and is_packed_profile_craft_entity(operation.entity)
+        for operation in transaction.operations
+    )
+
+
 __all__ = [
     "CANDIDATE_LOCK_MEDIA_TYPE",
     "is_candidate_lock",
     "snapshot_has_phase2_material",
     "snapshot_has_phase3_material",
+    "snapshot_has_phase4_material",
     "transaction_introduces_phase2_material",
     "transaction_introduces_phase3_material",
+    "transaction_introduces_phase4_material",
 ]

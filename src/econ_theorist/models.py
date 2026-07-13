@@ -1067,8 +1067,35 @@ class RouteRegistryV3(StrictModel):
         return self
 
 
-RouteSpecLike: TypeAlias = RouteSpec | RouteSpecV2 | RouteSpecV3
-RouteRegistryLike: TypeAlias = RouteRegistry | RouteRegistryV2 | RouteRegistryV3
+class RouteSpecV4(RouteSpecV3):
+    """Catalog-bound additive Phase 4 route contract.
+
+    Registry v4 preserves every v3 route byte-for-byte at its historical
+    route version and adds only profile/craft routes at version 4.  Keeping a
+    distinct model lets manifests bind the active catalog without rewriting
+    any frozen v1-v3 policy object.
+    """
+
+    route_version: Literal[2, 3, 4] = 2
+
+
+class RouteRegistryV4(StrictModel):
+    registry_version: Literal[4] = 4
+    aliases: dict[StableId, StableId] = Field(default_factory=dict)
+    routes: Annotated[tuple[RouteSpecV4, ...], Field(min_length=1)]
+
+    @model_validator(mode="after")
+    def _route_ids_are_unique(self) -> "RouteRegistryV4":
+        route_ids = [route.route_id for route in self.routes]
+        if len(set(route_ids)) != len(route_ids):
+            raise ValueError("route registry contains duplicate exact IDs")
+        return self
+
+
+RouteSpecLike: TypeAlias = RouteSpec | RouteSpecV2 | RouteSpecV3 | RouteSpecV4
+RouteRegistryLike: TypeAlias = (
+    RouteRegistry | RouteRegistryV2 | RouteRegistryV3 | RouteRegistryV4
+)
 
 
 class StaleDependencyEvidence(StrictModel):

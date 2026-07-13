@@ -1,0 +1,588 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "ProjectPayloadBinding": {
+      "additionalProperties": false,
+      "description": "Content-addressed binding to one exact project entity payload.",
+      "properties": {
+        "entity_ref": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "payload_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Payload Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_ref",
+        "payload_hash"
+      ],
+      "title": "ProjectPayloadBinding",
+      "type": "object"
+    },
+    "ResolutionRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "correct_formal_expression",
+            "narrow_scope",
+            "restore_assumption",
+            "repair_explanation",
+            "replace_example_or_witness",
+            "repair_reader_path",
+            "stabilize_terminology",
+            "add_boundary",
+            "remove_governance_language",
+            "request_human_decision"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "affected_assertion_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Affected Assertion Ids",
+          "type": "array"
+        },
+        "affected_section_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Affected Section Ids",
+          "type": "array"
+        },
+        "finding_ref": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "instruction_source": {
+          "$ref": "#/$defs/SemanticFacetRef"
+        },
+        "required_semantic_input_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Semantic Input Ids",
+          "type": "array"
+        },
+        "requirement_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Requirement Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "requirement_id",
+        "finding_ref",
+        "action",
+        "instruction_source",
+        "affected_section_ids",
+        "required_semantic_input_ids"
+      ],
+      "title": "ResolutionRequirement",
+      "type": "object"
+    },
+    "SemanticFacetRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "facet": {
+          "enum": [
+            "formal",
+            "economic_interpretation",
+            "literature_novelty",
+            "terminology_presentation",
+            "authority"
+          ],
+          "title": "Facet",
+          "type": "string"
+        },
+        "field_path": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field Path"
+        },
+        "semantic_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Semantic Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version",
+        "facet",
+        "semantic_hash"
+      ],
+      "title": "SemanticFacetRef",
+      "type": "object"
+    },
+    "SemanticInputBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "availability": {
+          "enum": [
+            "available",
+            "missing",
+            "scientifically_unresolved"
+          ],
+          "title": "Availability",
+          "type": "string"
+        },
+        "explanation": {
+          "minLength": 24,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "input_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Input Id",
+          "type": "string"
+        },
+        "source_kind": {
+          "enum": [
+            "paper_ir",
+            "reader_path",
+            "result_contract",
+            "manuscript_unit",
+            "review_finding",
+            "human_decision",
+            "derived_diagnosis"
+          ],
+          "title": "Source Kind",
+          "type": "string"
+        },
+        "source_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SemanticFacetRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "input_id",
+        "source_kind",
+        "availability",
+        "explanation"
+      ],
+      "title": "SemanticInputBinding",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/profile-craft/v1/reader-problem-diagnosis.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "affected_section_ids": {
+      "default": [],
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Affected Section Ids",
+      "type": "array"
+    },
+    "affected_section_roles": {
+      "items": {
+        "enum": [
+          "introduction",
+          "model_motivation",
+          "model",
+          "result_block",
+          "extension",
+          "conclusion",
+          "appendix"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Affected Section Roles",
+      "type": "array"
+    },
+    "blocked_review_closure_binding": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ProjectPayloadBinding"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "causal_class": {
+      "enum": [
+        "initial_planning",
+        "local_exposition",
+        "reader_path_design",
+        "target_profile_mismatch",
+        "scientific_content"
+      ],
+      "title": "Causal Class",
+      "type": "string"
+    },
+    "craft_eligible": {
+      "title": "Craft Eligible",
+      "type": "boolean"
+    },
+    "diagnosed_at": {
+      "minLength": 1,
+      "title": "Diagnosed At",
+      "type": "string"
+    },
+    "diagnosed_by": {
+      "$ref": "#/$defs/Actor"
+    },
+    "diagnosis_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Diagnosis Id",
+      "type": "string"
+    },
+    "diagnostic_categories": {
+      "default": [],
+      "items": {
+        "enum": [
+          "formal_fidelity",
+          "scope",
+          "assumption",
+          "proof_language",
+          "economic_explanation",
+          "example_or_witness",
+          "reader_prerequisite",
+          "terminology",
+          "boundary",
+          "transfer",
+          "governance_leakage",
+          "other"
+        ],
+        "type": "string"
+      },
+      "title": "Diagnostic Categories",
+      "type": "array"
+    },
+    "diagnostic_finding_bindings": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ProjectPayloadBinding"
+      },
+      "title": "Diagnostic Finding Bindings",
+      "type": "array"
+    },
+    "diagnostic_review_bindings": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ProjectPayloadBinding"
+      },
+      "title": "Diagnostic Review Bindings",
+      "type": "array"
+    },
+    "evidence_refs": {
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          {
+            "$ref": "#/$defs/ArtifactDependencyRef"
+          },
+          {
+            "$ref": "#/$defs/DecisionVersionRef"
+          }
+        ]
+      },
+      "minItems": 1,
+      "title": "Evidence Refs",
+      "type": "array"
+    },
+    "inspected_manuscript_unit_binding": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ProjectPayloadBinding"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "no_prior_manuscript_unit_reason": {
+      "anyOf": [
+        {
+          "const": "initial_composition_not_yet_realized",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "No Prior Manuscript Unit Reason"
+    },
+    "no_prior_review_reason": {
+      "anyOf": [
+        {
+          "const": "initial_composition_not_yet_reviewable",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "No Prior Review Reason"
+    },
+    "observed_problem": {
+      "minLength": 24,
+      "title": "Observed Problem",
+      "type": "string"
+    },
+    "paper_ir_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Paper Ir Hash",
+      "type": "string"
+    },
+    "paper_ir_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "profile_stack_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Profile Stack Hash",
+      "type": "string"
+    },
+    "profile_stack_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "reader_path_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Reader Path Hash",
+      "type": "string"
+    },
+    "reader_path_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "reader_problem_key": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Reader Problem Key",
+      "type": "string"
+    },
+    "required_resolution_ids": {
+      "default": [],
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Required Resolution Ids",
+      "type": "array"
+    },
+    "required_semantic_input_ids": {
+      "default": [],
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Required Semantic Input Ids",
+      "type": "array"
+    },
+    "resolution_requirements": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ResolutionRequirement"
+      },
+      "title": "Resolution Requirements",
+      "type": "array"
+    },
+    "result_contract_set_binding": {
+      "$ref": "#/$defs/ProjectPayloadBinding"
+    },
+    "revision_brief_binding": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ProjectPayloadBinding"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "semantic_input_bindings": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/SemanticInputBinding"
+      },
+      "title": "Semantic Input Bindings",
+      "type": "array"
+    },
+    "upstream_repair_route": {
+      "anyOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Upstream Repair Route"
+    },
+    "upstream_science_status": {
+      "enum": [
+        "resolved",
+        "unresolved"
+      ],
+      "title": "Upstream Science Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "diagnosis_id",
+    "paper_ir_ref",
+    "paper_ir_hash",
+    "reader_path_ref",
+    "reader_path_hash",
+    "profile_stack_ref",
+    "profile_stack_hash",
+    "result_contract_set_binding",
+    "affected_section_roles",
+    "causal_class",
+    "reader_problem_key",
+    "observed_problem",
+    "upstream_science_status",
+    "craft_eligible",
+    "evidence_refs",
+    "diagnosed_by",
+    "diagnosed_at"
+  ],
+  "title": "ReaderProblemDiagnosis",
+  "type": "object"
+}

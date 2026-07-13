@@ -1,0 +1,877 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "CraftMove": {
+      "additionalProperties": false,
+      "properties": {
+        "compatible_archetypes": {
+          "items": {
+            "enum": [
+              "mechanism_explanation",
+              "comparative_statics_threshold",
+              "characterization_bounds",
+              "robustness_invariance_equivalence",
+              "design_implementation_impossibility",
+              "concept_representation_foundation"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Compatible Archetypes",
+          "type": "array"
+        },
+        "compatible_audiences": {
+          "items": {
+            "enum": [
+              "general_economist",
+              "economic_theorist",
+              "field_specialist",
+              "theory_and_field_bridge",
+              "policy_or_design_literate_economist"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Compatible Audiences",
+          "type": "array"
+        },
+        "compatible_causal_classes": {
+          "items": {
+            "enum": [
+              "initial_planning",
+              "local_exposition",
+              "reader_path_design",
+              "target_profile_mismatch",
+              "scientific_content"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Compatible Causal Classes",
+          "type": "array"
+        },
+        "compatible_field_keys": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Compatible Field Keys",
+          "type": "array"
+        },
+        "compatible_theory_modes": {
+          "items": {
+            "enum": [
+              "pure_theory",
+              "applied_theory"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Compatible Theory Modes",
+          "type": "array"
+        },
+        "confidence": {
+          "enum": [
+            "provisional",
+            "supported",
+            "strong"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        },
+        "contrast_refs": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/StaticResourceRef"
+          },
+          "title": "Contrast Refs",
+          "type": "array"
+        },
+        "created_at": {
+          "minLength": 1,
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "$ref": "#/$defs/Actor"
+        },
+        "eligible_section_roles": {
+          "items": {
+            "enum": [
+              "introduction",
+              "model_motivation",
+              "model",
+              "result_block",
+              "extension",
+              "conclusion",
+              "appendix"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Eligible Section Roles",
+          "type": "array"
+        },
+        "failure_modes": {
+          "items": {
+            "minLength": 24,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Failure Modes",
+          "type": "array"
+        },
+        "function_key": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Function Key",
+          "type": "string"
+        },
+        "functional_name": {
+          "minLength": 1,
+          "title": "Functional Name",
+          "type": "string"
+        },
+        "intended_reader_update": {
+          "minLength": 24,
+          "title": "Intended Reader Update",
+          "type": "string"
+        },
+        "matched_anchor_refs": {
+          "items": {
+            "$ref": "#/$defs/StaticResourceRef"
+          },
+          "minItems": 1,
+          "title": "Matched Anchor Refs",
+          "type": "array"
+        },
+        "move_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Move Id",
+          "type": "string"
+        },
+        "non_applicability": {
+          "items": {
+            "minLength": 24,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Non Applicability",
+          "type": "array"
+        },
+        "non_applicability_rule_ids": {
+          "items": {
+            "enum": [
+              "upstream_science_unresolved",
+              "nonlocal_causal_class",
+              "semantic_inputs_unavailable",
+              "theory_mode_incompatible",
+              "field_incompatible",
+              "section_role_incompatible"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Non Applicability Rule Ids",
+          "type": "array"
+        },
+        "reader_problem_key": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Reader Problem Key",
+          "type": "string"
+        },
+        "required_semantic_inputs": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Semantic Inputs",
+          "type": "array"
+        },
+        "resource_version": {
+          "minimum": 1,
+          "title": "Resource Version",
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "source_phrase_material_included": {
+          "const": false,
+          "default": false,
+          "title": "Source Phrase Material Included",
+          "type": "boolean"
+        },
+        "supported_repair_actions": {
+          "items": {
+            "enum": [
+              "correct_formal_expression",
+              "narrow_scope",
+              "restore_assumption",
+              "repair_explanation",
+              "replace_example_or_witness",
+              "repair_reader_path",
+              "stabilize_terminology",
+              "add_boundary",
+              "remove_governance_language",
+              "request_human_decision"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Supported Repair Actions",
+          "type": "array"
+        },
+        "trigger_conditions": {
+          "items": {
+            "minLength": 24,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Trigger Conditions",
+          "type": "array"
+        },
+        "typical_placements": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Typical Placements",
+          "type": "array"
+        },
+        "valid_variants": {
+          "items": {
+            "minLength": 24,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Valid Variants",
+          "type": "array"
+        },
+        "voice_policy": {
+          "const": "functional_properties_only",
+          "default": "functional_properties_only",
+          "title": "Voice Policy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "move_id",
+        "resource_version",
+        "functional_name",
+        "reader_problem_key",
+        "function_key",
+        "trigger_conditions",
+        "required_semantic_inputs",
+        "supported_repair_actions",
+        "intended_reader_update",
+        "typical_placements",
+        "valid_variants",
+        "failure_modes",
+        "compatible_archetypes",
+        "compatible_audiences",
+        "compatible_theory_modes",
+        "compatible_field_keys",
+        "eligible_section_roles",
+        "compatible_causal_classes",
+        "non_applicability_rule_ids",
+        "matched_anchor_refs",
+        "confidence",
+        "non_applicability",
+        "created_by",
+        "created_at"
+      ],
+      "title": "CraftMove",
+      "type": "object"
+    },
+    "CraftSourceCard": {
+      "additionalProperties": false,
+      "properties": {
+        "access_evidence_ref": {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        "access_status": {
+          "enum": [
+            "verified_public",
+            "verified_licensed",
+            "project_owned",
+            "restricted_private",
+            "unverified",
+            "revoked"
+          ],
+          "title": "Access Status",
+          "type": "string"
+        },
+        "access_verified_at": {
+          "minLength": 1,
+          "title": "Access Verified At",
+          "type": "string"
+        },
+        "author_lineage_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Author Lineage Ids",
+          "type": "array"
+        },
+        "citation": {
+          "minLength": 1,
+          "title": "Citation",
+          "type": "string"
+        },
+        "confidence": {
+          "enum": [
+            "provisional",
+            "supported",
+            "strong"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        },
+        "contains_reusable_prose": {
+          "const": false,
+          "default": false,
+          "title": "Contains Reusable Prose",
+          "type": "boolean"
+        },
+        "corpus_split": {
+          "enum": [
+            "anchor",
+            "contrast",
+            "development",
+            "evaluation_holdout",
+            "project_postmortem"
+          ],
+          "title": "Corpus Split",
+          "type": "string"
+        },
+        "derived_at": {
+          "minLength": 1,
+          "title": "Derived At",
+          "type": "string"
+        },
+        "derived_by": {
+          "$ref": "#/$defs/Actor"
+        },
+        "evidence_role": {
+          "enum": [
+            "matched_anchor",
+            "contrast",
+            "provisional"
+          ],
+          "title": "Evidence Role",
+          "type": "string"
+        },
+        "function_key": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Function Key",
+          "type": "string"
+        },
+        "functional_summary": {
+          "minLength": 24,
+          "title": "Functional Summary",
+          "type": "string"
+        },
+        "non_applicability": {
+          "items": {
+            "minLength": 24,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Non Applicability",
+          "type": "array"
+        },
+        "paper_family_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Paper Family Id",
+          "type": "string"
+        },
+        "paper_specific_nontransferable": {
+          "minLength": 24,
+          "title": "Paper Specific Nontransferable",
+          "type": "string"
+        },
+        "phrase_audit_ref": {
+          "$ref": "#/$defs/ArtifactDependencyRef"
+        },
+        "phrase_audit_status": {
+          "const": "passed",
+          "default": "passed",
+          "title": "Phrase Audit Status",
+          "type": "string"
+        },
+        "reader_problem_key": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Reader Problem Key",
+          "type": "string"
+        },
+        "research_mode": {
+          "enum": [
+            "pure_theory",
+            "applied_theory",
+            "theory_methodology",
+            "empirical",
+            "mixed_empirical"
+          ],
+          "title": "Research Mode",
+          "type": "string"
+        },
+        "resource_version": {
+          "minimum": 1,
+          "title": "Resource Version",
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "source_artifact_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArtifactDependencyRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source_card_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Source Card Id",
+          "type": "string"
+        },
+        "source_content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Source Content Hash",
+          "type": "string"
+        },
+        "source_locator": {
+          "minLength": 1,
+          "title": "Source Locator",
+          "type": "string"
+        },
+        "transferable_content": {
+          "minLength": 24,
+          "title": "Transferable Content",
+          "type": "string"
+        },
+        "writer_visibility": {
+          "const": "derived_card_only",
+          "default": "derived_card_only",
+          "title": "Writer Visibility",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_card_id",
+        "resource_version",
+        "citation",
+        "source_locator",
+        "source_content_hash",
+        "access_status",
+        "access_evidence_ref",
+        "access_verified_at",
+        "research_mode",
+        "evidence_role",
+        "corpus_split",
+        "paper_family_id",
+        "author_lineage_ids",
+        "reader_problem_key",
+        "function_key",
+        "functional_summary",
+        "transferable_content",
+        "paper_specific_nontransferable",
+        "confidence",
+        "non_applicability",
+        "phrase_audit_ref",
+        "derived_by",
+        "derived_at"
+      ],
+      "title": "CraftSourceCard",
+      "type": "object"
+    },
+    "ReaderProblemRule": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted_finding_categories": {
+          "items": {
+            "enum": [
+              "formal_fidelity",
+              "scope",
+              "assumption",
+              "proof_language",
+              "economic_explanation",
+              "example_or_witness",
+              "reader_prerequisite",
+              "terminology",
+              "boundary",
+              "transfer",
+              "governance_leakage",
+              "other"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Accepted Finding Categories",
+          "type": "array"
+        },
+        "accepted_repair_actions": {
+          "items": {
+            "enum": [
+              "correct_formal_expression",
+              "narrow_scope",
+              "restore_assumption",
+              "repair_explanation",
+              "replace_example_or_witness",
+              "repair_reader_path",
+              "stabilize_terminology",
+              "add_boundary",
+              "remove_governance_language",
+              "request_human_decision"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Accepted Repair Actions",
+          "type": "array"
+        },
+        "allowed_causal_classes": {
+          "items": {
+            "enum": [
+              "initial_planning",
+              "local_exposition",
+              "reader_path_design",
+              "target_profile_mismatch",
+              "scientific_content"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Allowed Causal Classes",
+          "type": "array"
+        },
+        "problem_key": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Problem Key",
+          "type": "string"
+        },
+        "required_semantic_input_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Semantic Input Ids",
+          "type": "array"
+        },
+        "semantic_input_source_rules": {
+          "items": {
+            "$ref": "#/$defs/SemanticInputSourceRule"
+          },
+          "minItems": 1,
+          "title": "Semantic Input Source Rules",
+          "type": "array"
+        }
+      },
+      "required": [
+        "problem_key",
+        "accepted_finding_categories",
+        "accepted_repair_actions",
+        "required_semantic_input_ids",
+        "semantic_input_source_rules",
+        "allowed_causal_classes"
+      ],
+      "title": "ReaderProblemRule",
+      "type": "object"
+    },
+    "SemanticInputSourceRule": {
+      "additionalProperties": false,
+      "description": "Typed, non-regex source contract for one semantic craft input.",
+      "properties": {
+        "input_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Input Id",
+          "type": "string"
+        },
+        "owner_facet": {
+          "enum": [
+            "formal",
+            "economic_interpretation",
+            "literature_novelty",
+            "terminology_presentation",
+            "authority"
+          ],
+          "title": "Owner Facet",
+          "type": "string"
+        },
+        "selector": {
+          "enum": [
+            "paper.narrative_spine.natural_benchmark",
+            "result_packet.archetype.operative_force",
+            "result_packet.archetype.affected_margin",
+            "result_packet.boundary"
+          ],
+          "title": "Selector",
+          "type": "string"
+        },
+        "source_kind": {
+          "enum": [
+            "paper_ir",
+            "result_contract"
+          ],
+          "title": "Source Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "input_id",
+        "source_kind",
+        "owner_facet",
+        "selector"
+      ],
+      "title": "SemanticInputSourceRule",
+      "type": "object"
+    },
+    "SourceAdmissionAudit": {
+      "additionalProperties": false,
+      "properties": {
+        "exclusion_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "empirical_or_mixed",
+                "unverified_or_revoked_access",
+                "evaluation_holdout",
+                "duplicate_lineage",
+                "copyright_audit_failed",
+                "not_applicable"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exclusion Reason"
+        },
+        "included_in_core": {
+          "title": "Included In Core",
+          "type": "boolean"
+        },
+        "source": {
+          "$ref": "#/$defs/CraftSourceCard"
+        }
+      },
+      "required": [
+        "source",
+        "included_in_core"
+      ],
+      "title": "SourceAdmissionAudit",
+      "type": "object"
+    },
+    "StaticResourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "resource_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Resource Id",
+          "type": "string"
+        },
+        "resource_kind": {
+          "enum": [
+            "profile_layer",
+            "profile_catalog",
+            "craft_source",
+            "craft_move",
+            "craft_corpus"
+          ],
+          "title": "Resource Kind",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "resource_kind",
+        "resource_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "StaticResourceRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/profile-craft/v1/craft-corpus-release.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "copyright_safe_derived_only": {
+      "const": true,
+      "default": true,
+      "title": "Copyright Safe Derived Only",
+      "type": "boolean"
+    },
+    "core_theory_only": {
+      "const": true,
+      "default": true,
+      "title": "Core Theory Only",
+      "type": "boolean"
+    },
+    "index_version": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Index Version",
+      "type": "string"
+    },
+    "moves": {
+      "items": {
+        "$ref": "#/$defs/CraftMove"
+      },
+      "minItems": 1,
+      "title": "Moves",
+      "type": "array"
+    },
+    "reader_problem_rules": {
+      "items": {
+        "$ref": "#/$defs/ReaderProblemRule"
+      },
+      "minItems": 1,
+      "title": "Reader Problem Rules",
+      "type": "array"
+    },
+    "release_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Release Id",
+      "type": "string"
+    },
+    "released_at": {
+      "minLength": 1,
+      "title": "Released At",
+      "type": "string"
+    },
+    "released_by": {
+      "$ref": "#/$defs/Actor"
+    },
+    "resource_version": {
+      "minimum": 1,
+      "title": "Resource Version",
+      "type": "integer"
+    },
+    "retriever_version": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Retriever Version",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source_admission_audits": {
+      "items": {
+        "$ref": "#/$defs/SourceAdmissionAudit"
+      },
+      "minItems": 1,
+      "title": "Source Admission Audits",
+      "type": "array"
+    },
+    "source_cards": {
+      "items": {
+        "$ref": "#/$defs/CraftSourceCard"
+      },
+      "minItems": 1,
+      "title": "Source Cards",
+      "type": "array"
+    },
+    "split_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Split Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "release_id",
+    "resource_version",
+    "split_id",
+    "source_admission_audits",
+    "source_cards",
+    "reader_problem_rules",
+    "moves",
+    "index_version",
+    "retriever_version",
+    "released_by",
+    "released_at"
+  ],
+  "title": "CraftCorpusRelease",
+  "type": "object"
+}

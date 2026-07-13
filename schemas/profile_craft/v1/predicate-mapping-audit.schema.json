@@ -1,0 +1,291 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "PredicateMappingFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "affected_clause_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Affected Clause Ids",
+          "type": "array"
+        },
+        "finding_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "limitation_kinds": {
+          "default": [],
+          "items": {
+            "enum": [
+              "nonexact_clause_mapping",
+              "domain_not_equal",
+              "quantifier_not_equivalent",
+              "assumption_mapping_nonexact",
+              "bounded_execution_scope",
+              "coverage_below_exact",
+              "loose_tolerance",
+              "nonvacuity_unverified",
+              "unexecutable_control"
+            ],
+            "type": "string"
+          },
+          "title": "Limitation Kinds",
+          "type": "array"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "summary": {
+          "minLength": 24,
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "finding_id",
+        "severity",
+        "summary"
+      ],
+      "title": "PredicateMappingFinding",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/profile-craft/v1/predicate-mapping-audit.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "antecedent_witness_verified": {
+      "title": "Antecedent Witness Verified",
+      "type": "boolean"
+    },
+    "audit_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Audit Id",
+      "type": "string"
+    },
+    "audited_at": {
+      "minLength": 1,
+      "title": "Audited At",
+      "type": "string"
+    },
+    "auditor": {
+      "$ref": "#/$defs/Actor"
+    },
+    "compiled_context_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Compiled Context Hash",
+      "type": "string"
+    },
+    "context_manifest_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Context Manifest Hash",
+      "type": "string"
+    },
+    "contract_coverage_class": {
+      "enum": [
+        "exact",
+        "partial",
+        "diagnostic",
+        "falsification_only"
+      ],
+      "title": "Contract Coverage Class",
+      "type": "string"
+    },
+    "contract_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Contract Hash",
+      "type": "string"
+    },
+    "contract_mapper": {
+      "$ref": "#/$defs/Actor"
+    },
+    "contract_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "domain_witness_verified": {
+      "title": "Domain Witness Verified",
+      "type": "boolean"
+    },
+    "falsifying_witness_verified": {
+      "title": "Falsifying Witness Verified",
+      "type": "boolean"
+    },
+    "findings": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/PredicateMappingFinding"
+      },
+      "title": "Findings",
+      "type": "array"
+    },
+    "mutation_executor": {
+      "$ref": "#/$defs/Actor"
+    },
+    "mutation_replay_passed": {
+      "title": "Mutation Replay Passed",
+      "type": "boolean"
+    },
+    "mutation_replay_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "registered_mutation_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Registered Mutation Ids",
+      "type": "array"
+    },
+    "replayed_mutation_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Replayed Mutation Ids",
+      "type": "array"
+    },
+    "route_run_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Route Run Hash",
+      "type": "string"
+    },
+    "route_run_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Route Run Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "unexecutable_mutation_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Unexecutable Mutation Ids",
+      "type": "array"
+    },
+    "verdict": {
+      "enum": [
+        "approved_exact",
+        "approved_partial",
+        "rejected"
+      ],
+      "title": "Verdict",
+      "type": "string"
+    }
+  },
+  "required": [
+    "audit_id",
+    "contract_ref",
+    "contract_hash",
+    "contract_coverage_class",
+    "contract_mapper",
+    "registered_mutation_ids",
+    "auditor",
+    "mutation_executor",
+    "mutation_replay_ref",
+    "route_run_id",
+    "route_run_hash",
+    "context_manifest_hash",
+    "compiled_context_hash",
+    "replayed_mutation_ids",
+    "mutation_replay_passed",
+    "unexecutable_mutation_ids",
+    "domain_witness_verified",
+    "antecedent_witness_verified",
+    "falsifying_witness_verified",
+    "verdict",
+    "audited_at"
+  ],
+  "title": "PredicateMappingAudit",
+  "type": "object"
+}

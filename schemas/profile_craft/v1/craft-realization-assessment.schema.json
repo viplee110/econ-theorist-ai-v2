@@ -1,0 +1,811 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "CraftMoveRealization": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "explanation": {
+          "minLength": 24,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "formal_fidelity_preserved": {
+          "title": "Formal Fidelity Preserved",
+          "type": "boolean"
+        },
+        "intended_reader_update_delivered": {
+          "title": "Intended Reader Update Delivered",
+          "type": "boolean"
+        },
+        "move_ref": {
+          "$ref": "#/$defs/StaticResourceRef"
+        },
+        "realized_assertion_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Realized Assertion Ids",
+          "type": "array"
+        },
+        "realized_function": {
+          "title": "Realized Function",
+          "type": "boolean"
+        },
+        "realized_semantic_input_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Realized Semantic Input Ids",
+          "type": "array"
+        },
+        "realized_semantic_source_refs": {
+          "items": {
+            "$ref": "#/$defs/SemanticFacetRef"
+          },
+          "minItems": 1,
+          "title": "Realized Semantic Source Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "move_ref",
+        "realized_assertion_ids",
+        "realized_semantic_input_ids",
+        "realized_semantic_source_refs",
+        "realized_function",
+        "intended_reader_update_delivered",
+        "formal_fidelity_preserved",
+        "evidence_refs",
+        "explanation"
+      ],
+      "title": "CraftMoveRealization",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "DirectiveAcceptanceCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "criterion_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Criterion Id",
+          "type": "string"
+        },
+        "directive_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Directive Id",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "explanation": {
+          "minLength": 24,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "observed_review_signals": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Observed Review Signals",
+          "type": "array"
+        },
+        "outcome": {
+          "enum": [
+            "pass",
+            "fail"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "realized_assertion_roles": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Realized Assertion Roles",
+          "type": "array"
+        },
+        "required_assertion_roles": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Required Assertion Roles",
+          "type": "array"
+        },
+        "required_review_signals": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Required Review Signals",
+          "type": "array"
+        }
+      },
+      "required": [
+        "directive_id",
+        "criterion_id",
+        "outcome",
+        "evidence_refs",
+        "explanation"
+      ],
+      "title": "DirectiveAcceptanceCheck",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "ResolutionRequirementCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "affected_assertion_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Affected Assertion Ids",
+          "type": "array"
+        },
+        "affected_section_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Affected Section Ids",
+          "type": "array"
+        },
+        "evidence_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "explanation": {
+          "minLength": 24,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "pass",
+            "fail"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "realized_semantic_input_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Realized Semantic Input Ids",
+          "type": "array"
+        },
+        "realizing_move_refs": {
+          "items": {
+            "$ref": "#/$defs/StaticResourceRef"
+          },
+          "minItems": 1,
+          "title": "Realizing Move Refs",
+          "type": "array"
+        },
+        "repair_action": {
+          "enum": [
+            "correct_formal_expression",
+            "narrow_scope",
+            "restore_assumption",
+            "repair_explanation",
+            "replace_example_or_witness",
+            "repair_reader_path",
+            "stabilize_terminology",
+            "add_boundary",
+            "remove_governance_language",
+            "request_human_decision"
+          ],
+          "title": "Repair Action",
+          "type": "string"
+        },
+        "required_semantic_input_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Semantic Input Ids",
+          "type": "array"
+        },
+        "requirement_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Requirement Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "requirement_id",
+        "repair_action",
+        "realizing_move_refs",
+        "affected_section_ids",
+        "required_semantic_input_ids",
+        "realized_semantic_input_ids",
+        "outcome",
+        "evidence_refs",
+        "explanation"
+      ],
+      "title": "ResolutionRequirementCheck",
+      "type": "object"
+    },
+    "SemanticFacetRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "facet": {
+          "enum": [
+            "formal",
+            "economic_interpretation",
+            "literature_novelty",
+            "terminology_presentation",
+            "authority"
+          ],
+          "title": "Facet",
+          "type": "string"
+        },
+        "field_path": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field Path"
+        },
+        "semantic_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Semantic Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version",
+        "facet",
+        "semantic_hash"
+      ],
+      "title": "SemanticFacetRef",
+      "type": "object"
+    },
+    "StaticResourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "resource_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Resource Id",
+          "type": "string"
+        },
+        "resource_kind": {
+          "enum": [
+            "profile_layer",
+            "profile_catalog",
+            "craft_source",
+            "craft_move",
+            "craft_corpus"
+          ],
+          "title": "Resource Kind",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "resource_kind",
+        "resource_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "StaticResourceRef",
+      "type": "object"
+    },
+    "TargetReaderOutcome": {
+      "additionalProperties": false,
+      "properties": {
+        "benchmark_delta_reconstructible": {
+          "title": "Benchmark Delta Reconstructible",
+          "type": "boolean"
+        },
+        "boundary_reconstructible": {
+          "title": "Boundary Reconstructible",
+          "type": "boolean"
+        },
+        "evidence_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "explanation": {
+          "minLength": 24,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "nearby_case_predictable": {
+          "title": "Nearby Case Predictable",
+          "type": "boolean"
+        },
+        "operative_force_reconstructible": {
+          "title": "Operative Force Reconstructible",
+          "type": "boolean"
+        },
+        "outcome": {
+          "enum": [
+            "pass",
+            "fail"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "primary_audience": {
+          "enum": [
+            "general_economist",
+            "economic_theorist",
+            "field_specialist",
+            "theory_and_field_bridge",
+            "policy_or_design_literate_economist"
+          ],
+          "title": "Primary Audience",
+          "type": "string"
+        }
+      },
+      "required": [
+        "primary_audience",
+        "benchmark_delta_reconstructible",
+        "operative_force_reconstructible",
+        "boundary_reconstructible",
+        "nearby_case_predictable",
+        "outcome",
+        "evidence_refs",
+        "explanation"
+      ],
+      "title": "TargetReaderOutcome",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/profile-craft/v1/craft-realization-assessment.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "assessed_at": {
+      "minLength": 1,
+      "title": "Assessed At",
+      "type": "string"
+    },
+    "assessment_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Assessment Id",
+      "type": "string"
+    },
+    "assessor": {
+      "$ref": "#/$defs/Actor"
+    },
+    "base_authoring_closure_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Base Authoring Closure Hash",
+      "type": "string"
+    },
+    "base_authoring_closure_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "cold_reader_review_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Cold Reader Review Hash",
+      "type": "string"
+    },
+    "cold_reader_review_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "directive_acceptance_checks": {
+      "items": {
+        "$ref": "#/$defs/DirectiveAcceptanceCheck"
+      },
+      "minItems": 1,
+      "title": "Directive Acceptance Checks",
+      "type": "array"
+    },
+    "economic_reader_review_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Economic Reader Review Hash",
+      "type": "string"
+    },
+    "economic_reader_review_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "empirical_template_contamination_outcome": {
+      "enum": [
+        "pass",
+        "fail"
+      ],
+      "title": "Empirical Template Contamination Outcome",
+      "type": "string"
+    },
+    "formal_fidelity_outcome": {
+      "enum": [
+        "pass",
+        "fail"
+      ],
+      "title": "Formal Fidelity Outcome",
+      "type": "string"
+    },
+    "formal_fidelity_review_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Formal Fidelity Review Hash",
+      "type": "string"
+    },
+    "formal_fidelity_review_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "manuscript_artifact_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "manuscript_unit_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Manuscript Unit Hash",
+      "type": "string"
+    },
+    "manuscript_unit_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "move_realizations": {
+      "items": {
+        "$ref": "#/$defs/CraftMoveRealization"
+      },
+      "minItems": 1,
+      "title": "Move Realizations",
+      "type": "array"
+    },
+    "named_voice_imitation_outcome": {
+      "enum": [
+        "pass",
+        "fail"
+      ],
+      "title": "Named Voice Imitation Outcome",
+      "type": "string"
+    },
+    "outcome": {
+      "enum": [
+        "pass",
+        "revise",
+        "reject"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "phrase_leak_audit_outcome": {
+      "enum": [
+        "pass",
+        "fail"
+      ],
+      "title": "Phrase Leak Audit Outcome",
+      "type": "string"
+    },
+    "phrase_leak_audit_ref": {
+      "$ref": "#/$defs/ArtifactDependencyRef"
+    },
+    "primary_audience": {
+      "enum": [
+        "general_economist",
+        "economic_theorist",
+        "field_specialist",
+        "theory_and_field_bridge",
+        "policy_or_design_literate_economist"
+      ],
+      "title": "Primary Audience",
+      "type": "string"
+    },
+    "profile_stack_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Profile Stack Hash",
+      "type": "string"
+    },
+    "profile_stack_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "reader_path_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Reader Path Hash",
+      "type": "string"
+    },
+    "reader_path_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "reader_problem_diagnosis_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Reader Problem Diagnosis Hash",
+      "type": "string"
+    },
+    "reader_problem_diagnosis_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "required_directive_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Required Directive Ids",
+      "type": "array"
+    },
+    "required_resolution_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Required Resolution Ids",
+      "type": "array"
+    },
+    "resolution_requirement_checks": {
+      "items": {
+        "$ref": "#/$defs/ResolutionRequirementCheck"
+      },
+      "minItems": 1,
+      "title": "Resolution Requirement Checks",
+      "type": "array"
+    },
+    "result_contract_set_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Result Contract Set Hash",
+      "type": "string"
+    },
+    "result_contract_set_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "selected_move_refs": {
+      "items": {
+        "$ref": "#/$defs/StaticResourceRef"
+      },
+      "minItems": 1,
+      "title": "Selected Move Refs",
+      "type": "array"
+    },
+    "selection_manifest_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Selection Manifest Hash",
+      "type": "string"
+    },
+    "selection_manifest_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "target_reader_outcome": {
+      "$ref": "#/$defs/TargetReaderOutcome"
+    },
+    "writer": {
+      "$ref": "#/$defs/Actor"
+    }
+  },
+  "required": [
+    "assessment_id",
+    "selection_manifest_ref",
+    "selection_manifest_hash",
+    "profile_stack_ref",
+    "profile_stack_hash",
+    "reader_problem_diagnosis_ref",
+    "reader_problem_diagnosis_hash",
+    "reader_path_ref",
+    "reader_path_hash",
+    "result_contract_set_ref",
+    "result_contract_set_hash",
+    "primary_audience",
+    "selected_move_refs",
+    "manuscript_unit_ref",
+    "manuscript_unit_hash",
+    "manuscript_artifact_ref",
+    "base_authoring_closure_ref",
+    "base_authoring_closure_hash",
+    "formal_fidelity_review_ref",
+    "formal_fidelity_review_hash",
+    "economic_reader_review_ref",
+    "economic_reader_review_hash",
+    "cold_reader_review_ref",
+    "cold_reader_review_hash",
+    "writer",
+    "assessor",
+    "move_realizations",
+    "required_directive_ids",
+    "directive_acceptance_checks",
+    "required_resolution_ids",
+    "resolution_requirement_checks",
+    "target_reader_outcome",
+    "formal_fidelity_outcome",
+    "phrase_leak_audit_outcome",
+    "phrase_leak_audit_ref",
+    "named_voice_imitation_outcome",
+    "empirical_template_contamination_outcome",
+    "outcome",
+    "assessed_at"
+  ],
+  "title": "CraftRealizationAssessment",
+  "type": "object"
+}
