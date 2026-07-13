@@ -36,6 +36,7 @@ from ..staging import (
     read_staged_transaction,
     stage_candidate,
 )
+from .egress import read_bound_work_packet
 from .models import (
     CandidateCompletionResultV1,
     DeliveryEnvelopeV1,
@@ -50,7 +51,6 @@ from .operational import (
     ProjectOperationalLayout,
     write_immutable_operational,
 )
-from .packets import WorkPacketBindingV1, read_work_packet
 
 
 CompletionAction = Literal["stage_only", "commit_staged", "stage_and_commit"]
@@ -480,6 +480,23 @@ def _read_candidate_source(path: str | Path) -> tuple[str, Transaction]:
     return sha256_digest(body), transaction
 
 
+def candidate_source_digest(
+    layout: StoreLayout,
+    packet: WorkPacketV1,
+    transaction_path: str | Path,
+) -> str:
+    """Return canonical Transaction identity for the exact packet output path."""
+
+    safe_path, _ = _validate_output_paths(
+        layout,
+        packet,
+        transaction_path,
+        artifacts=None,
+    )
+    digest, _ = _read_candidate_source(safe_path)
+    return digest
+
+
 def _artifact_digests(transaction: Transaction) -> tuple[str, ...]:
     return tuple(
         sorted(
@@ -531,23 +548,12 @@ def _read_delivery_binding(
     model: str,
     require_authorized: bool,
 ) -> tuple[WorkPacketV1, DeliveryEnvelopeV1, EgressPlanV1]:
-    packet = read_work_packet(operational, route_run_id, packet_hash)
-    binding_path = _run_root(operational, route_run_id) / "packet-binding.json"
     try:
-        binding_data = binding_path.read_bytes()
-        packet_binding = WorkPacketBindingV1.model_validate_json(
-            binding_data, strict=True
+        packet = read_bound_work_packet(
+            operational, route_run_id, packet_hash
         )
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, OperationalError) as exc:
         raise CompletionError("work packet binding is unavailable or invalid") from exc
-    if (
-        canonical_json_bytes(packet_binding) != binding_data
-        or packet_binding.route_run_id != route_run_id
-        or packet_binding.work_packet_hash != packet_hash
-        or packet_binding.navigation_candidate_digest
-        != packet.navigation_candidate_digest
-    ):
-        raise CompletionError("work packet is not the exact active run binding")
     store = _receipt_store(operational, route_run_id)
     try:
         envelope_data = store.read_bytes("envelopes", delivery_envelope_hash)
@@ -618,7 +624,7 @@ def _verify_delivery_started(
 ) -> None:
     # Use the egress module's chain validator; this is a read-only internal
     # boundary and avoids maintaining two subtly different ledger parsers.
-    from .egress import _events
+    from .egress import _automatic_delivery_subject, _events
 
     if plan.authorization_required:
         if envelope.egress_authorization_hash is None:
@@ -662,7 +668,7 @@ def _verify_delivery_started(
             )
         subject_id = matching_subjects[0]
     else:
-        subject_id = "local_" + sha256_digest(canonical_json_bytes(plan))[:48]
+        subject_id = _automatic_delivery_subject(plan)
     events = _events(operational, subject_id)
     starts = [
         event
@@ -1428,6 +1434,7 @@ __all__ = [
     "CompletionAction",
     "CompletionError",
     "HostTerminalStatus",
+    "candidate_source_digest",
     "complete_candidate",
     "record_host_finish",
 ]

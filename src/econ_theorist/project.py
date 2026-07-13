@@ -14,6 +14,7 @@ from .models import (
     CreateEntityOp,
     EntityVersion,
     FacetPayloads,
+    PrivacyLabel,
     ScientificStatus,
     Snapshot,
     Transaction,
@@ -81,6 +82,7 @@ def _genesis_transaction(
     created_at: str,
     transaction_id: str,
     route_run_id: str,
+    project_privacy: PrivacyLabel = "project_private",
 ) -> Transaction:
     actor = Actor(kind="human", actor_id=actor_id)
     entity = EntityVersion(
@@ -95,6 +97,7 @@ def _genesis_transaction(
             terminology_presentation={"project_name": name.strip()},
             authority={"scope": "economic_theory_only"},
         ),
+        privacy=project_privacy,
         created_at=created_at,
     )
     return Transaction(
@@ -106,6 +109,7 @@ def _genesis_transaction(
         actor=actor,
         intent="Initialize one theory-only project and canonical Project identity.",
         operations=(CreateEntityOp(entity=entity),),
+        privacy=project_privacy,
         created_at=created_at,
         parent_transaction_hash=None,
     )
@@ -180,6 +184,7 @@ def init_project(
     created_at: str | None = None,
     transaction_id: str | None = None,
     route_run_id: str | None = None,
+    project_privacy: PrivacyLabel = "project_private",
 ) -> Snapshot:
     """Idempotently create one human-owned theory project and genesis chain."""
 
@@ -200,6 +205,7 @@ def init_project(
         created_at=timestamp,
         transaction_id=transaction_id or new_id("txn"),
         route_run_id=route_run_id or new_id("run_init"),
+        project_privacy=project_privacy,
     )
     result = commit_transaction(layout, transaction)
     if result.status == "committed" and result.snapshot is not None:
@@ -220,6 +226,7 @@ def initialize_virgin_project(
     created_at: str,
     transaction_id: str,
     route_run_id: str,
+    project_privacy: PrivacyLabel = "project_private",
 ) -> Snapshot:
     """Initialize a probe-confirmed virgin root with retry-stable identifiers.
 
@@ -232,9 +239,13 @@ def initialize_virgin_project(
     if HeadStore(layout).read() is not None:
         snapshot = replay(layout)
         entity = _project_entity(snapshot)
-        if snapshot.project_id != project_id or entity.title != name.strip():
+        if (
+            snapshot.project_id != project_id
+            or entity.title != name.strip()
+            or entity.privacy != project_privacy
+        ):
             raise ProjectInitializationError(
-                "a concurrent genesis created a different project identity or name"
+                "a concurrent genesis created a different project identity, name, or privacy"
             )
         return snapshot
     transaction = _genesis_transaction(
@@ -244,6 +255,7 @@ def initialize_virgin_project(
         created_at=created_at,
         transaction_id=transaction_id,
         route_run_id=route_run_id,
+        project_privacy=project_privacy,
     )
     recovered = _recover_exact_orphan_genesis(layout, transaction)
     if recovered is not None:
@@ -256,4 +268,5 @@ def initialize_virgin_project(
         created_at=created_at,
         transaction_id=transaction_id,
         route_run_id=route_run_id,
+        project_privacy=project_privacy,
     )

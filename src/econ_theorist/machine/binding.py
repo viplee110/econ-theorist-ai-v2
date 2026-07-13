@@ -9,6 +9,7 @@ from pathlib import Path
 from ..codec import canonical_json_bytes, sha256_digest
 from ..compatibility import CompatibilityProbeResult, probe_project_root
 from ..project import ProjectInitializationError, initialize_virgin_project
+from ..models import PrivacyLabel
 from ..runtime.layout import (
     STORE_DIRECTORY,
     StoreLayout,
@@ -200,17 +201,21 @@ def _blocked_binding(
 
 
 def _deterministic_genesis_ids(
-    project_root: Path, operation_key: str, project_name: str
+    project_root: Path,
+    operation_key: str,
+    project_name: str,
+    project_privacy: PrivacyLabel = "project_private",
 ) -> tuple[str, str, str]:
-    seed = sha256_digest(
-        canonical_json_bytes(
-            {
-                "project_root": str(project_root),
-                "operation_key": operation_key,
-                "project_name": project_name.strip(),
-            }
-        )
-    )
+    payload = {
+        "project_root": str(project_root),
+        "operation_key": operation_key,
+        "project_name": project_name.strip(),
+    }
+    # Preserve every historical/default deterministic ID byte-for-byte.  An
+    # explicit non-default privacy choice receives a distinct bound seed.
+    if project_privacy != "project_private":
+        payload["project_privacy"] = project_privacy
+    seed = sha256_digest(canonical_json_bytes(payload))
     return (
         f"prj_{seed[:48]}",
         f"txn_init_{seed[:48]}",
@@ -232,12 +237,27 @@ def _canonical_project_name(snapshot: object) -> str:
     return matches[0].title
 
 
+def _canonical_project_privacy(snapshot: object) -> PrivacyLabel:
+    project_id = getattr(snapshot, "project_id")
+    current_entities = getattr(snapshot, "current_entities")
+    version = current_entities.get(project_id)
+    matches = [
+        entity
+        for entity in getattr(snapshot, "entity_versions")
+        if entity.entity_id == project_id and entity.version == version
+    ]
+    if len(matches) != 1 or matches[0].entity_type != "Project":
+        raise ProjectInitializationError("canonical Project identity is malformed")
+    return matches[0].privacy
+
+
 def bind_or_initialize_project(
     project_root: str | Path,
     *,
     discovery_grant: DiscoveryGrantV1,
     initialize: bool,
     project_name: str | None = None,
+    project_privacy: PrivacyLabel = "project_private",
     actor_id: str = "local_human",
     requested_project_id: str | None = None,
     operation_key: str | None = None,
@@ -299,16 +319,32 @@ def bind_or_initialize_project(
             raise ProjectInitializationError(
                 "read-only compatibility probe and canonical replay disagree"
             )
-        if initialize and project_name is not None and (
-            _canonical_project_name(snapshot) != project_name.strip()
-        ):
+        name_conflict = (
+            initialize
+            and project_name is not None
+            and _canonical_project_name(snapshot) != project_name.strip()
+        )
+        privacy_conflict = (
+            initialize
+            and project_name is not None
+            and _canonical_project_privacy(snapshot) != project_privacy
+        )
+        if name_conflict or privacy_conflict:
             return _blocked_binding(
                 probe,
                 status="project_identity_conflict",
                 diagnostic=DiagnosticV1(
-                    code="project_name_conflict",
+                    code=(
+                        "project_name_conflict"
+                        if name_conflict
+                        else "project_privacy_conflict"
+                    ),
                     severity="error",
-                    message="the selected root already contains a differently named project",
+                    message=(
+                        "the selected root already contains a differently named project"
+                        if name_conflict
+                        else "the selected root already contains a project with different privacy"
+                    ),
                 ),
             )
         return ProjectBindingV1(
@@ -362,14 +398,26 @@ def bind_or_initialize_project(
                 raise ProjectInitializationError(
                     "concurrent project identity changed during replay"
                 )
-            if _canonical_project_name(snapshot) != project_name.strip():
+            name_conflict = _canonical_project_name(snapshot) != project_name.strip()
+            privacy_conflict = (
+                _canonical_project_privacy(snapshot) != project_privacy
+            )
+            if name_conflict or privacy_conflict:
                 return _blocked_binding(
                     current,
                     status="project_identity_conflict",
                     diagnostic=DiagnosticV1(
-                        code="project_name_conflict",
+                        code=(
+                            "project_name_conflict"
+                            if name_conflict
+                            else "project_privacy_conflict"
+                        ),
                         severity="error",
-                        message="a concurrent initializer created a differently named project",
+                        message=(
+                            "a concurrent initializer created a differently named project"
+                            if name_conflict
+                            else "a concurrent initializer created a project with different privacy"
+                        ),
                     ),
                 )
             return ProjectBindingV1(
@@ -389,7 +437,7 @@ def bind_or_initialize_project(
             return _blocked_binding(current, status=current.classification)
 
         project_id, transaction_id, route_run_id = _deterministic_genesis_ids(
-            selected, operation_key, project_name
+            selected, operation_key, project_name, project_privacy
         )
         if requested_project_id is not None:
             project_id = requested_project_id
@@ -402,6 +450,7 @@ def bind_or_initialize_project(
                 created_at=reserved_at,
                 transaction_id=transaction_id,
                 route_run_id=route_run_id,
+                project_privacy=project_privacy,
             )
         except ProjectInitializationError:
             if current.classification == "recovery_required":

@@ -39,6 +39,7 @@ from .egress import (
     HmacTrustedEgressChannel,
     create_egress_plan,
     deliver_work_packet,
+    read_bound_work_packet,
 )
 from .inspection import inspect_project
 from .models import (
@@ -65,7 +66,6 @@ from .operational import (
     PreProjectOperationalLayout,
     ProjectOperationalLayout,
 )
-from .packets import read_work_packet
 from .resources import HOST_MANIFEST_V1_HASH
 from .run_service import open_or_resume_run
 
@@ -86,6 +86,7 @@ class _NavigationParameters(StrictModel):
 class _BindParameters(StrictModel):
     initialize: bool = False
     project_name: str | None = None
+    project_privacy: PrivacyLabel = "project_private"
     requested_project_id: str | None = None
 
 
@@ -722,6 +723,7 @@ class MachineDispatcher:
                 discovery_grant=grant,
                 initialize=parameters.initialize,
                 project_name=parameters.project_name,
+                project_privacy=parameters.project_privacy,
                 actor_id=self.initialization_actor_id,
                 requested_project_id=parameters.requested_project_id,
                 operation_key=request.operation_key,
@@ -822,7 +824,7 @@ class MachineDispatcher:
             parameters = _parse_parameters(_EgressPlanParameters, request)
             layout, snapshot = _existing_project(request)
             operational = ProjectOperationalLayout.at(layout)
-            packet = read_work_packet(
+            packet = read_bound_work_packet(
                 operational,
                 parameters.route_run_id,
                 parameters.work_packet_hash,
@@ -863,7 +865,7 @@ class MachineDispatcher:
             session = self._delivery_session(
                 request.operation_key, parameters.plan.adapter_id
             )
-            packet = read_work_packet(
+            packet = read_bound_work_packet(
                 ProjectOperationalLayout.at(layout),
                 parameters.route_run_id,
                 parameters.work_packet_hash,

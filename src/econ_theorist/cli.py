@@ -11,11 +11,13 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from .codex_cli import emit_schema as emit_codex_schema
+from .codex_cli import invoke_from_argument as invoke_codex_from_argument
 from .doctor import doctor_report
 from .decisions import commit_decision, read_decision
 from .errors import EconTheoristError
 from .models import Actor, FACET_ORDER
-from .machine_cli import invoke_from_argument
+from .machine_cli import invoke_from_argument as invoke_machine_from_argument
 from .project import init_project
 from .runs import begin_run
 from .runtime import StoreLayout
@@ -72,6 +74,7 @@ def _cmd_init(args: argparse.Namespace) -> int:
         name=args.name,
         actor_id=args.actor,
         project_id=args.project_id,
+        project_privacy=args.project_privacy,
     )
     _print_json(
         {
@@ -210,7 +213,13 @@ def _cmd_doctor(args: argparse.Namespace) -> int:
 
 
 def _cmd_machine_invoke(args: argparse.Namespace) -> int:
-    return invoke_from_argument(args.request)
+    return invoke_machine_from_argument(args.request)
+
+
+def _cmd_codex_invoke(args: argparse.Namespace) -> int:
+    if args.schema is not None:
+        return emit_codex_schema(args.schema)
+    return invoke_codex_from_argument(args.request)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -229,6 +238,11 @@ def build_parser() -> argparse.ArgumentParser:
     command.add_argument("--name", required=True)
     command.add_argument("--actor", default="local_human")
     command.add_argument("--project-id")
+    command.add_argument(
+        "--project-privacy",
+        choices=("public", "project_private", "restricted", "local_only"),
+        default="project_private",
+    )
     command.set_defaults(handler=_cmd_init)
 
     command = subparsers.add_parser("validate", help="verify and replay canonical state")
@@ -299,6 +313,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="request JSON path, or '-' to read standard input",
     )
     command.set_defaults(handler=_cmd_machine_invoke)
+
+    codex = subparsers.add_parser(
+        "codex", help="use the thin public-only Codex bridge"
+    )
+    codex_commands = codex.add_subparsers(dest="codex_command", required=True)
+    command = codex_commands.add_parser(
+        "invoke", help="start/resume or complete one Codex WorkPacket"
+    )
+    source = command.add_mutually_exclusive_group(required=True)
+    source.add_argument(
+        "--request",
+        help="Codex bridge request JSON path, or '-' to read standard input",
+    )
+    source.add_argument(
+        "--schema",
+        choices=("request", "response", "bundle"),
+        help="emit the authoritative bridge JSON Schema",
+    )
+    command.set_defaults(handler=_cmd_codex_invoke)
     return parser
 
 

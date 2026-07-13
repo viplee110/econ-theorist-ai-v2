@@ -1,0 +1,692 @@
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+from econ_theorist.cli import build_parser
+from econ_theorist.codec import canonical_json_bytes, sha256_digest, transaction_bytes
+from econ_theorist.codex_bridge import (
+    CODEX_ADAPTER_ID,
+    CODEX_HOST_PRODUCT,
+    CODEX_PROVIDER,
+    CodexBridge,
+    CodexBridgeResponseV1,
+    CodexCompleteRequestV1,
+    CodexSessionV1,
+    CodexStartRequestV1,
+    codex_bridge_schema,
+)
+from econ_theorist.candidate_contract import candidate_authoring_contract_hash
+from econ_theorist.codex_cli import invoke_codex_bytes
+from econ_theorist.machine.binding import bind_or_initialize_project
+from econ_theorist.machine.binding import _deterministic_genesis_ids
+from econ_theorist.machine.egress import _automatic_delivery_subject, _events
+from econ_theorist.machine.models import DeliveryEnvelopeV1, EgressPlanV1, RunInputBriefV1
+from econ_theorist.machine.navigation import plan_next
+from econ_theorist.machine.operational import (
+    ContentAddressedOperationalStore,
+    ProjectOperationalLayout,
+)
+from econ_theorist.machine.run_service import open_or_resume_run
+from econ_theorist.models import (
+    Actor,
+    CreateEntityOp,
+    CreateRelationOp,
+    EntityVersion,
+    EntityVersionRef,
+    RecordRouteOutcomeOp,
+    RelationVersion,
+    RelationVersionRef,
+    RouteOutcome,
+    ScientificStatus,
+    Transaction,
+)
+from econ_theorist.project import _genesis_transaction
+from econ_theorist.runs import read_run, transaction_bindings
+from econ_theorist.runtime import ObjectStore, StoreLayout
+from econ_theorist.runtime.replay import replay
+from econ_theorist.theory import (
+    THEORY_PAYLOAD_MODELS,
+    BenchmarkRecord,
+    BenchmarkSet,
+    ResearchQuestion,
+    pack_theory_payload,
+)
+
+
+NOW = "2026-07-14T00:00:00Z"
+
+
+class Phase5A2CodexBridgeTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary_directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary_directory.cleanup)
+        self.anchor = Path(self.temporary_directory.name)
+        self.root = self.anchor / "paper"
+        self.root.mkdir()
+        self.bridge = CodexBridge(
+            trusted_clock=lambda: NOW,
+            preproject_operational_home=self.anchor / "preproject-operations",
+        )
+        self.session = CodexSessionV1(
+            session_id="codex-session-phase5a2",
+            selected_model="gpt-5",
+            installed_models=("gpt-5", "gpt-5-mini"),
+            observed_at=NOW,
+        )
+
+    def _start_request(self, root: Path | None = None) -> CodexStartRequestV1:
+        return CodexStartRequestV1(
+            project_root=str(root or self.root),
+            initialize=True,
+            project_name="Codex bridge fixture",
+            requested_scope="Frame one bounded theory question and benchmark.",
+            framing_intent="When can costly participation reverse a benchmark?",
+            session=self.session,
+        )
+
+    def _framing_transaction(self, route_run_id: str) -> Transaction:
+        layout = StoreLayout.at(self.root)
+        snapshot = replay(layout)
+        run = read_run(layout, route_run_id)
+        question = EntityVersion(
+            entity_id="question.codex.bridge",
+            entity_type="ResearchQuestion",
+            version=1,
+            project_id=snapshot.project_id,
+            title="Codex bridge question",
+            summary="A bounded framing object produced by the deterministic bridge fixture.",
+            status=ScientificStatus(lifecycle="proposed"),
+            facets=pack_theory_payload(
+                ResearchQuestion(
+                    phenomenon="A benchmark prediction can reverse.",
+                    object_to_explain="The reversal.",
+                    unresolved_delta="The benchmark fixes participation.",
+                    importance="Endogenous participation changes the ranking.",
+                    kill_condition="The fixed-participation benchmark also reverses.",
+                    proposed_scope="A finite-state decision problem.",
+                    candidate_archetypes=("mechanism_explanation",),
+                )
+            ),
+            privacy="public",
+            access_compartments=("project_research",),
+            created_at=run.created_at,
+        )
+        question_ref = EntityVersionRef(entity_id=question.entity_id, version=1)
+        benchmarks = EntityVersion(
+            entity_id="benchmarks.codex.bridge",
+            entity_type="BenchmarkSet",
+            version=1,
+            project_id=snapshot.project_id,
+            title="Codex bridge benchmarks",
+            summary="The exact benchmark delta for the bridge fixture.",
+            status=ScientificStatus(lifecycle="proposed"),
+            facets=pack_theory_payload(
+                BenchmarkSet(
+                    question_ref=question_ref,
+                    benchmarks=(
+                        BenchmarkRecord(
+                            benchmark_id="benchmark.codex.bridge",
+                            label="Fixed participation",
+                            exact_primitives=("one decision maker",),
+                            timing=("information then action",),
+                            solution_concept="optimal action",
+                            prediction="precision improves conditional accuracy",
+                            unresolved_delta="participation is fixed",
+                        ),
+                    ),
+                    exact_question_delta="Allow participation to respond to precision.",
+                )
+            ),
+            privacy="public",
+            access_compartments=("project_research",),
+            created_at=run.created_at,
+        )
+        benchmark_ref = EntityVersionRef(entity_id=benchmarks.entity_id, version=1)
+        frames = RelationVersion(
+            relation_id="relation.codex.bridge.frames",
+            relation_type="frames",
+            version=1,
+            project_id=snapshot.project_id,
+            source=question_ref,
+            target=benchmark_ref,
+            dependency_mode="trace_only",
+            privacy="public",
+            access_compartments=("project_research",),
+            created_at=run.created_at,
+        )
+        delta = RelationVersion(
+            relation_id="relation.codex.bridge.delta",
+            relation_type="benchmark_delta",
+            version=1,
+            project_id=snapshot.project_id,
+            source=benchmark_ref,
+            target=question_ref,
+            dependency_mode="trace_only",
+            privacy="public",
+            access_compartments=("project_research",),
+            created_at=run.created_at,
+        )
+        refs = (
+            question_ref,
+            benchmark_ref,
+            RelationVersionRef(relation_id=frames.relation_id, version=1),
+            RelationVersionRef(relation_id=delta.relation_id, version=1),
+        )
+        return Transaction(
+            **transaction_bindings(layout, route_run_id),
+            transaction_id="transaction.codex.bridge",
+            origin="route_run",
+            project_id=snapshot.project_id,
+            base_revision=run.base_revision,
+            route_run_id=run.route_run_id,
+            route_id=run.route_id,
+            actor=run.actor,
+            intent="Frame one exact question through the Codex bridge.",
+            operations=(
+                CreateEntityOp(entity=question),
+                CreateEntityOp(entity=benchmarks),
+                CreateRelationOp(relation=frames),
+                CreateRelationOp(relation=delta),
+                RecordRouteOutcomeOp(
+                    outcome=RouteOutcome(
+                        route_run_id=run.route_run_id,
+                        route_id=run.route_id,
+                        outcome="completed_with_candidate",
+                        rationale="The bridge fixture produced one exact framing bundle.",
+                        candidate_refs=refs,
+                        privacy="public",
+                        access_compartments=("project_research",),
+                    )
+                ),
+            ),
+            privacy="public",
+            access_compartments=("project_research",),
+            created_at=run.created_at,
+            parent_transaction_hash=run.base_revision,
+        )
+
+    def _delivery_identity(
+        self, response: CodexBridgeResponseV1
+    ) -> tuple[ProjectOperationalLayout, DeliveryEnvelopeV1, EgressPlanV1]:
+        layout = StoreLayout.at(self.root)
+        operational = ProjectOperationalLayout.at(layout)
+        store = ContentAddressedOperationalStore(
+            operational.project_root, operational.runs / response.route_run_id
+        )
+        envelope = DeliveryEnvelopeV1.model_validate_json(
+            store.read_bytes("envelopes", response.delivery_envelope_hash), strict=True
+        )
+        plan = EgressPlanV1.model_validate_json(
+            store.read_bytes("egress-plans", envelope.egress_plan_hash), strict=True
+        )
+        return operational, envelope, plan
+
+    def test_provider_identity_exact_retry_and_canonical_commit(self) -> None:
+        request = self._start_request()
+        first = self.bridge.invoke(request)
+        self.assertEqual(first.outcome, "ready", first)
+        self.assertEqual(first.work_packet.privacy_clearance, "public")
+        self.assertFalse(first.work_packet.hidden_compartments)
+        initial_snapshot = replay(StoreLayout.at(self.root))
+        project_version = initial_snapshot.current_entities[initial_snapshot.project_id]
+        project_entity = next(
+            entity
+            for entity in initial_snapshot.entity_versions
+            if entity.entity_id == initial_snapshot.project_id
+            and entity.version == project_version
+        )
+        genesis = Transaction.model_validate_json(
+            ObjectStore(StoreLayout.at(self.root)).read_bytes(
+                "transactions", initial_snapshot.chain[0]
+            ),
+            strict=True,
+        )
+        self.assertEqual(project_entity.privacy, "public")
+        self.assertEqual(genesis.privacy, "public")
+
+        operational, envelope, plan = self._delivery_identity(first)
+        self.assertEqual(envelope.host_product, CODEX_HOST_PRODUCT)
+        self.assertEqual(envelope.adapter_id, CODEX_ADAPTER_ID)
+        self.assertEqual(plan.provider, CODEX_PROVIDER)
+        self.assertEqual(plan.model, self.session.selected_model)
+        self.assertEqual(plan.execution_class, "provider_backed")
+        self.assertFalse(plan.authorization_required)
+        subject_id = _automatic_delivery_subject(plan)
+        events_before = _events(operational, subject_id)
+        self.assertEqual(
+            sum(event.event == "delivery_started" for _, event in events_before), 1
+        )
+
+        retried = self.bridge.invoke(request)
+        self.assertEqual(retried, first)
+        events_after = _events(operational, subject_id)
+        self.assertEqual(events_after, events_before)
+
+        continued = self.bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(self.root),
+                session=self.session,
+            )
+        )
+        self.assertEqual(continued.outcome, "ready", continued)
+        self.assertEqual(continued.delivery_envelope_hash, first.delivery_envelope_hash)
+
+        transaction = self._framing_transaction(first.route_run_id)
+        candidate_path = self.root / first.candidate_logical_path
+        candidate_path.parent.mkdir(parents=True, exist_ok=True)
+        candidate_path.write_text(
+            json.dumps(transaction.model_dump(mode="json"), indent=2) + "\n",
+            encoding="utf-8",
+        )
+        digest = sha256_digest(transaction_bytes(transaction))
+        completion_request = CodexCompleteRequestV1(
+            project_root=str(self.root),
+            route_run_id=first.route_run_id,
+            work_packet_hash=first.work_packet_hash,
+            delivery_envelope_hash=first.delivery_envelope_hash,
+        )
+        wrong_digest = self.bridge.invoke(
+            completion_request.model_copy(
+                update={"expected_candidate_digest": "0" * 64}
+            )
+        )
+        self.assertEqual(wrong_digest.outcome, "error", wrong_digest)
+        self.assertFalse(wrong_digest.mutated)
+        self.assertEqual(replay(StoreLayout.at(self.root)).head, first.head)
+        completed = self.bridge.invoke(completion_request)
+        self.assertEqual(completed.outcome, "committed", completed)
+        self.assertEqual(completed.completion.transaction_digest, digest)
+        self.assertEqual(replay(StoreLayout.at(self.root)).head, digest)
+        self.assertEqual(self.bridge.invoke(completion_request), completed)
+
+        altered = transaction.model_copy(
+            update={
+                "transaction_id": "transaction.codex.bridge.altered",
+                "intent": "A changed source must not retarget an exact retry.",
+            }
+        )
+        candidate_path.write_text(
+            json.dumps(altered.model_dump(mode="json"), indent=2) + "\n",
+            encoding="utf-8",
+        )
+        conflict = self.bridge.invoke(completion_request)
+        self.assertEqual(conflict.outcome, "error", conflict)
+        self.assertIn(
+            "canonically bound to a different transaction",
+            conflict.diagnostics[0].message,
+        )
+        self.assertEqual(replay(StoreLayout.at(self.root)).head, digest)
+
+    def test_route_invalid_candidate_can_be_repaired_with_same_auto_digest_request(
+        self,
+    ) -> None:
+        ready = self.bridge.invoke(self._start_request())
+        self.assertEqual(ready.outcome, "ready", ready)
+        valid = self._framing_transaction(ready.route_run_id)
+        operations = list(valid.operations)
+        frames = operations[2]
+        self.assertIsInstance(frames, CreateRelationOp)
+        assert isinstance(frames, CreateRelationOp)
+        operations[2] = frames.model_copy(
+            update={
+                "relation": frames.relation.model_copy(
+                    update={
+                        "source": frames.relation.target,
+                        "target": frames.relation.source,
+                    }
+                )
+            }
+        )
+        invalid = valid.model_copy(
+            update={
+                "transaction_id": "transaction.codex.bridge.invalid",
+                "operations": tuple(operations),
+            }
+        )
+        candidate_path = self.root / ready.candidate_logical_path
+        candidate_path.parent.mkdir(parents=True, exist_ok=True)
+        candidate_path.write_text(
+            json.dumps(invalid.model_dump(mode="json"), indent=2) + "\n",
+            encoding="utf-8",
+        )
+        completion_request = CodexCompleteRequestV1(
+            project_root=str(self.root),
+            route_run_id=ready.route_run_id,
+            work_packet_hash=ready.work_packet_hash,
+            delivery_envelope_hash=ready.delivery_envelope_hash,
+        )
+        rejected = self.bridge.invoke(completion_request)
+        self.assertEqual(rejected.outcome, "error", rejected)
+        self.assertIn("frames must bind", rejected.diagnostics[0].message)
+        self.assertEqual(replay(StoreLayout.at(self.root)).head, ready.head)
+
+        candidate_path.write_text(
+            json.dumps(valid.model_dump(mode="json"), indent=2) + "\n",
+            encoding="utf-8",
+        )
+        repaired = self.bridge.invoke(completion_request)
+        self.assertEqual(repaired.outcome, "committed", repaired)
+        expected = sha256_digest(transaction_bytes(valid))
+        self.assertEqual(repaired.completion.transaction_digest, expected)
+        self.assertEqual(replay(StoreLayout.at(self.root)).head, expected)
+
+    def test_ready_response_has_self_contained_route_bound_authoring_contract(
+        self,
+    ) -> None:
+        response = self.bridge.invoke(self._start_request())
+        self.assertEqual(response.outcome, "ready", response)
+        contract = response.candidate_authoring_contract
+        self.assertIsNotNone(contract)
+        assert contract is not None
+        self.assertEqual(
+            response.candidate_authoring_contract_hash,
+            candidate_authoring_contract_hash(contract),
+        )
+        packet = response.work_packet
+        assert packet is not None
+        run = read_run(StoreLayout.at(self.root), response.route_run_id)
+        provenance = transaction_bindings(StoreLayout.at(self.root), run.route_run_id)
+        bindings = contract.transaction_bindings
+        locations = contract.output_locations
+        self.assertEqual(contract.work_packet_hash, response.work_packet_hash)
+        self.assertEqual(bindings.project_id, packet.project_id)
+        self.assertEqual(bindings.base_revision, packet.base_head)
+        self.assertEqual(bindings.parent_transaction_hash, packet.base_head)
+        self.assertEqual(bindings.route_run_id, packet.route_run_id)
+        self.assertEqual(bindings.route_id, packet.route_id)
+        self.assertEqual(bindings.actor, run.actor)
+        self.assertEqual(bindings.privacy, packet.privacy_clearance)
+        self.assertEqual(bindings.access_compartments, packet.compartments)
+        self.assertEqual(bindings.created_at, run.created_at)
+        self.assertEqual(
+            locations.candidate_logical_path, packet.candidate_logical_path
+        )
+        self.assertEqual(locations.shadow_logical_root, packet.shadow_logical_root)
+        self.assertEqual(bindings.route_run_hash, provenance["route_run_hash"])
+        self.assertEqual(
+            bindings.context_manifest_hash, provenance["context_manifest_hash"]
+        )
+        self.assertEqual(
+            bindings.compiled_context_hash, provenance["compiled_context_hash"]
+        )
+
+        output = contract.output_contract
+        self.assertEqual(output.route_id, packet.route_id)
+        self.assertEqual(output.route_version, packet.route_version)
+        self.assertEqual(
+            output.allowed_operation_classes, packet.allowed_operation_classes
+        )
+        self.assertEqual(
+            tuple(item.entity_type for item in output.required_output_entities),
+            packet.required_output_entity_types,
+        )
+        self.assertEqual(
+            tuple(item.relation_type for item in output.required_output_relations),
+            packet.required_output_relation_types,
+        )
+        self.assertEqual(contract.transaction_json_schema["title"], "Transaction")
+        self.assertEqual(output.relation_json_schema["title"], "RelationVersion")
+        self.assertEqual(output.route_outcome_json_schema["title"], "RouteOutcome")
+
+        transaction = self._framing_transaction(run.route_run_id)
+        parsed = Transaction.model_validate_json(
+            transaction_bytes(transaction), strict=True
+        )
+        self.assertEqual(parsed.project_id, bindings.project_id)
+        self.assertEqual(parsed.base_revision, bindings.base_revision)
+        self.assertEqual(parsed.parent_transaction_hash, bindings.base_revision)
+        self.assertEqual(parsed.route_run_id, bindings.route_run_id)
+        self.assertEqual(parsed.route_id, bindings.route_id)
+        self.assertEqual(parsed.actor, bindings.actor)
+        self.assertEqual(parsed.privacy, bindings.privacy)
+        self.assertEqual(parsed.access_compartments, bindings.access_compartments)
+        self.assertEqual(parsed.created_at, bindings.created_at)
+
+        entities = {
+            operation.entity.entity_type: operation.entity
+            for operation in parsed.operations
+            if isinstance(operation, CreateEntityOp)
+        }
+        self.assertEqual(
+            tuple(item.entity_type for item in contract.payload_schemas),
+            packet.required_output_entity_types,
+        )
+        for payload_contract in contract.payload_schemas:
+            model = THEORY_PAYLOAD_MODELS[payload_contract.entity_type]
+            self.assertEqual(
+                payload_contract.payload_json_schema,
+                model.model_json_schema(mode="validation"),
+            )
+            entity = entities[payload_contract.entity_type]
+            self.assertEqual(entity.project_id, bindings.project_id)
+            self.assertEqual(entity.privacy, bindings.privacy)
+            self.assertEqual(entity.access_compartments, bindings.access_compartments)
+            self.assertEqual(entity.created_at, bindings.created_at)
+            facets = entity.facets.model_dump(mode="python")
+            for empty_facet in payload_contract.empty_facets:
+                self.assertEqual(facets[empty_facet], {})
+            envelope = facets[payload_contract.owner_facet]
+            self.assertEqual(envelope["schema"], payload_contract.payload_schema_id)
+            model.model_validate_json(
+                canonical_json_bytes(envelope["payload"]), strict=True
+            )
+
+        produced_refs = set()
+        route_outcomes = []
+        for operation in parsed.operations:
+            if isinstance(operation, CreateEntityOp):
+                produced_refs.add(
+                    EntityVersionRef(
+                        entity_id=operation.entity.entity_id,
+                        version=operation.entity.version,
+                    )
+                )
+            elif isinstance(operation, CreateRelationOp):
+                relation = operation.relation
+                self.assertEqual(relation.project_id, bindings.project_id)
+                self.assertEqual(relation.privacy, bindings.privacy)
+                self.assertEqual(
+                    relation.access_compartments, bindings.access_compartments
+                )
+                self.assertEqual(relation.created_at, bindings.created_at)
+                produced_refs.add(
+                    RelationVersionRef(
+                        relation_id=relation.relation_id,
+                        version=relation.version,
+                    )
+                )
+            elif isinstance(operation, RecordRouteOutcomeOp):
+                route_outcomes.append(operation.outcome)
+        self.assertEqual(len(route_outcomes), 1)
+        outcome = route_outcomes[0]
+        self.assertEqual(outcome.route_run_id, bindings.route_run_id)
+        self.assertEqual(outcome.route_id, bindings.route_id)
+        self.assertEqual(outcome.privacy, bindings.privacy)
+        self.assertEqual(outcome.access_compartments, bindings.access_compartments)
+        self.assertEqual(set(outcome.candidate_refs), produced_refs)
+
+        retried = self.bridge.invoke(self._start_request())
+        self.assertEqual(retried.candidate_authoring_contract, contract)
+        self.assertEqual(
+            retried.candidate_authoring_contract_hash,
+            response.candidate_authoring_contract_hash,
+        )
+        tampered = response.model_dump(mode="json")
+        tampered["work_packet"]["purpose"] = "tampered-purpose"
+        with self.assertRaisesRegex(
+            ValueError, "mismatched candidate authoring contract"
+        ):
+            CodexBridgeResponseV1.model_validate_json(
+                canonical_json_bytes(tampered), strict=True
+            )
+
+    def test_private_resumed_packet_is_blocked_before_delivery(self) -> None:
+        private_root = self.anchor / "private-paper"
+        private_root.mkdir()
+        from econ_theorist.machine.models import DiscoveryGrantV1
+
+        grant = DiscoveryGrantV1(
+            selected_root=str(private_root),
+            allowed_discovery_roots=(str(private_root),),
+            ancestor_check_boundary=str(private_root),
+            stable_workspace_root=str(private_root),
+        )
+        bind_or_initialize_project(
+            private_root,
+            discovery_grant=grant,
+            initialize=True,
+            project_name="Private bridge fixture",
+            actor_id="human.owner",
+            operation_key="initialize.private.codex",
+            reserved_at=NOW,
+            operational_home=self.anchor / "local-operations",
+        )
+        layout = StoreLayout.at(private_root)
+        snapshot = replay(layout)
+        actor = Actor(kind="agent", actor_id="scientific_agent")
+        brief = RunInputBriefV1(
+            project_id=snapshot.project_id,
+            base_head=snapshot.head,
+            requested_scope="Frame one private theory question.",
+            framing_intent="A private pilot must not leave the local engine.",
+            privacy="project_private",
+            compartments=("project_research",),
+            actor_role=actor.actor_id,
+        )
+        navigation = plan_next(
+            layout,
+            snapshot,
+            actor=actor,
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            budget_units=10_000,
+            run_input_brief=brief,
+        )
+        open_or_resume_run(
+            layout,
+            operation_key="open.private.codex",
+            reserved_at=NOW,
+            candidate=navigation.candidates[0],
+            run_input_brief=brief,
+            operational=ProjectOperationalLayout.at(layout),
+        )
+
+        blocked = self.bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(private_root),
+                session=self.session,
+            )
+        )
+        self.assertEqual(blocked.outcome, "blocked", blocked)
+        self.assertEqual(blocked.diagnostics[0].code, "codex_public_pilot_only")
+        self.assertIsNone(blocked.delivery_envelope_hash)
+        egress = ProjectOperationalLayout.at(layout).egress
+        self.assertTrue(egress.is_dir())
+        self.assertEqual(tuple(egress.iterdir()), ())
+
+        virgin_root = self.anchor / "virgin-no-consent"
+        virgin_root.mkdir()
+        not_initialized = self.bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(virgin_root),
+                session=self.session,
+            )
+        )
+        self.assertEqual(not_initialized.outcome, "blocked")
+        self.assertEqual(
+            not_initialized.diagnostics[0].code,
+            "codex_project_initialization_required",
+        )
+        self.assertFalse((virgin_root / ".econ-theorist").exists())
+
+    def test_cli_schema_and_strict_transport_are_machine_readable(self) -> None:
+        request_schema = codex_bridge_schema("request")
+        response_schema = codex_bridge_schema("response")
+        self.assertIn("oneOf", request_schema)
+        self.assertEqual(response_schema["title"], "CodexBridgeResponseV1")
+        parsed = build_parser().parse_args(
+            ["codex", "invoke", "--schema", "bundle"]
+        )
+        self.assertEqual(parsed.schema, "bundle")
+        environment = os.environ.copy()
+        environment["PYTHONPATH"] = str(Path(__file__).resolve().parents[1] / "src")
+        emitted = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                (
+                    "from econ_theorist.cli import main; "
+                    "raise SystemExit(main(['codex','invoke','--schema','bundle']))"
+                ),
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=environment,
+            check=False,
+        )
+        self.assertEqual(emitted.returncode, 0, emitted.stderr.decode("utf-8"))
+        self.assertEqual(emitted.stdout.count(b"\n"), 1)
+        self.assertEqual(
+            json.loads(emitted.stdout)["schema_bundle"],
+            "econ-theorist/codex-bridge-schema-bundle/v1",
+        )
+
+        response = invoke_codex_bytes(
+            canonical_json_bytes(self._start_request()), bridge=self.bridge
+        )
+        self.assertEqual(response.outcome, "ready", response)
+        invalid = invoke_codex_bytes(b'{"operation":"start_or_resume"}')
+        self.assertEqual(invalid.outcome, "error")
+        self.assertEqual(
+            invalid.diagnostics[0].code, "invalid_codex_bridge_request"
+        )
+
+    def test_default_private_genesis_bytes_and_ids_remain_unchanged(self) -> None:
+        arguments = {
+            "name": "Historical default",
+            "actor_id": "human.owner",
+            "project_id": "prj_historical_default",
+            "created_at": NOW,
+            "transaction_id": "txn_historical_default",
+            "route_run_id": "run_historical_default",
+        }
+        implicit = _genesis_transaction(**arguments)
+        explicit = _genesis_transaction(
+            **arguments, project_privacy="project_private"
+        )
+        public = _genesis_transaction(**arguments, project_privacy="public")
+        self.assertEqual(transaction_bytes(implicit), transaction_bytes(explicit))
+        self.assertNotEqual(transaction_bytes(implicit), transaction_bytes(public))
+
+        root = self.anchor / "stable-id-root"
+        root.mkdir()
+        operation_key = "initialize.historical.default"
+        default_ids = _deterministic_genesis_ids(
+            root, operation_key, "Historical default"
+        )
+        expected_seed = sha256_digest(
+            canonical_json_bytes(
+                {
+                    "project_root": str(root),
+                    "operation_key": operation_key,
+                    "project_name": "Historical default",
+                }
+            )
+        )
+        self.assertEqual(default_ids[0], f"prj_{expected_seed[:48]}")
+        self.assertNotEqual(
+            default_ids,
+            _deterministic_genesis_ids(
+                root, operation_key, "Historical default", "public"
+            ),
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

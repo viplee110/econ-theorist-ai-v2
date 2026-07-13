@@ -1,0 +1,6 @@
+interface:
+  display_name: "Econ Theorist AI v2"
+  short_description: "Run theory-paper routes through the v2 engine"
+  default_prompt: "Use $econ-theorist-v2 to continue the current economic-theory project through the engine-selected next route."
+policy:
+  allow_implicit_invocation: true

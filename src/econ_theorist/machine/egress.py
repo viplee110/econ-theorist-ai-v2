@@ -12,6 +12,7 @@ from ..codec import canonical_json_bytes, sha256_digest
 from ..ids import utc_now
 from ..runtime.layout import (
     StoreLayout,
+    UnsafeStorePath,
     assert_safe_store_path,
     path_entry_exists,
 )
@@ -35,12 +36,59 @@ from .operational import (
     ProjectOperationalLayout,
     write_immutable_operational,
 )
-from .packets import read_work_packet
+from .packets import WorkPacketBindingV1, read_work_packet
 from .resources import HOST_MANIFEST_V1_HASH
 
 
 class EgressError(OperationalError):
     """Provider delivery is unauthorized, unsafe, stale, or uncertain."""
+
+
+def read_bound_work_packet(
+    operational: ProjectOperationalLayout,
+    route_run_id: str,
+    packet_hash: str,
+) -> WorkPacketV1:
+    """Read only the immutable WorkPacket selected for one active run.
+
+    The caller-supplied content address is checked against the run binding
+    before packet bytes are read.  This prevents an alternate packet installed
+    in the same operational CAS from changing privacy or egress semantics.
+    """
+
+    if not route_run_id or any(
+        character not in "abcdefghijklmnopqrstuvwxyz0123456789._-"
+        for character in route_run_id
+    ):
+        raise EgressError(f"unsafe operational run ID: {route_run_id!r}")
+    binding_path = operational.runs / route_run_id / "packet-binding.json"
+    try:
+        safe_binding_path = assert_safe_store_path(
+            operational.project_root,
+            binding_path,
+            expected="file",
+            allow_missing=False,
+        )
+        binding_data = safe_binding_path.read_bytes()
+        binding = WorkPacketBindingV1.model_validate_json(
+            binding_data, strict=True
+        )
+    except (OSError, ValueError, OperationalError, UnsafeStorePath) as exc:
+        raise EgressError("work packet binding is unavailable or invalid") from exc
+    if (
+        canonical_json_bytes(binding) != binding_data
+        or binding.route_run_id != route_run_id
+        or binding.work_packet_hash != packet_hash
+    ):
+        raise EgressError("work packet is not the exact active run binding")
+    packet = read_work_packet(operational, route_run_id, packet_hash)
+    if (
+        packet.route_run_id != route_run_id
+        or packet.navigation_candidate_digest
+        != binding.navigation_candidate_digest
+    ):
+        raise EgressError("work packet differs from its immutable run binding")
+    return packet
 
 
 def _uncertain_prior_delivery(
@@ -94,6 +142,38 @@ def _validate_required_capabilities(capability: CapabilityReceiptV1) -> None:
         raise EgressError("host capability receipt lacks required Phase 5A controls")
 
 
+def _packet_privacy_labels(packet: WorkPacketV1) -> frozenset[str]:
+    labels = {packet.privacy_clearance}
+    if packet.run_input is not None:
+        labels.add(packet.run_input.privacy)
+    return frozenset(labels)
+
+
+def _is_public_provider_packet(packet: WorkPacketV1) -> bool:
+    """Return whether packet bytes are wholly public and non-blind."""
+
+    return (
+        _packet_privacy_labels(packet) == {"public"}
+        and not packet.hidden_compartments
+    )
+
+
+def _automatic_delivery_subject(plan: EgressPlanV1) -> str:
+    """Name a no-authorization ledger without mislabelling provider egress."""
+
+    digest = sha256_digest(canonical_json_bytes(plan))[:48]
+    if plan.execution_class == "local":
+        return "local_" + digest
+    if (
+        plan.execution_class == "provider_backed"
+        and not plan.authorization_required
+        and tuple(plan.privacy_labels) == ("public",)
+        and not plan.hidden_compartments
+    ):
+        return "public_" + digest
+    raise EgressError("provider delivery cannot bypass authorization")
+
+
 def create_egress_plan(
     packet: WorkPacketV1,
     capability: CapabilityReceiptV1,
@@ -126,7 +206,7 @@ def create_egress_plan(
         or adapter_id != capability.adapter_id
     ):
         raise EgressError("host identity differs from the capability receipt")
-    labels = {packet.privacy_clearance}
+    labels = _packet_privacy_labels(packet)
     if packet.hidden_compartments and (
         capability.model_tool_isolation != "verified"
         or not set(packet.hidden_compartments).issubset(
@@ -136,16 +216,22 @@ def create_egress_plan(
         raise EgressError(
             "blind work requires adapter-enforced denial of every hidden compartment"
         )
-    if packet.run_input is not None:
-        labels.add(packet.run_input.privacy)
+    public_provider_packet = (
+        execution_class == "provider_backed"
+        and _is_public_provider_packet(packet)
+    )
     if execution_class == "provider_backed":
+        if "local_only" in labels:
+            raise EgressError("local_only packet content cannot enter a provider host")
         provider_boundaries = (
             capability.environment_redaction,
             capability.credential_store_isolation,
             capability.secret_file_denial,
             capability.shadow_workspace_isolation,
         )
-        if any(value != "verified" for value in provider_boundaries):
+        if not public_provider_packet and any(
+            value != "verified" for value in provider_boundaries
+        ):
             raise EgressError(
                 "provider execution requires verified environment, credential, secret-file, and shadow-workspace isolation"
             )
@@ -153,8 +239,6 @@ def create_egress_plan(
             raise EgressError(
                 "provider execution requires disabled or exact project-scoped memory"
             )
-        if "local_only" in labels:
-            raise EgressError("local_only packet content cannot enter a provider host")
         if "restricted" in labels and (
             capability.model_tool_isolation != "verified"
             or capability.trusted_human_channel != "verified"
@@ -203,7 +287,9 @@ def create_egress_plan(
         credential_store_isolation=capability.credential_store_isolation,
         secret_file_denial=capability.secret_file_denial,
         shadow_workspace_isolation=capability.shadow_workspace_isolation,
-        authorization_required=execution_class == "provider_backed",
+        authorization_required=(
+            execution_class == "provider_backed" and not public_provider_packet
+        ),
     )
 
 
@@ -296,7 +382,7 @@ class HmacTrustedEgressChannel:
 def _subject_root(
     operational: ProjectOperationalLayout, subject_id: str
 ) -> Path:
-    if not subject_id.startswith(("egress_", "local_")) or any(
+    if not subject_id.startswith(("egress_", "local_", "public_")) or any(
         character not in "abcdefghijklmnopqrstuvwxyz0123456789_"
         for character in subject_id
     ):
@@ -529,7 +615,12 @@ def deliver_work_packet(
     """Record delivery_started before returning any packet content."""
 
     operational.ensure()
-    packet = read_work_packet(operational, route_run_id, packet_hash)
+    packet = read_bound_work_packet(operational, route_run_id, packet_hash)
+    packet_labels = tuple(sorted(_packet_privacy_labels(packet)))
+    public_provider_packet = (
+        plan.execution_class == "provider_backed"
+        and _is_public_provider_packet(packet)
+    )
     _validate_required_capabilities(capability)
     if packet.hidden_compartments and (
         capability.model_tool_isolation != "verified"
@@ -562,6 +653,8 @@ def deliver_work_packet(
         or plan.adapter_version != capability.adapter_version
         or adapter_version != capability.adapter_version
         or plan.execution_class != capability.execution_class
+        or plan.privacy_labels != packet_labels
+        or plan.compartments != packet.compartments
         or plan.hidden_compartments != packet.hidden_compartments
         or plan.enforced_denied_compartments
         != capability.enforced_denied_compartments
@@ -579,8 +672,24 @@ def deliver_work_packet(
         != capability.shadow_workspace_isolation
         or any(item.required and not item.available for item in capability.capabilities)
         or capability.agent_topology != "single"
+        or plan.authorization_required
+        != (plan.execution_class == "provider_backed" and not public_provider_packet)
     ):
         raise EgressError("egress plan/capability differs from the work packet")
+
+    if plan.execution_class == "provider_backed" and not public_provider_packet:
+        provider_boundaries = (
+            capability.environment_redaction,
+            capability.credential_store_isolation,
+            capability.secret_file_denial,
+            capability.shadow_workspace_isolation,
+        )
+        if any(value != "verified" for value in provider_boundaries):
+            raise EgressError(
+                "provider execution requires verified environment, credential, secret-file, and shadow-workspace isolation"
+            )
+        if "local_only" in packet_labels:
+            raise EgressError("local_only packet content cannot enter a provider host")
 
     authorization_hash: str | None = None
     if plan.authorization_required:
@@ -604,9 +713,7 @@ def deliver_work_packet(
         authorization_hash = sha256_digest(canonical_json_bytes(authorization))
         subject_id = authorization.authorization_id
     else:
-        if plan.execution_class != "local":
-            raise EgressError("provider delivery cannot bypass authorization")
-        subject_id = "local_" + sha256_digest(canonical_json_bytes(plan))[:48]
+        subject_id = _automatic_delivery_subject(plan)
 
     run_root = operational.runs / route_run_id
     store = ContentAddressedOperationalStore(operational.project_root, run_root)
@@ -694,7 +801,7 @@ def deliver_work_packet(
             if existing[-1][1].event in {"revoked", "expired"}:
                 raise EgressError("egress authorization is revoked or expired")
         else:
-            prior_local_start = next(
+            prior_automatic_start = next(
                 (
                     item
                     for _, item in reversed(existing)
@@ -703,17 +810,25 @@ def deliver_work_packet(
                 ),
                 None,
             )
-            if prior_local_start is not None:
+            if prior_automatic_start is not None:
                 return _uncertain_prior_delivery(
-                    prior_local_start,
+                    prior_automatic_start,
                     packet_hash=packet_hash,
-                    message="a prior local delivery may already have occurred",
+                    message=(
+                        "a prior public provider delivery may already have occurred"
+                        if plan.execution_class == "provider_backed"
+                        else "a prior local delivery may already have occurred"
+                    ),
                 )
             if not existing:
                 _append_event(
                     operational,
                     subject_id,
-                    event="local_plan_registered",
+                    event=(
+                        "public_plan_registered"
+                        if plan.execution_class == "provider_backed"
+                        else "local_plan_registered"
+                    ),
                     operation_key=None,
                     request_digest=plan_hash,
                     payload_hash=packet_hash,
@@ -887,7 +1002,7 @@ def record_envelope_delivery_outcome(
             raise EgressError("delivery envelope has no unique authorization ledger")
         subject_id = subjects[0]
     else:
-        subject_id = "local_" + sha256_digest(canonical_json_bytes(plan))[:48]
+        subject_id = _automatic_delivery_subject(plan)
     record_delivery_outcome(operational, subject_id, receipt)
 
 
@@ -899,5 +1014,6 @@ __all__ = [
     "record_delivery_outcome",
     "record_envelope_delivery_outcome",
     "record_egress_authorization_issued",
+    "read_bound_work_packet",
     "revoke_egress_authorization",
 ]
