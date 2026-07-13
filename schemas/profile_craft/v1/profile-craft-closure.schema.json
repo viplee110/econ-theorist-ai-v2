@@ -1,0 +1,344 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "ProfileCraftClosureCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "check_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Check Id",
+          "type": "string"
+        },
+        "check_kind": {
+          "enum": [
+            "universal_floor",
+            "overlay_conflicts",
+            "theory_only_corpus",
+            "functional_matched_contrast",
+            "provenance_access_confidence",
+            "copyright_and_voice",
+            "predicate_mapping",
+            "craft_realization",
+            "target_reader_fit"
+          ],
+          "title": "Check Kind",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EntityVersionRef"
+              },
+              {
+                "$ref": "#/$defs/ArtifactDependencyRef"
+              },
+              {
+                "$ref": "#/$defs/DecisionVersionRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "explanation": {
+          "minLength": 24,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "pass",
+            "fail"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        }
+      },
+      "required": [
+        "check_id",
+        "check_kind",
+        "outcome",
+        "evidence_refs",
+        "explanation"
+      ],
+      "title": "ProfileCraftClosureCheck",
+      "type": "object"
+    },
+    "ProjectPayloadBinding": {
+      "additionalProperties": false,
+      "description": "Content-addressed binding to one exact project entity payload.",
+      "properties": {
+        "entity_ref": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "payload_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Payload Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_ref",
+        "payload_hash"
+      ],
+      "title": "ProjectPayloadBinding",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/profile-craft/v1/profile-craft-closure.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "all_dependencies_current_and_fresh": {
+      "const": true,
+      "title": "All Dependencies Current And Fresh",
+      "type": "boolean"
+    },
+    "base_authoring_closure_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Base Authoring Closure Hash",
+      "type": "string"
+    },
+    "base_authoring_closure_outcome": {
+      "const": "authoring_ready",
+      "title": "Base Authoring Closure Outcome",
+      "type": "string"
+    },
+    "base_authoring_closure_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "blocking_reasons": {
+      "default": [],
+      "items": {
+        "minLength": 24,
+        "type": "string"
+      },
+      "title": "Blocking Reasons",
+      "type": "array"
+    },
+    "checks": {
+      "items": {
+        "$ref": "#/$defs/ProfileCraftClosureCheck"
+      },
+      "minItems": 1,
+      "title": "Checks",
+      "type": "array"
+    },
+    "closure_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Closure Id",
+      "type": "string"
+    },
+    "craft_selection": {
+      "$ref": "#/$defs/ProjectPayloadBinding"
+    },
+    "determined_at": {
+      "minLength": 1,
+      "title": "Determined At",
+      "type": "string"
+    },
+    "determined_by": {
+      "$ref": "#/$defs/Actor"
+    },
+    "manuscript_unit_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Manuscript Unit Hash",
+      "type": "string"
+    },
+    "manuscript_unit_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "outcome": {
+      "enum": [
+        "ready",
+        "blocked"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "predicate_limitation_kinds": {
+      "items": {
+        "enum": [
+          "nonexact_clause_mapping",
+          "domain_not_equal",
+          "quantifier_not_equivalent",
+          "assumption_mapping_nonexact",
+          "bounded_execution_scope",
+          "coverage_below_exact",
+          "loose_tolerance",
+          "nonvacuity_unverified",
+          "unexecutable_control"
+        ],
+        "type": "string"
+      },
+      "title": "Predicate Limitation Kinds",
+      "type": "array"
+    },
+    "predicate_mapping_audits": {
+      "items": {
+        "$ref": "#/$defs/ProjectPayloadBinding"
+      },
+      "minItems": 1,
+      "title": "Predicate Mapping Audits",
+      "type": "array"
+    },
+    "predicate_mapping_coverage_classes": {
+      "items": {
+        "enum": [
+          "exact",
+          "partial",
+          "diagnostic",
+          "falsification_only"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Predicate Mapping Coverage Classes",
+      "type": "array"
+    },
+    "profile_stack": {
+      "$ref": "#/$defs/ProjectPayloadBinding"
+    },
+    "reader_problem_diagnosis_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Reader Problem Diagnosis Hash",
+      "type": "string"
+    },
+    "reader_problem_diagnosis_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "realization_assessment": {
+      "$ref": "#/$defs/ProjectPayloadBinding"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source_state_revision": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Source State Revision",
+      "type": "string"
+    }
+  },
+  "required": [
+    "closure_id",
+    "base_authoring_closure_ref",
+    "base_authoring_closure_hash",
+    "base_authoring_closure_outcome",
+    "manuscript_unit_ref",
+    "manuscript_unit_hash",
+    "reader_problem_diagnosis_ref",
+    "reader_problem_diagnosis_hash",
+    "profile_stack",
+    "craft_selection",
+    "predicate_mapping_audits",
+    "predicate_mapping_coverage_classes",
+    "predicate_limitation_kinds",
+    "realization_assessment",
+    "source_state_revision",
+    "all_dependencies_current_and_fresh",
+    "checks",
+    "outcome",
+    "determined_by",
+    "determined_at"
+  ],
+  "title": "ProfileCraftClosure",
+  "type": "object"
+}

@@ -1,0 +1,412 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "DirectiveAcceptanceCriterion": {
+      "additionalProperties": false,
+      "properties": {
+        "criterion_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Criterion Id",
+          "type": "string"
+        },
+        "required_assertion_roles": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Required Assertion Roles",
+          "type": "array"
+        },
+        "required_review_signals": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Required Review Signals",
+          "type": "array"
+        }
+      },
+      "required": [
+        "criterion_id"
+      ],
+      "title": "DirectiveAcceptanceCriterion",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "ProfileDirective": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_criterion": {
+          "$ref": "#/$defs/DirectiveAcceptanceCriterion"
+        },
+        "conflict_key": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Conflict Key",
+          "type": "string"
+        },
+        "directive_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Directive Id",
+          "type": "string"
+        },
+        "directive_kind": {
+          "enum": [
+            "preserve_floor",
+            "calibrate_reader",
+            "adjust_presentation",
+            "submission_rule",
+            "require_scientific_content",
+            "hard_template",
+            "imitate_voice",
+            "suppress_boundary"
+          ],
+          "title": "Directive Kind",
+          "type": "string"
+        },
+        "effect_scope": {
+          "enum": [
+            "formal_truth",
+            "scientific_claim",
+            "discovery",
+            "economic_interpretation",
+            "authoring",
+            "review",
+            "submission_rendering"
+          ],
+          "title": "Effect Scope",
+          "type": "string"
+        },
+        "non_applicability": {
+          "anyOf": [
+            {
+              "minLength": 24,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Non Applicability"
+        },
+        "statement": {
+          "minLength": 24,
+          "title": "Statement",
+          "type": "string"
+        },
+        "strength": {
+          "enum": [
+            "invariant",
+            "required",
+            "soft"
+          ],
+          "title": "Strength",
+          "type": "string"
+        }
+      },
+      "required": [
+        "directive_id",
+        "conflict_key",
+        "statement",
+        "strength",
+        "effect_scope",
+        "directive_kind",
+        "acceptance_criterion"
+      ],
+      "title": "ProfileDirective",
+      "type": "object"
+    },
+    "ResolvedDirective": {
+      "additionalProperties": false,
+      "properties": {
+        "directive": {
+          "$ref": "#/$defs/ProfileDirective"
+        },
+        "outcome": {
+          "enum": [
+            "active",
+            "rejected"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "precedence": {
+          "maximum": 10,
+          "minimum": 1,
+          "title": "Precedence",
+          "type": "integer"
+        },
+        "rejection_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "universal_floor_conflict",
+                "forbidden_scientific_effect",
+                "hard_venue_template",
+                "named_voice_imitation",
+                "boundary_suppression",
+                "inactive_or_provisional_source",
+                "lower_precedence_conflict",
+                "not_applicable"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rejection Reason"
+        },
+        "source_card_ref": {
+          "$ref": "#/$defs/StaticResourceRef"
+        },
+        "source_layer_kind": {
+          "enum": [
+            "universal_floor",
+            "theory_mode",
+            "ambition",
+            "archetype",
+            "field",
+            "audience",
+            "venue_overlay",
+            "submission_constraint"
+          ],
+          "title": "Source Layer Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_card_ref",
+        "source_layer_kind",
+        "directive",
+        "precedence",
+        "outcome"
+      ],
+      "title": "ResolvedDirective",
+      "type": "object"
+    },
+    "SelectedProfileLayerBinding": {
+      "additionalProperties": false,
+      "description": "Thin binding to a selected static layer; no catalog/card embedding.",
+      "properties": {
+        "layer_kind": {
+          "enum": [
+            "universal_floor",
+            "theory_mode",
+            "ambition",
+            "archetype",
+            "field",
+            "audience",
+            "venue_overlay",
+            "submission_constraint"
+          ],
+          "title": "Layer Kind",
+          "type": "string"
+        },
+        "layer_ref": {
+          "$ref": "#/$defs/StaticResourceRef"
+        },
+        "selection_key": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Selection Key",
+          "type": "string"
+        },
+        "source_status": {
+          "enum": [
+            "active",
+            "provisional",
+            "inactive"
+          ],
+          "title": "Source Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "layer_ref",
+        "layer_kind",
+        "selection_key",
+        "source_status"
+      ],
+      "title": "SelectedProfileLayerBinding",
+      "type": "object"
+    },
+    "StaticResourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "resource_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Resource Id",
+          "type": "string"
+        },
+        "resource_kind": {
+          "enum": [
+            "profile_layer",
+            "profile_catalog",
+            "craft_source",
+            "craft_move",
+            "craft_corpus"
+          ],
+          "title": "Resource Kind",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "resource_kind",
+        "resource_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "StaticResourceRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/profile-craft/v1/resolved-profile-stack.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "active_requirements": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Active Requirements",
+      "type": "array"
+    },
+    "active_soft_preferences": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Active Soft Preferences",
+      "type": "array"
+    },
+    "catalog_release_ref": {
+      "$ref": "#/$defs/StaticResourceRef"
+    },
+    "directive_resolutions": {
+      "items": {
+        "$ref": "#/$defs/ResolvedDirective"
+      },
+      "minItems": 1,
+      "title": "Directive Resolutions",
+      "type": "array"
+    },
+    "resolved_at": {
+      "minLength": 1,
+      "title": "Resolved At",
+      "type": "string"
+    },
+    "resolved_by": {
+      "$ref": "#/$defs/Actor"
+    },
+    "resolver_version": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Resolver Version",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "selected_layers": {
+      "items": {
+        "$ref": "#/$defs/SelectedProfileLayerBinding"
+      },
+      "minItems": 6,
+      "title": "Selected Layers",
+      "type": "array"
+    },
+    "source_state_revision": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Source State Revision",
+      "type": "string"
+    },
+    "stack_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Stack Id",
+      "type": "string"
+    },
+    "target_profile_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Target Profile Hash",
+      "type": "string"
+    },
+    "target_profile_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    }
+  },
+  "required": [
+    "stack_id",
+    "target_profile_ref",
+    "target_profile_hash",
+    "catalog_release_ref",
+    "selected_layers",
+    "directive_resolutions",
+    "active_requirements",
+    "active_soft_preferences",
+    "source_state_revision",
+    "resolver_version",
+    "resolved_by",
+    "resolved_at"
+  ],
+  "title": "ResolvedProfileStack",
+  "type": "object"
+}

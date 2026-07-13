@@ -1,0 +1,287 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "DecisionVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "version"
+      ],
+      "title": "DecisionVersionRef",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "StaticResourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "resource_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Resource Id",
+          "type": "string"
+        },
+        "resource_kind": {
+          "enum": [
+            "profile_layer",
+            "profile_catalog",
+            "craft_source",
+            "craft_move",
+            "craft_corpus"
+          ],
+          "title": "Resource Kind",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "resource_kind",
+        "resource_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "StaticResourceRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/profile-craft/v1/target-profile.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "ambition": {
+      "enum": [
+        "frontier_general_interest",
+        "frontier_theory",
+        "field_frontier"
+      ],
+      "title": "Ambition",
+      "type": "string"
+    },
+    "base_profile_manifest_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Base Profile Manifest Hash",
+      "type": "string"
+    },
+    "base_profile_manifest_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "catalog_release_ref": {
+      "$ref": "#/$defs/StaticResourceRef"
+    },
+    "field_key": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Field Key",
+      "type": "string"
+    },
+    "human_decision_refs": {
+      "items": {
+        "$ref": "#/$defs/DecisionVersionRef"
+      },
+      "minItems": 4,
+      "title": "Human Decision Refs",
+      "type": "array"
+    },
+    "package_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Package Hash",
+      "type": "string"
+    },
+    "package_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "paper_ir_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Paper Ir Hash",
+      "type": "string"
+    },
+    "paper_ir_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "primary_archetype": {
+      "enum": [
+        "mechanism_explanation",
+        "comparative_statics_threshold",
+        "characterization_bounds",
+        "robustness_invariance_equivalence",
+        "design_implementation_impossibility",
+        "concept_representation_foundation"
+      ],
+      "title": "Primary Archetype",
+      "type": "string"
+    },
+    "primary_audience": {
+      "enum": [
+        "general_economist",
+        "economic_theorist",
+        "field_specialist",
+        "theory_and_field_bridge",
+        "policy_or_design_literate_economist"
+      ],
+      "title": "Primary Audience",
+      "type": "string"
+    },
+    "reader_path_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Reader Path Hash",
+      "type": "string"
+    },
+    "reader_path_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "secondary_audience": {
+      "anyOf": [
+        {
+          "enum": [
+            "general_economist",
+            "economic_theorist",
+            "field_specialist",
+            "theory_and_field_bridge",
+            "policy_or_design_literate_economist"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Secondary Audience"
+    },
+    "selected_at": {
+      "minLength": 1,
+      "title": "Selected At",
+      "type": "string"
+    },
+    "selected_by": {
+      "$ref": "#/$defs/Actor"
+    },
+    "source_state_revision": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Source State Revision",
+      "type": "string"
+    },
+    "submission_constraint_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/StaticResourceRef"
+      },
+      "title": "Submission Constraint Refs",
+      "type": "array"
+    },
+    "target_profile_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Target Profile Id",
+      "type": "string"
+    },
+    "theory_mode": {
+      "enum": [
+        "pure_theory",
+        "applied_theory"
+      ],
+      "title": "Theory Mode",
+      "type": "string"
+    },
+    "venue_overlay_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StaticResourceRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "target_profile_id",
+    "package_ref",
+    "package_hash",
+    "paper_ir_ref",
+    "paper_ir_hash",
+    "reader_path_ref",
+    "reader_path_hash",
+    "base_profile_manifest_ref",
+    "base_profile_manifest_hash",
+    "source_state_revision",
+    "catalog_release_ref",
+    "theory_mode",
+    "ambition",
+    "primary_archetype",
+    "field_key",
+    "primary_audience",
+    "human_decision_refs",
+    "selected_by",
+    "selected_at"
+  ],
+  "title": "TargetProfile",
+  "type": "object"
+}

@@ -40,6 +40,7 @@ _BYTE_CHECKED_ROUTES = frozenset(
         "verify.independent_rederivation",
         "audit.argument_assurance",
         "compose.manuscript_unit",
+        "compose.profiled_manuscript_unit",
         "review.manuscript_unit",
         "prepare.reader_probe",
         "answer.reader_probe",
@@ -176,10 +177,12 @@ def _validate_writer_binding(
         raise Phase3ArtifactError("canonical writer context is not UTF-8 JSON") from exc
     if not isinstance(context, dict) or canonical_json_bytes(context) != data:
         raise Phase3ArtifactError("canonical writer context is not canonical JSON")
-    packet = context.get("phase3_role_packet")
+    profiled = transaction.route_id == "compose.profiled_manuscript_unit"
+    packet = context.get("phase4_role_packet" if profiled else "phase3_role_packet")
     if (
         not isinstance(packet, dict)
-        or packet.get("packet_kind") != "canonical_writer"
+        or packet.get("packet_kind")
+        != ("profiled_canonical_writer" if profiled else "canonical_writer")
     ):
         raise Phase3ArtifactError("compose context lacks its canonical-writer role packet")
     if unit.writer_role_packet_hash != sha256_digest(canonical_json_bytes(packet)):
@@ -423,7 +426,10 @@ def validate_phase3_operational_artifacts(
                 )
         return
 
-    if transaction.route_id == "compose.manuscript_unit":
+    if transaction.route_id in {
+        "compose.manuscript_unit",
+        "compose.profiled_manuscript_unit",
+    }:
         units = [item for item in produced.values() if isinstance(item, a.ManuscriptUnit)]
         if len(units) != 1:
             raise Phase3ArtifactError("compose must produce one exact ManuscriptUnit")

@@ -6,15 +6,25 @@ The project is designed for pure and applied theory. It does not provide econome
 
 ## Current status
 
-The repository contains **Architecture v0.1**, the accepted **Phase 1 walking substrate**, the accepted **Phase 2 theory-kernel vertical slice**, and the implemented **Phase 3 assurance and authoring vertical slice**. Phase 1 is a local, provider-neutral scientific state kernel: it initializes a theory project, preserves immutable transactions and Decisions, compiles bounded route contexts, commits under an exclusive lock, derives facet-level staleness, protects human-owned files, renders noncanonical views, and recovers from interrupted commits. Its acceptance suite includes real two-process head races, abrupt subprocess exits on both sides of the atomic-head boundary, adversarial authority/privacy tests, and Windows junction/reparse checks.
+The repository contains **Architecture v0.1**, the accepted **Phase 1 walking substrate**, **Phase 2 theory-kernel vertical slice**, and **Phase 3 assurance and authoring vertical slice**, plus a **Phase 4 profile-and-craft vertical slice whose implementation and semantic acceptance are complete on `agent/phase4-profile-craft`**. An independent final adversarial branch review found no blocking findings; commit and merge into `main` remain pending. Phase 1 is a local, provider-neutral scientific state kernel: it initializes a theory project, preserves immutable transactions and Decisions, compiles bounded route contexts, commits under an exclusive lock, derives facet-level staleness, protects human-owned files, renders noncanonical views, and recovers from interrupted commits. Its acceptance suite includes real two-process head races, abrupt subprocess exits on both sides of the atomic-head boundary, adversarial authority/privacy tests, and Windows junction/reparse checks.
 
 Frozen registry v2 contains 19 routes: 16 are enabled (13 theory routes, dependency repair, and two sealed blind-evaluation routes), while its three authoring placeholders remain `not_implemented`. Registry v3 adds ten native assurance, authoring, cold-reader, closure, and effort routes without changing historical v1/v2 meanings. Each native route validates the exact input IDs, revisions, and lineage in its immutable run focus; satisfying only entity types and counts is insufficient, and a same-type foreign Paper IR, contract, probe, review, or assurance object fails closed. For assurance, the VAP is the authority root: its internal ClaimGraph, FormalModel, AssumptionMap, and VerificationBundle refs must match exactly; every verified obligation/record pair must belong to that bundle and have exactly one same-package re-derivation. The provider-visible selected refs and blind packet are a separate projection and may exclude the VAP even though the immutable focus retains its authority binding. The real Phase 3 gold chain extends the accepted Phase 2 ObjectStore history through three obligation-scoped blind re-derivations, a multi-record assurance bundle, Paper IR and reader contracts, and an actual manuscript artifact. Its first manuscript fails the economic-reader and cold-reader transfer gates, receives a typed `RevisionBrief`, is superseded by the same canonical writer, and reaches `authoring_ready` only after fresh formal, economic, and cold-reader reviews pass.
 
 Phase 3 validation reads and binds the immutable artifact bytes themselves--including re-derivation transcripts, proof-audit and harness records, manuscript text, and the separately sealed probe, answer key, and response--rather than trusting payload-declared hashes. Every non-whitespace manuscript-body character must belong to a typed prose span, and economic-reader and cold-reader coverage closes separately for every `ResultPacket`. `authoring_ready` requires the entire exact dependency chain to remain current and fresh, not merely the terminal review records. The writer cannot see cold probes or keys, the respondent cannot see the key, and append-only human-effort telemetry records active intervention separately from unattended compute. The comprehensive gold suffix currently has a noticeable replay and validation cost; reducing that cost without weakening byte, lineage, or isolation checks is a later optimization item.
 
-The local `submission` compiler is implemented, but it is intentionally narrow: it may promote an exact current authoring-ready working unit only with the governing human Decision and may change formatting and span offsets, never wording, typed meaning, or scientific scope. It does not execute an external submission. Phase 3 also binds a harness's exact executable predicate and receipt to a declared obligation, but cannot by itself prove that the predicate is semantically equivalent to the obligation's natural-language meaning; that mapping is an explicit Phase 4 hardening boundary.
+The local `submission` compiler is implemented, but it is intentionally narrow: it may promote an exact current authoring-ready working unit only with the governing human Decision and may change formatting and span offsets, never wording, typed meaning, or scientific scope. It does not execute an external submission. Phase 3 also binds a harness's exact executable predicate and receipt to a declared obligation, but cannot by itself prove that the predicate is semantically equivalent to the obligation's natural-language meaning.
 
-Phase 3 establishes a trustworthy one-result-block authoring core, not a complete-paper compiler or a publication guarantee. Phase 4's field/audience/venue profiles and theory craft-retrieval system remain to be implemented. No claim is made that the system can guarantee publication at Econometrica, a Top-5 journal, or a leading field journal. Those venues define an ambition and evaluation burden, not a style template or an acceptance promise.
+Phase 4 hardens that boundary with an additive `registry.v4.json` and exactly eight native routes: obligation mapping and audit, profile resolution, reader-problem diagnosis, function-first craft retrieval, profiled composition, independent craft-realization review, and profile/craft closure. All Phase 4 payloads live in an independent `profile_craft` namespace; copied v1--v3 routes retain their historical route versions, instructions, validators, and replay meanings. A `TargetProfile` pins the exact current Phase 3 package, Paper IR, reader path, and base profile manifest as well as effective human Decisions; a changed or foreign dependency fails freshness and invalidates its Phase 4 descendants. The pinned seed profile catalog and craft corpus are packaged policy resources rather than project entities. The corpus contains internal functional cards, not source prose, and the profiled writer receives selected functions and four typed project-semantic source fields without anchor identities, passages, or hidden reader material. These access and voice controls reduce leakage and imitation risk; they are not copyright or legal proof.
+
+The operational checkpoint continues the real Phase 3 ObjectStore chain through actual immutable transactions, route validation, review closure, staleness, and replay. Its finite counterexample receipt is exactly rerun, decomposed with JSON Pointer clause locators, and exercised with a typed domain witness and five mandatory downgrade controls. Empty domain, constant true, conclusion flip, and domain narrowing are executable recomputations. Because the bare finite-scan predicate has no assumption component, omitted assumption instead retains the same predicate bytes and is recorded as a typed unexecutable control; it forces an explicit limitation and prohibits exact approval rather than being claimed as an executed or killed mutant. An `approved_partial` mapping must preserve every typed limitation downstream and project it into closure; neither mapper, auditor, resolver, nor closure may upgrade it to exact theorem evidence.
+
+After human-confirmed L2 target Decisions resolve a profile stack, a post-manuscript diagnosis must bind the exact blocked `ReviewClosure`, exact `RevisionBrief`, every blocking instruction and finding, affected section roles, and four non-interchangeable semantic source selectors. Only a typed local-exposition failure is craft-eligible. Retrieval recomputes a deterministic **minimum-cardinality set cover v2**, with a stable lexical tie break, over the exact revision requirements; the seed release contains one functional move with exact extractors for `mechanism_explanation` and `comparative_statics_threshold`, not broad archetype or craft coverage. Profile precedence is non-blending: the universal floor is absolute, otherwise the highest applicable layer wins, and a conflicting equal-precedence pair fails resolution. Independent assessment then checks each revision requirement's assertion, section, and ordered Phase 4 realization-source binding, every active directive's observable acceptance criterion, and the target reader's benchmark, mechanism, boundary, and nearby-case recovery before closure may pass. These Phase 4 source bindings live in `CraftMoveRealization`; they do not broaden the frozen Phase 3 `ConsequentialSpan.source_fields`, which remains reserved for exact Phase 3 scientific projection sources.
+
+This checkpoint uses a deterministic writer fixture: it validates orchestration and scientific-state protocol, but it does not call an external LLM, generate a complete paper autonomously, or demonstrate paper quality, Top-5 performance, legal compliance, or reduced human effort. Current acceptance evidence comprises an independent final adversarial branch review with no blocking findings; 82/82 focused Phase 4 non-gold checks; the complete non-gold suite with 403 tests passing and five skips; an uninterrupted full-genesis Phase 1→4 gold test passing in 6156.901 seconds; all five exporter checks; `doctor` with `required_ok=true`; registry v4 with 34 routes and hash `d81276ed9b7482768840ef89980d6cbb81361ca2ff84acee3ab7da7bb67eae7e`; compilation of 98 Python files; and `git diff --check`.
+
+The uninterrupted final-code gold run is the primary end-to-end acceptance evidence. The earlier fresh segmented real-ObjectStore continuation remains additional historical-integrity evidence: it ran from frozen Phase 3 head `dfb04a...` through run 52, and independent verification at head `88b656...` found 87 entities, all 67 historical entities byte-identical, all 182 historical transaction/artifact/provenance files unchanged, `replay_at(final.head) == replay(final)`, exactly one current ready `ProfileCraftClosure`, and diagnostic coverage with all eight typed limitations preserved. The 6156.901-second runtime still identifies full-history replay as a performance target; it is no longer an uncompleted acceptance command. Commit and merge remain pending. The internal phrase and voice checks are bounded controls over pinned internal derived fields; they are not plagiarism, copyright, authorship, or legal certification.
+
+Phase 4 establishes one trustworthy one-result-block repair loop, not a complete-paper compiler or a publication guarantee. Phase 5 is reserved for controlled multi-agent lanes and optional adapters after the single-writer core is stable. Phase 6 owns held-out v1/v2 comparisons, ablations, human-effort measurement, and hardening. No phase guarantees publication at Econometrica, a Top-5 journal, or a leading field journal; those venues define an ambition and evaluation burden, not a style template or acceptance promise.
 
 ## Design thesis
 
@@ -50,6 +60,7 @@ A typed canonical state, dependency graph, decision history, and route-specific 
 - [Phase 1 executable contract](docs/implementation/phase1_contract.md)
 - [Phase 2 executable contract](docs/implementation/phase2_contract.md)
 - [Phase 3 executable contract](docs/implementation/phase3_contract.md)
+- [Phase 4 executable contract](docs/implementation/phase4_contract.md)
 
 Each detailed document owns one part of the design. `ARCHITECTURE.md` defines the cross-cutting constitution and points to those owners; it does not duplicate their full specifications.
 
@@ -88,7 +99,36 @@ python -m unittest discover -s tests -v
 python scripts/export_schemas.py --check
 python scripts/export_theory_schemas.py --check
 python scripts/export_authoring_schemas.py --check
+python scripts/export_profile_craft_schemas.py --check
+python scripts/export_profile_craft_resources.py --check
 ```
+
+## Resume on another computer
+
+The Git repository, not a Codex conversation, is the durable handoff. Before
+moving machines, commit and push the current branch; uncommitted files do not
+follow a clone. On the new computer, clone the repository and then use `main`
+if Phase 4 has been merged, or track the Phase 4 branch if it is still under
+review:
+
+```text
+git clone https://github.com/viplee110/econ-theorist-ai-v2.git
+cd econ-theorist-ai-v2
+git fetch origin
+git switch main
+git pull --ff-only
+
+# Only while Phase 4 is unmerged:
+git switch --track origin/agent/phase4-profile-craft
+```
+
+Install Python 3.11+ dependencies with `pip install -e .`, run `etai doctor`,
+then run the five exporter checks above and
+`python -m unittest discover -s tests -v`. Read `AGENTS.md`, the implementation
+plan, and the current phase contract before making changes; together they
+replace the missing chat history. A clean `git status` and exact exporter
+checks establish that the new machine has the same versioned source and policy
+resources.
 
 ## License
 

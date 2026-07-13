@@ -6,7 +6,6 @@ from tests.helpers import REPOSITORY_ROOT
 
 from econ_theorist.models import RouteSpecV3
 from econ_theorist.policy import (
-    ROUTE_REGISTRY_HASH,
     ROUTE_REGISTRY_V1_HASH,
     ROUTE_REGISTRY_V2_HASH,
     ROUTE_REGISTRY_V3_HASH,
@@ -20,7 +19,6 @@ from econ_theorist.policy import (
     V3_NATIVE_ROUTE_IDS,
     V3_ROUTE_IDS,
     instruction_bundle_bytes,
-    load_route_registry,
     load_route_registry_by_hash,
     registry_hash,
     selector_version_for_route,
@@ -29,7 +27,7 @@ from scripts.export_authoring_schemas import check as check_authoring_schemas
 
 
 class Phase3PolicyCompatibilityTests(unittest.TestCase):
-    def test_historical_catalogs_remain_exact_and_active_v3_is_distinct(self) -> None:
+    def test_historical_catalogs_through_v3_remain_exact(self) -> None:
         expected = (
             (ROUTE_REGISTRY_V1_HASH, 1, V1_ROUTE_IDS, V1_ENABLED_ROUTE_IDS),
             (ROUTE_REGISTRY_V2_HASH, 2, V2_ROUTE_IDS, V2_ENABLED_ROUTE_IDS),
@@ -51,10 +49,6 @@ class Phase3PolicyCompatibilityTests(unittest.TestCase):
                     },
                     set(enabled_ids),
                 )
-
-        active = load_route_registry()
-        self.assertEqual(active.registry_version, 3)
-        self.assertEqual(ROUTE_REGISTRY_HASH, ROUTE_REGISTRY_V3_HASH)
 
     def test_v3_preserves_v2_route_versions_and_versions_native_routes(self) -> None:
         catalog = load_route_registry_by_hash(ROUTE_REGISTRY_V3_HASH)

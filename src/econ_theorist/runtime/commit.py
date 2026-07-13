@@ -21,8 +21,10 @@ from ..errors import RuntimeStoreError
 from ..legacy_boundary import (
     snapshot_has_phase2_material,
     snapshot_has_phase3_material,
+    snapshot_has_phase4_material,
     transaction_introduces_phase2_material,
     transaction_introduces_phase3_material,
+    transaction_introduces_phase4_material,
 )
 from ..models import (
     ArtifactRegistration,
@@ -31,7 +33,11 @@ from ..models import (
     Snapshot,
     Transaction,
 )
-from ..policy import ROUTE_REGISTRY_V1_HASH, ROUTE_REGISTRY_V2_HASH
+from ..policy import (
+    ROUTE_REGISTRY_V1_HASH,
+    ROUTE_REGISTRY_V2_HASH,
+    ROUTE_REGISTRY_V3_HASH,
+)
 from .faults import inject_fault
 from .layout import StoreLayout
 from .lock import ExclusiveFileLock
@@ -579,9 +585,11 @@ def _validate_live_registry_boundary(
             )
         if transaction_introduces_phase2_material(
             transaction
-        ) or transaction_introduces_phase3_material(transaction):
+        ) or transaction_introduces_phase3_material(
+            transaction
+        ) or transaction_introduces_phase4_material(transaction):
             raise CandidateError(
-                "frozen v1 live writes cannot create or mutate packed Phase 2/3 "
+                "frozen v1 live writes cannot create or mutate packed Phase 2/3/4 "
                 "entities or register blind candidate locks"
             )
         return
@@ -590,9 +598,21 @@ def _validate_live_registry_boundary(
             raise CandidateError(
                 "frozen v2 routes are replay-only after Phase 3 material enters a project"
             )
-        if transaction_introduces_phase3_material(transaction):
+        if transaction_introduces_phase3_material(
+            transaction
+        ) or transaction_introduces_phase4_material(transaction):
             raise CandidateError(
-                "frozen v2 live writes cannot create or mutate packed Phase 3 entities"
+                "frozen v2 live writes cannot create or mutate packed Phase 3/4 entities"
+            )
+        return
+    if route_registry_hash == ROUTE_REGISTRY_V3_HASH:
+        if base_snapshot is not None and snapshot_has_phase4_material(base_snapshot):
+            raise CandidateError(
+                "frozen v3 routes are replay-only after Phase 4 material enters a project"
+            )
+        if transaction_introduces_phase4_material(transaction):
+            raise CandidateError(
+                "frozen v3 live writes cannot create or mutate packed Phase 4 entities"
             )
 
 

@@ -1,0 +1,355 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "StaticResourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "resource_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Resource Id",
+          "type": "string"
+        },
+        "resource_kind": {
+          "enum": [
+            "profile_layer",
+            "profile_catalog",
+            "craft_source",
+            "craft_move",
+            "craft_corpus"
+          ],
+          "title": "Resource Kind",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "resource_kind",
+        "resource_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "StaticResourceRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/profile-craft/v1/craft-move.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "compatible_archetypes": {
+      "items": {
+        "enum": [
+          "mechanism_explanation",
+          "comparative_statics_threshold",
+          "characterization_bounds",
+          "robustness_invariance_equivalence",
+          "design_implementation_impossibility",
+          "concept_representation_foundation"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Compatible Archetypes",
+      "type": "array"
+    },
+    "compatible_audiences": {
+      "items": {
+        "enum": [
+          "general_economist",
+          "economic_theorist",
+          "field_specialist",
+          "theory_and_field_bridge",
+          "policy_or_design_literate_economist"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Compatible Audiences",
+      "type": "array"
+    },
+    "compatible_causal_classes": {
+      "items": {
+        "enum": [
+          "initial_planning",
+          "local_exposition",
+          "reader_path_design",
+          "target_profile_mismatch",
+          "scientific_content"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Compatible Causal Classes",
+      "type": "array"
+    },
+    "compatible_field_keys": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Compatible Field Keys",
+      "type": "array"
+    },
+    "compatible_theory_modes": {
+      "items": {
+        "enum": [
+          "pure_theory",
+          "applied_theory"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Compatible Theory Modes",
+      "type": "array"
+    },
+    "confidence": {
+      "enum": [
+        "provisional",
+        "supported",
+        "strong"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "contrast_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/StaticResourceRef"
+      },
+      "title": "Contrast Refs",
+      "type": "array"
+    },
+    "created_at": {
+      "minLength": 1,
+      "title": "Created At",
+      "type": "string"
+    },
+    "created_by": {
+      "$ref": "#/$defs/Actor"
+    },
+    "eligible_section_roles": {
+      "items": {
+        "enum": [
+          "introduction",
+          "model_motivation",
+          "model",
+          "result_block",
+          "extension",
+          "conclusion",
+          "appendix"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Eligible Section Roles",
+      "type": "array"
+    },
+    "failure_modes": {
+      "items": {
+        "minLength": 24,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Failure Modes",
+      "type": "array"
+    },
+    "function_key": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Function Key",
+      "type": "string"
+    },
+    "functional_name": {
+      "minLength": 1,
+      "title": "Functional Name",
+      "type": "string"
+    },
+    "intended_reader_update": {
+      "minLength": 24,
+      "title": "Intended Reader Update",
+      "type": "string"
+    },
+    "matched_anchor_refs": {
+      "items": {
+        "$ref": "#/$defs/StaticResourceRef"
+      },
+      "minItems": 1,
+      "title": "Matched Anchor Refs",
+      "type": "array"
+    },
+    "move_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Move Id",
+      "type": "string"
+    },
+    "non_applicability": {
+      "items": {
+        "minLength": 24,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Non Applicability",
+      "type": "array"
+    },
+    "non_applicability_rule_ids": {
+      "items": {
+        "enum": [
+          "upstream_science_unresolved",
+          "nonlocal_causal_class",
+          "semantic_inputs_unavailable",
+          "theory_mode_incompatible",
+          "field_incompatible",
+          "section_role_incompatible"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Non Applicability Rule Ids",
+      "type": "array"
+    },
+    "reader_problem_key": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Reader Problem Key",
+      "type": "string"
+    },
+    "required_semantic_inputs": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Required Semantic Inputs",
+      "type": "array"
+    },
+    "resource_version": {
+      "minimum": 1,
+      "title": "Resource Version",
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source_phrase_material_included": {
+      "const": false,
+      "default": false,
+      "title": "Source Phrase Material Included",
+      "type": "boolean"
+    },
+    "supported_repair_actions": {
+      "items": {
+        "enum": [
+          "correct_formal_expression",
+          "narrow_scope",
+          "restore_assumption",
+          "repair_explanation",
+          "replace_example_or_witness",
+          "repair_reader_path",
+          "stabilize_terminology",
+          "add_boundary",
+          "remove_governance_language",
+          "request_human_decision"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Supported Repair Actions",
+      "type": "array"
+    },
+    "trigger_conditions": {
+      "items": {
+        "minLength": 24,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Trigger Conditions",
+      "type": "array"
+    },
+    "typical_placements": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Typical Placements",
+      "type": "array"
+    },
+    "valid_variants": {
+      "items": {
+        "minLength": 24,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Valid Variants",
+      "type": "array"
+    },
+    "voice_policy": {
+      "const": "functional_properties_only",
+      "default": "functional_properties_only",
+      "title": "Voice Policy",
+      "type": "string"
+    }
+  },
+  "required": [
+    "move_id",
+    "resource_version",
+    "functional_name",
+    "reader_problem_key",
+    "function_key",
+    "trigger_conditions",
+    "required_semantic_inputs",
+    "supported_repair_actions",
+    "intended_reader_update",
+    "typical_placements",
+    "valid_variants",
+    "failure_modes",
+    "compatible_archetypes",
+    "compatible_audiences",
+    "compatible_theory_modes",
+    "compatible_field_keys",
+    "eligible_section_roles",
+    "compatible_causal_classes",
+    "non_applicability_rule_ids",
+    "matched_anchor_refs",
+    "confidence",
+    "non_applicability",
+    "created_by",
+    "created_at"
+  ],
+  "title": "CraftMove",
+  "type": "object"
+}

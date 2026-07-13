@@ -1,0 +1,300 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ArtifactDependencyRef": {
+      "additionalProperties": false,
+      "description": "Exact immutable artifact bytes consumed by a canonical entity.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "ArtifactDependencyRef",
+      "type": "object"
+    },
+    "DirectiveAcceptanceCriterion": {
+      "additionalProperties": false,
+      "properties": {
+        "criterion_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Criterion Id",
+          "type": "string"
+        },
+        "required_assertion_roles": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Required Assertion Roles",
+          "type": "array"
+        },
+        "required_review_signals": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Required Review Signals",
+          "type": "array"
+        }
+      },
+      "required": [
+        "criterion_id"
+      ],
+      "title": "DirectiveAcceptanceCriterion",
+      "type": "object"
+    },
+    "ProfileDirective": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_criterion": {
+          "$ref": "#/$defs/DirectiveAcceptanceCriterion"
+        },
+        "conflict_key": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Conflict Key",
+          "type": "string"
+        },
+        "directive_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Directive Id",
+          "type": "string"
+        },
+        "directive_kind": {
+          "enum": [
+            "preserve_floor",
+            "calibrate_reader",
+            "adjust_presentation",
+            "submission_rule",
+            "require_scientific_content",
+            "hard_template",
+            "imitate_voice",
+            "suppress_boundary"
+          ],
+          "title": "Directive Kind",
+          "type": "string"
+        },
+        "effect_scope": {
+          "enum": [
+            "formal_truth",
+            "scientific_claim",
+            "discovery",
+            "economic_interpretation",
+            "authoring",
+            "review",
+            "submission_rendering"
+          ],
+          "title": "Effect Scope",
+          "type": "string"
+        },
+        "non_applicability": {
+          "anyOf": [
+            {
+              "minLength": 24,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Non Applicability"
+        },
+        "statement": {
+          "minLength": 24,
+          "title": "Statement",
+          "type": "string"
+        },
+        "strength": {
+          "enum": [
+            "invariant",
+            "required",
+            "soft"
+          ],
+          "title": "Strength",
+          "type": "string"
+        }
+      },
+      "required": [
+        "directive_id",
+        "conflict_key",
+        "statement",
+        "strength",
+        "effect_scope",
+        "directive_kind",
+        "acceptance_criterion"
+      ],
+      "title": "ProfileDirective",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/profile-craft/v1/profile-layer-card.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "confidence": {
+      "enum": [
+        "provisional",
+        "supported",
+        "strong"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "created_at": {
+      "minLength": 1,
+      "title": "Created At",
+      "type": "string"
+    },
+    "created_by": {
+      "$ref": "#/$defs/Actor"
+    },
+    "directives": {
+      "items": {
+        "$ref": "#/$defs/ProfileDirective"
+      },
+      "minItems": 1,
+      "title": "Directives",
+      "type": "array"
+    },
+    "evidence_as_of": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Evidence As Of"
+    },
+    "evidence_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ArtifactDependencyRef"
+      },
+      "title": "Evidence Refs",
+      "type": "array"
+    },
+    "is_soft_overlay": {
+      "default": false,
+      "title": "Is Soft Overlay",
+      "type": "boolean"
+    },
+    "layer_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Layer Id",
+      "type": "string"
+    },
+    "layer_kind": {
+      "enum": [
+        "universal_floor",
+        "theory_mode",
+        "ambition",
+        "archetype",
+        "field",
+        "audience",
+        "venue_overlay",
+        "submission_constraint"
+      ],
+      "title": "Layer Kind",
+      "type": "string"
+    },
+    "non_applicability": {
+      "default": [],
+      "items": {
+        "minLength": 24,
+        "type": "string"
+      },
+      "title": "Non Applicability",
+      "type": "array"
+    },
+    "resource_version": {
+      "minimum": 1,
+      "title": "Resource Version",
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "selection_key": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+      "title": "Selection Key",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "active",
+        "provisional",
+        "inactive"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "theory_only": {
+      "const": true,
+      "default": true,
+      "title": "Theory Only",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "layer_id",
+    "resource_version",
+    "layer_kind",
+    "selection_key",
+    "status",
+    "directives",
+    "confidence",
+    "created_by",
+    "created_at"
+  ],
+  "title": "ProfileLayerCard",
+  "type": "object"
+}

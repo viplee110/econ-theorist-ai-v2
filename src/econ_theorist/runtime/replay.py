@@ -23,7 +23,7 @@ from ..codec import (
     transaction_digest,
 )
 from ..errors import EconTheoristError, RuntimeStoreError
-from ..legacy_boundary import snapshot_has_phase3_material
+from ..legacy_boundary import snapshot_has_phase3_material, snapshot_has_phase4_material
 from ..models import (
     ArtifactDependencyRef,
     ArtifactPrivacySubject,
@@ -51,6 +51,7 @@ from ..models import (
     RouteRun,
     RouteSpecV2,
     RouteSpecV3,
+    RouteSpecV4,
     RetireEntityOp,
     RetireRelationOp,
     Snapshot,
@@ -67,6 +68,7 @@ from ..policy import (
     KERNEL_VERSION,
     VALIDATOR_VERSION,
     V3_NATIVE_ROUTE_IDS,
+    V4_NATIVE_ROUTE_IDS,
     decision_registry_version_for_route,
     load_route_registry_by_hash,
     route_spec,
@@ -79,6 +81,11 @@ from ..theory_validation import (
     validate_phase2_human_gate_transaction,
     validate_phase2_route_transaction,
     validate_theory_projection,
+)
+from ..profile_craft_validation import (
+    ProfileCraftValidationError,
+    validate_phase4_route_transaction,
+    validate_profile_craft_projection,
 )
 from .freshness import (
     FacetPathError,
@@ -497,7 +504,13 @@ def _validate_operational_provenance(
     )
 
     try:
-        if isinstance(route, RouteSpecV3) and route.route_id in V3_NATIVE_ROUTE_IDS:
+        if (
+            isinstance(route, RouteSpecV4)
+            and route.route_id in V4_NATIVE_ROUTE_IDS
+        ) or (
+            isinstance(route, RouteSpecV3)
+            and route.route_id in V3_NATIVE_ROUTE_IDS
+        ):
             validate_phase3_focus_entity_evidence(
                 base_snapshot, run, transaction
             )
@@ -516,6 +529,17 @@ def _validate_operational_provenance(
     except Phase3ArtifactError as exc:
         raise ChainIntegrityError(
             f"committed Phase 3 artifact bytes are inadmissible: {exc}"
+        ) from exc
+    from .phase4_artifacts import (
+        Phase4ArtifactError,
+        validate_phase4_operational_artifacts,
+    )
+
+    try:
+        validate_phase4_operational_artifacts(layout, base_snapshot, transaction)
+    except Phase4ArtifactError as exc:
+        raise ChainIntegrityError(
+            f"committed Phase 4 artifact bytes are inadmissible: {exc}"
         ) from exc
     return manifest.route_registry_hash
 
@@ -2441,6 +2465,18 @@ def validate_candidate(
         registry = load_route_registry_by_hash(route_registry_hash)
         bound_route = route_spec(transaction.route_id, registry)
         if (
+            isinstance(bound_route, RouteSpecV4)
+            and bound_route.route_id in V4_NATIVE_ROUTE_IDS
+        ):
+            try:
+                validate_phase4_route_transaction(
+                    snapshot, transaction, bound_route
+                )
+            except ProfileCraftValidationError as exc:
+                raise CandidateValidationError(
+                    f"Phase 4 route contract rejected the transaction: {exc}"
+                ) from exc
+        elif (
             isinstance(bound_route, RouteSpecV3)
             and bound_route.route_id in V3_NATIVE_ROUTE_IDS
         ):
@@ -2516,6 +2552,13 @@ def validate_candidate(
         except AuthoringValidationError as exc:
             raise CandidateValidationError(
                 f"Phase 3 authoring projection is inadmissible: {exc}"
+            ) from exc
+    if snapshot_has_phase4_material(provisional):
+        try:
+            validate_profile_craft_projection(provisional)
+        except ProfileCraftValidationError as exc:
+            raise CandidateValidationError(
+                f"Phase 4 profile/craft projection is inadmissible: {exc}"
             ) from exc
     derived = derive_entity_statuses(
         entity_versions=provisional.entity_versions,
