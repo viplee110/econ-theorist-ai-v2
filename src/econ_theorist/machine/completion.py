@@ -13,9 +13,9 @@ import re
 from collections.abc import Mapping
 from datetime import datetime
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import Field
+from pydantic import Field, ValidationError
 
 from ..codec import canonical_json_bytes, sha256_digest, transaction_bytes
 from ..models import Digest, RegisterArtifactOp, StrictModel, Transaction
@@ -75,6 +75,22 @@ _REASONING_CLASSES = {
 
 class CompletionError(OperationalError):
     """A completion request is stale, unbound, unsafe, or internally corrupt."""
+
+
+class CandidateTransactionValidationError(CompletionError):
+    """Strict candidate model issues safe to return to the authoring agent."""
+
+    def __init__(
+        self,
+        *,
+        issue_count: int,
+        issues: tuple[dict[str, Any], ...],
+        truncated: bool,
+    ) -> None:
+        super().__init__("candidate Transaction failed strict model validation")
+        self.issue_count = issue_count
+        self.issues = issues
+        self.truncated = truncated
 
 
 class _CompletionOperationRecordV1(StrictModel):
@@ -473,9 +489,41 @@ def _has_exact_staged_candidate(
 def _read_candidate_source(path: str | Path) -> tuple[str, Transaction]:
     try:
         data = Path(path).read_bytes()
+    except OSError as exc:
+        raise CompletionError(
+            "candidate transaction is unavailable at the declared WorkPacket path"
+        ) from exc
+    try:
         transaction = Transaction.model_validate_json(data, strict=True)
-    except (OSError, ValueError) as exc:
-        raise CompletionError("candidate transaction is unavailable or invalid") from exc
+    except ValidationError as exc:
+        raw_issues = exc.errors(
+            include_url=False,
+            include_context=False,
+            include_input=False,
+        )
+        issues: list[dict[str, Any]] = []
+        for error in raw_issues[:20]:
+            location: list[str | int] = []
+            for item in error["loc"]:
+                if isinstance(item, int):
+                    location.append(item)
+                else:
+                    text = str(item)
+                    location.append(text if len(text) <= 160 else text[:157] + "...")
+            issue_type = str(error["type"])
+            message = str(error["msg"])
+            issues.append(
+                {
+                    "location": location,
+                    "type": issue_type if len(issue_type) <= 160 else issue_type[:157] + "...",
+                    "message": message if len(message) <= 500 else message[:497] + "...",
+                }
+            )
+        raise CandidateTransactionValidationError(
+            issue_count=len(raw_issues),
+            issues=tuple(issues),
+            truncated=len(raw_issues) > len(issues),
+        ) from exc
     body = transaction_bytes(transaction)
     return sha256_digest(body), transaction
 
@@ -1433,6 +1481,7 @@ def record_host_finish(
 __all__ = [
     "CompletionAction",
     "CompletionError",
+    "CandidateTransactionValidationError",
     "HostTerminalStatus",
     "candidate_source_digest",
     "complete_candidate",

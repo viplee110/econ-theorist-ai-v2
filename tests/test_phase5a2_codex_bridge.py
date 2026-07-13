@@ -376,6 +376,83 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
         self.assertEqual(repaired.completion.transaction_digest, expected)
         self.assertEqual(replay(StoreLayout.at(self.root)).head, expected)
 
+    def test_model_level_candidate_error_is_structured_and_repairable(self) -> None:
+        ready = self.bridge.invoke(self._start_request())
+        self.assertEqual(ready.outcome, "ready", ready)
+        valid = self._framing_transaction(ready.route_run_id)
+        operations = list(valid.operations)
+        frames = operations[2]
+        self.assertIsInstance(frames, CreateRelationOp)
+        assert isinstance(frames, CreateRelationOp)
+        invalid_data = valid.model_dump(mode="json")
+        invalid_data["operations"][2]["relation"]["dependency_mode"] = "hard"
+
+        candidate_path = self.root / ready.candidate_logical_path
+        candidate_path.parent.mkdir(parents=True, exist_ok=True)
+        completion_request = CodexCompleteRequestV1(
+            project_root=str(self.root),
+            route_run_id=ready.route_run_id,
+            work_packet_hash=ready.work_packet_hash,
+            delivery_envelope_hash=ready.delivery_envelope_hash,
+        )
+        candidate_path.write_text('{"operations":', encoding="utf-8")
+        malformed = self.bridge.invoke(completion_request)
+        self.assertEqual(malformed.outcome, "error", malformed)
+        self.assertEqual(
+            malformed.diagnostics[0].code, "codex_candidate_transaction_invalid"
+        )
+        self.assertEqual(
+            malformed.diagnostics[0].details["issues"][0]["type"], "json_invalid"
+        )
+
+        candidate_path.write_text(
+            json.dumps(invalid_data, indent=2) + "\n", encoding="utf-8"
+        )
+        rejected = self.bridge.invoke(completion_request)
+        self.assertEqual(rejected.outcome, "error", rejected)
+        self.assertFalse(rejected.mutated)
+        self.assertEqual(
+            rejected.diagnostics[0].code, "codex_candidate_transaction_invalid"
+        )
+        self.assertNotIn("operations.2", rejected.diagnostics[0].message)
+        self.assertNotIn("input_value", rejected.diagnostics[0].message)
+        details = rejected.diagnostics[0].details
+        self.assertEqual(details["model"], "Transaction")
+        self.assertTrue(details["repairable"])
+        self.assertEqual(
+            details["retry_action"],
+            "edit_declared_candidate_and_retry_same_request",
+        )
+        self.assertEqual(details["issue_count"], 1)
+        self.assertFalse(details["truncated"])
+        self.assertEqual(
+            details["issues"][0]["location"],
+            ["operations", 2, "relation.create", "relation"],
+        )
+        self.assertIn(
+            "invalidating relations require both exact facet endpoints",
+            details["issues"][0]["message"],
+        )
+        self.assertNotIn("input_value", json.dumps(details))
+        self.assertEqual(replay(StoreLayout.at(self.root)).head, ready.head)
+        run_root = (
+            ProjectOperationalLayout.at(StoreLayout.at(self.root)).runs
+            / ready.route_run_id
+        )
+        self.assertFalse((run_root / "completion-starts").exists())
+        self.assertFalse((run_root / "completion-operations").exists())
+
+        candidate_path.write_text(
+            json.dumps(valid.model_dump(mode="json"), indent=2) + "\n",
+            encoding="utf-8",
+        )
+        repaired = self.bridge.invoke(completion_request)
+        self.assertEqual(repaired.outcome, "committed", repaired)
+        self.assertEqual(
+            replay(StoreLayout.at(self.root)).head,
+            sha256_digest(transaction_bytes(valid)),
+        )
+
     def test_ready_response_has_self_contained_route_bound_authoring_contract(
         self,
     ) -> None:
@@ -433,6 +510,24 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
         self.assertEqual(contract.transaction_json_schema["title"], "Transaction")
         self.assertEqual(output.relation_json_schema["title"], "RelationVersion")
         self.assertEqual(output.route_outcome_json_schema["title"], "RouteOutcome")
+        invariants = {item.invariant_id: item for item in output.model_invariants}
+        self.assertEqual(
+            set(invariants),
+            {
+                "relation.trace_only_facets",
+                "relation.invalidating_exact_facets",
+                "relation.scope_sensitive_xor",
+                "relation.version_chain",
+            },
+        )
+        self.assertEqual(
+            invariants["relation.invalidating_exact_facets"].model,
+            "RelationVersion",
+        )
+        self.assertIn(
+            "trace_only",
+            invariants["relation.invalidating_exact_facets"].repair_hint,
+        )
 
         transaction = self._framing_transaction(run.route_run_id)
         parsed = Transaction.model_validate_json(

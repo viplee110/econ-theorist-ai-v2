@@ -90,6 +90,19 @@ class CandidatePayloadSchemaV1(StrictModel):
     payload_json_schema: dict[str, Any]
 
 
+class CandidateModelInvariantV1(StrictModel):
+    """Cross-field rule that ordinary JSON Schema cannot express exactly."""
+
+    model_invariant_schema: Literal[
+        "econ-theorist/candidate-model-invariant/v1"
+    ] = "econ-theorist/candidate-model-invariant/v1"
+    invariant_id: StableId
+    model: StableId
+    condition: NonEmptyString
+    requirement: NonEmptyString
+    repair_hint: NonEmptyString
+
+
 class CandidateRouteOutputContractV1(StrictModel):
     """Exact generic route exit surface; route instructions retain science."""
 
@@ -106,6 +119,7 @@ class CandidateRouteOutputContractV1(StrictModel):
     required_output_entities: tuple[RouteEntityRequirement, ...]
     required_output_relations: tuple[RouteRelationRequirement, ...]
     required_route_outcome_count: Literal[1] = 1
+    model_invariants: tuple[CandidateModelInvariantV1, ...]
     relation_json_schema: dict[str, Any]
     route_outcome_json_schema: dict[str, Any]
 
@@ -136,9 +150,42 @@ _AUTHORING_INSTRUCTIONS = (
     "For each typed entity, put {schema: payload_schema_id, payload: <schema-valid object>} in owner_facet and set every listed empty_facet to an empty object.",
     "Set every new EntityVersion and RelationVersion project_id, privacy, access_compartments, and created_at exactly to the corresponding transaction_bindings values; never rely on privacy or compartment defaults.",
     "Use only output_contract allowed operation, entity, and relation types; satisfy every output cardinality and the exact scientific exit conditions in work_packet.instruction_text.",
+    "JSON Schema is necessary but not sufficient: obey output_contract.model_invariants exactly and use the bridge's structured candidate diagnostics for any remaining model-level repair.",
     "Include exactly one route.outcome operation bound to transaction_bindings.route_run_id and transaction_bindings.route_id, with the same privacy and access compartments; candidate_refs must enumerate every exact canonical object produced by the Transaction, including any entity, relation, artifact, blocker, or other schema-permitted reference required by the route validator.",
     "Do not fabricate a human decision or approval; obey every work_packet.forbidden_actions entry and stop if the route requires unavailable human authority.",
     "The candidate source may be ordinary readable UTF-8 JSON and may end with a newline. The bridge validates it as a strict Transaction and computes the digest from engine-canonical Transaction bytes; do not hash the source file bytes or put a digest inside the object.",
+)
+
+
+_MODEL_INVARIANTS = (
+    CandidateModelInvariantV1(
+        invariant_id="relation.trace_only_facets",
+        model="RelationVersion",
+        condition="dependency_mode == 'trace_only'",
+        requirement="upstream and downstream must both be null",
+        repair_hint="Use trace_only for provenance links; relation importance alone does not justify hard invalidation.",
+    ),
+    CandidateModelInvariantV1(
+        invariant_id="relation.invalidating_exact_facets",
+        model="RelationVersion",
+        condition="dependency_mode != 'trace_only'",
+        requirement="upstream must bind the exact source entity/version and downstream must bind the exact target entity/version",
+        repair_hint="Either add both exact facet endpoints or change a provenance-only link to trace_only.",
+    ),
+    CandidateModelInvariantV1(
+        invariant_id="relation.scope_sensitive_xor",
+        model="RelationVersion",
+        condition="dependency_mode == 'scope_sensitive'",
+        requirement="exactly one of scope_ref or scope_overlap is required; other modes must omit scope_overlap",
+        repair_hint="Choose exact scope equality or typed overlap evidence, but never both.",
+    ),
+    CandidateModelInvariantV1(
+        invariant_id="relation.version_chain",
+        model="RelationVersion",
+        condition="all relation versions",
+        requirement="version 1 omits supersedes; version n > 1 supersedes version n - 1 with the same relation_id",
+        repair_hint="Bind the exact immediately preceding immutable relation version.",
+    ),
 )
 
 
@@ -264,6 +311,7 @@ def compile_candidate_authoring_contract(
         allowed_relation_types=route.allowed_relation_types,
         required_output_entities=route.required_output_entities,
         required_output_relations=route.required_output_relations,
+        model_invariants=_MODEL_INVARIANTS,
         relation_json_schema=RelationVersion.model_json_schema(mode="validation"),
         route_outcome_json_schema=RouteOutcome.model_json_schema(mode="validation"),
     )

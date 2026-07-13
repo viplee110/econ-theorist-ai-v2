@@ -27,7 +27,11 @@ from .machine.dispatcher import (
     TrustedHostCompletionObservation,
     TrustedHostDeliverySession,
 )
-from .machine.completion import candidate_source_digest
+from .machine.completion import (
+    CandidateTransactionValidationError,
+    CompletionError,
+    candidate_source_digest,
+)
 from .machine.models import (
     CandidateCompletionResultV1,
     CapabilityReceiptV1,
@@ -423,14 +427,19 @@ class CodexBridge:
             if isinstance(request, CodexStartRequestV1):
                 return self._start(request)
             return self._complete(request)
-        except (OSError, RuntimeError, ValueError) as exc:
+        except (CompletionError, OSError, RuntimeError, ValueError) as exc:
+            code = (
+                "codex_completion_protocol_error"
+                if isinstance(exc, CompletionError)
+                else "codex_bridge_error"
+            )
             return CodexBridgeResponseV1(
                 operation=request.operation,
                 request_digest=_request_digest(request),
                 outcome="error",
                 mutated=False,
                 diagnostics=(
-                    _diagnostic("codex_bridge_error", str(exc) or type(exc).__name__),
+                    _diagnostic(code, str(exc) or type(exc).__name__),
                 ),
             )
 
@@ -827,9 +836,43 @@ class CodexBridge:
         if request.action != "commit_staged":
             if transaction_path is None:
                 transaction_path = str(root / packet.candidate_logical_path)
-            computed_digest = candidate_source_digest(
-                StoreLayout.at(root), packet, transaction_path
-            )
+            try:
+                computed_digest = candidate_source_digest(
+                    StoreLayout.at(root), packet, transaction_path
+                )
+            except CandidateTransactionValidationError as exc:
+                return CodexBridgeResponseV1(
+                    operation=request.operation,
+                    request_digest=_request_digest(request),
+                    outcome="error",
+                    mutated=False,
+                    project_id=packet.project_id,
+                    head=replay(StoreLayout.at(root)).head,
+                    route_run_id=packet.route_run_id,
+                    work_packet_hash=request.work_packet_hash,
+                    delivery_envelope_hash=request.delivery_envelope_hash,
+                    candidate_logical_path=packet.candidate_logical_path,
+                    diagnostics=(
+                        DiagnosticV1(
+                            code="codex_candidate_transaction_invalid",
+                            severity="error",
+                            message=(
+                                "Candidate Transaction failed strict model validation; "
+                                "edit the declared candidate and retry the same complete request."
+                            ),
+                            details={
+                                "model": "Transaction",
+                                "repairable": True,
+                                "retry_action": (
+                                    "edit_declared_candidate_and_retry_same_request"
+                                ),
+                                "issue_count": exc.issue_count,
+                                "truncated": exc.truncated,
+                                "issues": list(exc.issues),
+                            },
+                        ),
+                    ),
+                )
             if (
                 effective_candidate_digest is not None
                 and effective_candidate_digest != computed_digest
