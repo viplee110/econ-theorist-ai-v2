@@ -2,18 +2,19 @@
 
 ## Current phase
 
-Phases 1--4 are accepted on `main`; Phase 4 implementation `63d3393` was merged
-by `89d2152`. Phase 5A.0, the design contract and status repair for safe
-natural-language onboarding and thin Codex, Claude Code, and Cursor host
-projections, is complete on `agent/phase5a-host-bootstrap-contract` after
-independent adversarial review found no remaining blocker. Its normative owner
-is `docs/implementation/phase5a_contract.md`.
+Phases 1--4 and the reviewed Phase 5A.0 contract are accepted on `main`; the
+contract was merged by `2192956`. The Phase 5A.1 generic IDE-neutral machine
+facade and its local acceptance evidence are complete in the current tree.
+Phase 5A.2--one real Codex route--is the next executable slice. The normative
+owner remains `docs/implementation/phase5a_contract.md`, and the public
+transport is documented in `docs/implementation/machine_protocol_v1.md`.
 
-Phase 5A.0 changes documentation and freezes acceptance semantics only. Do not
-claim that a host installer, generic facade, work packet, cross-host handoff,
-or one-sentence onboarding exists until its later executable slice and tests
-pass. Do not add host runtime code on the Phase 5A.0 branch; Phase 5A.1 begins
-as a separate executable slice after this contract is merged.
+Phase 5A.1 owns only the generic local machine facade: work packets, reliable
+candidate completion, exact retry, and ordinary recovery. Phase 5A.2 owns the
+real Codex handoff and completes the local research-ready gate. Do not claim a
+signed production installer or broad host parity from either slice.
+Public-distribution and hostile-environment hardening remain a later release
+profile and must not block local scientific use after the research-ready gate.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or
@@ -23,9 +24,12 @@ not duplicate route instructions, scientific gates, profiles, or validators.
 No host writes canonical ObjectStore bytes directly or confirms an L2/L3 human
 decision.
 
-The canonical repository verification command remains
-`python -m unittest discover -s tests -v`. Schema and pinned-resource
-verification requires all five accepted exporters:
+The routine complete non-long verification command is
+`python scripts/run_non_long_tests.py`. The raw
+`python -m unittest discover -s tests -v` command additionally executes the
+three hour-scale Phase 2/3/4 gold chains and is reserved for explicit gold
+revalidation. Schema and pinned-resource verification requires all six current
+exporter checks:
 
 ```text
 python scripts/export_schemas.py --check
@@ -33,14 +37,16 @@ python scripts/export_theory_schemas.py --check
 python scripts/export_authoring_schemas.py --check
 python scripts/export_profile_craft_schemas.py --check
 python scripts/export_profile_craft_resources.py --check
+python scripts/export_machine_schemas.py --check
 ```
 
 For the Phase 5A.0 documentation-only slice, also run `git diff --check`, verify
 every new local Markdown link, and search for stale Phase 4 branch/merge status.
-Later executable Phase 5A slices must add their focused contract, install,
-idempotence, root-binding, cross-host, privacy, recovery, and adversarial tests
-before requesting review. Report optional-tool skips separately; they are not
-passes.
+Later executable Phase 5A slices must add focused idempotence, root-binding,
+privacy-hygiene, recovery, and real-route tests in proportion to the local
+research profile. Supply-chain signing, hostile-host proofs, and full
+cross-platform matrices belong to the public-distribution profile. Report
+optional-tool skips separately; they are not passes.
 
 ## Scope
 
@@ -66,6 +72,13 @@ Agents may explore reversible branches and propose decisions. Human confirmation
 
 ## Host integration invariants
 
+The active deployment profile trusts the local researcher, operating system,
+user-selected IDE/account, and ordinary package manager. It protects against
+model mistakes, stale or repeated operations, ordinary crashes, wrong-project
+writes, accidental context mixing, and unintended disclosure. It does not
+claim resistance to an attacker who controls the local account, IDE, provider,
+or operating system.
+
 - Natural language is a user interface over the canonical engine, not a second
   research workflow.
 - The first installation or protected action may require a bounded host/OS
@@ -74,12 +87,13 @@ Agents may explore reversible branches and propose decisions. Human confirmation
   stores.
 - Repeated onboarding and host switching must preserve project id, head,
   derived run view, Decisions, blockers, and work-packet hashes.
-- Do not expose non-public content to a provider-backed host without the
-  contract's EgressPlan, authorization, and technical secret/compartment
-  isolation. Install permission is not egress consent.
-- Exclude unrestricted human-decision actions from model tools. A conforming
-  host requires the exact trusted-human approval receipt; Phase 1's local
-  `kind=human` assertion is not cryptographic identity.
+- Record the project's provider/privacy policy and expose only the exact work
+  packet. A `local_only` or sealed/blind route stops when the selected host
+  cannot provide the required isolation. Do not claim that model-reported host
+  settings are cryptographic proof.
+- Structural L2 Decisions and L3 external/destructive actions require an
+  explicit local human confirmation. Local self-use does not require a
+  cryptographic identity or a distributed approval ledger.
 - Preserve user-owned `AGENTS.md`, `CLAUDE.md`, Cursor rules, and unrelated
   working-tree changes. Modify only an engine-owned projection or stop with a
   manual merge proposal.

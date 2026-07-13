@@ -1,0 +1,77 @@
+{
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/candidate-completion-result.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "candidate_digest": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Candidate Digest"
+    },
+    "completion_result_schema": {
+      "const": "econ-theorist/candidate-completion-result/v1",
+      "default": "econ-theorist/candidate-completion-result/v1",
+      "title": "Completion Result Schema",
+      "type": "string"
+    },
+    "head_after": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Head After",
+      "type": "string"
+    },
+    "head_before": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Head Before",
+      "type": "string"
+    },
+    "host_receipt_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Host Receipt Hash",
+      "type": "string"
+    },
+    "route_run_id": {
+      "minLength": 1,
+      "title": "Route Run Id",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "staged",
+        "committed",
+        "stale_base",
+        "recorded_failure"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "transaction_digest": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Transaction Digest"
+    }
+  },
+  "required": [
+    "status",
+    "route_run_id",
+    "candidate_digest",
+    "transaction_digest",
+    "head_before",
+    "head_after",
+    "host_receipt_hash"
+  ],
+  "title": "CandidateCompletionResultV1",
+  "type": "object"
+}

@@ -1,0 +1,97 @@
+{
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/human-approval-receipt.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "action": {
+      "minLength": 1,
+      "title": "Action",
+      "type": "string"
+    },
+    "authenticator": {
+      "minLength": 1,
+      "title": "Authenticator",
+      "type": "string"
+    },
+    "authority_level": {
+      "enum": [
+        "L2",
+        "L3"
+      ],
+      "title": "Authority Level",
+      "type": "string"
+    },
+    "challenge_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Challenge Hash",
+      "type": "string"
+    },
+    "decision_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Decision Digest",
+      "type": "string"
+    },
+    "expires_at": {
+      "minLength": 1,
+      "title": "Expires At",
+      "type": "string"
+    },
+    "head": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Head",
+      "type": "string"
+    },
+    "issued_at": {
+      "minLength": 1,
+      "title": "Issued At",
+      "type": "string"
+    },
+    "issuer_channel_id": {
+      "minLength": 1,
+      "title": "Issuer Channel Id",
+      "type": "string"
+    },
+    "nonce": {
+      "minLength": 1,
+      "title": "Nonce",
+      "type": "string"
+    },
+    "project_id": {
+      "minLength": 1,
+      "title": "Project Id",
+      "type": "string"
+    },
+    "receipt_id": {
+      "minLength": 1,
+      "title": "Receipt Id",
+      "type": "string"
+    },
+    "receipt_schema": {
+      "const": "econ-theorist/human-approval-receipt/v1",
+      "default": "econ-theorist/human-approval-receipt/v1",
+      "title": "Receipt Schema",
+      "type": "string"
+    },
+    "selected_option": {
+      "minLength": 1,
+      "title": "Selected Option",
+      "type": "string"
+    }
+  },
+  "required": [
+    "receipt_id",
+    "challenge_hash",
+    "project_id",
+    "head",
+    "action",
+    "decision_digest",
+    "selected_option",
+    "authority_level",
+    "issued_at",
+    "expires_at",
+    "issuer_channel_id",
+    "nonce",
+    "authenticator"
+  ],
+  "title": "HumanApprovalReceiptV1",
+  "type": "object"
+}

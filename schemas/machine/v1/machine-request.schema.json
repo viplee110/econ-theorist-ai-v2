@@ -1,0 +1,128 @@
+{
+  "$defs": {
+    "DiscoveryGrantV1": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_discovery_roots": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Allowed Discovery Roots",
+          "type": "array"
+        },
+        "ancestor_check_boundary": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ancestor Check Boundary"
+        },
+        "grant_schema": {
+          "const": "econ-theorist/discovery-grant/v1",
+          "default": "econ-theorist/discovery-grant/v1",
+          "title": "Grant Schema",
+          "type": "string"
+        },
+        "selected_root": {
+          "minLength": 1,
+          "title": "Selected Root",
+          "type": "string"
+        },
+        "stable_workspace_root": {
+          "minLength": 1,
+          "title": "Stable Workspace Root",
+          "type": "string"
+        }
+      },
+      "required": [
+        "selected_root",
+        "allowed_discovery_roots",
+        "stable_workspace_root"
+      ],
+      "title": "DiscoveryGrantV1",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/machine-request.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "discovery_grant": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DiscoveryGrantV1"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "operation": {
+      "enum": [
+        "bootstrap.plan",
+        "bootstrap.verify",
+        "project.bind_or_initialize",
+        "project.inspect",
+        "navigation.plan_next",
+        "run.open_or_resume",
+        "egress.plan",
+        "packet.deliver",
+        "candidate.complete",
+        "host.finish",
+        "decision.confirm",
+        "operation.inspect"
+      ],
+      "title": "Operation",
+      "type": "string"
+    },
+    "operation_key": {
+      "anyOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Operation Key"
+    },
+    "parameters": {
+      "additionalProperties": true,
+      "title": "Parameters",
+      "type": "object"
+    },
+    "project_root": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Project Root"
+    },
+    "request_schema": {
+      "const": "econ-theorist/machine-request/v1",
+      "default": "econ-theorist/machine-request/v1",
+      "title": "Request Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "operation"
+  ],
+  "title": "MachineRequestV1",
+  "type": "object"
+}

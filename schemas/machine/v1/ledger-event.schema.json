@@ -1,0 +1,102 @@
+{
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/ledger-event.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "event": {
+      "minLength": 1,
+      "title": "Event",
+      "type": "string"
+    },
+    "ledger_event_schema": {
+      "const": "econ-theorist/ledger-event/v1",
+      "default": "econ-theorist/ledger-event/v1",
+      "title": "Ledger Event Schema",
+      "type": "string"
+    },
+    "ledger_kind": {
+      "enum": [
+        "operation",
+        "approval",
+        "egress"
+      ],
+      "title": "Ledger Kind",
+      "type": "string"
+    },
+    "operation_key": {
+      "anyOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Operation Key"
+    },
+    "payload_hash": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Payload Hash"
+    },
+    "previous_event_hash": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Previous Event Hash"
+    },
+    "recorded_at": {
+      "minLength": 1,
+      "title": "Recorded At",
+      "type": "string"
+    },
+    "request_digest": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Request Digest"
+    },
+    "sequence": {
+      "minimum": 1,
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "subject_id": {
+      "minLength": 1,
+      "title": "Subject Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "ledger_kind",
+    "subject_id",
+    "sequence",
+    "event",
+    "operation_key",
+    "request_digest",
+    "payload_hash",
+    "previous_event_hash",
+    "recorded_at"
+  ],
+  "title": "LedgerEventV1",
+  "type": "object"
+}

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import tempfile
 from collections.abc import Mapping
 from pathlib import Path
 
@@ -26,7 +27,11 @@ from .runs import (
 )
 from .runtime import StoreLayout, atomic_write_text, fsync_directory
 from .runtime.commit import CommitResult, StagedArtifact, commit_transaction
-from .runtime.layout import UnsafeStorePath, assert_safe_store_path
+from .runtime.layout import (
+    UnsafeStorePath,
+    assert_safe_store_path,
+    path_entry_exists,
+)
 
 
 class StagingError(RuntimeError):
@@ -43,20 +48,88 @@ def _write_immutable(path: Path, data: bytes) -> None:
         )
     except UnsafeStorePath as exc:
         raise StagingError(f"staged file path is unsafe: {path}") from exc
-    path.parent.mkdir(parents=True, exist_ok=True)
     try:
-        with path.open("xb") as stream:
-            stream.write(data)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        assert_safe_store_path(
+            path.parent,
+            path.parent,
+            expected="directory",
+            allow_missing=False,
+        )
+    except (OSError, UnsafeStorePath) as exc:
+        raise StagingError(f"staged file directory is unsafe: {path.parent}") from exc
+
+    if path_entry_exists(path):
+        _verify_immutable_winner(path, data)
+        return
+
+    temp_path = _write_immutable_temp(path.parent, path.name, data)
+    try:
+        try:
+            os.link(temp_path, path)
+        except FileExistsError:
+            _verify_immutable_winner(path, data)
+            return
+        except OSError as exc:
+            if path_entry_exists(path):
+                _verify_immutable_winner(path, data)
+                return
+            raise StagingError(
+                f"cannot atomically publish staged file: {path}"
+            ) from exc
+
+        try:
+            assert_safe_store_path(
+                path.parent, path, expected="file", allow_missing=False
+            )
+            fsync_directory(path.parent)
+        except (OSError, UnsafeStorePath) as exc:
+            raise StagingError(f"cannot durably publish staged file: {path}") from exc
+    finally:
+        try:
+            temp_path.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def _write_immutable_temp(parent: Path, basename: str, data: bytes) -> Path:
+    """Write and sync one ordinary same-directory publication candidate."""
+
+    fd, raw_path = tempfile.mkstemp(prefix=f".{basename}.tmp-", dir=parent)
+    temp_path = Path(raw_path)
+    try:
+        assert_safe_store_path(
+            parent, temp_path, expected="file", allow_missing=False
+        )
+        with os.fdopen(fd, "wb", closefd=True) as stream:
+            written = stream.write(data)
+            if written != len(data):
+                raise OSError("short write while staging immutable file")
             stream.flush()
             os.fsync(stream.fileno())
-        fsync_directory(path.parent)
-    except FileExistsError:
+        return temp_path
+    except BaseException:
         try:
-            existing = path.read_bytes()
-        except OSError as exc:
-            raise StagingError(f"cannot verify staged path: {path}") from exc
-        if existing != data:
-            raise StagingError(f"occupied staged path contains different bytes: {path}")
+            os.close(fd)
+        except OSError:
+            pass
+        try:
+            temp_path.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
+
+
+def _verify_immutable_winner(path: Path, data: bytes) -> None:
+    try:
+        assert_safe_store_path(
+            path.parent, path, expected="file", allow_missing=False
+        )
+        existing = path.read_bytes()
+    except (OSError, UnsafeStorePath) as exc:
+        raise StagingError(f"cannot verify staged path: {path}") from exc
+    if existing != data:
+        raise StagingError(f"occupied staged path contains different bytes: {path}")
 
 
 def _run_staging(layout: StoreLayout, route_run_id: str) -> Path:

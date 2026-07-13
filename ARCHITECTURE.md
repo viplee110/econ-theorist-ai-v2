@@ -227,6 +227,15 @@ Existing v1 examples remain historical or regression fixtures until they are rep
 
 ## 9. Host and installation boundary
 
+The active Phase 5 deployment profile is **trusted local research use**. It
+trusts the researcher, operating system, user-selected IDE/account, and
+ordinary package manager. Its controls address AI mistakes, stale or repeated
+operations, ordinary interruption, wrong-project writes, accidental context
+mixing, and unintended disclosure. Resistance to a malicious IDE, provider,
+local account, operating system, or package infrastructure is a separate
+public-distribution hardening profile and is not a prerequisite for scientific
+experimentation.
+
 The Phase 5A target is a provider-neutral, host-portable v2 engine. Runtime host
 support is not implemented by the 5A.0 design slice, and host portability is a
 tested contract rather than a claim that every IDE can execute the system. A
@@ -253,24 +262,26 @@ Host integration obeys these cross-cutting rules:
 3. a host may write declared candidate/shadow workspaces and engine-owned
    noncanonical projections, but never overwrite human-owned working files or
    canonical ObjectStore bytes directly;
-4. installation and project binding are version-pinned, integrity-checked,
-   idempotent, root-bound, non-destructive to user instructions, and fail
-   closed before canonical mutation;
+4. local installation records an exact version or commit, while project
+   binding is idempotent, root-bound, non-destructive to user instructions,
+   and fails before canonical mutation;
 5. switching hosts preserves exact project identity, head, run lineage,
    Decisions, privacy compartments, blockers, and acceptance predicates;
-6. host capability negotiation cannot emulate missing filesystem, process,
-   permission, isolation, or human-decision capabilities with prompt text;
-7. provider-backed delivery of non-public research requires an explicit egress
-   plan/authorization and technical secret/compartment isolation; installation
-   permission alone is not research-content consent;
-8. host-mediated L2/L3 confirmation requires a trusted user-approval channel
-   outside the acting model context, while the documented threat model remains
-   honest that Phase 1 human identity is not cryptographic proof;
+6. capability records are operational descriptions, not hostile-host
+   attestations; a route that requires real isolation stops when the selected
+   host cannot provide it;
+7. provider-backed work uses an explicit project/session privacy policy and an
+   exact work-packet allowlist; `local_only`, secrets, and sealed/blind material
+   are withheld unless the selected execution mode is suitable;
+8. L2/L3 promotion requires explicit local human confirmation, without claiming
+   cryptographic identity or resistance to a compromised local host;
 9. the complete machine/CLI path remains usable without any IDE adapter.
 
-Phase 5A owns the executable contract and parity tests for this boundary. Phase
-5B may add controlled multi-agent lanes after it is stable; Phase 6 owns claims
-about comparative quality or human-effort reduction.
+Phase 5A first owns a Codex research-ready vertical slice for this boundary.
+That gate permits controlled Phase 5B lanes and exploratory quality pilots;
+Claude/Cursor parity and public-release hardening may proceed later without
+blocking scientific learning. Phase 6 owns confirmatory claims about
+comparative quality or human-effort reduction.
 
 ## 10. Architecture budgets
 

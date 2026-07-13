@@ -1,0 +1,182 @@
+{
+  "$defs": {
+    "CapabilityV1": {
+      "additionalProperties": false,
+      "properties": {
+        "available": {
+          "title": "Available",
+          "type": "boolean"
+        },
+        "capability_id": {
+          "minLength": 1,
+          "title": "Capability Id",
+          "type": "string"
+        },
+        "evidence": {
+          "minLength": 1,
+          "title": "Evidence",
+          "type": "string"
+        },
+        "required": {
+          "title": "Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "capability_id",
+        "available",
+        "required",
+        "evidence"
+      ],
+      "title": "CapabilityV1",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/capability-receipt.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "adapter_id": {
+      "minLength": 1,
+      "title": "Adapter Id",
+      "type": "string"
+    },
+    "adapter_version": {
+      "minLength": 1,
+      "title": "Adapter Version",
+      "type": "string"
+    },
+    "agent_topology": {
+      "const": "single",
+      "default": "single",
+      "title": "Agent Topology",
+      "type": "string"
+    },
+    "capabilities": {
+      "items": {
+        "$ref": "#/$defs/CapabilityV1"
+      },
+      "minItems": 1,
+      "title": "Capabilities",
+      "type": "array"
+    },
+    "capability_schema": {
+      "const": "econ-theorist/capability-receipt/v1",
+      "default": "econ-theorist/capability-receipt/v1",
+      "title": "Capability Schema",
+      "type": "string"
+    },
+    "credential_store_isolation": {
+      "default": "unavailable",
+      "enum": [
+        "verified",
+        "unverified",
+        "unavailable"
+      ],
+      "title": "Credential Store Isolation",
+      "type": "string"
+    },
+    "enforced_denied_compartments": {
+      "default": [],
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Enforced Denied Compartments",
+      "type": "array"
+    },
+    "environment_redaction": {
+      "default": "unavailable",
+      "enum": [
+        "verified",
+        "unverified",
+        "unavailable"
+      ],
+      "title": "Environment Redaction",
+      "type": "string"
+    },
+    "execution_class": {
+      "enum": [
+        "local",
+        "provider_backed",
+        "unknown"
+      ],
+      "title": "Execution Class",
+      "type": "string"
+    },
+    "host_product": {
+      "minLength": 1,
+      "title": "Host Product",
+      "type": "string"
+    },
+    "host_version": {
+      "minLength": 1,
+      "title": "Host Version",
+      "type": "string"
+    },
+    "model_tool_isolation": {
+      "enum": [
+        "verified",
+        "unverified",
+        "unavailable"
+      ],
+      "title": "Model Tool Isolation",
+      "type": "string"
+    },
+    "observed_at": {
+      "minLength": 1,
+      "title": "Observed At",
+      "type": "string"
+    },
+    "secret_file_denial": {
+      "default": "unavailable",
+      "enum": [
+        "verified",
+        "unverified",
+        "unavailable"
+      ],
+      "title": "Secret File Denial",
+      "type": "string"
+    },
+    "shadow_workspace_isolation": {
+      "default": "unavailable",
+      "enum": [
+        "verified",
+        "unverified",
+        "unavailable"
+      ],
+      "title": "Shadow Workspace Isolation",
+      "type": "string"
+    },
+    "technically_accessible_roots": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Technically Accessible Roots",
+      "type": "array"
+    },
+    "trusted_human_channel": {
+      "enum": [
+        "verified",
+        "unverified",
+        "unavailable"
+      ],
+      "title": "Trusted Human Channel",
+      "type": "string"
+    }
+  },
+  "required": [
+    "host_product",
+    "host_version",
+    "adapter_id",
+    "adapter_version",
+    "execution_class",
+    "technically_accessible_roots",
+    "model_tool_isolation",
+    "trusted_human_channel",
+    "capabilities",
+    "observed_at"
+  ],
+  "title": "CapabilityReceiptV1",
+  "type": "object"
+}

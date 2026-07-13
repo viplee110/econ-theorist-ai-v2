@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import tempfile
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import Any
@@ -31,6 +32,7 @@ from .models import (
     ContextManifest,
     PrivacyLabel,
     RouteRun,
+    RouteSpecLike,
     RouteSpecV2,
     RouteSpecV3,
     RouteSpecV4,
@@ -53,7 +55,12 @@ from .policy import (
 )
 from .route_registry import authorize_route, get_route, validate_privacy_clearance
 from .theory_validation import TheoryValidationError, validate_phase2_route_entry
-from .runtime.layout import StoreLayout, UnsafeStorePath, assert_safe_store_path
+from .runtime.layout import (
+    StoreLayout,
+    UnsafeStorePath,
+    assert_safe_store_path,
+    path_entry_exists,
+)
 from .runtime.objects import HeadStore, fsync_directory
 
 
@@ -146,7 +153,7 @@ def candidate_path(layout: StoreLayout, route_run_id: str) -> Path:
 
 
 def _write_new(path: Path, data: bytes, *, immutable: bool) -> None:
-    """Publish a new file without replacing a winner or existing user work."""
+    """Atomically publish a complete file without replacing an existing winner."""
 
     try:
         assert_safe_store_path(
@@ -154,29 +161,100 @@ def _write_new(path: Path, data: bytes, *, immutable: bool) -> None:
         )
     except UnsafeStorePath as exc:
         raise RunError(f"operational file path is unsafe: {path}") from exc
-    path.parent.mkdir(parents=True, exist_ok=True)
     try:
-        with path.open("xb") as stream:
-            stream.write(data)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        assert_safe_store_path(
+            path.parent,
+            path.parent,
+            expected="directory",
+            allow_missing=False,
+        )
+    except (OSError, UnsafeStorePath) as exc:
+        raise RunError(f"operational file directory is unsafe: {path.parent}") from exc
+
+    if path_entry_exists(path):
+        _verify_new_winner(path, data, immutable=immutable)
+        return
+
+    temp_path = _write_new_temp(path.parent, path.name, data)
+    try:
+        try:
+            # A same-directory hard link is an atomic no-replace publication.
+            # The final name never exposes the temp while it is being written.
+            os.link(temp_path, path)
+        except FileExistsError:
+            _verify_new_winner(path, data, immutable=immutable)
+            return
+        except OSError as exc:
+            # Windows may report a losing link race as generic OSError.
+            if path_entry_exists(path):
+                _verify_new_winner(path, data, immutable=immutable)
+                return
+            raise RunError(
+                f"cannot atomically publish operational file: {path}"
+            ) from exc
+
+        try:
+            assert_safe_store_path(
+                path.parent, path, expected="file", allow_missing=False
+            )
+            fsync_directory(path.parent)
+        except (OSError, UnsafeStorePath) as exc:
+            raise RunError(f"cannot durably publish operational file: {path}") from exc
+    finally:
+        try:
+            temp_path.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def _write_new_temp(parent: Path, basename: str, data: bytes) -> Path:
+    """Write and sync one ordinary same-directory publication candidate."""
+
+    fd, raw_path = tempfile.mkstemp(prefix=f".{basename}.tmp-", dir=parent)
+    temp_path = Path(raw_path)
+    try:
+        assert_safe_store_path(
+            parent, temp_path, expected="file", allow_missing=False
+        )
+        with os.fdopen(fd, "wb", closefd=True) as stream:
+            written = stream.write(data)
+            if written != len(data):
+                raise OSError("short write while staging operational file")
             stream.flush()
             os.fsync(stream.fileno())
-        fsync_directory(path.parent)
-    except FileExistsError as exc:
-        if immutable:
-            try:
-                existing = path.read_bytes()
-            except OSError as read_exc:
-                raise ImmutableRunConflict(
-                    f"cannot verify occupied immutable run path: {path}"
-                ) from read_exc
-            if existing == data:
-                return
-            raise ImmutableRunConflict(
-                f"immutable run path already contains different bytes: {path}"
-            ) from exc
-        raise RunError(f"staging candidate already exists: {path}") from exc
-    except OSError as exc:
-        raise RunError(f"cannot create operational file {path}: {exc}") from exc
+        return temp_path
+    except BaseException:
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+        try:
+            temp_path.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
+
+
+def _verify_new_winner(path: Path, data: bytes, *, immutable: bool) -> None:
+    """Accept an exact retry and reject every differing occupied final path."""
+
+    try:
+        assert_safe_store_path(
+            path.parent, path, expected="file", allow_missing=False
+        )
+        existing = path.read_bytes()
+    except (OSError, UnsafeStorePath) as exc:
+        raise ImmutableRunConflict(f"cannot verify occupied run path: {path}") from exc
+    if existing == data:
+        # This permits an operation-key retry to finish publication after a
+        # crash. A materially edited candidate still conflicts below.
+        return
+    if immutable:
+        raise ImmutableRunConflict(
+            f"immutable run path already contains different bytes: {path}"
+        )
+    raise RunError(f"staging candidate already exists: {path}")
 
 
 def _read_immutable(path: Path) -> bytes:
@@ -219,6 +297,85 @@ def _candidate_template(
         "unresolved_conflicts": (),
         "recommended_next_route": None,
     }
+
+
+def validate_run_entry(
+    snapshot: Snapshot,
+    *,
+    route_id: str,
+    actor: Actor,
+    purpose: str,
+    compartments: Iterable[str],
+    privacy_clearance: str,
+    focus_entity_ids: Iterable[str],
+    route_registry_hash: str | None = None,
+) -> tuple[RouteSpecLike, PrivacyLabel]:
+    """Purely authorize one exact route/focus against a pinned snapshot.
+
+    This is the authoritative dry-run boundary used by navigation probes and
+    by :func:`begin_run`.  It performs no context compilation or filesystem
+    mutation and preserves the historical Phase 1--4 entry predicates.
+    """
+
+    if not isinstance(snapshot, Snapshot):
+        raise TypeError("snapshot must be a Snapshot")
+    if not isinstance(actor, Actor):
+        raise TypeError("actor must be an Actor")
+    if isinstance(compartments, str) or isinstance(focus_entity_ids, str):
+        raise RunError("compartments and focus_entity_ids must be iterables")
+    compartment_tuple = tuple(compartments)
+    focus_tuple = tuple(focus_entity_ids)
+    clearance: PrivacyLabel = validate_privacy_clearance(privacy_clearance)
+    route = authorize_route(
+        route_id,
+        purpose=purpose,
+        compartments=compartment_tuple,
+        privacy_clearance=clearance,
+        route_registry_hash=route_registry_hash,
+    )
+    if (
+        registry_hash_for_route(route) == ROUTE_REGISTRY_V1_HASH
+        and snapshot_has_phase2_material(snapshot)
+    ):
+        raise RouteEntryError(
+            "frozen v1 routes are replay-only after Phase 2 material enters a project"
+        )
+    if (
+        registry_hash_for_route(route) == ROUTE_REGISTRY_V2_HASH
+        and snapshot_has_phase3_material(snapshot)
+    ):
+        raise RouteEntryError(
+            "frozen v2 routes are replay-only after Phase 3 material enters a project"
+        )
+    if (
+        registry_hash_for_route(route) == ROUTE_REGISTRY_V3_HASH
+        and snapshot_has_phase4_material(snapshot)
+    ):
+        raise RouteEntryError(
+            "frozen v3 routes are replay-only after Phase 4 material enters a project"
+        )
+    if isinstance(route, RouteSpecV4) and route.route_id in V4_NATIVE_ROUTE_IDS:
+        try:
+            validate_phase4_route_entry(snapshot, route, focus_tuple, actor=actor)
+        except ProfileCraftValidationError as exc:
+            raise RouteEntryError(
+                f"Phase 4 route entry rejected {route.route_id}: {exc}"
+            ) from exc
+    elif isinstance(route, RouteSpecV3) and route.route_id in V3_NATIVE_ROUTE_IDS:
+        try:
+            validate_phase3_route_entry(snapshot, route, focus_tuple, actor=actor)
+        except AuthoringValidationError as exc:
+            raise RouteEntryError(
+                f"Phase 3 route entry rejected {route.route_id}: {exc}"
+            ) from exc
+    elif isinstance(route, RouteSpecV2):
+        try:
+            validate_phase2_route_entry(snapshot, route, focus_tuple, actor=actor)
+        except TheoryValidationError as exc:
+            raise RouteEntryError(
+                f"Phase 2 route entry rejected {route.route_id}: {exc}"
+            ) from exc
+    return route, clearance
 
 
 def begin_run(
@@ -270,58 +427,16 @@ def begin_run(
 
     compartment_tuple = tuple(compartments)
     focus_tuple = tuple(focus_entity_ids)
-    clearance: PrivacyLabel = validate_privacy_clearance(privacy_clearance)
-    route = authorize_route(
-        route_id,
+    route, clearance = validate_run_entry(
+        snapshot,
+        route_id=route_id,
+        actor=actor,
         purpose=purpose,
         compartments=compartment_tuple,
-        privacy_clearance=clearance,
+        privacy_clearance=privacy_clearance,
+        focus_entity_ids=focus_tuple,
         route_registry_hash=route_registry_hash,
     )
-    if (
-        registry_hash_for_route(route) == ROUTE_REGISTRY_V1_HASH
-        and snapshot_has_phase2_material(snapshot)
-    ):
-        raise RouteEntryError(
-            "frozen v1 routes are replay-only after Phase 2 material enters a project"
-        )
-    if (
-        registry_hash_for_route(route) == ROUTE_REGISTRY_V2_HASH
-        and snapshot_has_phase3_material(snapshot)
-    ):
-        raise RouteEntryError(
-            "frozen v2 routes are replay-only after Phase 3 material enters a project"
-        )
-    if (
-        registry_hash_for_route(route) == ROUTE_REGISTRY_V3_HASH
-        and snapshot_has_phase4_material(snapshot)
-    ):
-        raise RouteEntryError(
-            "frozen v3 routes are replay-only after Phase 4 material enters a project"
-        )
-    if isinstance(route, RouteSpecV4) and route.route_id in V4_NATIVE_ROUTE_IDS:
-        try:
-            validate_phase4_route_entry(snapshot, route, focus_tuple, actor=actor)
-        except ProfileCraftValidationError as exc:
-            raise RouteEntryError(
-                f"Phase 4 route entry rejected {route.route_id}: {exc}"
-            ) from exc
-    elif isinstance(route, RouteSpecV3) and route.route_id in V3_NATIVE_ROUTE_IDS:
-        try:
-            validate_phase3_route_entry(snapshot, route, focus_tuple, actor=actor)
-        except AuthoringValidationError as exc:
-            raise RouteEntryError(
-                f"Phase 3 route entry rejected {route.route_id}: {exc}"
-            ) from exc
-    elif isinstance(route, RouteSpecV2):
-        try:
-            validate_phase2_route_entry(
-                snapshot, route, focus_tuple, actor=actor
-            )
-        except TheoryValidationError as exc:
-            raise RouteEntryError(
-                f"Phase 2 route entry rejected {route.route_id}: {exc}"
-            ) from exc
 
     actual_head = HeadStore(layout).read()
     if actual_head != snapshot.head:

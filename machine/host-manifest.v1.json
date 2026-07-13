@@ -1,0 +1,33 @@
+{
+  "host_manifest_schema": 1,
+  "host_manifest_version": 1,
+  "protocol": "econ-theorist/machine-request/v1",
+  "agent_topology": "single",
+  "operations": [
+    {"operation":"bootstrap.plan","surface":"model_callable","mutates":"none"},
+    {"operation":"bootstrap.verify","surface":"adapter_internal","mutates":"local_operational_receipt"},
+    {"operation":"project.bind_or_initialize","surface":"model_callable","mutates":"conditional_project_genesis"},
+    {"operation":"project.inspect","surface":"model_callable","mutates":"none"},
+    {"operation":"navigation.plan_next","surface":"model_callable","mutates":"none"},
+    {"operation":"run.open_or_resume","surface":"model_callable","mutates":"project_operational"},
+    {"operation":"egress.plan","surface":"model_callable","mutates":"none"},
+    {"operation":"packet.deliver","surface":"model_callable","mutates":"project_operational"},
+    {"operation":"candidate.complete","surface":"model_callable","mutates":"stage_or_canonical_commit"},
+    {"operation":"host.finish","surface":"model_callable","mutates":"project_operational"},
+    {"operation":"decision.confirm","surface":"adapter_internal","mutates":"canonical_after_trusted_receipt"},
+    {"operation":"operation.inspect","surface":"model_callable","mutates":"none"},
+    {"operation":"approval.issue","surface":"trusted_human_only","mutates":"approval_ledger"},
+    {"operation":"approval.revoke","surface":"trusted_human_only","mutates":"approval_ledger"},
+    {"operation":"egress.authorize","surface":"trusted_human_only","mutates":"egress_ledger"},
+    {"operation":"egress.revoke","surface":"trusted_human_only","mutates":"egress_ledger"},
+    {"operation":"decide.raw","surface":"excluded_from_official_adapter","mutates":"canonical"}
+  ],
+  "safety_rules": [
+    "canonical_store_writes_use_engine_validators_only",
+    "trusted_human_operations_are_not_model_callable",
+    "packet_bytes_are_not_returned_before_delivery_started",
+    "provider_execution_requires_declared_egress_scope",
+    "agent_topology_is_single",
+    "route_instructions_come_from_pinned_engine_resources"
+  ]
+}

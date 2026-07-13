@@ -1,0 +1,163 @@
+{
+  "$defs": {
+    "DiagnosticV1": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "diagnostic_schema": {
+          "const": "econ-theorist/diagnostic/v1",
+          "default": "econ-theorist/diagnostic/v1",
+          "title": "Diagnostic Schema",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "DiagnosticV1",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/machine-response.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "diagnostics": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/DiagnosticV1"
+      },
+      "title": "Diagnostics",
+      "type": "array"
+    },
+    "head": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Head"
+    },
+    "mutated": {
+      "title": "Mutated",
+      "type": "boolean"
+    },
+    "operation": {
+      "enum": [
+        "bootstrap.plan",
+        "bootstrap.verify",
+        "project.bind_or_initialize",
+        "project.inspect",
+        "navigation.plan_next",
+        "run.open_or_resume",
+        "egress.plan",
+        "packet.deliver",
+        "candidate.complete",
+        "host.finish",
+        "decision.confirm",
+        "operation.inspect"
+      ],
+      "title": "Operation",
+      "type": "string"
+    },
+    "operation_receipt_hash": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Operation Receipt Hash"
+    },
+    "outcome": {
+      "enum": [
+        "ok",
+        "blocked",
+        "permission_required",
+        "human_decision_required",
+        "ambiguous_next",
+        "repair_required",
+        "unsupported_host",
+        "conflict",
+        "error"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "project_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Project Id"
+    },
+    "protocol_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Protocol Version",
+      "type": "integer"
+    },
+    "request_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Request Digest",
+      "type": "string"
+    },
+    "response_schema": {
+      "const": "econ-theorist/machine-response/v1",
+      "default": "econ-theorist/machine-response/v1",
+      "title": "Response Schema",
+      "type": "string"
+    },
+    "result": {
+      "additionalProperties": true,
+      "title": "Result",
+      "type": "object"
+    }
+  },
+  "required": [
+    "operation",
+    "request_digest",
+    "outcome",
+    "mutated"
+  ],
+  "title": "MachineResponseV1",
+  "type": "object"
+}

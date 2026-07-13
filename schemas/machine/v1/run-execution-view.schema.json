@@ -1,0 +1,159 @@
+{
+  "$defs": {
+    "DiagnosticV1": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "diagnostic_schema": {
+          "const": "econ-theorist/diagnostic/v1",
+          "default": "econ-theorist/diagnostic/v1",
+          "title": "Diagnostic Schema",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "DiagnosticV1",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/run-execution-view.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "base_freshness": {
+      "enum": [
+        "current",
+        "stale",
+        "unknown",
+        "not_applicable"
+      ],
+      "title": "Base Freshness",
+      "type": "string"
+    },
+    "base_head": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Base Head"
+    },
+    "candidate_digest": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Candidate Digest"
+    },
+    "committed_transaction_digest": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Committed Transaction Digest"
+    },
+    "current_head": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Current Head"
+    },
+    "diagnostics": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/DiagnosticV1"
+      },
+      "title": "Diagnostics",
+      "type": "array"
+    },
+    "integrity": {
+      "enum": [
+        "valid",
+        "invalid"
+      ],
+      "title": "Integrity",
+      "type": "string"
+    },
+    "lifecycle": {
+      "enum": [
+        "opened",
+        "candidate_present",
+        "staged",
+        "commit_conflict",
+        "committed",
+        "unknown"
+      ],
+      "title": "Lifecycle",
+      "type": "string"
+    },
+    "route_run_id": {
+      "minLength": 1,
+      "title": "Route Run Id",
+      "type": "string"
+    },
+    "view_schema": {
+      "const": "econ-theorist/run-execution-view/v1",
+      "default": "econ-theorist/run-execution-view/v1",
+      "title": "View Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "route_run_id",
+    "integrity",
+    "base_freshness",
+    "lifecycle",
+    "base_head",
+    "current_head"
+  ],
+  "title": "RunExecutionViewV1",
+  "type": "object"
+}

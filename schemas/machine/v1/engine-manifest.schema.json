@@ -1,0 +1,176 @@
+{
+  "$defs": {
+    "EngineReleaseInventoryV1": {
+      "additionalProperties": false,
+      "properties": {
+        "distributions": {
+          "items": {
+            "$ref": "#/$defs/InstalledDistributionV1"
+          },
+          "minItems": 1,
+          "title": "Distributions",
+          "type": "array"
+        },
+        "engine_version": {
+          "minLength": 1,
+          "title": "Engine Version",
+          "type": "string"
+        },
+        "host_manifest_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Host Manifest Hash",
+          "type": "string"
+        },
+        "inventory_schema": {
+          "const": "econ-theorist/engine-release-inventory/v1",
+          "default": "econ-theorist/engine-release-inventory/v1",
+          "title": "Inventory Schema",
+          "type": "string"
+        },
+        "navigation_registry_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Navigation Registry Hash",
+          "type": "string"
+        },
+        "resources": {
+          "items": {
+            "$ref": "#/$defs/EngineResourceV1"
+          },
+          "minItems": 1,
+          "title": "Resources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "engine_version",
+        "distributions",
+        "resources",
+        "host_manifest_hash",
+        "navigation_registry_hash"
+      ],
+      "title": "EngineReleaseInventoryV1",
+      "type": "object"
+    },
+    "EngineResourceV1": {
+      "additionalProperties": false,
+      "properties": {
+        "byte_size": {
+          "minimum": 0,
+          "title": "Byte Size",
+          "type": "integer"
+        },
+        "logical_path": {
+          "minLength": 1,
+          "title": "Logical Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "logical_path",
+        "sha256",
+        "byte_size"
+      ],
+      "title": "EngineResourceV1",
+      "type": "object"
+    },
+    "InstalledDistributionV1": {
+      "additionalProperties": false,
+      "properties": {
+        "file_inventory_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "File Inventory Hash",
+          "type": "string"
+        },
+        "files": {
+          "items": {
+            "$ref": "#/$defs/EngineResourceV1"
+          },
+          "minItems": 1,
+          "title": "Files",
+          "type": "array"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "files",
+        "file_inventory_hash"
+      ],
+      "title": "InstalledDistributionV1",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/engine-manifest.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "engine_manifest_schema": {
+      "const": "econ-theorist/engine-manifest/v1",
+      "default": "econ-theorist/engine-manifest/v1",
+      "title": "Engine Manifest Schema",
+      "type": "string"
+    },
+    "engine_version": {
+      "minLength": 1,
+      "title": "Engine Version",
+      "type": "string"
+    },
+    "install_mode": {
+      "enum": [
+        "verified_release",
+        "development_checkout",
+        "unknown"
+      ],
+      "title": "Install Mode",
+      "type": "string"
+    },
+    "launcher_path": {
+      "minLength": 1,
+      "title": "Launcher Path",
+      "type": "string"
+    },
+    "package_root": {
+      "minLength": 1,
+      "title": "Package Root",
+      "type": "string"
+    },
+    "python_executable": {
+      "minLength": 1,
+      "title": "Python Executable",
+      "type": "string"
+    },
+    "release_inventory": {
+      "$ref": "#/$defs/EngineReleaseInventoryV1"
+    },
+    "release_inventory_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Release Inventory Hash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "engine_version",
+    "python_executable",
+    "launcher_path",
+    "package_root",
+    "install_mode",
+    "release_inventory",
+    "release_inventory_hash"
+  ],
+  "title": "EngineManifestV1",
+  "type": "object"
+}

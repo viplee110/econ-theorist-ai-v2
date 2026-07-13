@@ -1,0 +1,57 @@
+{
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/decision-confirmation-result.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "confirmation_schema": {
+      "const": "econ-theorist/decision-confirmation/v1",
+      "default": "econ-theorist/decision-confirmation/v1",
+      "title": "Confirmation Schema",
+      "type": "string"
+    },
+    "decision_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Decision Digest",
+      "type": "string"
+    },
+    "head_after": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Head After",
+      "type": "string"
+    },
+    "head_before": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Head Before",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "committed",
+        "already_committed",
+        "stale_base"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "transaction_digest": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Transaction Digest"
+    }
+  },
+  "required": [
+    "status",
+    "decision_digest",
+    "transaction_digest",
+    "head_before",
+    "head_after"
+  ],
+  "title": "DecisionConfirmationResultV1",
+  "type": "object"
+}

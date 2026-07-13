@@ -1,0 +1,126 @@
+{
+  "$defs": {
+    "DiagnosticV1": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "diagnostic_schema": {
+          "const": "econ-theorist/diagnostic/v1",
+          "default": "econ-theorist/diagnostic/v1",
+          "title": "Diagnostic Schema",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "DiagnosticV1",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/engine-verification.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "absolute_launcher_verified": {
+      "title": "Absolute Launcher Verified",
+      "type": "boolean"
+    },
+    "diagnostics": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/DiagnosticV1"
+      },
+      "title": "Diagnostics",
+      "type": "array"
+    },
+    "doctor_required_ok": {
+      "title": "Doctor Required Ok",
+      "type": "boolean"
+    },
+    "engine_manifest_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Engine Manifest Hash",
+      "type": "string"
+    },
+    "expected_engine_inventory_hash": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expected Engine Inventory Hash"
+    },
+    "release_integrity": {
+      "enum": [
+        "verified",
+        "development_only",
+        "external_bootstrap_required",
+        "failed"
+      ],
+      "title": "Release Integrity",
+      "type": "string"
+    },
+    "release_manifest_hash": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Release Manifest Hash"
+    },
+    "verification_schema": {
+      "const": "econ-theorist/engine-verification/v1",
+      "default": "econ-theorist/engine-verification/v1",
+      "title": "Verification Schema",
+      "type": "string"
+    },
+    "verified": {
+      "title": "Verified",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "verified",
+    "release_integrity",
+    "engine_manifest_hash",
+    "absolute_launcher_verified",
+    "doctor_required_ok"
+  ],
+  "title": "EngineVerificationV1",
+  "type": "object"
+}

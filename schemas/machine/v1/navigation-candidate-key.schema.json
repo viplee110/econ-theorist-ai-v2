@@ -1,0 +1,181 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/navigation-candidate-key.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "actor": {
+      "$ref": "#/$defs/Actor"
+    },
+    "base_head": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Base Head",
+      "type": "string"
+    },
+    "candidate_key_schema": {
+      "const": "econ-theorist/navigation-candidate-key/v1",
+      "default": "econ-theorist/navigation-candidate-key/v1",
+      "title": "Candidate Key Schema",
+      "type": "string"
+    },
+    "compartments": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Compartments",
+      "type": "array"
+    },
+    "context_budget": {
+      "minimum": 1,
+      "title": "Context Budget",
+      "type": "integer"
+    },
+    "context_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Context Hash",
+      "type": "string"
+    },
+    "context_selector_version": {
+      "minLength": 1,
+      "title": "Context Selector Version",
+      "type": "string"
+    },
+    "focus_refs": {
+      "items": {
+        "$ref": "#/$defs/EntityVersionRef"
+      },
+      "title": "Focus Refs",
+      "type": "array"
+    },
+    "instruction_bundle_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Instruction Bundle Hash",
+      "type": "string"
+    },
+    "navigation_registry_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Navigation Registry Hash",
+      "type": "string"
+    },
+    "policy_hashes": {
+      "additionalProperties": {
+        "pattern": "^[0-9a-f]{64}$",
+        "type": "string"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Policy Hashes",
+      "type": "object"
+    },
+    "privacy_clearance": {
+      "enum": [
+        "public",
+        "project_private",
+        "restricted",
+        "local_only"
+      ],
+      "title": "Privacy Clearance",
+      "type": "string"
+    },
+    "purpose": {
+      "minLength": 1,
+      "title": "Purpose",
+      "type": "string"
+    },
+    "route_id": {
+      "minLength": 1,
+      "title": "Route Id",
+      "type": "string"
+    },
+    "route_registry_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Route Registry Hash",
+      "type": "string"
+    },
+    "route_version": {
+      "minimum": 1,
+      "title": "Route Version",
+      "type": "integer"
+    },
+    "run_input_brief_hash": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Run Input Brief Hash"
+    }
+  },
+  "required": [
+    "base_head",
+    "route_id",
+    "route_version",
+    "purpose",
+    "actor",
+    "compartments",
+    "privacy_clearance",
+    "focus_refs",
+    "context_budget",
+    "context_hash",
+    "route_registry_hash",
+    "instruction_bundle_hash",
+    "context_selector_version",
+    "navigation_registry_hash",
+    "policy_hashes"
+  ],
+  "title": "NavigationCandidateKeyV1",
+  "type": "object"
+}

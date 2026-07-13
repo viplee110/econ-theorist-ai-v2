@@ -1,0 +1,112 @@
+{
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/egress-authorization.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "allowed_data_classes": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Allowed Data Classes",
+      "type": "array"
+    },
+    "authenticator": {
+      "minLength": 1,
+      "title": "Authenticator",
+      "type": "string"
+    },
+    "authorization_id": {
+      "minLength": 1,
+      "title": "Authorization Id",
+      "type": "string"
+    },
+    "authorization_schema": {
+      "const": "econ-theorist/egress-authorization/v1",
+      "default": "econ-theorist/egress-authorization/v1",
+      "title": "Authorization Schema",
+      "type": "string"
+    },
+    "egress_plan_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Egress Plan Hash",
+      "type": "string"
+    },
+    "expires_at": {
+      "minLength": 1,
+      "title": "Expires At",
+      "type": "string"
+    },
+    "head": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Head",
+      "type": "string"
+    },
+    "issued_at": {
+      "minLength": 1,
+      "title": "Issued At",
+      "type": "string"
+    },
+    "issuer_channel_id": {
+      "minLength": 1,
+      "title": "Issuer Channel Id",
+      "type": "string"
+    },
+    "max_deliveries": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Max Deliveries",
+      "type": "integer"
+    },
+    "nonce": {
+      "minLength": 1,
+      "title": "Nonce",
+      "type": "string"
+    },
+    "project_id": {
+      "minLength": 1,
+      "title": "Project Id",
+      "type": "string"
+    },
+    "provider": {
+      "minLength": 1,
+      "title": "Provider",
+      "type": "string"
+    },
+    "purpose": {
+      "minLength": 1,
+      "title": "Purpose",
+      "type": "string"
+    },
+    "reuse": {
+      "enum": [
+        "single_delivery",
+        "bounded_reuse"
+      ],
+      "title": "Reuse",
+      "type": "string"
+    },
+    "work_packet_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Work Packet Hash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "authorization_id",
+    "egress_plan_hash",
+    "project_id",
+    "head",
+    "work_packet_hash",
+    "provider",
+    "purpose",
+    "allowed_data_classes",
+    "issued_at",
+    "expires_at",
+    "reuse",
+    "issuer_channel_id",
+    "nonce",
+    "authenticator"
+  ],
+  "title": "EgressAuthorizationV1",
+  "type": "object"
+}

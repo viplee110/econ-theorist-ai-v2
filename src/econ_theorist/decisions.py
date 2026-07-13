@@ -27,7 +27,15 @@ def read_decision(path: str | Path) -> Decision:
         raise DecisionInputError(f"Decision file is unavailable or invalid: {path}") from exc
 
 
-def commit_decision(layout: StoreLayout, decision: Decision) -> CommitResult:
+def commit_decision(
+    layout: StoreLayout,
+    decision: Decision,
+    *,
+    expected_head: str | None = None,
+    transaction_id: str | None = None,
+    route_run_id: str | None = None,
+    created_at: str | None = None,
+) -> CommitResult:
     """Commit one Decision at the current head.
 
     Phase 1 treats ``Actor(kind='human')`` as an explicit local provenance
@@ -36,6 +44,10 @@ def commit_decision(layout: StoreLayout, decision: Decision) -> CommitResult:
     """
 
     snapshot = replay(layout)
+    if expected_head is not None and snapshot.head != expected_head:
+        raise DecisionInputError(
+            f"Decision approval head {expected_head} differs from current head {snapshot.head}"
+        )
     if decision.project_id != snapshot.project_id:
         raise DecisionInputError("Decision belongs to a different project")
     if decision.version == 1:
@@ -48,17 +60,17 @@ def commit_decision(layout: StoreLayout, decision: Decision) -> CommitResult:
             decision=decision,
         )
     transaction = Transaction(
-        transaction_id=new_id("txn_decision"),
+        transaction_id=transaction_id or new_id("txn_decision"),
         origin="human_decision",
         project_id=snapshot.project_id,
         base_revision=snapshot.head,
-        route_run_id=new_id("run_decision"),
+        route_run_id=route_run_id or new_id("run_decision"),
         actor=decision.decider,
         intent=f"Record {decision.decision_kind} Decision {decision.decision_id}@{decision.version}.",
         operations=(operation,),
         privacy=decision.privacy,
         access_compartments=decision.access_compartments,
-        created_at=utc_now(),
+        created_at=created_at or utc_now(),
         parent_transaction_hash=snapshot.head,
     )
     return commit_transaction(layout, transaction)

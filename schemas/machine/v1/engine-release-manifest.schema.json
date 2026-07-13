@@ -1,0 +1,84 @@
+{
+  "$defs": {
+    "EngineReleaseTargetV1": {
+      "additionalProperties": false,
+      "properties": {
+        "engine_inventory_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Engine Inventory Hash",
+          "type": "string"
+        },
+        "platform_tag": {
+          "minLength": 1,
+          "title": "Platform Tag",
+          "type": "string"
+        },
+        "python_tag": {
+          "minLength": 1,
+          "title": "Python Tag",
+          "type": "string"
+        },
+        "target_id": {
+          "minLength": 1,
+          "title": "Target Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target_id",
+        "python_tag",
+        "platform_tag",
+        "engine_inventory_hash"
+      ],
+      "title": "EngineReleaseTargetV1",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/engine-release-manifest.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "dependency_lock_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Dependency Lock Hash",
+      "type": "string"
+    },
+    "engine_version": {
+      "minLength": 1,
+      "title": "Engine Version",
+      "type": "string"
+    },
+    "publisher_id": {
+      "minLength": 1,
+      "title": "Publisher Id",
+      "type": "string"
+    },
+    "release_manifest_schema": {
+      "const": "econ-theorist/engine-release-manifest/v1",
+      "default": "econ-theorist/engine-release-manifest/v1",
+      "title": "Release Manifest Schema",
+      "type": "string"
+    },
+    "release_version": {
+      "minLength": 1,
+      "title": "Release Version",
+      "type": "string"
+    },
+    "targets": {
+      "items": {
+        "$ref": "#/$defs/EngineReleaseTargetV1"
+      },
+      "minItems": 1,
+      "title": "Targets",
+      "type": "array"
+    }
+  },
+  "required": [
+    "publisher_id",
+    "release_version",
+    "engine_version",
+    "dependency_lock_hash",
+    "targets"
+  ],
+  "title": "EngineReleaseManifestV1",
+  "type": "object"
+}

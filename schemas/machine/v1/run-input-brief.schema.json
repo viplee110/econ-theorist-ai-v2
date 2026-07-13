@@ -1,0 +1,79 @@
+{
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/run-input-brief.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "actor_role": {
+      "minLength": 1,
+      "title": "Actor Role",
+      "type": "string"
+    },
+    "base_head": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Base Head",
+      "type": "string"
+    },
+    "brief_schema": {
+      "const": "econ-theorist/run-input-brief/v1",
+      "default": "econ-theorist/run-input-brief/v1",
+      "title": "Brief Schema",
+      "type": "string"
+    },
+    "compartments": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Compartments",
+      "type": "array"
+    },
+    "framing_intent": {
+      "minLength": 1,
+      "title": "Framing Intent",
+      "type": "string"
+    },
+    "privacy": {
+      "enum": [
+        "public",
+        "project_private",
+        "restricted",
+        "local_only"
+      ],
+      "title": "Privacy",
+      "type": "string"
+    },
+    "profile_request": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Profile Request"
+    },
+    "project_id": {
+      "minLength": 1,
+      "title": "Project Id",
+      "type": "string"
+    },
+    "requested_scope": {
+      "minLength": 1,
+      "title": "Requested Scope",
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "base_head",
+    "requested_scope",
+    "framing_intent",
+    "privacy",
+    "compartments",
+    "actor_role"
+  ],
+  "title": "RunInputBriefV1",
+  "type": "object"
+}

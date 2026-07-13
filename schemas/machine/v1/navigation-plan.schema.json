@@ -1,0 +1,472 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "deterministic_tool"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "DiagnosticV1": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "diagnostic_schema": {
+          "const": "econ-theorist/diagnostic/v1",
+          "default": "econ-theorist/diagnostic/v1",
+          "title": "Diagnostic Schema",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "DiagnosticV1",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "NavigationCandidateKeyV1": {
+      "additionalProperties": false,
+      "properties": {
+        "actor": {
+          "$ref": "#/$defs/Actor"
+        },
+        "base_head": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Base Head",
+          "type": "string"
+        },
+        "candidate_key_schema": {
+          "const": "econ-theorist/navigation-candidate-key/v1",
+          "default": "econ-theorist/navigation-candidate-key/v1",
+          "title": "Candidate Key Schema",
+          "type": "string"
+        },
+        "compartments": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Compartments",
+          "type": "array"
+        },
+        "context_budget": {
+          "minimum": 1,
+          "title": "Context Budget",
+          "type": "integer"
+        },
+        "context_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Context Hash",
+          "type": "string"
+        },
+        "context_selector_version": {
+          "minLength": 1,
+          "title": "Context Selector Version",
+          "type": "string"
+        },
+        "focus_refs": {
+          "items": {
+            "$ref": "#/$defs/EntityVersionRef"
+          },
+          "title": "Focus Refs",
+          "type": "array"
+        },
+        "instruction_bundle_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Instruction Bundle Hash",
+          "type": "string"
+        },
+        "navigation_registry_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Navigation Registry Hash",
+          "type": "string"
+        },
+        "policy_hashes": {
+          "additionalProperties": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Policy Hashes",
+          "type": "object"
+        },
+        "privacy_clearance": {
+          "enum": [
+            "public",
+            "project_private",
+            "restricted",
+            "local_only"
+          ],
+          "title": "Privacy Clearance",
+          "type": "string"
+        },
+        "purpose": {
+          "minLength": 1,
+          "title": "Purpose",
+          "type": "string"
+        },
+        "route_id": {
+          "minLength": 1,
+          "title": "Route Id",
+          "type": "string"
+        },
+        "route_registry_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Route Registry Hash",
+          "type": "string"
+        },
+        "route_version": {
+          "minimum": 1,
+          "title": "Route Version",
+          "type": "integer"
+        },
+        "run_input_brief_hash": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Run Input Brief Hash"
+        }
+      },
+      "required": [
+        "base_head",
+        "route_id",
+        "route_version",
+        "purpose",
+        "actor",
+        "compartments",
+        "privacy_clearance",
+        "focus_refs",
+        "context_budget",
+        "context_hash",
+        "route_registry_hash",
+        "instruction_bundle_hash",
+        "context_selector_version",
+        "navigation_registry_hash",
+        "policy_hashes"
+      ],
+      "title": "NavigationCandidateKeyV1",
+      "type": "object"
+    },
+    "NavigationCandidateV1": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Candidate Digest",
+          "type": "string"
+        },
+        "candidate_schema": {
+          "const": "econ-theorist/navigation-candidate/v1",
+          "default": "econ-theorist/navigation-candidate/v1",
+          "title": "Candidate Schema",
+          "type": "string"
+        },
+        "explanation": {
+          "minLength": 1,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "key": {
+          "$ref": "#/$defs/NavigationCandidateKeyV1"
+        }
+      },
+      "required": [
+        "candidate_digest",
+        "key",
+        "explanation"
+      ],
+      "title": "NavigationCandidateV1",
+      "type": "object"
+    },
+    "ResumeDescriptorV1": {
+      "additionalProperties": false,
+      "description": "Complete immutable input for re-entering one unfinished run.",
+      "properties": {
+        "candidate_logical_path": {
+          "minLength": 1,
+          "title": "Candidate Logical Path",
+          "type": "string"
+        },
+        "lifecycle": {
+          "enum": [
+            "opened",
+            "candidate_present",
+            "staged"
+          ],
+          "title": "Lifecycle",
+          "type": "string"
+        },
+        "navigation_candidate": {
+          "$ref": "#/$defs/NavigationCandidateV1"
+        },
+        "next_action": {
+          "const": "run.open_or_resume",
+          "default": "run.open_or_resume",
+          "title": "Next Action",
+          "type": "string"
+        },
+        "resume_descriptor_schema": {
+          "const": "econ-theorist/resume-descriptor/v1",
+          "default": "econ-theorist/resume-descriptor/v1",
+          "title": "Resume Descriptor Schema",
+          "type": "string"
+        },
+        "route_run_id": {
+          "minLength": 1,
+          "title": "Route Run Id",
+          "type": "string"
+        },
+        "run_input_brief": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RunInputBriefV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "work_packet_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Work Packet Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "route_run_id",
+        "lifecycle",
+        "navigation_candidate",
+        "run_input_brief",
+        "work_packet_hash",
+        "candidate_logical_path"
+      ],
+      "title": "ResumeDescriptorV1",
+      "type": "object"
+    },
+    "RunInputBriefV1": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_role": {
+          "minLength": 1,
+          "title": "Actor Role",
+          "type": "string"
+        },
+        "base_head": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Base Head",
+          "type": "string"
+        },
+        "brief_schema": {
+          "const": "econ-theorist/run-input-brief/v1",
+          "default": "econ-theorist/run-input-brief/v1",
+          "title": "Brief Schema",
+          "type": "string"
+        },
+        "compartments": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Compartments",
+          "type": "array"
+        },
+        "framing_intent": {
+          "minLength": 1,
+          "title": "Framing Intent",
+          "type": "string"
+        },
+        "privacy": {
+          "enum": [
+            "public",
+            "project_private",
+            "restricted",
+            "local_only"
+          ],
+          "title": "Privacy",
+          "type": "string"
+        },
+        "profile_request": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Profile Request"
+        },
+        "project_id": {
+          "minLength": 1,
+          "title": "Project Id",
+          "type": "string"
+        },
+        "requested_scope": {
+          "minLength": 1,
+          "title": "Requested Scope",
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "base_head",
+        "requested_scope",
+        "framing_intent",
+        "privacy",
+        "compartments",
+        "actor_role"
+      ],
+      "title": "RunInputBriefV1",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/navigation-plan.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "active_run_ids": {
+      "default": [],
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Active Run Ids",
+      "type": "array"
+    },
+    "base_head": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Base Head",
+      "type": "string"
+    },
+    "blockers": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/DiagnosticV1"
+      },
+      "title": "Blockers",
+      "type": "array"
+    },
+    "candidates": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/NavigationCandidateV1"
+      },
+      "title": "Candidates",
+      "type": "array"
+    },
+    "outcome": {
+      "enum": [
+        "unique_next",
+        "resume_required",
+        "human_decision_required",
+        "ambiguous_next",
+        "repair_required",
+        "complete_for_requested_scope",
+        "navigation_unsupported",
+        "unsupported_host"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "plan_schema": {
+      "const": "econ-theorist/navigation-plan/v1",
+      "default": "econ-theorist/navigation-plan/v1",
+      "title": "Plan Schema",
+      "type": "string"
+    },
+    "project_id": {
+      "minLength": 1,
+      "title": "Project Id",
+      "type": "string"
+    },
+    "resume_descriptors": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ResumeDescriptorV1"
+      },
+      "title": "Resume Descriptors",
+      "type": "array"
+    }
+  },
+  "required": [
+    "outcome",
+    "project_id",
+    "base_head"
+  ],
+  "title": "NavigationPlanV1",
+  "type": "object"
+}

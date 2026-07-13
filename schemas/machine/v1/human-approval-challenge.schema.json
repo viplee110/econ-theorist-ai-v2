@@ -1,0 +1,82 @@
+{
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/human-approval-challenge.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "action": {
+      "minLength": 1,
+      "title": "Action",
+      "type": "string"
+    },
+    "authority_level": {
+      "enum": [
+        "L2",
+        "L3"
+      ],
+      "title": "Authority Level",
+      "type": "string"
+    },
+    "blast_radius_summary": {
+      "minLength": 1,
+      "title": "Blast Radius Summary",
+      "type": "string"
+    },
+    "challenge_id": {
+      "minLength": 1,
+      "title": "Challenge Id",
+      "type": "string"
+    },
+    "challenge_schema": {
+      "const": "econ-theorist/human-approval-challenge/v1",
+      "default": "econ-theorist/human-approval-challenge/v1",
+      "title": "Challenge Schema",
+      "type": "string"
+    },
+    "decision_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Decision Digest",
+      "type": "string"
+    },
+    "expires_at": {
+      "minLength": 1,
+      "title": "Expires At",
+      "type": "string"
+    },
+    "head": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Head",
+      "type": "string"
+    },
+    "options": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Options",
+      "type": "array"
+    },
+    "project_id": {
+      "minLength": 1,
+      "title": "Project Id",
+      "type": "string"
+    },
+    "selected_option": {
+      "minLength": 1,
+      "title": "Selected Option",
+      "type": "string"
+    }
+  },
+  "required": [
+    "challenge_id",
+    "project_id",
+    "head",
+    "action",
+    "decision_digest",
+    "options",
+    "selected_option",
+    "authority_level",
+    "blast_radius_summary",
+    "expires_at"
+  ],
+  "title": "HumanApprovalChallengeV1",
+  "type": "object"
+}

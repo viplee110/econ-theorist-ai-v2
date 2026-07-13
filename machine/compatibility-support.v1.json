@@ -1,0 +1,13 @@
+{
+  "support_schema": 1,
+  "support_version": 1,
+  "engine_versions": ["0.1.0"],
+  "project_config_schemas": [1],
+  "transaction_schemas": [1],
+  "snapshot_schemas": [1],
+  "route_run_schemas": [1],
+  "context_manifest_schemas": [1],
+  "route_registry_versions": [1,2,3,4],
+  "unknown_future_format_policy": "reject_before_replay",
+  "generated_project_config_is_diagnostic_only": true
+}

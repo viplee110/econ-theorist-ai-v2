@@ -1,0 +1,147 @@
+{
+  "$defs": {
+    "BootstrapArtifactV1": {
+      "additionalProperties": false,
+      "properties": {
+        "byte_size": {
+          "minimum": 0,
+          "title": "Byte Size",
+          "type": "integer"
+        },
+        "filename": {
+          "minLength": 1,
+          "title": "Filename",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "wheel",
+            "dependency",
+            "host_manifest",
+            "engine_manifest",
+            "descriptor"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "filename",
+        "sha256",
+        "byte_size",
+        "role"
+      ],
+      "title": "BootstrapArtifactV1",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/bootstrap-descriptor.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "artifacts": {
+      "items": {
+        "$ref": "#/$defs/BootstrapArtifactV1"
+      },
+      "minItems": 1,
+      "title": "Artifacts",
+      "type": "array"
+    },
+    "canonical_source": {
+      "minLength": 1,
+      "title": "Canonical Source",
+      "type": "string"
+    },
+    "dependency_lock_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Dependency Lock Hash",
+      "type": "string"
+    },
+    "descriptor_schema": {
+      "const": "econ-theorist/bootstrap-descriptor/v1",
+      "default": "econ-theorist/bootstrap-descriptor/v1",
+      "title": "Descriptor Schema",
+      "type": "string"
+    },
+    "engine_manifest_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Engine Manifest Hash",
+      "type": "string"
+    },
+    "expires_at": {
+      "minLength": 1,
+      "title": "Expires At",
+      "type": "string"
+    },
+    "host_manifest_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Host Manifest Hash",
+      "type": "string"
+    },
+    "issued_at": {
+      "minLength": 1,
+      "title": "Issued At",
+      "type": "string"
+    },
+    "publisher_id": {
+      "minLength": 1,
+      "title": "Publisher Id",
+      "type": "string"
+    },
+    "python_constraint": {
+      "minLength": 1,
+      "title": "Python Constraint",
+      "type": "string"
+    },
+    "release_version": {
+      "minLength": 1,
+      "title": "Release Version",
+      "type": "string"
+    },
+    "revocation_policy_id": {
+      "minLength": 1,
+      "title": "Revocation Policy Id",
+      "type": "string"
+    },
+    "signature": {
+      "minLength": 1,
+      "title": "Signature",
+      "type": "string"
+    },
+    "signature_algorithm": {
+      "minLength": 1,
+      "title": "Signature Algorithm",
+      "type": "string"
+    },
+    "supported_platform_tags": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Supported Platform Tags",
+      "type": "array"
+    }
+  },
+  "required": [
+    "publisher_id",
+    "canonical_source",
+    "release_version",
+    "python_constraint",
+    "supported_platform_tags",
+    "artifacts",
+    "dependency_lock_hash",
+    "host_manifest_hash",
+    "engine_manifest_hash",
+    "issued_at",
+    "expires_at",
+    "revocation_policy_id",
+    "signature_algorithm",
+    "signature"
+  ],
+  "title": "BootstrapDescriptorV1",
+  "type": "object"
+}

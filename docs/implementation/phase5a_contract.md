@@ -1,10 +1,12 @@
 # Phase 5A Host Bootstrap and Natural-Language Onboarding Contract
 
-Status: Phase 5A.0 design and independent adversarial review complete on
-`agent/phase5a-host-bootstrap-contract`; no Phase 5A runtime implementation
-exists
+Status: Phase 5A.0 design accepted on `main` by `2192956`; active deployment
+scope revised on 2026-07-13 to trusted local research use; the Phase 5A.1 local
+machine facade and its local acceptance evidence are complete in the current
+tree, but host-native research readiness remains Phase 5A.2 work and no
+public-release claim is made
 
-Working branch: `agent/phase5a-host-bootstrap-contract`
+Phase 5A.1 implementation branch (historical): `agent/phase5a-machine-facade`
 
 Accepted Phase 4 base: `63d3393`, merged into `main` by `89d2152`
 
@@ -50,6 +52,40 @@ scientific authority, or alternative state store.
 Phase 5A establishes a single-agent, cross-host, installable execution shell.
 It does not establish multi-agent scientific gains, complete-paper generation,
 or comparative quality.
+
+### 1.1 Active deployment profile and precedence
+
+The implementation now distinguishes two acceptance profiles.
+
+**Local research-ready** is the active profile. It trusts the researcher, the
+local operating system, the user-selected IDE/account, and the ordinary package
+manager. It protects the scientific state from model mistakes, stale or
+repeated operations, ordinary crashes, wrong-project writes, accidental
+context mixing, and unintended disclosure. It does not attempt to defeat an
+attacker controlling the local account, IDE, provider, operating system, or
+package infrastructure.
+
+**Public-distribution-ready** is a later optional profile. It owns signed and
+revocable releases, fully locked supply-chain evidence, hostile-host and
+extreme filesystem-race defenses, and broad host/platform conformance claims.
+
+Where later sections specify cryptographic-like approval receipts, per-delivery
+provider attestations, signed bootstrap infrastructure, or exhaustive hostile
+environment evidence, those requirements apply to the public-distribution
+profile unless a local research-ready criterion explicitly names them. This
+scope rule takes precedence over the older undifferentiated wording below.
+
+The local profile still preserves four non-negotiable classes of control:
+
+1. scientific integrity: one canonical core, exact validators, structural
+   Decisions, deterministic WorkPackets, and sealed-context rules;
+2. local reliability: candidate-first writing, atomic commit, idempotent exact
+   retry, ordinary crash recovery, and protection of user-owned files;
+3. privacy hygiene: one explicit project/session execution policy, exact packet
+   allowlists, secret exclusion, and refusal of `local_only` or sealed work when
+   the selected host lacks real isolation;
+4. honest claims: capability and provenance records describe observations but
+   are not presented as proof against a compromised host.
 
 ## 2. Two-layer experience
 
@@ -106,6 +142,11 @@ installation, bypassed permissions, unpinned software, or autonomous science.
   package, filesystem, and configuration changes before first-use mutation.
 - **Work packet**: the exact route-bound context and candidate-workspace
   contract exposed to one host agent for a run.
+- **Run input brief**: an immutable, content-addressed, host-neutral statement
+  of the bounded user question/framing intent, requested scope, actor role,
+  privacy, compartments, and optional profile request. It is noncanonical but
+  is bound into the navigation candidate and work packet so a clean framing
+  run can carry the user's actual question without changing `RouteRun` v1.
 - **Delivery envelope**: the pre-delivery, host/session-specific operational
   record that binds one immutable work-packet hash to the resolved local paths,
   projection handshake, capability/egress authorization, and operation key.
@@ -188,6 +229,15 @@ cannot exclude the raw decision-confirmation operation from model tools, it may
 prepare the Decision proposal but must stop for a separate trusted/manual human
 path. Prompt text such as "the user approves" is never a receipt.
 
+The generic machine protocol defines the trusted-channel interface and tests
+it with an injected reference implementation. Receipt/authorization issuance,
+revocation, and unrestricted raw decision actions are absent from the ordinary
+model-callable request union. A generic CLI invocation cannot prove a direct
+human gesture or host/provider isolation merely by supplying a boolean. Until
+a host-native adapter supplies those controls in 5A.2--5A.4, the facade may
+return a proposal or egress plan but must report
+`trusted_human_channel_required`/`unsupported_host` at the protected boundary.
+
 This is an adapter/approval-channel assurance claim, not resistance to a fully
 compromised host or local account with arbitrary filesystem/process control.
 Phase 5A documentation and receipts state that threat-model limit. Strong
@@ -269,7 +319,9 @@ own canonical human Decision/handoff. Revocation stops future deliveries under
 the authorization; every delivery has an append-only outcome receipt.
 
 Reusable egress authorization also uses an engine-owned append-only ledger and
-project-local egress lock. Each delivery has a unique operation/delivery key.
+project-local egress lock. Its signed bytes include an exact positive maximum
+delivery count; `single_delivery` has bound one and `bounded_reuse` has an
+explicit bound greater than one. Each delivery has a unique operation/delivery key.
 The facade checks scope, head/packet, provider, purpose, expiry, revocation,
 memory setting, and technical isolation under the lock, then rechecks and
 records `delivery_started` immediately before releasing bytes. Revocation is
@@ -383,6 +435,15 @@ The pre-install trust object and post-install engine inventory are distinct:
   resources, validators, and host manifest, and must match the signed
   descriptor.
 
+An installed `etai` process cannot establish the trustworthiness of the code
+that installed that same process. Phase 5A.1 therefore owns the versioned
+descriptor/install-plan/engine-manifest schemas, pure validation logic, and
+deterministic development fixtures. A separately trusted pre-install verifier
+or host-native installer executes the descriptor protocol before `etai`
+exists. Real publisher signing keys, revocation publication, locked release
+artifacts, and fresh-environment installation evidence remain Phase 5A.5 exit
+work; a source checkout is always reported as `development_only`.
+
 Ordinary installation uses a prebuilt verified wheel plus the fully hashed
 dependency set in an isolated environment. It does not build an sdist or run an
 unlocked build backend. A missing platform wheel stops with an unsupported
@@ -445,6 +506,13 @@ granted access, a reparse/symlink escape, or a mismatch between the selected
 project and canonical project identity. It may detect sibling candidates only
 inside an explicitly granted discovery scope; it must not scan parent or
 sibling directories merely to prove that no other project exists.
+
+Every root-aware machine request carries a versioned `DiscoveryGrant` naming
+the exact selected root, stable workspace root, allowed discovery roots, and
+ancestor-check boundary. The facade checks ancestors only up to that granted
+boundary and descendants only under the selected root. If the grant is too
+narrow to rule out an outer project store, it returns `root_scope_incomplete`;
+it never scans an ungranted parent or sibling as a convenience.
 
 Required behavior is:
 
@@ -633,10 +701,12 @@ authorization. It contains no route prompt or scientific acceptance rule.
 
 A navigation candidate key includes the exact base head, route id/version,
 purpose, actor kind/role, ordered compartments, privacy clearance, focus
-ids/revisions, and context budget--not only route/focus. If purpose or another
-field is not derivable from versioned engine policy and the bounded user
-request, planning reports the missing input. In particular, the adapter cannot
-invent purpose defaults for routes that the current CLI does not define.
+ids/revisions, context budget, and exact `RunInputBrief` hash when one is
+required--not only route/focus. If purpose or another field is not derivable
+from versioned engine policy and the bounded user request, planning reports the
+missing input. In particular, the adapter cannot invent purpose defaults for
+routes that the current CLI does not define. Changing the brief produces a new
+candidate/run/packet; it cannot silently replace an opened run's input.
 
 Every proposed candidate is checked by the exact current route authorization
 and entry validator without mutation. Tests establish probe soundness and
@@ -677,8 +747,9 @@ serialization rule and does not make them canonical scientific state.
 ### 9.1 Scientific work packet
 
 The engine deterministically compiles one host-neutral work packet from the
-exact immutable `RouteRun`, `ContextManifest`, compiled-context bytes, and
-packaged policy versions. It binds:
+exact immutable `RouteRun`, `ContextManifest`, compiled-context bytes,
+content-addressed `RunInputBrief` when present, and packaged policy versions.
+No other chat or host memory is an implicit packet input. It binds:
 
 - packet schema/version and exact hashes of those three existing run objects;
 - project id and exact base head;
@@ -698,9 +769,12 @@ run/context/policy bytes must produce the same digest across supported hosts.
 The packet is never updated in place. Candidate progress and completion affect
 only `RunExecutionView` and the post-run receipt. A changed base/context creates
 a new run and packet. A packet-compiler/schema or host-neutral policy change
-creates a new immutable packet that names the prior packet hash and a typed
-supersession reason; the prior bytes remain historical. Cross-host hash parity
-is asserted only under the same exact engine, packet compiler, schema, and
+must never overwrite an existing packet. Phase 5A.1 stops rather than rebinding
+an incomplete run to new policy bytes. Phase 5A.4 update usability must
+implement and test creation of a new immutable packet naming the prior packet
+hash and a typed supersession reason before such updates are supported; the
+schema field alone is not an implementation claim. Cross-host hash parity is
+asserted only under the same exact engine, packet compiler, schema, and
 host-neutral policy versions.
 
 ### 9.2 Delivery envelope
@@ -722,8 +796,10 @@ that references the delivery-envelope and work-packet hashes and records known
 host/model/provider/reasoning/tool identities, candidate/artifact digests,
 stage/commit outcome, head before/after, warnings, and completion/failure state.
 It never mutates the pre-run packet or delivery envelope. An exact operation-key
-retry returns the prior envelope/receipt; a materially different attempt uses a
-new key and append-only receipt.
+retry returns the prior envelope/receipt, except that a delivery operation that
+may already have returned packet bytes must return
+`unknown_possible_egress` without the packet on retry. A materially different
+attempt uses a new key and append-only receipt.
 
 A missing optional identity is recorded as unknown; it is never fabricated.
 Private reasoning text is neither required nor stored.
@@ -985,6 +1061,29 @@ must be detected rather than counted as loaded merely because a file exists.
 
 ## 13. Evidence and test matrix
 
+### 13.1 Local research-ready evidence
+
+The active profile requires:
+
+- deterministic tests for root binding, navigation, WorkPacket construction,
+  candidate validation/completion, exact retry, and ordinary recovery;
+- preservation of accepted Phase 1--4 schema, registry, instruction, replay,
+  authority, privacy, and gold oracles;
+- one recorded Codex natural-language initialization or continuation flow;
+- one real theory route whose model-produced candidate passes through the
+  engine validator and atomic commit boundary;
+- a negative route showing that an unresolved structural Decision stops
+  promotion;
+- a negative privacy case showing that `local_only` or sealed/blind work is not
+  delivered when the selected host cannot provide its required isolation;
+- `doctor`, exporters, the focused suite, and the complete non-long regression
+  suite, with skips reported honestly.
+
+A deterministic writer fixture is architecture evidence but cannot satisfy the
+real-route item.
+
+### 13.2 Public-distribution-ready evidence
+
 Phase 5A implementation evidence must include:
 
 - deterministic unit tests for install-plan, capability, root-binding,
@@ -1023,28 +1122,52 @@ Implementation proceeds in this order:
 1. **5A.0 -- contract and status repair:** freeze this contract, update the
    Phase 4 merged status, architecture trust boundary, roadmap, and repository
    instructions without adding runtime behavior.
-2. **5A.1 -- generic machine facade:** implement structured bootstrap,
-   read-only compatibility recognition, derived run lifecycle, sound
-   navigation probes, inspection, resume/open, trusted-human and egress
-   approvals, host-neutral work packets, delivery envelopes, and receipt
-   semantics with deterministic fixtures and no host-specific scientific
-   rules.
-3. **5A.2 -- Codex vertical slice:** implement the first real thin projection
-   and host-native clean-install/continue test against the generic facade.
-4. **5A.3 -- Claude Code parity:** add only the projection and host integration
-   required to pass the same contract.
-5. **5A.4 -- Cursor and generic fallback parity:** add the Cursor projection,
-   generic documentation, and cross-host handoff tests.
-6. **5A.5 -- release and acceptance:** install from a versioned release
-   artifact in fresh environments, run adversarial/conformance suites, and
-   independently review the trust, authority, privacy, and state boundaries.
+2. **5A.1 -- local machine facade:** implement compatibility recognition,
+   project binding, derived lifecycle, sound navigation, host-neutral work
+   packets, reliable candidate completion, exact retry, and ordinary recovery
+   with no host-specific scientific rules. Bootstrap, capability, egress, and
+   receipt objects may remain descriptive or optional outside sealed work.
+3. **5A.2 -- Codex research-ready vertical slice:** implement natural-language
+   initialization/continuation and run one real theory route from packet to
+   model candidate, validation, and commit.
+4. **5A.3 -- portable-host smoke tests:** add Claude Code and Cursor thin
+   projections when useful; their parity does not block Codex scientific work.
+5. **5A.4 -- local release usability:** verify pinned local installation,
+   update, recovery, uninstall, and generic CLI operation.
+6. **5A.5 -- optional public-distribution hardening:** before broad public
+   security/support claims, add signing, revocation, fully locked dependency
+   evidence, hostile-environment review, and expanded platform conformance.
 
 Each slice is independently reviewable. No host-specific shortcut may be
 promoted into the engine before a generic invariant and test justify it.
 
 ## 15. Exit criteria
 
-Phase 5A is accepted only when:
+### 15.1 Local research-ready gate
+
+The local profile is accepted when:
+
+1. Codex can initialize or continue the exact selected project from natural
+   language without asking the researcher to transcribe commands;
+2. a real theory route completes `WorkPacket -> model-produced candidate ->
+   validate -> stage/commit` through the canonical engine;
+3. exact retries do not duplicate genesis, runs, delivery, or commits, and an
+   ordinary interrupted operation has a tested recovery path;
+4. the host never overwrites user-owned paper/instruction files or writes
+   canonical ObjectStore bytes directly;
+5. unresolved structural Decisions stop promotion;
+6. only the exact declared private packet is exposed, and `local_only` or
+   sealed/blind work stops without real isolation;
+7. focused tests, the complete non-long regression suite, exporters, and
+   `doctor` pass.
+
+Passing this gate permits controlled Phase 5B work and exploratory quality
+pilots. It does not claim v2 superiority, lower human effort, broad host parity,
+or public-release security.
+
+### 15.2 Public-distribution-ready gate
+
+The public-distribution profile is accepted only when:
 
 1. an ordinary researcher can issue the documented natural-language request
    in each supported host without manually invoking a shell command;
@@ -1075,9 +1198,9 @@ Phase 5A is accepted only when:
     of supply-chain, privacy, authority, project-root, idempotence, or canonical
     state boundaries.
 
-Passing Phase 5A proves safe natural-language onboarding and single-agent host
-portability. It does not prove autonomous research quality or reduced human
-effort.
+Passing the public-distribution gate supports broader natural-language
+onboarding and single-agent host-portability claims. It still does not prove
+autonomous research quality or reduced human effort.
 
 ## 16. Explicit deferrals to Phase 5B or Phase 6
 
@@ -1098,8 +1221,8 @@ Phase 5A does not implement or validate:
 - external communication, release of a manuscript, or submission execution.
 
 Controlled multi-agent scientific execution and optional research-tool
-adapters belong to Phase 5B. Functional, safety, state, and semantic host
-conformance belongs to Phase 5A. Held-out v1/v2 and outcome comparisons across
+adapters belong to Phase 5B after the local research-ready gate; they need not
+wait for public-distribution hardening. Held-out v1/v2 and outcome comparisons across
 models or hosts, plus ablation, quality, and human-effort comparisons, belong
 to Phase 6. `evaluation.md` must be extended and preregistered before it is used
 for a model- or host-outcome comparison not already present in its frozen arms.
@@ -1120,7 +1243,7 @@ The 5A.0 design slice is complete when:
 
 No Phase 5A runtime capability may be claimed from completion of 5A.0 alone.
 
-Current Phase 5A.0 branch evidence is:
+Recorded Phase 5A.0 acceptance evidence is:
 
 - independent roadmap and adversarial boundary reviews, with all blocking
   findings resolved and the final adversarial review reporting no remaining
@@ -1135,3 +1258,34 @@ Current Phase 5A.0 branch evidence is:
   new run: the uninterrupted Phase 1--4 full-genesis gold completed in
   6156.901 seconds before merge. The three hour-scale Phase 2/3/4 gold-runtime
   modules were intentionally not rerun for this documentation-only slice.
+
+## 18. Phase 5A.1 local-machine-facade evidence
+
+Recorded Phase 5A.1 acceptance evidence is:
+
+- 60 focused `test_phase5a_*` tests passing, including root compatibility,
+  navigation, strict transport, authority/egress, concurrency, candidate
+  completion, schema/resource integrity, and atomic operational publication;
+- one public-process deterministic route completing initialization,
+  navigation, run opening, WorkPacket creation and delivery, fixture candidate
+  writing, exact scientific validation, canonical commit, and a fresh-process
+  idempotent retry;
+- explicit fault tests showing that a fresh session receives a complete
+  validated resume descriptor, a crash after durable `delivery_started`
+  returns the original envelope and can close through `host.finish`, and a
+  crash between immutable candidate capture and completion-start publication
+  recovers even when the disposable candidate source is gone;
+- the complete routine non-long regression selection: 472 tests passing with
+  six platform/optional skips in 250.820 seconds. The three hour-scale Phase
+  2/3/4 gold-runtime modules were intentionally excluded; their previously
+  accepted full-chain evidence was not rewritten as a new run;
+- all six current schema/resource exporter checks, Python compilation,
+  `doctor` with `required_ok=true`, Markdown-link validation, and
+  `git diff --check` passing. Lean and Node remain optional and unavailable on
+  the verification machine;
+- a final independent trusted-local audit reporting no Phase 5A.1 blocker.
+
+This evidence establishes the generic local machine facade only. It does not
+establish natural-language Codex activation, a model-produced candidate, the
+local research-ready gate, v2 quality gains, or public-distribution readiness;
+those claims remain owned by Phase 5A.2 or later slices.

@@ -1,18 +1,12 @@
 # Implementation plan
 
-Status: Architecture v0.1 with accepted Phase 1--4 implementations on `main`;
-Phase 4 was merged by `89d2152` after independent adversarial acceptance, and
-the Phase 5A.0 host-bootstrap design contract has completed independent
-adversarial review on `agent/phase5a-host-bootstrap-contract` with no remaining
-blocker; no Phase 5A runtime capability exists yet
+Status: Architecture v0.1 with accepted Phase 1--4 implementations and the
+Phase 5A.0 host-bootstrap contract on `main`; the Phase 5A.1 generic machine
+facade and its local acceptance evidence are complete in the current tree
 
-Current implementation milestone: Phase 5A.0 design accepted on its branch;
-commit/merge the documentation-only trust boundary without adding runtime
-behavior
-
-Next executable capability after Phase 5A.0 acceptance: Phase 5A.1 -- the
-generic structured bootstrap, inspection, next-action, resume, work-packet, and
-host-receipt facade
+Current implementation milestone: Phase 5A.2 -- one real
+Codex theory route from work packet through model-produced candidate,
+validation, and commit, followed immediately by an exploratory quality pilot
 
 ## 1. Delivery strategy
 
@@ -357,6 +351,16 @@ coding-agent hosts. Phase 5B adds controlled multi-agent scientific lanes and
 optional research-tool adapters. This split does not add a seventh
 implementation phase or move comparative claims out of Phase 6.
 
+The active target is trusted local self-use. Two gates are distinct:
+
+- **research-ready:** one selected local host can execute the scientific core
+  reliably enough to run real theory work and diagnostic quality pilots;
+- **public-distribution-ready:** broad host/platform support, signed release
+  infrastructure, and hostile-environment hardening.
+
+Research-ready is the prerequisite for scientific learning. Public-release
+hardening must not postpone the first real paper route.
+
 ### 7.1 Phase 5A -- host bootstrap and natural-language onboarding
 
 The normative design and acceptance owner is
@@ -372,15 +376,16 @@ Required thin slices are:
    inspection, sound navigation probes, safe open/resume, trusted-human and
    egress approvals, host-neutral work packets, delivery envelopes, and host
    receipts;
-3. **5A.2 -- Codex vertical slice:** pass a real clean-onboarding and continue
-   flow through a thin Codex projection;
-4. **5A.3 -- Claude Code parity:** pass the same contract without duplicating
-   scientific route instructions;
-5. **5A.4 -- Cursor and generic fallback parity:** add the Cursor projection,
-   generic CLI path, and cross-host handoff evidence;
-6. **5A.5 -- release and acceptance:** install an exact versioned artifact in
-   fresh environments and pass the shared conformance, adversarial, and
-   host-native suites.
+3. **5A.2 -- Codex research-ready slice:** pass natural-language onboarding or
+   continuation and one real theory route through the common protocol, ending
+   in a validated committed candidate;
+4. **5A.3 -- portable-host smoke tests:** add Claude Code and Cursor thin
+   projections when useful, without blocking Codex-based scientific work;
+5. **5A.4 -- local release usability:** package a pinned local release and
+   verify ordinary install, update, recovery, and generic CLI use;
+6. **5A.5 -- optional public-distribution hardening:** only before making broad
+   security/support claims, add signing, revocation, locked supply-chain,
+   hostile-host, full platform, and expanded conformance evidence.
 
 The ordinary researcher-facing interface is natural language. The machine
 layer remains a versioned `etai` protocol, and the terminal path remains
@@ -388,7 +393,26 @@ available for automation, recovery, tests, and advanced users. A first-use
 host/OS permission may be required; one-sentence onboarding never means
 silently bypassing installation security or L2/L3 human authority.
 
-#### Phase 5A exit criteria
+#### Phase 5A research-ready exit criteria
+
+- Codex can initialize or continue the selected project from a natural-language
+  request without command transcription;
+- one real theory route completes `packet -> model candidate -> validate ->
+  stage/commit`; a deterministic writer fixture is insufficient;
+- exact retries do not duplicate genesis, runs, delivery, or commits, and an
+  ordinary interruption is recoverable;
+- the host does not overwrite user-owned paper or instruction files and never
+  writes canonical ObjectStore bytes directly;
+- unresolved structural Decisions stop promotion;
+- the exact private packet is inspectable, and `local_only` or sealed/blind
+  routes stop when real isolation is unavailable;
+- the focused suite, non-long regression suite, exporters, and `doctor` pass.
+
+This gate permits exploratory v1/v2 pilots and the minimal Phase 5B lanes
+motivated by their failures. It does not establish cross-host parity, public
+release security, or comparative superiority.
+
+#### Phase 5A public-distribution exit criteria
 
 - Codex, Claude Code, and Cursor can each perform the documented clean
   onboarding request without requiring the researcher to transcribe a shell
@@ -412,13 +436,14 @@ silently bypassing installation security or L2/L3 human authority.
 - an independent adversarial review finds no blocking supply-chain, privacy,
   authority, project-root, idempotence, or canonical-state violation.
 
-Phase 5A proves safe host portability for one acting agent. It does not prove
-multi-agent benefit, external-LLM quality, complete-paper generation, lower
-human effort, or Top-5 readiness.
+The public-distribution gate proves bounded host portability for one acting
+agent. Neither gate proves multi-agent benefit, complete-paper generation,
+lower human effort, or Top-5 readiness.
 
 ### 7.2 Phase 5B -- controlled multi-agent lanes and optional research adapters
 
-Add only after the Phase 5A single-agent host boundary is stable:
+Add after the Phase 5A research-ready boundary passes; do not wait for the
+optional public-distribution gate:
 
 - isolated mechanism/model lanes;
 - general multi-agent lanes beyond Phase 2's sealed confirmatory-evaluation

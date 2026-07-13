@@ -1,0 +1,120 @@
+{
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/compatibility-probe.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "chain_length": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Chain Length",
+      "type": "integer"
+    },
+    "classification": {
+      "enum": [
+        "absent",
+        "virgin",
+        "valid_existing",
+        "recovery_required",
+        "corrupt",
+        "incompatible"
+      ],
+      "title": "Classification",
+      "type": "string"
+    },
+    "compatible_engine_version": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Compatible Engine Version"
+    },
+    "diagnostics": {
+      "default": [],
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Diagnostics",
+      "type": "array"
+    },
+    "engine_version_hint": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Engine Version Hint"
+    },
+    "head": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Head"
+    },
+    "probe_schema": {
+      "const": "econ-theorist/compatibility-probe/v1",
+      "default": "econ-theorist/compatibility-probe/v1",
+      "title": "Probe Schema",
+      "type": "string"
+    },
+    "project_id": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Project Id"
+    },
+    "project_root": {
+      "minLength": 1,
+      "title": "Project Root",
+      "type": "string"
+    },
+    "store_root": {
+      "minLength": 1,
+      "title": "Store Root",
+      "type": "string"
+    },
+    "transaction_schema": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Transaction Schema"
+    }
+  },
+  "required": [
+    "classification",
+    "project_root",
+    "store_root"
+  ],
+  "title": "CompatibilityProbeV1",
+  "type": "object"
+}

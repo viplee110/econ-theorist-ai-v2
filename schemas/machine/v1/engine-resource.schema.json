@@ -1,0 +1,28 @@
+{
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/engine-resource.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "byte_size": {
+      "minimum": 0,
+      "title": "Byte Size",
+      "type": "integer"
+    },
+    "logical_path": {
+      "minLength": 1,
+      "title": "Logical Path",
+      "type": "string"
+    },
+    "sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "logical_path",
+    "sha256",
+    "byte_size"
+  ],
+  "title": "EngineResourceV1",
+  "type": "object"
+}

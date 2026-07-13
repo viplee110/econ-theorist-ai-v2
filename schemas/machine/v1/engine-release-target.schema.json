@@ -1,0 +1,34 @@
+{
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/engine-release-target.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "engine_inventory_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Engine Inventory Hash",
+      "type": "string"
+    },
+    "platform_tag": {
+      "minLength": 1,
+      "title": "Platform Tag",
+      "type": "string"
+    },
+    "python_tag": {
+      "minLength": 1,
+      "title": "Python Tag",
+      "type": "string"
+    },
+    "target_id": {
+      "minLength": 1,
+      "title": "Target Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "target_id",
+    "python_tag",
+    "platform_tag",
+    "engine_inventory_hash"
+  ],
+  "title": "EngineReleaseTargetV1",
+  "type": "object"
+}

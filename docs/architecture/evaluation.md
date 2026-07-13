@@ -59,6 +59,33 @@ Run the three registered arms below. Do not collapse compiler quality, end-to-en
 
 Measure how the systems perform over repeated revisions, upstream model changes, referee comments, and human overrides. This layer tests whether v2 reduces accumulated intervention rather than merely producing a better first sample.
 
+## Exploratory local pilots before confirmatory Phase 6
+
+After the Phase 5A Codex research-ready gate, small exploratory pilots may run
+before the confirmatory protocol. Their purpose is architecture diagnosis, not
+a claim that v2 beats v1. They must be labeled exploratory, retain all outputs,
+use matched disclosed budgets, and may change later Phase 5B design only through
+a recorded failure analysis.
+
+The first two preferred pilots are:
+
+1. a `revision` case using the unchanged AI appendix draft plus expert comments,
+   while withholding the author's in-progress corrected version; and
+2. a `compiler_only` case using an independently validated, renamed, and mildly
+   perturbed classic theory model/result package.
+
+Use the same Codex model class, reasoning setting, tools, and budget for v1 and
+v2 when possible; isolate sessions; anonymize outputs before evaluation; and
+record active human repair time. Primary diagnostic dimensions are economic
+mechanism recovery, intuition and nearby-case transfer, assumption
+interpretation, formal fidelity, unnecessary abstraction, unnecessary edits,
+and the amount of human reconstruction required.
+
+Exploratory outcomes may determine whether the first Phase 5B investment is a
+mechanism-comparison lane, intuition falsifier, proof auditor, economic reader,
+cold reader, or manuscript-compiler repair. They may not be reported as a
+confirmatory system win.
+
 ## Frozen baselines and version pinning
 
 Every comparison records:

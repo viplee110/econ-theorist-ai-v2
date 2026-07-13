@@ -1,0 +1,253 @@
+{
+  "$defs": {
+    "CompatibilityProbeV1": {
+      "additionalProperties": false,
+      "properties": {
+        "chain_length": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Chain Length",
+          "type": "integer"
+        },
+        "classification": {
+          "enum": [
+            "absent",
+            "virgin",
+            "valid_existing",
+            "recovery_required",
+            "corrupt",
+            "incompatible"
+          ],
+          "title": "Classification",
+          "type": "string"
+        },
+        "compatible_engine_version": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Compatible Engine Version"
+        },
+        "diagnostics": {
+          "default": [],
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "engine_version_hint": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Engine Version Hint"
+        },
+        "head": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Head"
+        },
+        "probe_schema": {
+          "const": "econ-theorist/compatibility-probe/v1",
+          "default": "econ-theorist/compatibility-probe/v1",
+          "title": "Probe Schema",
+          "type": "string"
+        },
+        "project_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Project Id"
+        },
+        "project_root": {
+          "minLength": 1,
+          "title": "Project Root",
+          "type": "string"
+        },
+        "store_root": {
+          "minLength": 1,
+          "title": "Store Root",
+          "type": "string"
+        },
+        "transaction_schema": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Transaction Schema"
+        }
+      },
+      "required": [
+        "classification",
+        "project_root",
+        "store_root"
+      ],
+      "title": "CompatibilityProbeV1",
+      "type": "object"
+    },
+    "DiagnosticV1": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "diagnostic_schema": {
+          "const": "econ-theorist/diagnostic/v1",
+          "default": "econ-theorist/diagnostic/v1",
+          "title": "Diagnostic Schema",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "DiagnosticV1",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/project-binding.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "binding_schema": {
+      "const": "econ-theorist/project-binding/v1",
+      "default": "econ-theorist/project-binding/v1",
+      "title": "Binding Schema",
+      "type": "string"
+    },
+    "canonical_validation": {
+      "enum": [
+        "valid",
+        "not_run",
+        "failed"
+      ],
+      "title": "Canonical Validation",
+      "type": "string"
+    },
+    "diagnostics": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/DiagnosticV1"
+      },
+      "title": "Diagnostics",
+      "type": "array"
+    },
+    "head": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Head"
+    },
+    "mutated": {
+      "title": "Mutated",
+      "type": "boolean"
+    },
+    "probe": {
+      "$ref": "#/$defs/CompatibilityProbeV1"
+    },
+    "project_id": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Project Id"
+    },
+    "project_root": {
+      "minLength": 1,
+      "title": "Project Root",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "bound",
+        "initialized",
+        "project_initialization_required",
+        "project_identity_conflict",
+        "root_scope_incomplete",
+        "recovery_required",
+        "corrupt",
+        "incompatible"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "status",
+    "project_root",
+    "canonical_validation",
+    "probe",
+    "mutated"
+  ],
+  "title": "ProjectBindingV1",
+  "type": "object"
+}

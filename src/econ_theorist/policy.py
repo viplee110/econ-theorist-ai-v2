@@ -4,13 +4,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import lru_cache
-from importlib.metadata import PackageNotFoundError, distribution, version as package_version
+from importlib.metadata import version as package_version
 import json
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Mapping
 
 from .codec import canonical_json_bytes, sha256_digest
+from .distribution_resources import (
+    DistributionResourceError,
+    installed_resource_root,
+)
 from .errors import AuthorityError, RegistryError
 from .models import (
     FACET_ORDER,
@@ -269,12 +273,8 @@ def _routes_root() -> Path:
     if (source_root / "registry.v1.json").is_file():
         return source_root
     try:
-        installed_root = Path(
-            distribution("econ-theorist-ai").locate_file(
-                "share/econ-theorist/routes"
-            )
-        )
-    except PackageNotFoundError as exc:
+        installed_root = installed_resource_root() / "routes"
+    except DistributionResourceError as exc:
         raise RegistryError(
             "cannot locate source or installed route policy resources"
         ) from exc

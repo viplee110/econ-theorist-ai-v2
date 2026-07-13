@@ -1,0 +1,408 @@
+{
+  "$defs": {
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "RunInputBriefV1": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_role": {
+          "minLength": 1,
+          "title": "Actor Role",
+          "type": "string"
+        },
+        "base_head": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Base Head",
+          "type": "string"
+        },
+        "brief_schema": {
+          "const": "econ-theorist/run-input-brief/v1",
+          "default": "econ-theorist/run-input-brief/v1",
+          "title": "Brief Schema",
+          "type": "string"
+        },
+        "compartments": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Compartments",
+          "type": "array"
+        },
+        "framing_intent": {
+          "minLength": 1,
+          "title": "Framing Intent",
+          "type": "string"
+        },
+        "privacy": {
+          "enum": [
+            "public",
+            "project_private",
+            "restricted",
+            "local_only"
+          ],
+          "title": "Privacy",
+          "type": "string"
+        },
+        "profile_request": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Profile Request"
+        },
+        "project_id": {
+          "minLength": 1,
+          "title": "Project Id",
+          "type": "string"
+        },
+        "requested_scope": {
+          "minLength": 1,
+          "title": "Requested Scope",
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "base_head",
+        "requested_scope",
+        "framing_intent",
+        "privacy",
+        "compartments",
+        "actor_role"
+      ],
+      "title": "RunInputBriefV1",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/work-packet.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "actor_role": {
+      "minLength": 1,
+      "title": "Actor Role",
+      "type": "string"
+    },
+    "allowed_operation_classes": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Allowed Operation Classes",
+      "type": "array"
+    },
+    "base_head": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Base Head",
+      "type": "string"
+    },
+    "candidate_logical_path": {
+      "minLength": 1,
+      "title": "Candidate Logical Path",
+      "type": "string"
+    },
+    "compartments": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Compartments",
+      "type": "array"
+    },
+    "compiled_context": {
+      "additionalProperties": true,
+      "title": "Compiled Context",
+      "type": "object"
+    },
+    "compiled_context_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Compiled Context Hash",
+      "type": "string"
+    },
+    "context_manifest_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Context Manifest Hash",
+      "type": "string"
+    },
+    "context_selector_version": {
+      "minLength": 1,
+      "title": "Context Selector Version",
+      "type": "string"
+    },
+    "engine_semantics_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Engine Semantics Hash",
+      "type": "string"
+    },
+    "engine_version": {
+      "minLength": 1,
+      "title": "Engine Version",
+      "type": "string"
+    },
+    "focus_refs": {
+      "items": {
+        "$ref": "#/$defs/EntityVersionRef"
+      },
+      "title": "Focus Refs",
+      "type": "array"
+    },
+    "forbidden_actions": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Forbidden Actions",
+      "type": "array"
+    },
+    "hidden_compartments": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Hidden Compartments",
+      "type": "array"
+    },
+    "instruction_bundle_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Instruction Bundle Hash",
+      "type": "string"
+    },
+    "instruction_text": {
+      "minLength": 1,
+      "title": "Instruction Text",
+      "type": "string"
+    },
+    "navigation_candidate_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Navigation Candidate Digest",
+      "type": "string"
+    },
+    "omissions": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Omissions",
+      "type": "array"
+    },
+    "packet_compiler_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Packet Compiler Version",
+      "type": "integer"
+    },
+    "packet_schema": {
+      "const": "econ-theorist/work-packet/v1",
+      "default": "econ-theorist/work-packet/v1",
+      "title": "Packet Schema",
+      "type": "string"
+    },
+    "pending_human_gate_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Pending Human Gate Refs",
+      "type": "array"
+    },
+    "policy_hashes": {
+      "additionalProperties": {
+        "pattern": "^[0-9a-f]{64}$",
+        "type": "string"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Policy Hashes",
+      "type": "object"
+    },
+    "privacy_clearance": {
+      "enum": [
+        "public",
+        "project_private",
+        "restricted",
+        "local_only"
+      ],
+      "title": "Privacy Clearance",
+      "type": "string"
+    },
+    "project_id": {
+      "minLength": 1,
+      "title": "Project Id",
+      "type": "string"
+    },
+    "purpose": {
+      "minLength": 1,
+      "title": "Purpose",
+      "type": "string"
+    },
+    "required_output_entity_types": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Required Output Entity Types",
+      "type": "array"
+    },
+    "required_output_relation_types": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Required Output Relation Types",
+      "type": "array"
+    },
+    "route_id": {
+      "minLength": 1,
+      "title": "Route Id",
+      "type": "string"
+    },
+    "route_registry_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Route Registry Hash",
+      "type": "string"
+    },
+    "route_run_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Route Run Hash",
+      "type": "string"
+    },
+    "route_run_id": {
+      "minLength": 1,
+      "title": "Route Run Id",
+      "type": "string"
+    },
+    "route_version": {
+      "minimum": 1,
+      "title": "Route Version",
+      "type": "integer"
+    },
+    "run_input": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RunInputBriefV1"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "run_input_brief_hash": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Run Input Brief Hash"
+    },
+    "shadow_logical_root": {
+      "minLength": 1,
+      "title": "Shadow Logical Root",
+      "type": "string"
+    },
+    "stale_base_behavior": {
+      "const": "stop_and_reinspect",
+      "default": "stop_and_reinspect",
+      "title": "Stale Base Behavior",
+      "type": "string"
+    },
+    "supersedes_packet_hash": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Supersedes Packet Hash"
+    },
+    "supersession_reason": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Supersession Reason"
+    },
+    "validation_operation": {
+      "const": "candidate.complete",
+      "default": "candidate.complete",
+      "title": "Validation Operation",
+      "type": "string"
+    }
+  },
+  "required": [
+    "engine_version",
+    "engine_semantics_hash",
+    "project_id",
+    "base_head",
+    "route_run_id",
+    "route_run_hash",
+    "context_manifest_hash",
+    "compiled_context_hash",
+    "run_input_brief_hash",
+    "navigation_candidate_digest",
+    "route_id",
+    "route_version",
+    "purpose",
+    "actor_role",
+    "focus_refs",
+    "route_registry_hash",
+    "instruction_bundle_hash",
+    "context_selector_version",
+    "policy_hashes",
+    "privacy_clearance",
+    "compartments",
+    "instruction_text",
+    "compiled_context",
+    "run_input",
+    "omissions",
+    "hidden_compartments",
+    "pending_human_gate_refs",
+    "candidate_logical_path",
+    "shadow_logical_root",
+    "allowed_operation_classes",
+    "required_output_entity_types",
+    "required_output_relation_types",
+    "forbidden_actions"
+  ],
+  "title": "WorkPacketV1",
+  "type": "object"
+}

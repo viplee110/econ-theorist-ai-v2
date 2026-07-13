@@ -1,0 +1,49 @@
+{
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/open-run-result.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "candidate_logical_path": {
+      "minLength": 1,
+      "title": "Candidate Logical Path",
+      "type": "string"
+    },
+    "navigation_candidate_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Navigation Candidate Digest",
+      "type": "string"
+    },
+    "open_result_schema": {
+      "const": "econ-theorist/open-run-result/v1",
+      "default": "econ-theorist/open-run-result/v1",
+      "title": "Open Result Schema",
+      "type": "string"
+    },
+    "route_run_id": {
+      "minLength": 1,
+      "title": "Route Run Id",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "opened",
+        "resumed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "work_packet_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Work Packet Hash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "status",
+    "route_run_id",
+    "navigation_candidate_digest",
+    "work_packet_hash",
+    "candidate_logical_path"
+  ],
+  "title": "OpenRunResultV1",
+  "type": "object"
+}

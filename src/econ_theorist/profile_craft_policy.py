@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from importlib.metadata import PackageNotFoundError, distribution
 from itertools import combinations
 from pathlib import Path
 from typing import Any
 
 from .codec import canonical_json_bytes, object_digest, sha256_digest
+from .distribution_resources import (
+    DistributionResourceError,
+    installed_resource_root,
+)
 from .models import Actor, EntityVersionRef
 from .profile_craft import (
     CraftCandidateAudit,
@@ -201,12 +204,8 @@ def _source_resource(path: str) -> Path:
     if candidate.is_file():
         return candidate
     try:
-        installed = Path(
-            distribution("econ-theorist-ai").locate_file(
-                f"share/econ-theorist/{path}"
-            )
-        )
-    except PackageNotFoundError as exc:
+        installed = installed_resource_root() / Path(path)
+    except DistributionResourceError as exc:
         raise ProfileCraftPolicyError(
             f"cannot locate Phase 4 static resource: {path}"
         ) from exc

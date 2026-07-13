@@ -15,6 +15,7 @@ from .doctor import doctor_report
 from .decisions import commit_decision, read_decision
 from .errors import EconTheoristError
 from .models import Actor, FACET_ORDER
+from .machine_cli import invoke_from_argument
 from .project import init_project
 from .runs import begin_run
 from .runtime import StoreLayout
@@ -208,6 +209,10 @@ def _cmd_doctor(args: argparse.Namespace) -> int:
     return 0 if report["required_ok"] else 4
 
 
+def _cmd_machine_invoke(args: argparse.Namespace) -> int:
+    return invoke_from_argument(args.request)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="etai",
@@ -278,6 +283,22 @@ def build_parser() -> argparse.ArgumentParser:
 
     command = subparsers.add_parser("doctor", help="report required and optional capabilities")
     command.set_defaults(handler=_cmd_doctor)
+
+    machine = subparsers.add_parser(
+        "machine", help="invoke the strict IDE-neutral machine protocol"
+    )
+    machine_commands = machine.add_subparsers(
+        dest="machine_command", required=True
+    )
+    command = machine_commands.add_parser(
+        "invoke", help="read one MachineRequestV1 from stdin or a file"
+    )
+    command.add_argument(
+        "--request",
+        required=True,
+        help="request JSON path, or '-' to read standard input",
+    )
+    command.set_defaults(handler=_cmd_machine_invoke)
     return parser
 
 

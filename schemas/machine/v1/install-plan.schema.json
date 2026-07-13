@@ -1,0 +1,118 @@
+{
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/install-plan.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "absolute_launcher": {
+      "minLength": 1,
+      "title": "Absolute Launcher",
+      "type": "string"
+    },
+    "canonical_source": {
+      "minLength": 1,
+      "title": "Canonical Source",
+      "type": "string"
+    },
+    "descriptor_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Descriptor Hash",
+      "type": "string"
+    },
+    "environment_root": {
+      "minLength": 1,
+      "title": "Environment Root",
+      "type": "string"
+    },
+    "files_to_create": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Files To Create",
+      "type": "array"
+    },
+    "files_to_modify": {
+      "default": [],
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Files To Modify",
+      "type": "array"
+    },
+    "install_plan_schema": {
+      "const": "econ-theorist/install-plan/v1",
+      "default": "econ-theorist/install-plan/v1",
+      "title": "Install Plan Schema",
+      "type": "string"
+    },
+    "installation_scope": {
+      "enum": [
+        "user_isolated",
+        "host_managed"
+      ],
+      "title": "Installation Scope",
+      "type": "string"
+    },
+    "network_origins": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Network Origins",
+      "type": "array"
+    },
+    "project_initialization_requested": {
+      "default": false,
+      "title": "Project Initialization Requested",
+      "type": "boolean"
+    },
+    "project_name": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Project Name"
+    },
+    "project_root": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Project Root"
+    },
+    "release_version": {
+      "minLength": 1,
+      "title": "Release Version",
+      "type": "string"
+    },
+    "requires_external_bootstrap_executor": {
+      "default": true,
+      "title": "Requires External Bootstrap Executor",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "descriptor_hash",
+    "release_version",
+    "canonical_source",
+    "installation_scope",
+    "environment_root",
+    "absolute_launcher",
+    "network_origins",
+    "files_to_create"
+  ],
+  "title": "InstallPlanV1",
+  "type": "object"
+}

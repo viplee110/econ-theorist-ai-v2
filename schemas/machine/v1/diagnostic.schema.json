@@ -1,0 +1,43 @@
+{
+  "$id": "https://econ-theorist.ai/schemas/machine/v1/diagnostic.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "minLength": 1,
+      "title": "Code",
+      "type": "string"
+    },
+    "details": {
+      "additionalProperties": true,
+      "title": "Details",
+      "type": "object"
+    },
+    "diagnostic_schema": {
+      "const": "econ-theorist/diagnostic/v1",
+      "default": "econ-theorist/diagnostic/v1",
+      "title": "Diagnostic Schema",
+      "type": "string"
+    },
+    "message": {
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    },
+    "severity": {
+      "enum": [
+        "info",
+        "warning",
+        "error"
+      ],
+      "title": "Severity",
+      "type": "string"
+    }
+  },
+  "required": [
+    "code",
+    "severity",
+    "message"
+  ],
+  "title": "DiagnosticV1",
+  "type": "object"
+}
