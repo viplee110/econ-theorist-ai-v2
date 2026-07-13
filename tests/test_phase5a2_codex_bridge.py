@@ -305,6 +305,23 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
         self.assertEqual(replay(StoreLayout.at(self.root)).head, digest)
         self.assertEqual(self.bridge.invoke(completion_request), completed)
 
+        next_route = self.bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(self.root),
+                session=self.session.model_copy(
+                    update={"session_id": "codex-session-after-framing"}
+                ),
+            )
+        )
+        self.assertEqual(next_route.outcome, "ready", next_route)
+        self.assertTrue(next_route.mutated)
+        self.assertEqual(next_route.head, digest)
+        self.assertEqual(next_route.work_packet.route_id, "decompose.primitives")
+        self.assertIn(
+            "Do not confirm G1",
+            next_route.work_packet.instruction_text,
+        )
+
         altered = transaction.model_copy(
             update={
                 "transaction_id": "transaction.codex.bridge.altered",

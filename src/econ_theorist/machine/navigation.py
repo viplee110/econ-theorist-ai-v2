@@ -263,7 +263,7 @@ def enumerate_navigation_candidates(
                     budget_units=effective_budget,
                     layout=layout,
                 )
-            except (RuntimeError, ValueError) as exc:
+            except (RouteEntryError, RuntimeError, ValueError) as exc:
                 message = str(exc)
                 code = _diagnostic_code(message)
                 diagnostics.setdefault(
