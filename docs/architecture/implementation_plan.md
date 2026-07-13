@@ -1,10 +1,18 @@
 # Implementation plan
 
-Status: Architecture v0.1 with accepted Phase 1--3 implementations and Phase 4 profile-and-craft implementation/semantic acceptance complete on `agent/phase4-profile-craft`; independent final adversarial branch review completed with no blocking findings, while commit and merge remain pending
+Status: Architecture v0.1 with accepted Phase 1--4 implementations on `main`;
+Phase 4 was merged by `89d2152` after independent adversarial acceptance, and
+the Phase 5A.0 host-bootstrap design contract has completed independent
+adversarial review on `agent/phase5a-host-bootstrap-contract` with no remaining
+blocker; no Phase 5A runtime capability exists yet
 
-Current implementation milestone: Phase 4 — profile and craft vertical slice accepted by an uninterrupted full-genesis Phase 1→4 gold run, current focused/full non-gold checks, independent adversarial branch review, and segmented-store historical verification; next commit and merge without weakening the accepted predicates
+Current implementation milestone: Phase 5A.0 design accepted on its branch;
+commit/merge the documentation-only trust boundary without adding runtime
+behavior
 
-Next capability phase after Phase 4 acceptance: Phase 5 — controlled multi-agent lanes and optional adapters
+Next executable capability after Phase 5A.0 acceptance: Phase 5A.1 -- the
+generic structured bootstrap, inspection, next-action, resume, work-packet, and
+host-receipt facade
 
 ## 1. Delivery strategy
 
@@ -214,10 +222,9 @@ acceptance probability at Econometrica, a Top-5, or a leading field journal.
 
 ## 6. Phase 4 — profile and craft system
 
-Implementation status: implementation and semantic acceptance complete on
-`agent/phase4-profile-craft` against the frozen Phase 3 base. An independent
-final adversarial branch review found no blocking findings; commit and merge
-remain pending. `registry.v4.json`
+Implementation status: accepted Phase 4 implementation `63d3393` was merged
+into `main` by `89d2152` against the frozen Phase 3 base after an independent
+final adversarial branch review found no blocking findings. `registry.v4.json`
 is an additive catalog: every v3 route
 entry and instruction remains byte-identical, and only these eight native v4
 routes are added:
@@ -342,9 +349,76 @@ They do not establish complete-paper coverage, a broad production craft corpus,
 held-out quality superiority, lower human effort, external-LLM performance, or
 publication readiness.
 
-## 7. Phase 5 — controlled multi-agent and optional adapters
+## 7. Phase 5 -- host adaptation and controlled multi-agent execution
 
-Add only after the single-agent vertical slice is stable:
+Phase 5 is split into two ordered capability groups. Phase 5A makes the
+accepted single-agent core safely installable and operable from supported
+coding-agent hosts. Phase 5B adds controlled multi-agent scientific lanes and
+optional research-tool adapters. This split does not add a seventh
+implementation phase or move comparative claims out of Phase 6.
+
+### 7.1 Phase 5A -- host bootstrap and natural-language onboarding
+
+The normative design and acceptance owner is
+`../implementation/phase5a_contract.md`.
+
+Required thin slices are:
+
+1. **5A.0 -- contract and status repair:** freeze the two-layer user/machine
+   experience, host trust boundary, capability contract, cross-host parity,
+   installation safety, and acceptance matrix without runtime claims;
+2. **5A.1 -- generic machine facade:** add structured, idempotent bootstrap,
+   read-only existing-project compatibility, derived run lifecycle, compact
+   inspection, sound navigation probes, safe open/resume, trusted-human and
+   egress approvals, host-neutral work packets, delivery envelopes, and host
+   receipts;
+3. **5A.2 -- Codex vertical slice:** pass a real clean-onboarding and continue
+   flow through a thin Codex projection;
+4. **5A.3 -- Claude Code parity:** pass the same contract without duplicating
+   scientific route instructions;
+5. **5A.4 -- Cursor and generic fallback parity:** add the Cursor projection,
+   generic CLI path, and cross-host handoff evidence;
+6. **5A.5 -- release and acceptance:** install an exact versioned artifact in
+   fresh environments and pass the shared conformance, adversarial, and
+   host-native suites.
+
+The ordinary researcher-facing interface is natural language. The machine
+layer remains a versioned `etai` protocol, and the terminal path remains
+available for automation, recovery, tests, and advanced users. A first-use
+host/OS permission may be required; one-sentence onboarding never means
+silently bypassing installation security or L2/L3 human authority.
+
+#### Phase 5A exit criteria
+
+- Codex, Claude Code, and Cursor can each perform the documented clean
+  onboarding request without requiring the researcher to transcribe a shell
+  command;
+- all hosts use one engine-owned host manifest and the same exact
+  route/context/validator semantics;
+- repeat onboarding and cross-host continuation preserve one project id, one
+  canonical head, derived run view, Decisions, blockers, and work-packet hashes;
+- host projections preserve user-owned instructions/files and never overwrite
+  human-owned working artifacts or canonical ObjectStore bytes directly;
+- non-public provider egress, host memory, secrets, blind compartments, and
+  human approvals are enforced by technical scopes/receipts rather than prompt
+  promises;
+- permission denial, integrity/version failure, ambiguous route, missing human
+  Decision, corrupt state, wrong root, and privacy attacks fail without
+  canonical scientific mutation;
+- signed/locked installation from a release artifact, absolute launcher and
+  projection-activation handshakes, `doctor`, CLI independence, recovery,
+  update, and uninstall are tested rather than inferred from templates;
+- the accepted Phase 1--4 semantics and regression evidence remain green;
+- an independent adversarial review finds no blocking supply-chain, privacy,
+  authority, project-root, idempotence, or canonical-state violation.
+
+Phase 5A proves safe host portability for one acting agent. It does not prove
+multi-agent benefit, external-LLM quality, complete-paper generation, lower
+human effort, or Top-5 readiness.
+
+### 7.2 Phase 5B -- controlled multi-agent lanes and optional research adapters
+
+Add only after the Phase 5A single-agent host boundary is stable:
 
 - isolated mechanism/model lanes;
 - general multi-agent lanes beyond Phase 2's sealed confirmatory-evaluation
@@ -355,22 +429,34 @@ Add only after the single-agent vertical slice is stable:
 - private researcher-memory adapter;
 - advanced symbolic/numerical tools.
 
-### Exit criteria
+#### Phase 5B exit criteria
 
 - multi-agent agreement is recorded as correlated evidence rather than proof;
-- raw lanes and context manifests remain inspectable;
+- raw lanes and exact context manifests remain inspectable;
 - a judge cannot confirm a human-owned decision;
+- minority evidence cannot disappear merely because a judge selects another
+  proposal;
+- concurrent proposals preserve exact base heads and never use
+  last-writer-wins scientific commits;
 - optional adapters cannot weaken privacy, authority, or evidence semantics;
 - the core remains usable without any optional adapter.
 
-Phase 5 scales controlled search, criticism, and optional tooling. It does not
-replace the canonical writer with prose assembly by committee, turn agreement
-into proof, or establish Top-5 quality. Phase 4's single-writer repair and
-noncompensatory closure remain the floor.
+Phase 5B scales controlled search, criticism, and optional tooling. It does
+not replace the canonical writer with prose assembly by committee, turn
+agreement into proof, or establish Top-5 quality. Phase 4's single-writer
+repair and noncompensatory closure remain the floor.
 
 ## 8. Phase 6 — comparative evaluation and hardening
 
 Run the preregistered compiler-only, end-to-end discovery, and revision comparisons on held-out theory cases under the full protocol in `evaluation.md`. Perform v2 ablations for the economic argument representation, reader contracts, mechanism/result packets, dependency invalidation, and craft retrieval.
+
+Phase 5A owns functional, safety, state, and semantic conformance across
+supported hosts. A claim that one model or host produces better research,
+requires less human effort, or reaches the endpoint more efficiently is a Phase
+6 outcome comparison. Because the frozen evaluation protocol initially defines
+v1/v2 arms rather than a general model-by-host experiment, any additional
+model/host arms and budgets must be added and preregistered before confirmatory
+outcomes are inspected.
 
 Phase 2's sealed blind routes establish the protocol and runtime slice only.
 Phase 6 supplies the held-out comparative evidence about whether an isolated AI

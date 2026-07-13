@@ -2,21 +2,26 @@
 
 ## Current phase
 
-Phases 1--3 are accepted on `main`. This repository is implementing the first
-Phase 4 profile-and-craft vertical slice against
-`docs/implementation/phase4_contract.md`. The slice adds a separate
-`profile_craft` payload namespace, a frozen-superset `registry.v4.json`, typed
-obligation-to-predicate audits, deterministic profile resolution, reader-problem
-diagnosis, function-first craft retrieval, canonical-writer repair, and a
-Phase-4-specific closure layered on the existing Phase 3 authoring closure.
+Phases 1--4 are accepted on `main`; Phase 4 implementation `63d3393` was merged
+by `89d2152`. Phase 5A.0, the design contract and status repair for safe
+natural-language onboarding and thin Codex, Claude Code, and Cursor host
+projections, is complete on `agent/phase5a-host-bootstrap-contract` after
+independent adversarial review found no remaining blocker. Its normative owner
+is `docs/implementation/phase5a_contract.md`.
 
-Do not modify Phase 1--3 payload meanings, committed schemas, registry or
-instruction bytes, frozen fixtures, or historical selector behavior to solve a
-Phase 4 problem. The ordinary v3 design, compose, review, reader-probe, and
-closure routes remain intact. Phase 4 adds only the native routes named in its
-contract. Static profile/craft catalogs stay separate from project manifests,
-and selected craft moves belong in `CraftSelectionManifest`, never in the
-resolved profile stack.
+Phase 5A.0 changes documentation and freezes acceptance semantics only. Do not
+claim that a host installer, generic facade, work packet, cross-host handoff,
+or one-sentence onboarding exists until its later executable slice and tests
+pass. Do not add host runtime code on the Phase 5A.0 branch; Phase 5A.1 begins
+as a separate executable slice after this contract is merged.
+
+Do not modify Phase 1--4 payload meanings, committed schemas, registry or
+instruction bytes, packaged profile/craft resources, frozen fixtures, or
+historical selector behavior to solve a host-integration problem. Host
+projections remain thin: they invoke one engine-owned machine protocol and may
+not duplicate route instructions, scientific gates, profiles, or validators.
+No host writes canonical ObjectStore bytes directly or confirms an L2/L3 human
+decision.
 
 The canonical repository verification command remains
 `python -m unittest discover -s tests -v`. Schema and pinned-resource
@@ -30,9 +35,12 @@ python scripts/export_profile_craft_schemas.py --check
 python scripts/export_profile_craft_resources.py --check
 ```
 
-Run `etai doctor` and the focused Phase 4 contract, downgrade,
-selective-invalidation, context-isolation, replay, and gold tests before
-requesting review. Report optional-tool skips separately; they are not passes.
+For the Phase 5A.0 documentation-only slice, also run `git diff --check`, verify
+every new local Markdown link, and search for stale Phase 4 branch/merge status.
+Later executable Phase 5A slices must add their focused contract, install,
+idempotence, root-binding, cross-host, privacy, recovery, and adversarial tests
+before requesting review. Report optional-tool skips separately; they are not
+passes.
 
 ## Scope
 
@@ -56,6 +64,28 @@ requesting review. Report optional-tool skips separately; they are not passes.
 
 Agents may explore reversible branches and propose decisions. Human confirmation is required before a core question, model primitive, equilibrium concept, central result scope, novelty claim, argument spine, or target/audience decision becomes a stable dependency. External release and submission always require explicit authorization.
 
+## Host integration invariants
+
+- Natural language is a user interface over the canonical engine, not a second
+  research workflow.
+- The first installation or protected action may require a bounded host/OS
+  approval; never promise to bypass it.
+- Bind one exact project root and reject ambiguous, nested, escaped, or foreign
+  stores.
+- Repeated onboarding and host switching must preserve project id, head,
+  derived run view, Decisions, blockers, and work-packet hashes.
+- Do not expose non-public content to a provider-backed host without the
+  contract's EgressPlan, authorization, and technical secret/compartment
+  isolation. Install permission is not egress consent.
+- Exclude unrestricted human-decision actions from model tools. A conforming
+  host requires the exact trusted-human approval receipt; Phase 1's local
+  `kind=human` assertion is not cryptographic identity.
+- Preserve user-owned `AGENTS.md`, `CLAUDE.md`, Cursor rules, and unrelated
+  working-tree changes. Modify only an engine-owned projection or stop with a
+  manual merge proposal.
+- IDE memory, chat transcripts, generated status, and Git state are
+  noncanonical. Keep the CLI/machine path usable without any host adapter.
+
 ## Architecture sources of truth
 
 - `ARCHITECTURE.md`: constitution, boundaries, and system-level relationships.
@@ -67,6 +97,8 @@ Agents may explore reversible branches and propose decisions. Human confirmation
 - `docs/architecture/scenario_walkthroughs.md`: end-to-end integration tests on paper.
 - `docs/architecture/v1_migration.md`: capability preservation and retirement decisions.
 - `docs/architecture/implementation_plan.md`: phase order and exit criteria.
+- `docs/implementation/phase5a_contract.md`: host/bootstrap, natural-language
+  onboarding, machine navigation, and cross-host acceptance semantics.
 
 Do not define a second competing workflow in a README, prompt, example, or generated dashboard. Link to the owning specification.
 

@@ -6,7 +6,7 @@ The project is designed for pure and applied theory. It does not provide econome
 
 ## Current status
 
-The repository contains **Architecture v0.1**, the accepted **Phase 1 walking substrate**, **Phase 2 theory-kernel vertical slice**, and **Phase 3 assurance and authoring vertical slice**, plus a **Phase 4 profile-and-craft vertical slice whose implementation and semantic acceptance are complete on `agent/phase4-profile-craft`**. An independent final adversarial branch review found no blocking findings; commit and merge into `main` remain pending. Phase 1 is a local, provider-neutral scientific state kernel: it initializes a theory project, preserves immutable transactions and Decisions, compiles bounded route contexts, commits under an exclusive lock, derives facet-level staleness, protects human-owned files, renders noncanonical views, and recovers from interrupted commits. Its acceptance suite includes real two-process head races, abrupt subprocess exits on both sides of the atomic-head boundary, adversarial authority/privacy tests, and Windows junction/reparse checks.
+The repository contains **Architecture v0.1** and accepted **Phase 1--4 implementations on `main`**. Phase 4 implementation `63d3393` was merged by `89d2152` after its uninterrupted full-genesis acceptance run and independent adversarial review found no blocking findings. The **Phase 5A.0** design slice has now completed independent adversarial review on `agent/phase5a-host-bootstrap-contract`; it freezes safe natural-language onboarding and thin Codex, Claude Code, and Cursor host-adapter semantics, but implements no Phase 5A runtime capability. Phase 1 is a local, provider-neutral scientific state kernel: it initializes a theory project, preserves immutable transactions and Decisions, compiles bounded route contexts, commits under an exclusive lock, derives facet-level staleness, protects human-owned files, renders noncanonical views, and recovers from interrupted commits. Its acceptance suite includes real two-process head races, abrupt subprocess exits on both sides of the atomic-head boundary, adversarial authority/privacy tests, and Windows junction/reparse checks.
 
 Frozen registry v2 contains 19 routes: 16 are enabled (13 theory routes, dependency repair, and two sealed blind-evaluation routes), while its three authoring placeholders remain `not_implemented`. Registry v3 adds ten native assurance, authoring, cold-reader, closure, and effort routes without changing historical v1/v2 meanings. Each native route validates the exact input IDs, revisions, and lineage in its immutable run focus; satisfying only entity types and counts is insufficient, and a same-type foreign Paper IR, contract, probe, review, or assurance object fails closed. For assurance, the VAP is the authority root: its internal ClaimGraph, FormalModel, AssumptionMap, and VerificationBundle refs must match exactly; every verified obligation/record pair must belong to that bundle and have exactly one same-package re-derivation. The provider-visible selected refs and blind packet are a separate projection and may exclude the VAP even though the immutable focus retains its authority binding. The real Phase 3 gold chain extends the accepted Phase 2 ObjectStore history through three obligation-scoped blind re-derivations, a multi-record assurance bundle, Paper IR and reader contracts, and an actual manuscript artifact. Its first manuscript fails the economic-reader and cold-reader transfer gates, receives a typed `RevisionBrief`, is superseded by the same canonical writer, and reaches `authoring_ready` only after fresh formal, economic, and cold-reader reviews pass.
 
@@ -22,9 +22,9 @@ After human-confirmed L2 target Decisions resolve a profile stack, a post-manusc
 
 This checkpoint uses a deterministic writer fixture: it validates orchestration and scientific-state protocol, but it does not call an external LLM, generate a complete paper autonomously, or demonstrate paper quality, Top-5 performance, legal compliance, or reduced human effort. Current acceptance evidence comprises an independent final adversarial branch review with no blocking findings; 82/82 focused Phase 4 non-gold checks; the complete non-gold suite with 403 tests passing and five skips; an uninterrupted full-genesis Phase 1→4 gold test passing in 6156.901 seconds; all five exporter checks; `doctor` with `required_ok=true`; registry v4 with 34 routes and hash `d81276ed9b7482768840ef89980d6cbb81361ca2ff84acee3ab7da7bb67eae7e`; compilation of 98 Python files; and `git diff --check`.
 
-The uninterrupted final-code gold run is the primary end-to-end acceptance evidence. The earlier fresh segmented real-ObjectStore continuation remains additional historical-integrity evidence: it ran from frozen Phase 3 head `dfb04a...` through run 52, and independent verification at head `88b656...` found 87 entities, all 67 historical entities byte-identical, all 182 historical transaction/artifact/provenance files unchanged, `replay_at(final.head) == replay(final)`, exactly one current ready `ProfileCraftClosure`, and diagnostic coverage with all eight typed limitations preserved. The 6156.901-second runtime still identifies full-history replay as a performance target; it is no longer an uncompleted acceptance command. Commit and merge remain pending. The internal phrase and voice checks are bounded controls over pinned internal derived fields; they are not plagiarism, copyright, authorship, or legal certification.
+The uninterrupted final-code gold run is the primary end-to-end acceptance evidence. The earlier fresh segmented real-ObjectStore continuation remains additional historical-integrity evidence: it ran from frozen Phase 3 head `dfb04a...` through run 52, and independent verification at head `88b656...` found 87 entities, all 67 historical entities byte-identical, all 182 historical transaction/artifact/provenance files unchanged, `replay_at(final.head) == replay(final)`, exactly one current ready `ProfileCraftClosure`, and diagnostic coverage with all eight typed limitations preserved. The 6156.901-second runtime still identifies full-history replay as a performance target; it is no longer an uncompleted acceptance command. The internal phrase and voice checks are bounded controls over pinned internal derived fields; they are not plagiarism, copyright, authorship, or legal certification.
 
-Phase 4 establishes one trustworthy one-result-block repair loop, not a complete-paper compiler or a publication guarantee. Phase 5 is reserved for controlled multi-agent lanes and optional adapters after the single-writer core is stable. Phase 6 owns held-out v1/v2 comparisons, ablations, human-effort measurement, and hardening. No phase guarantees publication at Econometrica, a Top-5 journal, or a leading field journal; those venues define an ambition and evaluation burden, not a style template or acceptance promise.
+Phase 4 establishes one trustworthy one-result-block repair loop, not a complete-paper compiler or a publication guarantee. Phase 5A first adds safe package distribution, natural-language onboarding, a generic machine facade, and thin host projections while preserving the single-writer core; Phase 5B then adds controlled multi-agent lanes and optional research adapters. Phase 5A owns functional and safety parity across supported hosts; Phase 6 owns held-out v1/v2 and research-quality, efficiency, and human-effort outcome comparisons across systems, models, or hosts after the relevant evaluation arms are preregistered. No phase guarantees publication at Econometrica, a Top-5 journal, or a leading field journal; those venues define an ambition and evaluation burden, not a style template or acceptance promise.
 
 ## Design thesis
 
@@ -61,6 +61,7 @@ A typed canonical state, dependency graph, decision history, and route-specific 
 - [Phase 2 executable contract](docs/implementation/phase2_contract.md)
 - [Phase 3 executable contract](docs/implementation/phase3_contract.md)
 - [Phase 4 executable contract](docs/implementation/phase4_contract.md)
+- [Phase 5A host bootstrap and onboarding contract](docs/implementation/phase5a_contract.md)
 
 Each detailed document owns one part of the design. `ARCHITECTURE.md` defines the cross-cutting constitution and points to those owners; it does not duplicate their full specifications.
 
@@ -70,9 +71,22 @@ V2 is an architecture rewrite, not a rejection of v1. It preserves v1's stronges
 
 The migration rule is strict: every high-value v1 capability must have a v2 owner and a parity test, or an explicit retirement rationale.
 
-## Phase 1 quick start
+## Current source-checkout quick start
 
 Python 3.11+ is required. The canonical validator is pinned to Pydantic 2.13.4 and pydantic-core 2.46.4 so replay acceptance does not drift across validator upgrades.
+
+This is the current machine/developer path, not the intended ordinary
+researcher experience. Phase 5A targets natural-language onboarding from a
+supported host so the researcher does not have to open a shell or memorize
+these commands. That host bootstrap is specified but not yet implemented; the
+commands below remain the honest current interface.
+
+For a provider-backed host, one-message onboarding may include a research
+question only when that content is public or a verified pre-model/account-level
+egress authorization already covers the provider and workspace. Otherwise the
+safe experience uses one natural-language bootstrap request and a second
+message with the private question after authorization--still no manual shell
+commands, but no retroactive privacy claim.
 
 ```text
 pip install -e .
@@ -105,11 +119,10 @@ python scripts/export_profile_craft_resources.py --check
 
 ## Resume on another computer
 
-The Git repository, not a Codex conversation, is the durable handoff. Before
-moving machines, commit and push the current branch; uncommitted files do not
-follow a clone. On the new computer, clone the repository and then use `main`
-if Phase 4 has been merged, or track the Phase 4 branch if it is still under
-review:
+The Git repository, not an IDE conversation, is the durable development
+handoff. Before moving machines, commit and push the current branch;
+uncommitted files do not follow a clone. On the new computer, clone the
+repository and use `main` as the accepted Phase 1--4 base:
 
 ```text
 git clone https://github.com/viplee110/econ-theorist-ai-v2.git
@@ -117,18 +130,15 @@ cd econ-theorist-ai-v2
 git fetch origin
 git switch main
 git pull --ff-only
-
-# Only while Phase 4 is unmerged:
-git switch --track origin/agent/phase4-profile-craft
 ```
 
 Install Python 3.11+ dependencies with `pip install -e .`, run `etai doctor`,
 then run the five exporter checks above and
 `python -m unittest discover -s tests -v`. Read `AGENTS.md`, the implementation
-plan, and the current phase contract before making changes; together they
-replace the missing chat history. A clean `git status` and exact exporter
-checks establish that the new machine has the same versioned source and policy
-resources.
+plan, and `docs/implementation/phase5a_contract.md` before Phase 5A changes;
+together they replace the missing chat history. A clean `git status` and exact
+exporter checks establish that the new machine has the same versioned source
+and policy resources.
 
 ## License
 

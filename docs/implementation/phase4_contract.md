@@ -1,14 +1,14 @@
 # Phase 4 Profile and Craft Vertical Slice Contract
 
-Status: implementation and semantic acceptance complete on
-`agent/phase4-profile-craft`. An uninterrupted full-genesis Phase 1→4 gold run,
+Status: implementation `63d3393` and semantic acceptance complete and merged
+into `main` by `89d2152`. An uninterrupted full-genesis Phase 1→4 gold run,
 current focused/full non-gold suites, a fresh segmented continuation with
 independent final-store verification, and an independent final adversarial
-branch review with no blocking findings satisfy this contract on the branch.
-Commit and merge remain pending. Full-history replay remains a performance
-target, but the comprehensive acceptance command now passes.
+branch review with no blocking findings satisfy this contract. Full-history
+replay remains a performance target, but the comprehensive acceptance command
+passes.
 
-Working branch: `agent/phase4-profile-craft`
+Historical implementation branch: `agent/phase4-profile-craft`
 
 Accepted Phase 3 base: `fb2c4f59665f0e7a9b223390442070463022bfed`
 
@@ -811,7 +811,7 @@ all 182 historical transaction/artifact/provenance files unchanged,
 `ProfileCraftClosure`, and diagnostic coverage with all eight typed limitations
 preserved. The 6156.901-second uninterrupted runtime leaves full-history replay
 as a performance target, but the comprehensive acceptance command now passes.
-Commit and merge remain pending.
+Implementation `63d3393` was merged into `main` by `89d2152`.
 
 ## 14. Required adversarial tests
 

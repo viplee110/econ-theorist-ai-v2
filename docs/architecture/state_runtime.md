@@ -469,7 +469,7 @@ Every human, agent, and deterministic-tool run records enough provenance to repr
 
 - run, parent-run, route, role, provisional-workspace, and base-revision identifiers;
 - actor class and stable actor identifier;
-- model/tool/provider identifier where applicable;
+- host, adapter, model, tool, and provider identifiers where applicable;
 - instruction, schema, profile, selector, and validator versions;
 - context manifest and input artifact hashes;
 - tool invocations and returned artifact references;
@@ -666,4 +666,12 @@ Architecture v0.1 locks the following semantics:
 - single-head locked atomic commits, replayable recovery, and generated views;
 - privacy-labeled, portable, provider-neutral storage.
 
-It intentionally defers serialization details, CLI spelling, user-interface design, indexing technology, orchestration framework, database choice, model provider, and distributed execution. Those choices should be made only after the smallest end-to-end theory case passes the tests above.
+Architecture v0.1 initially deferred serialization details, CLI spelling,
+user-interface design, indexing technology, orchestration framework, database
+choice, model provider, and distributed execution until the smallest
+end-to-end theory case passed. Phase 5A now owns a versioned machine facade,
+natural-language onboarding, and thin host projections under
+`../implementation/phase5a_contract.md`; those interfaces may not change the
+locked state, authority, privacy, provenance, route, or commit semantics above.
+Serialization redesign, database choice, provider policy, and distributed
+execution remain deferred until a tested need justifies them.

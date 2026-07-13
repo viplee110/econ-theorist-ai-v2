@@ -1,10 +1,13 @@
 # Architecture v0.1
 
-Status: design baseline, not an implementation claim
+Status: design baseline with a Phase 5A host-boundary amendment, not an
+implementation claim
 
 Scope: economic theory only
 
 Baseline date: 2026-07-11
+
+Phase 5A host-boundary amendment date: 2026-07-13
 
 ## 1. Mission
 
@@ -127,6 +130,8 @@ The detailed owners are:
 - craft and target calibration: `docs/architecture/profiles_and_craft.md`;
 - evaluation: `docs/architecture/evaluation.md`.
 - integration walkthroughs: `docs/architecture/scenario_walkthroughs.md`.
+- Phase 5A host bootstrap, natural-language onboarding, and cross-host
+  acceptance: `docs/implementation/phase5a_contract.md`.
 
 ## 5. Research control flow
 
@@ -220,7 +225,54 @@ v1 research discipline
 
 Existing v1 examples remain historical or regression fixtures until they are replaced by complete theory cases with hand-solved examples, ablations, rival separation, formal claims, and reader tests.
 
-## 9. Architecture budgets
+## 9. Host and installation boundary
+
+The Phase 5A target is a provider-neutral, host-portable v2 engine. Runtime host
+support is not implemented by the 5A.0 design slice, and host portability is a
+tested contract rather than a claim that every IDE can execute the system. A
+host advertised as Phase 5A-supported--initially Codex, Claude Code, or
+Cursor--must use the same engine, canonical store, route registry,
+instructions, contexts, validators, and human authority rules.
+
+The researcher-facing goal is natural-language operation. A capable host may
+install, initialize, inspect, open, resume, stage, validate, and commit through
+the machine interface without requiring the researcher to type shell commands.
+The first software installation, protected write, network operation, credential
+access, or other host/OS-sensitive action may still require a bounded,
+inspectable approval. Natural-language convenience never implies silent
+installation or waived L2/L3 authority.
+
+Host integration obeys these cross-cutting rules:
+
+1. the installed engine and `.econ-theorist` history remain the scientific
+   source of truth; chat history, IDE state, Git, and generated instruction
+   files remain noncanonical;
+2. one engine-owned host manifest is projected thinly into supported host
+   instruction formats; host projections do not copy or reinterpret route
+   prompts, scientific gates, profiles, or validators;
+3. a host may write declared candidate/shadow workspaces and engine-owned
+   noncanonical projections, but never overwrite human-owned working files or
+   canonical ObjectStore bytes directly;
+4. installation and project binding are version-pinned, integrity-checked,
+   idempotent, root-bound, non-destructive to user instructions, and fail
+   closed before canonical mutation;
+5. switching hosts preserves exact project identity, head, run lineage,
+   Decisions, privacy compartments, blockers, and acceptance predicates;
+6. host capability negotiation cannot emulate missing filesystem, process,
+   permission, isolation, or human-decision capabilities with prompt text;
+7. provider-backed delivery of non-public research requires an explicit egress
+   plan/authorization and technical secret/compartment isolation; installation
+   permission alone is not research-content consent;
+8. host-mediated L2/L3 confirmation requires a trusted user-approval channel
+   outside the acting model context, while the documented threat model remains
+   honest that Phase 1 human identity is not cryptographic proof;
+9. the complete machine/CLI path remains usable without any IDE adapter.
+
+Phase 5A owns the executable contract and parity tests for this boundary. Phase
+5B may add controlled multi-agent lanes after it is stable; Phase 6 owns claims
+about comparative quality or human-effort reduction.
+
+## 10. Architecture budgets
 
 To prevent the control system from overwhelming the research:
 
@@ -234,7 +286,7 @@ To prevent the control system from overwhelming the research:
 
 These budgets should become regression tests, not aspirational prose.
 
-## 10. Human authority levels
+## 11. Human authority levels
 
 - **L0 — deterministic operations:** validate, hash, render, compile, and rebuild derived views automatically.
 - **L1 — reversible exploration:** agents may create provisional mechanisms, examples, models, proofs, prose previews, and critiques.
@@ -243,7 +295,7 @@ These budgets should become regression tests, not aspirational prose.
 
 Provisional exploration may continue without interrupting the human at every local choice. It cannot cross a promotion boundary while carrying unresolved structural delegation debt.
 
-## 11. Readiness to implement
+## 12. Readiness to implement
 
 Architecture v0.1 is ready for implementation review only when:
 
