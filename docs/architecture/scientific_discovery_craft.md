@@ -116,7 +116,7 @@ simplification versus retaining first-order complexity, Bayesian versus robust
 design, and exact characterization versus useful near-optimal structure. A
 move card states when each side is appropriate.
 
-## 4. Contemporary micro/IO evidence policy
+## 4. Contemporary microeconomic-theory evidence policy
 
 The first production-quality research corpus should explore roughly 40--60
 methodologically diverse active scholars and 100--200 public primary sources,
@@ -165,7 +165,7 @@ truth. A curator may depart from them with a short coverage rationale;
 lifecycle, field, method, and contradiction coverage plus marginal saturation
 control when sampling stops.
 
-### Contemporary micro/IO theory discovery and monitoring pool
+### Contemporary microeconomic-theory discovery and monitoring pool
 
 This is a discovery pool, not a ranking, prestige list, or invitation to
 imitate a scholar's personality or prose. Scholars are entry points to public
@@ -183,7 +183,7 @@ participation. Older collaborations are stored as `historical_edge`.
 verified in the bounded graph. It is not a claim that no lifetime intellectual
 or collaboration path exists.
 
-The initial 50-scholar pool is organized by research function:
+The active 55-scholar pool is organized by research function:
 
 - institutions, networks, formal political economy, and data-market
   mechanisms: Daron Acemoglu [A0], Asuman Ozdaglar [A1], Alexander Wolitzky
@@ -195,7 +195,12 @@ The initial 50-scholar pool is organized by research function:
   Zhou], Andrei Hagiu [M2 via Wright], Bruno Jullien [M2 via Wright], Chengsi
   Wang [M2 via Wright], Ran Spiegler, Dirk Bergemann, Alessandro Bonatti,
   Volker Nocke [M3/topic], Heski Bar-Isaac, Alexandre de Cornière, Özlem
-  Bedre-Defolie, Nicolas Schutz, and Greg Taylor;
+  Bedre-Defolie, Nicolas Schutz, Greg Taylor,
+  [Yongmin Chen](https://www.colorado.edu/faculty/chen-yongmin/),
+  [Michael D. Whinston](https://economics.mit.edu/people/faculty/michael-whinston),
+  [Simon P. Anderson](https://economics.virginia.edu/people/simon-anderson),
+  [Luís Cabral](https://www.stern.nyu.edu/faculty/bio/luis-cabral), and
+  [Patrick Rey](https://www.tse-fr.eu/people/patrick-rey?tab=bio-and-research-interests);
 - information, mechanisms, learning, and communication: Annie Liang, Laura
   Doval, Vasiliki Skreta, Shengwu Li, Alessandro Pavan, Navin Kartik, Elliot
   Lipnowski, Xiaosheng Mu, Emir Kamenica, Stephen Morris, Benjamin Brooks,
@@ -205,14 +210,26 @@ The initial 50-scholar pool is organized by research function:
 - matching, market design, and implementation: Itai Ashlagi, Yeon-Koo Che,
   Fuhito Kojima, Eduardo Azevedo, and M. Bumin Yenmez.
 
-Names without an A/M path tag are `outside_checked`. Thirty-two of the 50
-nodes are outside both seeds' verified two-hop networks or are explicit
-third-hop/topic nodes. Sixteen are qualifying non-seed one/two-hop nodes.
+These five lanes are the general theory-scholar pool: 9 nodes in institutions,
+networks, and formal political economy; 22 in IO, search, platforms, and
+competition; 13 in information, mechanisms, learning, and communication; 6 in
+dynamic games, contracts, and reputation; and 5 in matching, market design,
+and implementation. Within the IO lane, Anderson covers product
+differentiation and price dispersion; Cabral covers firm and industry
+dynamics; Chen covers switching, search, and dynamic pricing; and Whinston
+and Rey deepen vertical-contract and exclusion coverage. They sit inside the
+same pool as the original search, platform, data, and competition scholars.
+
+In the original 50-node graph audit, names without an A/M path tag are
+`outside_checked`. Thirty-two nodes are outside both seeds' verified two-hop
+networks or are explicit third-hop/topic nodes. Sixteen are qualifying
+non-seed one/two-hop nodes. The five later IO nodes await the next graph-label
+and provenance refresh and are not included in these path statistics.
 The latter concentration deliberately triggers the seed-network curation
-warning above even though 64% of the pool lies outside the verified two-hop
-graphs. These are pool-coverage statistics, not runtime quotas; corpus
-curation and runtime sampling should rotate and downweight seed-network
-scholars rather than treating all 50 names as equally frequent inputs.
+warning above even though 64% of the original pool lies outside the verified
+two-hop graphs. These are pool-coverage statistics, not runtime quotas;
+corpus curation and runtime sampling should rotate and downweight seed-network
+scholars rather than treating all 55 names as equally frequent inputs.
 
 Monitoring priority is scholar-owned paper and CV pages, then official
 department and working-paper feeds, then official journal or conference pages
@@ -225,36 +242,9 @@ policy connection is a `policy_edge`, not a theory coauthorship edge; Volker
 Nocke is M3/topic rather than M2; and Annie Liang remains `outside_checked`
 rather than being pulled inward by an unverified Acemoglu--Fudenberg edge.
 
-### Syllabus-derived IO additions and foundational anchors
+### Foundational anchors
 
-A researcher-provided graduate IO syllabus reveals five undercovered mechanism
-lineages in the initial 50-scholar pool: product differentiation, firm and
-industry dynamics, switching costs, vertical exclusion, and the shared lineage
-linking search, platform, and pricing theory. A compact active addition is:
-
-- [Yongmin Chen](https://www.colorado.edu/faculty/chen-yongmin/), for price
-  discrimination, dynamic pricing, consumer search, innovation, vertical
-  contracting, and exclusion;
-- [Michael D. Whinston](https://economics.mit.edu/people/faculty/michael-whinston),
-  for entry, scale economies, vertical contracts, exclusion, and antitrust;
-- [Simon P. Anderson](https://economics.virginia.edu/people/simon-anderson),
-  for discrete-choice product differentiation, search, price dispersion,
-  advertising, and media or platform markets;
-- [Luís Cabral](https://www.stern.nyu.edu/faculty/bio/luis-cabral), for firm
-  and industry dynamics, innovation, learning, reputation, network effects,
-  and platforms; and
-- [Patrick Rey](https://www.tse-fr.eu/people/patrick-rey?tab=bio-and-research-interests),
-  for vertical restraints, foreclosure, competition policy, information, and
-  the digital economy.
-
-These five scholars extend the active discovery pool; they do not become
-runtime quotas. Admission still occurs at the paper level, and only qualifying
-theory outputs enter the corpus. Fame or appearance on a syllabus is never
-itself a research-move claim. The network labels and anti-echo percentages
-above remain statistics for the initial 50; the expanded active pool receives
-a fresh provenance and coverage audit before production sampling.
-
-Two separate foundation-role anchors preserve intellectual ancestry without,
+Two foundation-role anchors preserve intellectual ancestry without,
 in that role, receiving the recency or collaboration-network weight of active
 discovery nodes:
 
@@ -265,10 +255,10 @@ discovery nodes:
   for switching costs, dynamic competition, auctions, and the discipline of
   moving between simple theory and institutional design.
 
-Thus the curation structure is **50 core contemporary nodes + 5
-syllabus-derived active additions + 2 foundation-role anchors**, not 57
-equally weighted scholar personas. The foundation layer is used to recover
-canonical benchmarks, mechanism ancestry, and known failure modes, helping
+Thus the curation structure is **55 active contemporary nodes + 2
+foundation-role anchors**, not 57 equally weighted scholar personas. The
+foundation layer is used to recover canonical benchmarks, mechanism ancestry,
+and known failure modes, helping
 the system avoid rediscovering an old result under new notation. It is not a
 style-transfer library. Xavier Vives is the first reserve if later coverage
 audits find product-market rivalry or strategic complementarities too thin;
