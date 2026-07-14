@@ -5,6 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 
 from .ids import new_id, utc_now
+from .framing_quality_validation import (
+    FramingQualityValidationError,
+    validate_current_g1_framing_decision,
+)
 from .models import (
     Decision,
     RecordDecisionOp,
@@ -50,6 +54,10 @@ def commit_decision(
         )
     if decision.project_id != snapshot.project_id:
         raise DecisionInputError("Decision belongs to a different project")
+    try:
+        validate_current_g1_framing_decision(snapshot, decision)
+    except FramingQualityValidationError as exc:
+        raise DecisionInputError(f"G1 framing preflight rejected the Decision: {exc}") from exc
     if decision.version == 1:
         operation = RecordDecisionOp(decision=decision)
     else:

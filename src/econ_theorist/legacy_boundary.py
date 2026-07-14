@@ -21,6 +21,7 @@ from .models import (
 from .theory import is_packed_theory_entity
 from .authoring import is_packed_authoring_entity
 from .profile_craft import is_packed_profile_craft_entity
+from .framing_quality import is_packed_framing_quality_entity
 
 
 CANDIDATE_LOCK_MEDIA_TYPE = (
@@ -93,13 +94,33 @@ def transaction_introduces_phase4_material(transaction: Transaction) -> bool:
     )
 
 
+def snapshot_has_phase5_material(snapshot: Snapshot) -> bool:
+    """Whether reachable history contains a packed framing-quality payload."""
+
+    return any(
+        is_packed_framing_quality_entity(item) for item in snapshot.entity_versions
+    )
+
+
+def transaction_introduces_phase5_material(transaction: Transaction) -> bool:
+    """Whether a candidate attempts a Phase 5 write under an older catalog."""
+
+    return any(
+        isinstance(operation, (CreateEntityOp, SupersedeEntityOp))
+        and is_packed_framing_quality_entity(operation.entity)
+        for operation in transaction.operations
+    )
+
+
 __all__ = [
     "CANDIDATE_LOCK_MEDIA_TYPE",
     "is_candidate_lock",
     "snapshot_has_phase2_material",
     "snapshot_has_phase3_material",
     "snapshot_has_phase4_material",
+    "snapshot_has_phase5_material",
     "transaction_introduces_phase2_material",
     "transaction_introduces_phase3_material",
     "transaction_introduces_phase4_material",
+    "transaction_introduces_phase5_material",
 ]

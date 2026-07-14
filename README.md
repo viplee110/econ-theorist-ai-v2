@@ -6,18 +6,30 @@ The project is designed for pure and applied theory. It does not provide econome
 
 ## Current status
 
-The repository contains **Architecture v0.1**, accepted **Phase 1--4 implementations**, the **Phase 5A.1 local machine facade**, and a recorded **Phase 5A.2 public Codex functional slice**. A thin project skill and the engine-owned `etai codex invoke` bridge carried one public framing request from natural language to an exact WorkPacket, a model-produced candidate, validation, and canonical commit. The full local research-ready gate remains open: positive non-public Codex execution, clean first-use activation, and broader host support have not been demonstrated. Signed public distribution and hostile-host security remain later release concerns.
+The repository contains **Architecture v0.1**, accepted **Phase 1--4 implementations**, the **Phase 5A.1 local machine facade**, and a recorded **Phase 5A.2 public Codex functional slice**. A thin project skill and the engine-owned `etai codex invoke` bridge carried one public framing request from natural language to an exact WorkPacket, a model-produced candidate, validation, and canonical commit. The current tree also contains an additive registry-v5 implementation candidate for `audit.framing_economics` and framing-triggered exact repair, documented in the [framing-quality preflight contract](docs/implementation/framing_quality_contract.md). Its deterministic acceptance predicate now passes; a fresh real-Codex rerun remains pending. The full local research-ready gate remains open: positive non-public Codex execution, clean first-use activation, and broader host support have not been demonstrated. Signed public distribution and hostile-host security remain later release concerns.
 
-The system does **not yet** run a complete real-LLM paper workflow. The first real Codex framing route committed mechanically, but a separate model-based diagnostic gave a holistic 6.3/10 assessment and found substantive benchmark semantics and readability defects. The next milestone is therefore scientific rather than infrastructural: produce an economist-facing framing memo from the same typed state, audit what each benchmark changes or holds fixed, rule out equilibrium-selection artifacts, and then run an exploratory v1/v2 revision pilot. The recorded requests, hashes, candidate, claim boundary, and audit are in [`review_outputs/phase5a2_codex_public_pilot`](review_outputs/phase5a2_codex_public_pilot/).
+The system does **not yet** run a complete real-LLM paper workflow. The first real Codex framing route committed mechanically, but a separate model-based diagnostic gave a holistic 6.3/10 assessment and found substantive benchmark semantics and readability defects. The next milestone is therefore scientific rather than infrastructural: rerun the same public pilot through the deterministically accepted v5 framing-quality preflight, inspect the resulting economics and editing burden, and only then run an exploratory v1/v2 revision pilot. The recorded requests, hashes, candidate, claim boundary, and audit are in [`review_outputs/phase5a2_codex_public_pilot`](review_outputs/phase5a2_codex_public_pilot/).
 
-Phase 5A.1 acceptance evidence includes a complete public-process fixture from initialization through packet delivery, validated candidate commit, and fresh-process retry; 60 focused Phase 5A tests; and the complete non-long regression selection with 472 tests passing and six reported platform/optional skips. All six current exporter checks, compilation, `doctor` (`required_ok=true`), Markdown-link validation, and `git diff --check` pass. The three hour-scale Phase 2/3/4 gold modules retain their previously accepted evidence and were intentionally excluded from this routine regression.
+Phase 5A.1 acceptance evidence includes a complete public-process fixture from initialization through packet delivery, validated candidate commit, and fresh-process retry; 60 focused Phase 5A tests; and the complete non-long regression selection with 472 tests passing and six reported platform/optional skips. All six then-current exporter checks, compilation, `doctor` (`required_ok=true`), Markdown-link validation, and `git diff --check` passed at that checkpoint. The three hour-scale Phase 2/3/4 gold modules retain their previously accepted evidence and were intentionally excluded from this routine regression.
 
-The current public-slice tree completes a 74-test focused Phase 5A suite with one
+The recorded public-slice checkpoint completed a 74-test focused Phase 5A suite with one
 Windows symlink skip and the 486-test routine non-long selection with six
-reported platform/optional skips. All six exporters, compilation of 138 Python
+reported platform/optional skips. All six then-current exporters, compilation of 138 Python
 files, `doctor` (`required_ok=true`), skill/YAML validation, Markdown-link
-validation, and `git diff --check` also pass. The three hour-scale gold modules
-remain intentionally excluded from this routine run.
+validation, and `git diff --check` also passed at that checkpoint. The three
+hour-scale gold modules were intentionally excluded from that routine run.
+
+The additive v5 candidate introduces a seventh current exporter for the
+`framing_quality/v1` schema namespace. Its deterministic checkpoint completed
+522 routine non-long tests with six reported platform/optional skips, all
+seven exporter checks, compilation of 144 Python files, `doctor` with
+`required_ok=true`, local Markdown-link validation, and `git diff --check`.
+Registry v5 contains 35 enabled routes and has hash
+`91ef2dcf75bcc4bce22241466477a99f9e34cbd8ac537974e1017a2e1fe92195`;
+navigation v2 has hash
+`262140bc73fb2b0a14c0d7ea884b36d07997aae4c63403f9091bb28ad2fccf81`.
+This deterministic evidence does not substitute for the pending real-model
+rerun or establish improved paper quality or lower human effort.
 
 Phase 1 is a local, provider-neutral scientific state kernel: it initializes a theory project, preserves immutable transactions and Decisions, compiles bounded route contexts, commits under an exclusive lock, derives facet-level staleness, protects human-owned files, renders noncanonical views, and recovers from interrupted commits.
 
@@ -82,6 +94,7 @@ A typed canonical state, dependency graph, decision history, and route-specific 
 - [Phase 3 executable contract](docs/implementation/phase3_contract.md)
 - [Phase 4 executable contract](docs/implementation/phase4_contract.md)
 - [Phase 5A host bootstrap and onboarding contract](docs/implementation/phase5a_contract.md)
+- [Framing-quality preflight contract](docs/implementation/framing_quality_contract.md)
 
 Each detailed document owns one part of the design. `ARCHITECTURE.md` defines the cross-cutting constitution and points to those owners; it does not duplicate their full specifications.
 
@@ -136,6 +149,7 @@ python scripts/export_authoring_schemas.py --check
 python scripts/export_profile_craft_schemas.py --check
 python scripts/export_profile_craft_resources.py --check
 python scripts/export_machine_schemas.py --check
+python scripts/export_framing_quality_schemas.py --check
 ```
 
 ## Resume on another computer
@@ -155,11 +169,13 @@ git pull --ff-only
 ```
 
 Install Python 3.11+ dependencies with `pip install -e .`, run `etai doctor`,
-then run the six exporter checks above and
+then run the seven exporter checks above and
 `python scripts/run_non_long_tests.py`. The raw discovery command also runs the
 three hour-scale Phase 2/3/4 gold chains and should be used only when that
 expensive replay is intentionally required. Read `AGENTS.md`, the implementation
-plan, and `docs/implementation/phase5a_contract.md` before Phase 5A changes;
+plan, `docs/implementation/phase5a_contract.md`, and
+`docs/implementation/framing_quality_contract.md` before Phase 5A or v5 framing
+changes;
 together they replace the missing chat history. A clean `git status` and exact
 exporter checks establish that the new machine has the same versioned source
 and policy resources.

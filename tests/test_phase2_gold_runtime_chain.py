@@ -14,7 +14,10 @@ import unittest
 from collections.abc import Mapping
 from pathlib import Path
 
-from tests.helpers import REPOSITORY_ROOT  # noqa: F401  # installs src
+from tests.helpers import (  # noqa: F401  # installs src
+    REPOSITORY_ROOT,
+    install_pre_v5_historical_g1_transaction,
+)
 
 from econ_theorist.codec import canonical_json_bytes, sha256_digest, transaction_bytes
 from econ_theorist.decisions import commit_decision
@@ -30,6 +33,7 @@ from econ_theorist.models import (
     DecisionVersionRef,
     EntityVersion,
     EntityVersionRef,
+    RecordDecisionOp,
     RecordRouteOutcomeOp,
     RegisterArtifactOp,
     RelationVersion,
@@ -666,9 +670,27 @@ class Phase2GoldRuntimeChainTests(unittest.TestCase):
             decided_at=T3,
             status="confirmed",
         )
-        decision_result = commit_decision(self.layout, g1)
-        self.assertEqual(decision_result.status, "committed")
-        gated = replay(self.layout)
+        # This gold fixture is the frozen pre-v5 Phase 2 chain.  Exercise its
+        # historical transaction bytes directly; new live G1 actions go
+        # through commit_decision's additive framing-quality preflight.
+        historical_base = replay(self.layout)
+        gated = install_pre_v5_historical_g1_transaction(
+            self.layout,
+            Transaction(
+                transaction_id="transaction.decision.g1.attention_precision",
+                origin="human_decision",
+                project_id=historical_base.project_id,
+                base_revision=historical_base.head,
+                route_run_id="run.decision.g1.attention_precision",
+                actor=g1.decider,
+                intent="Record the historical Phase 2 G1 Decision.",
+                operations=(RecordDecisionOp(decision=g1),),
+                privacy=g1.privacy,
+                access_compartments=g1.access_compartments,
+                created_at=g1.decided_at,
+                parent_transaction_hash=historical_base.head,
+            ),
+        )
         self.assertEqual(gated.current_decisions[g1.decision_id], 1)
         self.assertIn(
             g1.decision_id,

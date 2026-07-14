@@ -17,10 +17,19 @@ establish positive private execution, clean first-use activation, complete
 paper generation, lower human effort, or research quality. Public-distribution
 and hostile-environment hardening remain a later release profile.
 
-The next executable scientific work is pilot-driven: add an economist-facing
-framing projection, benchmark-semantic audit, and mechanism-robustness checks,
-then run an exploratory v1/v2 revision comparison. Do not expand generic
-security infrastructure unless a concrete local-use failure requires it.
+The current tree contains a deterministically accepted additive registry-v5
+implementation candidate for `audit.framing_economics` and framing-triggered
+exact repair. Its normative owner is
+`docs/implementation/framing_quality_contract.md`. It is not accepted evidence
+of improved readability, lower intervention, or research quality until a
+fresh real-Codex rerun passes and its economics are inspected.
+
+The next executable scientific work is pilot-driven: rerun the same public
+Codex pilot through the accepted v5 framing projection, benchmark-semantic
+audit, and mechanism-robustness checks; inspect the economics and editing
+burden; then run an exploratory v1/v2 revision comparison. Do not expand
+generic security infrastructure unless a concrete local-use failure requires
+it.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or
@@ -34,7 +43,7 @@ The routine complete non-long verification command is
 `python scripts/run_non_long_tests.py`. The raw
 `python -m unittest discover -s tests -v` command additionally executes the
 three hour-scale Phase 2/3/4 gold chains and is reserved for explicit gold
-revalidation. Schema and pinned-resource verification requires all six current
+revalidation. Schema and pinned-resource verification requires all seven current
 exporter checks:
 
 ```text
@@ -44,6 +53,7 @@ python scripts/export_authoring_schemas.py --check
 python scripts/export_profile_craft_schemas.py --check
 python scripts/export_profile_craft_resources.py --check
 python scripts/export_machine_schemas.py --check
+python scripts/export_framing_quality_schemas.py --check
 ```
 
 For the Phase 5A.0 documentation-only slice, also run `git diff --check`, verify
@@ -124,6 +134,8 @@ or operating system.
 - `docs/architecture/implementation_plan.md`: phase order and exit criteria.
 - `docs/implementation/phase5a_contract.md`: host/bootstrap, natural-language
   onboarding, machine navigation, and cross-host acceptance semantics.
+- `docs/implementation/framing_quality_contract.md`: additive v5
+  economist-facing framing audit and pre-G1 scientific checks.
 
 Do not define a second competing workflow in a README, prompt, example, or generated dashboard. Link to the owning specification.
 

@@ -52,6 +52,7 @@ from ..models import (
     RouteSpecV2,
     RouteSpecV3,
     RouteSpecV4,
+    RouteSpecV5,
     RetireEntityOp,
     RetireRelationOp,
     Snapshot,
@@ -69,6 +70,7 @@ from ..policy import (
     VALIDATOR_VERSION,
     V3_NATIVE_ROUTE_IDS,
     V4_NATIVE_ROUTE_IDS,
+    V5_NATIVE_ROUTE_IDS,
     decision_registry_version_for_route,
     load_route_registry_by_hash,
     route_spec,
@@ -87,6 +89,13 @@ from ..profile_craft_validation import (
     validate_phase4_route_transaction,
     validate_profile_craft_projection,
 )
+from ..framing_quality_validation import (
+    FramingQualityValidationError,
+    validate_current_g1_framing_decision,
+    validate_framing_quality_projection,
+    validate_phase5_route_transaction,
+)
+from ..framing_quality import is_packed_framing_quality_entity
 from .freshness import (
     FacetPathError,
     authority_semantic_hash,
@@ -1715,11 +1724,15 @@ def validate_candidate(
     transaction: Transaction,
     *,
     route_registry_hash: str | None = None,
+    enforce_live_current_policy: bool = False,
 ) -> Snapshot:
     """Apply one transaction to an isolated projection or reject it atomically.
 
     Passing ``None`` is the explicit genesis path.  The returned snapshot has
     the candidate transaction digest as its head but does not write any bytes.
+    Historical replay leaves ``enforce_live_current_policy`` false so an
+    accepted pre-v5 G1 action keeps its original meaning.  Both live prepare
+    and lock-time commit validation set it true before canonical mutation.
     """
 
     validate_runtime_validator()
@@ -2046,6 +2059,13 @@ def validate_candidate(
         if not isinstance(operation, (RecordDecisionOp, SupersedeDecisionOp)):
             continue
         decision = operation.decision
+        if enforce_live_current_policy and snapshot is not None:
+            try:
+                validate_current_g1_framing_decision(snapshot, decision)
+            except FramingQualityValidationError as exc:
+                raise CandidateValidationError(
+                    "live G1 framing preflight rejected the Decision: " + str(exc)
+                ) from exc
         _assert_project(transaction.project_id, decision.project_id, "Decision")
         validate_decision_authority(decision)
         _validate_privacy_decision(
@@ -2465,6 +2485,18 @@ def validate_candidate(
         registry = load_route_registry_by_hash(route_registry_hash)
         bound_route = route_spec(transaction.route_id, registry)
         if (
+            isinstance(bound_route, RouteSpecV5)
+            and bound_route.route_id in V5_NATIVE_ROUTE_IDS
+        ):
+            try:
+                validate_phase5_route_transaction(
+                    snapshot, transaction, bound_route
+                )
+            except FramingQualityValidationError as exc:
+                raise CandidateValidationError(
+                    f"Phase 5 framing route contract rejected the transaction: {exc}"
+                ) from exc
+        elif (
             isinstance(bound_route, RouteSpecV4)
             and bound_route.route_id in V4_NATIVE_ROUTE_IDS
         ):
@@ -2559,6 +2591,16 @@ def validate_candidate(
         except ProfileCraftValidationError as exc:
             raise CandidateValidationError(
                 f"Phase 4 profile/craft projection is inadmissible: {exc}"
+            ) from exc
+    if any(
+        is_packed_framing_quality_entity(entity)
+        for entity in provisional.entity_versions
+    ):
+        try:
+            validate_framing_quality_projection(provisional)
+        except FramingQualityValidationError as exc:
+            raise CandidateValidationError(
+                f"Phase 5 framing-quality projection is inadmissible: {exc}"
             ) from exc
     derived = derive_entity_statuses(
         entity_versions=provisional.entity_versions,

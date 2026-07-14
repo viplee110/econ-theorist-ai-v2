@@ -75,6 +75,9 @@ Architecture v0.1 initially classified every row as `mapped_design`. Phase imple
 
 ### 2.1 Implementation status after the Phase 1 candidate
 
+This table is the historical Phase 1 checkpoint, not the current repository
+status. It is retained to show what was actually executable at that point.
+
 | Capability | Status | Executable evidence | Remaining work |
 |---|---|---|---|
 | `V1-HUMAN-GATES` | `implemented_partial` | strict immutable Decision records; L2/L3 authority registry; `decide`; supersession and authority-dependent stale tests | Phase 2 must bind G1–G5 to typed theory objects and decision-complete gate dossiers |
@@ -84,6 +87,29 @@ Architecture v0.1 initially classified every row as `mapped_design`. Phase imple
 | `V1-VERSION-CONTROL` | `implemented_partial` | expected-base hashes, H0/H1/H2 reconciliation evidence, immutable candidates, head-race and crash recovery tests | git remains an optional file-level adapter; no automatic branch or merge behavior is active |
 | `V1-TOOLCHAIN` | `implemented_partial` | portable `doctor` reports required and optional capabilities and explains soft degradation | adapter-specific version probes and exact verification-run provenance remain to be added with those adapters |
 | `V1-LEGAL` | `parity_verified` | Apache-2.0 `LICENSE`, `NOTICE`, and `CITATION.cff` remain present | update release metadata when a public version is cut |
+
+### 2.2 Current implementation status after the Phase 1--4 acceptances and the v5 framing slice
+
+The table below updates the migration ledger without retroactively changing
+the Phase 1 evidence above. `migrated` means that the named capability now has
+an executable v2 owner and regression evidence. It does not mean that v2 has
+been shown to outperform v1, reduce editing time, or produce a publishable
+paper; those comparative claims remain Phase 6 outcomes.
+
+| Capability | Current status | Executable v2 evidence | Honest remaining boundary |
+|---|---|---|---|
+| `V1-HUMAN-GATES`, `V1-PROVISIONAL-AUTO` | `migrated` | typed G1--G5 dossiers and Decisions, L1/L2/L3 authority, invalidation, live human-action preflights, and immutable historical replay | human judgment quality is not automated; the v5 framing preflight is diagnostic rather than G1 authority |
+| `V1-ECON-LOGIC`, `V1-PRIMITIVE-HUNTER`, `V1-MICRO-EXAMPLE`, `V1-MODEL-TOURNAMENT`, `V1-HEURISTIC-DERIVATION` | `migrated_strengthened` | exact question/benchmark/primitive graphs, separate mechanism and implementation tournaments, prediction freeze, archetype-sensitive examples, formalization maps, and the v5 framing-quality bundle | the first public Codex pilot exposed weak benchmark semantics; the strengthened route still needs a fresh real-model rerun before any readability or effort claim |
+| `V1-ABSORPTION`, `V1-CONTRIBUTION-LOCK`, `V1-GENERALITY`, `V1-PRE-PAPER-NOTE` | `migrated` | closest-theory mapping, absorption assessment, result portfolio, G4 investment gate, assumption/generality audit, and validated argument package | literature coverage and scientific taste remain bounded by supplied evidence and human review |
+| `V1-CLAIM-EXTRACTION`, `V1-ASSUMPTION-LEDGER`, `V1-REDERIVATION`, `V1-SYMBOLIC-NUMERIC`, `V1-PROOF-AUDIT`, `V1-COUNTEREXAMPLE-HARNESS` | `migrated_strengthened` | exact claim graph and proof obligations, typed assumption maps, blind re-derivation, executable predicate receipts, counterexample/downgrade controls, and assurance closure | finite computation is never promoted to proof; semantic equivalence between a natural-language obligation and executable predicate still requires bounded audit |
+| `V1-RESULT-HYGIENE`, `V1-MANUSCRIPT-ARCH`, `V1-WORKING-PREVIEW`, `V1-REVIEW-REVISION` | `migrated` | Paper IR, result contracts, reader paths, typed prose spans, one canonical writer, independent reviews, revision briefs, and submission projection without wording changes | accepted evidence covers one result-block repair loop, not autonomous complete-paper quality |
+| `V1-TARGET-PROFILE`, `V1-STYLE-ANCHORS` | `migrated_partial` | composable target/profile stack, reader diagnosis, function-first craft retrieval, profiled composition, and independent craft-realization review | the seed craft corpus has narrow move/archetype coverage and cannot establish imitation, legal, or Top-5 quality claims |
+| `V1-DYNAMIC-PANEL`, `V1-INFO-ISOLATION`, `V1-ADVOCATE` | `migrated_partial` | route-specific context manifests, blind/cold-reader compartments, dynamic critic assignments, independent economic and reader reviews | broader optional multi-agent lanes and cross-provider independence remain Phase 5B work |
+| `V1-EVIDENCE-LEDGER`, `V1-FIELD-PROFILE`, `V1-EXTERNAL-REALITY` | `implemented_partial` | typed literature evidence, closest-theory and target profiles, exact expert/evidence references, and revision routing | systematic field-corpus breadth and a completed expert-feedback ingestion case remain incomplete |
+| `V1-LOW-TOKEN`, `V1-TOOLCHAIN` | `migrated` | bounded deterministic context compilation, one generated status view, packaged registries/resources, exporter checks, and portable `doctor` | full-history replay remains expensive and provider-specific token accounting is not a comparative efficiency result |
+| `V1-NONCONVEX-SEARCH`, `V1-FORMAL-TRIAGE`, `V1-LANE-JUDGE`, `V1-VERSION-CONTROL`, `V1-RESEARCHER-MEMORY` | `optional_not_migrated` | their interfaces and authority boundaries are mapped; selected blind and formal fixtures exist | the optional adapters/lanes themselves remain Phase 5B work and are not required for the local scientific core |
+| `V1-EXAMPLES` | `fixture_partial` | frozen gold chains, negative controls, blind comparison cases, and the recorded public Codex pilot | held-out classic-case reconstruction and v1/v2 comparative evaluation remain Phase 6 |
+| `V1-LEGAL` | `parity_verified` | Apache-2.0 `LICENSE`, `NOTICE`, and `CITATION.cff` remain present | release metadata must be updated when a public version is cut |
 
 ## 3. Deliberate retirements
 

@@ -1288,7 +1288,7 @@ Recorded Phase 5A.1 acceptance evidence is:
   six platform/optional skips in 250.820 seconds. The three hour-scale Phase
   2/3/4 gold-runtime modules were intentionally excluded; their previously
   accepted full-chain evidence was not rewritten as a new run;
-- all six current schema/resource exporter checks, Python compilation,
+- all six then-current schema/resource exporter checks, Python compilation,
   `doctor` with `required_ok=true`, Markdown-link validation, and
   `git diff --check` passing. Lean and Node remain optional and unavailable on
   the verification machine;
@@ -1329,9 +1329,9 @@ It establishes a bounded public slice, not the complete gate in section 15.1:
   6.3/10 assessment and found substantive fixed-inspection, frozen-ledger,
   equilibrium-selection, and readability problems. Mechanical commit therefore
   is not evidence of Top-5 quality or reduced expert intervention;
-- the current public-slice tree completes a 74-test focused Phase 5A suite with
+- the recorded public-slice checkpoint completed a 74-test focused Phase 5A suite with
   one Windows symlink skip and a 486-test routine non-long suite with six
-  platform/optional skips, plus all six exporters, compilation of 138 Python
+  platform/optional skips, plus all six then-current exporters, compilation of 138 Python
   files, `doctor` with
   `required_ok=true`, skill/YAML validation, Markdown-link validation, and
   `git diff --check`.
@@ -1340,6 +1340,9 @@ This slice does not demonstrate positive private, restricted, `local_only`,
 hidden, or sealed Codex execution; first-ever installation from an empty
 project; Claude Code or Cursor parity; a complete paper route; comparative
 v1/v2 superiority; lower human effort; publication readiness; or the complete
-local research-ready gate. Its immediate scientific follow-up is an
-economist-facing framing projection, benchmark-semantic audit, and
-mechanism-robustness checks before an exploratory v1/v2 revision pilot.
+local research-ready gate. The deterministic acceptance predicate for the
+additive v5 work specified in
+[`framing_quality_contract.md`](framing_quality_contract.md) now passes. Its
+immediate scientific follow-up is to rerun the same public pilot through v5,
+inspect the economics and editing burden, and only then begin an exploratory
+v1/v2 revision pilot.

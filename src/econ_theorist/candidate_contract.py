@@ -12,6 +12,7 @@ from typing import Annotated, Any, Literal
 from pydantic import Field
 
 from . import authoring as a
+from . import framing_quality as fq
 from . import profile_craft as pc
 from . import theory as t
 from .codec import canonical_json_bytes, sha256_digest
@@ -189,6 +190,79 @@ _MODEL_INVARIANTS = (
 )
 
 
+_FRAMING_MODEL_INVARIANTS = (
+    CandidateModelInvariantV1(
+        invariant_id="framing.aggregate_invariance",
+        model="AggregateInvarianceAssessment",
+        condition="claims_aggregate_fixed == true",
+        requirement="pointwise_policy_fixed must be true and weighting_distribution_status must be fixed or not_applicable",
+        repair_hint="Downgrade the aggregate claim or record how the weighting distribution, transition law, and composition remain fixed; otherwise expect aggregate_invariance_unsupported.",
+    ),
+    CandidateModelInvariantV1(
+        invariant_id="framing.active_response",
+        model="BenchmarkFramingAssessment",
+        condition="channel_kind == active_response",
+        requirement="at least one type-compatible reoptimizing choice or endogenous transition, distribution, or equilibrium margin must lie on the interior of the exact PrimitiveGraph channel_path",
+        repair_hint="Bind the actual active response margin to a compatible PrimitiveGraph node or downgrade the row to a diagnostic/boundary comparison; an outcome label or frozen payoff ledger is placebo_control.",
+    ),
+    CandidateModelInvariantV1(
+        invariant_id="framing.selection_assurance",
+        model="BenchmarkFramingAssessment",
+        condition="selection_assurance.status is selector_only or unresolved",
+        requirement="attribution_strength cannot be clean, a linked disclosed gap is required, and proposed_action cannot be ready_for_g1",
+        repair_hint="State that the selector is only a convention, downgrade attribution, and continue diagnosis; do not claim selection robustness.",
+    ),
+    CandidateModelInvariantV1(
+        invariant_id="framing.benchmark_coverage",
+        model="FramingQualityBundle",
+        condition="all framing candidates",
+        requirement="benchmark_assessments must cover every BenchmarkSet benchmark_id exactly once",
+        repair_hint="Copy the exact nested benchmark IDs and provide one semantic-ledger row per benchmark.",
+    ),
+    CandidateModelInvariantV1(
+        invariant_id="framing.primitive_paths",
+        model="FramingQualityBundle",
+        condition="all forces, causal steps, and benchmark channels",
+        requirement="every node must exist in PrimitiveGraph; forces and causal steps must be nonzero; every declared force must be used; each cited step must be an ordered subpath of its force; channel_path neighbors must be exact directed edges; the three causal steps must close",
+        repair_hint="Use the supplied PrimitiveGraph node IDs and edges; if the required path is absent, propose revise_framing rather than inventing a connection.",
+    ),
+    CandidateModelInvariantV1(
+        invariant_id="framing.semantic_ledger",
+        model="BenchmarkFramingAssessment",
+        condition="objects bind primitive_node_id values",
+        requirement="reoptimizing choices and endogenous active margins must match PrimitiveNode.kind, and one node cannot be fixed and movable at an overlapping semantic level",
+        repair_hint="Bind choices to choice nodes and transitions, distributions, or equilibrium margins to equilibrium-object nodes; split distinct semantic levels into distinct graph nodes when necessary.",
+    ),
+    CandidateModelInvariantV1(
+        invariant_id="framing.archetype_tension",
+        model="ArchetypeTension",
+        condition="result_archetype == mechanism_explanation",
+        requirement="use causal_channel for a one-direction mechanism or force_conflict when opposing forces actually generate the puzzle; only conflict and reversal tensions require a counterforce",
+        repair_hint="Do not invent an opposing force for a single active channel, and do not omit the baseline/counterforce structure from a genuine reversal.",
+    ),
+    CandidateModelInvariantV1(
+        invariant_id="framing.noncompensatory_action",
+        model="FramingQualityBundle",
+        condition="proposed_action == ready_for_g1",
+        requirement="no disclosed gap, unresolved selection or aggregate weighting risk, diagnostic-only channel, or weak/unresolved attribution may remain; known endogenous composition and qualified attribution are admissible when fully traced",
+        repair_hint="Use continue_diagnostic or revise_framing and let the replacement dossier propose revise whenever a material framing risk remains.",
+    ),
+    CandidateModelInvariantV1(
+        invariant_id="framing.replacement_dossier",
+        model="GateDossier",
+        condition="audit.framing_economics output",
+        requirement="create a new ID at version 1, preserve the source dossier requirements and ordered refs, append the bundle ref and g1.framing_quality requirement, and never supersede the immutable source dossier",
+        repair_hint="Create a replacement GateDossier; propose approve only for ready_for_g1, otherwise propose revise.",
+    ),
+)
+
+
+def _model_invariants_for_route(route_id: str) -> tuple[CandidateModelInvariantV1, ...]:
+    if route_id == "audit.framing_economics":
+        return (*_MODEL_INVARIANTS, *_FRAMING_MODEL_INVARIANTS)
+    return _MODEL_INVARIANTS
+
+
 def _payload_registration(
     entity_type: str,
 ) -> tuple[type[StrictModel], Facet, str]:
@@ -218,6 +292,15 @@ def _payload_registration(
                 profile_model,
                 pc.PROFILE_CRAFT_PAYLOAD_OWNER_FACETS[entity_type],
                 pc.profile_craft_schema_id(entity_type),
+            )
+        )
+    framing_model = fq.FRAMING_QUALITY_PAYLOAD_MODELS.get(entity_type)
+    if framing_model is not None:
+        registrations.append(
+            (
+                framing_model,
+                fq.FRAMING_QUALITY_PAYLOAD_OWNER_FACETS[entity_type],
+                fq.framing_quality_schema_id(entity_type),
             )
         )
     if len(registrations) != 1:
@@ -311,7 +394,7 @@ def compile_candidate_authoring_contract(
         allowed_relation_types=route.allowed_relation_types,
         required_output_entities=route.required_output_entities,
         required_output_relations=route.required_output_relations,
-        model_invariants=_MODEL_INVARIANTS,
+        model_invariants=_model_invariants_for_route(route.route_id),
         relation_json_schema=RelationVersion.model_json_schema(mode="validation"),
         route_outcome_json_schema=RouteOutcome.model_json_schema(mode="validation"),
     )

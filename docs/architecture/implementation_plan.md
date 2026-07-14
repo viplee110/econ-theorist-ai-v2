@@ -2,12 +2,15 @@
 
 Status: Architecture v0.1 with accepted Phase 1--4 implementations, the Phase
 5A.0 host-bootstrap contract, and the Phase 5A.1 generic machine facade on
-`main`; one Phase 5A.2 public Codex functional slice is recorded in the current
-tree, while the full local research-ready gate remains open
+`main`; one Phase 5A.2 public Codex functional slice is recorded, and the
+current tree contains a deterministically accepted additive registry-v5
+framing-quality implementation candidate. A fresh real-Codex rerun and the
+full local research-ready gate remain open.
 
 Current implementation milestone: pilot-driven scientific strengthening --
-an economist-facing framing projection, benchmark-semantic audit, and
-mechanism-robustness checks, followed by an exploratory v1/v2 quality pilot
+rerun the same public Codex pilot through the accepted economist-facing
+framing projection, benchmark-semantic audit, and mechanism-robustness checks;
+then run an exploratory v1/v2 quality pilot.
 
 ## 1. Delivery strategy
 
@@ -397,6 +400,14 @@ execution, clean first-use activation, and a broader real-workflow diagnostic
 remain unproved. A separate model-based diagnostic also found material
 benchmark and readability defects, so the next slices are selected by those
 failures rather than by generic infrastructure expansion.
+
+The additive v5 implementation candidate is specified in
+`../implementation/framing_quality_contract.md`. It inserts
+`audit.framing_economics` after primitive decomposition and before the human G1
+decision, preserving the frozen v1--v4 route meanings. It must pass its
+deterministic acceptance predicate and a fresh real-Codex rerun before any
+claim about improved readability or lower human intervention. The
+deterministic predicate now passes; the real-model rerun remains open.
 
 The ordinary researcher-facing interface is natural language. The machine
 layer remains a versioned `etai` protocol, and the terminal path remains

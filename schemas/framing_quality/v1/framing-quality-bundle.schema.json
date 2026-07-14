@@ -1,0 +1,885 @@
+{
+  "$defs": {
+    "AggregateInvarianceAssessment": {
+      "additionalProperties": false,
+      "properties": {
+        "aggregate_object": {
+          "minLength": 1,
+          "title": "Aggregate Object",
+          "type": "string"
+        },
+        "basis": {
+          "minLength": 1,
+          "title": "Basis",
+          "type": "string"
+        },
+        "claims_aggregate_fixed": {
+          "title": "Claims Aggregate Fixed",
+          "type": "boolean"
+        },
+        "implication_for_attribution": {
+          "minLength": 1,
+          "title": "Implication For Attribution",
+          "type": "string"
+        },
+        "pointwise_policy_fixed": {
+          "title": "Pointwise Policy Fixed",
+          "type": "boolean"
+        },
+        "weighting_distribution_status": {
+          "enum": [
+            "fixed",
+            "endogenous",
+            "changed",
+            "not_applicable",
+            "unresolved"
+          ],
+          "title": "Weighting Distribution Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "aggregate_object",
+        "pointwise_policy_fixed",
+        "weighting_distribution_status",
+        "claims_aggregate_fixed",
+        "basis",
+        "implication_for_attribution"
+      ],
+      "title": "AggregateInvarianceAssessment",
+      "type": "object"
+    },
+    "ArchetypeTension": {
+      "additionalProperties": false,
+      "description": "The reader's prior and the archetype-specific source of tension.",
+      "properties": {
+        "conventional_prediction": {
+          "minLength": 1,
+          "title": "Conventional Prediction",
+          "type": "string"
+        },
+        "countervailing_logic": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Countervailing Logic"
+        },
+        "economic_puzzle": {
+          "minLength": 1,
+          "title": "Economic Puzzle",
+          "type": "string"
+        },
+        "resolution_target": {
+          "minLength": 1,
+          "title": "Resolution Target",
+          "type": "string"
+        },
+        "result_archetype": {
+          "enum": [
+            "mechanism_explanation",
+            "comparative_statics_threshold",
+            "characterization_bounds",
+            "robustness_invariance_equivalence",
+            "design_implementation_impossibility",
+            "concept_representation_foundation"
+          ],
+          "title": "Result Archetype",
+          "type": "string"
+        },
+        "tension_kind": {
+          "enum": [
+            "causal_channel",
+            "force_conflict",
+            "sign_or_threshold_reversal",
+            "boundary_or_tightness",
+            "invariance_or_equivalence",
+            "design_tradeoff_or_impossibility",
+            "conceptual_distinction_or_representation"
+          ],
+          "title": "Tension Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result_archetype",
+        "tension_kind",
+        "conventional_prediction",
+        "economic_puzzle",
+        "resolution_target"
+      ],
+      "title": "ArchetypeTension",
+      "type": "object"
+    },
+    "BenchmarkFramingAssessment": {
+      "additionalProperties": false,
+      "description": "One semantic ledger row bound to a nested benchmark ID.",
+      "properties": {
+        "aggregate_invariance": {
+          "$ref": "#/$defs/AggregateInvarianceAssessment"
+        },
+        "attribution_basis": {
+          "minLength": 1,
+          "title": "Attribution Basis",
+          "type": "string"
+        },
+        "attribution_strength": {
+          "enum": [
+            "clean",
+            "qualified",
+            "weak",
+            "unresolved"
+          ],
+          "title": "Attribution Strength",
+          "type": "string"
+        },
+        "benchmark_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Benchmark Id",
+          "type": "string"
+        },
+        "changed": {
+          "items": {
+            "$ref": "#/$defs/FramingObjectRef"
+          },
+          "minItems": 1,
+          "title": "Changed",
+          "type": "array"
+        },
+        "channel_kind": {
+          "enum": [
+            "active_response",
+            "boundary_or_mapping",
+            "diagnostic_only"
+          ],
+          "title": "Channel Kind",
+          "type": "string"
+        },
+        "channel_path": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 2,
+          "title": "Channel Path",
+          "type": "array"
+        },
+        "channel_summary": {
+          "minLength": 1,
+          "title": "Channel Summary",
+          "type": "string"
+        },
+        "held_fixed": {
+          "items": {
+            "$ref": "#/$defs/HeldFixedObjectRef"
+          },
+          "minItems": 1,
+          "title": "Held Fixed",
+          "type": "array"
+        },
+        "reoptimizing": {
+          "items": {
+            "$ref": "#/$defs/FramingObjectRef"
+          },
+          "title": "Reoptimizing",
+          "type": "array"
+        },
+        "selection_assurance": {
+          "$ref": "#/$defs/SelectionAssurance"
+        },
+        "still_endogenous": {
+          "items": {
+            "$ref": "#/$defs/FramingObjectRef"
+          },
+          "minItems": 1,
+          "title": "Still Endogenous",
+          "type": "array"
+        },
+        "targets": {
+          "items": {
+            "$ref": "#/$defs/FramingObjectRef"
+          },
+          "minItems": 1,
+          "title": "Targets",
+          "type": "array"
+        }
+      },
+      "required": [
+        "benchmark_id",
+        "changed",
+        "held_fixed",
+        "reoptimizing",
+        "still_endogenous",
+        "targets",
+        "channel_kind",
+        "channel_path",
+        "channel_summary",
+        "aggregate_invariance",
+        "selection_assurance",
+        "attribution_strength",
+        "attribution_basis"
+      ],
+      "title": "BenchmarkFramingAssessment",
+      "type": "object"
+    },
+    "CausalChainStep": {
+      "additionalProperties": false,
+      "properties": {
+        "cause": {
+          "minLength": 1,
+          "title": "Cause",
+          "type": "string"
+        },
+        "consequence": {
+          "minLength": 1,
+          "title": "Consequence",
+          "type": "string"
+        },
+        "endogenous_response": {
+          "minLength": 1,
+          "title": "Endogenous Response",
+          "type": "string"
+        },
+        "force_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Force Ids",
+          "type": "array"
+        },
+        "source_node_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Source Node Id",
+          "type": "string"
+        },
+        "step_number": {
+          "enum": [
+            1,
+            2,
+            3
+          ],
+          "title": "Step Number",
+          "type": "integer"
+        },
+        "target_node_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Target Node Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "step_number",
+        "force_ids",
+        "cause",
+        "endogenous_response",
+        "consequence",
+        "source_node_id",
+        "target_node_id"
+      ],
+      "title": "CausalChainStep",
+      "type": "object"
+    },
+    "DisclosedFramingGap": {
+      "additionalProperties": false,
+      "properties": {
+        "affected_benchmark_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Affected Benchmark Ids",
+          "type": "array"
+        },
+        "category": {
+          "enum": [
+            "benchmark_semantics",
+            "aggregate_endogeneity",
+            "equilibrium_selection",
+            "reoptimization",
+            "causal_attribution",
+            "scope",
+            "minimal_example",
+            "other"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "consequence": {
+          "minLength": 1,
+          "title": "Consequence",
+          "type": "string"
+        },
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "gap_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Gap Id",
+          "type": "string"
+        },
+        "repair_target_refs": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/FramingRepairTargetRef"
+          },
+          "title": "Repair Target Refs",
+          "type": "array"
+        },
+        "resolution_needed": {
+          "minLength": 1,
+          "title": "Resolution Needed",
+          "type": "string"
+        }
+      },
+      "required": [
+        "gap_id",
+        "category",
+        "description",
+        "consequence",
+        "resolution_needed"
+      ],
+      "title": "DisclosedFramingGap",
+      "type": "object"
+    },
+    "EconomicForce": {
+      "additionalProperties": false,
+      "properties": {
+        "active_when": {
+          "minLength": 1,
+          "title": "Active When",
+          "type": "string"
+        },
+        "direction": {
+          "enum": [
+            "raises_target",
+            "lowers_target",
+            "changes_composition",
+            "changes_constraint",
+            "ambiguous"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "economic_logic": {
+          "minLength": 1,
+          "title": "Economic Logic",
+          "type": "string"
+        },
+        "force_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Force Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "margin_node_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Margin Node Id",
+          "type": "string"
+        },
+        "operative_margin": {
+          "minLength": 1,
+          "title": "Operative Margin",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "baseline_force",
+            "countervailing_force",
+            "equilibrium_feedback",
+            "boundary_force"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "source_node_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Source Node Id",
+          "type": "string"
+        },
+        "target_node_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Target Node Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "force_id",
+        "label",
+        "role",
+        "operative_margin",
+        "direction",
+        "economic_logic",
+        "active_when",
+        "source_node_id",
+        "margin_node_id",
+        "target_node_id"
+      ],
+      "title": "EconomicForce",
+      "type": "object"
+    },
+    "EconomistMemo": {
+      "additionalProperties": false,
+      "description": "Fields needed for a compact economist-facing framing memo.",
+      "properties": {
+        "benchmark_message": {
+          "minLength": 1,
+          "title": "Benchmark Message",
+          "type": "string"
+        },
+        "contribution_message": {
+          "minLength": 1,
+          "title": "Contribution Message",
+          "type": "string"
+        },
+        "headline": {
+          "minLength": 1,
+          "title": "Headline",
+          "type": "string"
+        },
+        "mechanism_message": {
+          "minLength": 1,
+          "title": "Mechanism Message",
+          "type": "string"
+        },
+        "opening_question": {
+          "minLength": 1,
+          "title": "Opening Question",
+          "type": "string"
+        },
+        "reader_takeaway": {
+          "minLength": 1,
+          "title": "Reader Takeaway",
+          "type": "string"
+        },
+        "result_preview": {
+          "minLength": 1,
+          "title": "Result Preview",
+          "type": "string"
+        },
+        "scope_condition": {
+          "minLength": 1,
+          "title": "Scope Condition",
+          "type": "string"
+        },
+        "tension_message": {
+          "minLength": 1,
+          "title": "Tension Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "headline",
+        "opening_question",
+        "benchmark_message",
+        "tension_message",
+        "mechanism_message",
+        "result_preview",
+        "contribution_message",
+        "scope_condition",
+        "reader_takeaway"
+      ],
+      "title": "EconomistMemo",
+      "type": "object"
+    },
+    "EntityVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_id",
+        "version"
+      ],
+      "title": "EntityVersionRef",
+      "type": "object"
+    },
+    "FramingObjectRef": {
+      "additionalProperties": false,
+      "description": "A reader label bound, when possible, to one primitive-graph node.",
+      "properties": {
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "object_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Object Id",
+          "type": "string"
+        },
+        "primitive_node_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Primitive Node Id"
+        },
+        "semantic_level": {
+          "enum": [
+            "primitive",
+            "choice",
+            "behavioral_response",
+            "conditional_distribution",
+            "transition_kernel",
+            "stationary_distribution",
+            "payoff_ledger",
+            "equilibrium_object",
+            "equilibrium_correspondence",
+            "outcome",
+            "aggregate"
+          ],
+          "title": "Semantic Level",
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "label",
+        "semantic_level"
+      ],
+      "title": "FramingObjectRef",
+      "type": "object"
+    },
+    "FramingRepairTargetRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_ref": {
+          "$ref": "#/$defs/EntityVersionRef"
+        },
+        "entity_type": {
+          "enum": [
+            "ResearchQuestion",
+            "BenchmarkSet",
+            "PrimitiveGraph"
+          ],
+          "title": "Entity Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_type",
+        "entity_ref"
+      ],
+      "title": "FramingRepairTargetRef",
+      "type": "object"
+    },
+    "HeldFixedObjectRef": {
+      "additionalProperties": false,
+      "properties": {
+        "fixing_level": {
+          "enum": [
+            "primitive",
+            "choice",
+            "policy_rule",
+            "realized_behavior",
+            "conditional_distribution",
+            "transition_kernel",
+            "stationary_distribution",
+            "payoff_ledger",
+            "equilibrium_object",
+            "equilibrium_correspondence",
+            "weighting_distribution",
+            "aggregate"
+          ],
+          "title": "Fixing Level",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "object_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Object Id",
+          "type": "string"
+        },
+        "primitive_node_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Primitive Node Id"
+        },
+        "semantic_level": {
+          "enum": [
+            "primitive",
+            "choice",
+            "behavioral_response",
+            "conditional_distribution",
+            "transition_kernel",
+            "stationary_distribution",
+            "payoff_ledger",
+            "equilibrium_object",
+            "equilibrium_correspondence",
+            "outcome",
+            "aggregate"
+          ],
+          "title": "Semantic Level",
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "label",
+        "semantic_level",
+        "fixing_level"
+      ],
+      "title": "HeldFixedObjectRef",
+      "type": "object"
+    },
+    "IllustrativeMinimalExample": {
+      "additionalProperties": false,
+      "description": "A mechanism illustration that is explicitly not formal evidence.",
+      "properties": {
+        "cannot_establish": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Cannot Establish",
+          "type": "array"
+        },
+        "economic_intuition": {
+          "minLength": 1,
+          "title": "Economic Intuition",
+          "type": "string"
+        },
+        "endogenous_responses": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Endogenous Responses",
+          "type": "array"
+        },
+        "held_fixed": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Held Fixed",
+          "type": "array"
+        },
+        "limitation": {
+          "minLength": 1,
+          "title": "Limitation",
+          "type": "string"
+        },
+        "moving_primitive": {
+          "minLength": 1,
+          "title": "Moving Primitive",
+          "type": "string"
+        },
+        "predicted_pattern": {
+          "minLength": 1,
+          "title": "Predicted Pattern",
+          "type": "string"
+        },
+        "role": {
+          "const": "illustrative_only",
+          "default": "illustrative_only",
+          "title": "Role",
+          "type": "string"
+        },
+        "setup": {
+          "minLength": 1,
+          "title": "Setup",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "setup",
+        "moving_primitive",
+        "held_fixed",
+        "endogenous_responses",
+        "predicted_pattern",
+        "economic_intuition",
+        "limitation",
+        "cannot_establish"
+      ],
+      "title": "IllustrativeMinimalExample",
+      "type": "object"
+    },
+    "SelectionAssurance": {
+      "additionalProperties": false,
+      "properties": {
+        "basis": {
+          "minLength": 1,
+          "title": "Basis",
+          "type": "string"
+        },
+        "implication_for_attribution": {
+          "minLength": 1,
+          "title": "Implication For Attribution",
+          "type": "string"
+        },
+        "selection_rule": {
+          "minLength": 1,
+          "title": "Selection Rule",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "unique_equilibrium",
+            "continuous_branch",
+            "all_equilibria",
+            "selector_only",
+            "not_applicable",
+            "unresolved"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "selection_rule",
+        "basis",
+        "implication_for_attribution"
+      ],
+      "title": "SelectionAssurance",
+      "type": "object"
+    }
+  },
+  "$id": "https://econ-theorist.ai/schemas/framing-quality/v1/framing-quality-bundle.schema.json",
+  "additionalProperties": false,
+  "description": "Canonical preflight joining framing intuition to exact Phase 2 inputs.",
+  "properties": {
+    "action_rationale": {
+      "minLength": 1,
+      "title": "Action Rationale",
+      "type": "string"
+    },
+    "benchmark_assessments": {
+      "items": {
+        "$ref": "#/$defs/BenchmarkFramingAssessment"
+      },
+      "minItems": 1,
+      "title": "Benchmark Assessments",
+      "type": "array"
+    },
+    "benchmark_set_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "causal_chain": {
+      "items": {
+        "$ref": "#/$defs/CausalChainStep"
+      },
+      "maxItems": 3,
+      "minItems": 3,
+      "title": "Causal Chain",
+      "type": "array"
+    },
+    "disclosed_gaps": {
+      "items": {
+        "$ref": "#/$defs/DisclosedFramingGap"
+      },
+      "title": "Disclosed Gaps",
+      "type": "array"
+    },
+    "economist_memo": {
+      "$ref": "#/$defs/EconomistMemo"
+    },
+    "forces": {
+      "items": {
+        "$ref": "#/$defs/EconomicForce"
+      },
+      "minItems": 1,
+      "title": "Forces",
+      "type": "array"
+    },
+    "minimal_example": {
+      "$ref": "#/$defs/IllustrativeMinimalExample"
+    },
+    "primitive_graph_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "proposed_action": {
+      "enum": [
+        "ready_for_g1",
+        "continue_diagnostic",
+        "revise_framing"
+      ],
+      "title": "Proposed Action",
+      "type": "string"
+    },
+    "research_question_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source_g1_dossier_ref": {
+      "$ref": "#/$defs/EntityVersionRef"
+    },
+    "tension": {
+      "$ref": "#/$defs/ArchetypeTension"
+    }
+  },
+  "required": [
+    "research_question_ref",
+    "benchmark_set_ref",
+    "primitive_graph_ref",
+    "source_g1_dossier_ref",
+    "tension",
+    "forces",
+    "causal_chain",
+    "minimal_example",
+    "economist_memo",
+    "benchmark_assessments",
+    "disclosed_gaps",
+    "proposed_action",
+    "action_rationale"
+  ],
+  "title": "FramingQualityBundle",
+  "type": "object"
+}

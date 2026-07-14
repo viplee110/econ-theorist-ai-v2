@@ -1629,6 +1629,8 @@ def _validate_phase2_route_entry_refs(
     snapshot: Snapshot,
     route_spec: RouteSpecV2,
     input_refs: Iterable[EntityVersionRef],
+    *,
+    allow_fresh_repair: bool = False,
 ) -> TheoryRouteEntryReport:
     if route_spec.entry_validator_id != "theory_route_entry.v1":
         raise TheoryValidationError("unknown or missing Phase 2 route entry validator")
@@ -1702,13 +1704,14 @@ def _validate_phase2_route_entry_refs(
             for reference, _ in typed_inputs
             if not _typed_reference_closure_is_current_and_fresh(snapshot, reference)
         ]
-        if (
-            len(references) != 1
-            or len(typed_inputs) != 1
-            or len(stale_inputs) != 1
-        ):
+        valid_root_count = len(stale_inputs) == 1 or (
+            allow_fresh_repair and len(stale_inputs) == 0
+        )
+        if len(references) != 1 or len(typed_inputs) != 1 or not valid_root_count:
             raise TheoryValidationError(
                 "repair.dependency requires exactly one typed stale root"
+                if not allow_fresh_repair
+                else "v5 repair requires exactly one typed stale or authorized fresh root"
             )
 
     if route_spec.route_id == "validate.argument_package":
@@ -2019,12 +2022,18 @@ def _validate_route_entry_refs(
     input_refs: Iterable[EntityVersionRef],
     *,
     actor: Actor,
+    allow_fresh_repair: bool = False,
 ) -> TheoryRouteEntryReport:
     if route_spec.entry_validator_id == "evaluation_route_entry.v1":
         return _validate_evaluation_route_entry_refs(
             snapshot, route_spec, input_refs, actor=actor
         )
-    return _validate_phase2_route_entry_refs(snapshot, route_spec, input_refs)
+    return _validate_phase2_route_entry_refs(
+        snapshot,
+        route_spec,
+        input_refs,
+        allow_fresh_repair=allow_fresh_repair,
+    )
 
 
 def validate_phase2_route_entry(
@@ -2033,6 +2042,7 @@ def validate_phase2_route_entry(
     focus_entity_ids: Iterable[str],
     *,
     actor: Actor,
+    allow_fresh_repair: bool = False,
 ) -> TheoryRouteEntryReport:
     """Validate begin-time entry against exact current focus entities."""
 
@@ -2057,6 +2067,7 @@ def validate_phase2_route_entry(
             for entity_id in focus_ids
         ),
         actor=actor,
+        allow_fresh_repair=allow_fresh_repair,
     )
 
 
@@ -3310,7 +3321,13 @@ def _validate_phase2_route_exit_semantics(
 
 
 def validate_phase2_route_transaction(
-    snapshot: Snapshot, transaction: Transaction, route_spec: RouteSpecV2
+    snapshot: Snapshot,
+    transaction: Transaction,
+    route_spec: RouteSpecV2,
+    *,
+    route_input_refs: Iterable[EntityVersionRef] | None = None,
+    allow_fresh_repair: bool = False,
+    allow_research_question_revision: bool = False,
 ) -> TheoryReadinessReport:
     """Validate Phase 2-specific semantics for one staged v2 route transaction."""
 
@@ -3327,11 +3344,16 @@ def validate_phase2_route_transaction(
         snapshot,
         route_spec,
         (
-            reference
-            for reference in transaction.evidence_refs
-            if isinstance(reference, EntityVersionRef)
+            route_input_refs
+            if route_input_refs is not None
+            else (
+                reference
+                for reference in transaction.evidence_refs
+                if isinstance(reference, EntityVersionRef)
+            )
         ),
         actor=transaction.actor,
+        allow_fresh_repair=allow_fresh_repair,
     )
 
     entities = list(snapshot.entity_versions)
@@ -3573,10 +3595,18 @@ def validate_phase2_route_transaction(
             "route authority_basis contains an unrelated or foreign G1-G5 Decision: "
             + ", ".join(sorted(extra_gate_ids))
         )
+    root_is_authorized_revision = (
+        allow_research_question_revision
+        and entry_report.research_question_ref is not None
+        and output_root is not None
+        and output_root.entity_id == entry_report.research_question_ref.entity_id
+        and output_root.version == entry_report.research_question_ref.version + 1
+    )
     if (
         entry_report.research_question_ref is not None
         and output_root is not None
         and output_root != entry_report.research_question_ref
+        and not root_is_authorized_revision
     ):
         raise TheoryValidationError(
             "route inputs, required gates, and outputs govern different ResearchQuestion scopes"

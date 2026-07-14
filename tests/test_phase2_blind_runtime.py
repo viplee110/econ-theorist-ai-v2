@@ -13,7 +13,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tests.helpers import REPOSITORY_ROOT  # noqa: F401  # installs src
+from tests.helpers import (
+    REPOSITORY_ROOT,  # noqa: F401  # installs src
+    install_pre_v5_historical_g1_transaction,
+)
 from tests.test_phase2_blind_evaluation_contract import (
     ATTEMPT,
     BUILDER,
@@ -458,9 +461,14 @@ class Phase2BlindRuntimeTests(unittest.TestCase):
                 created_at=f"2026-07-11T17:{10 + index:02d}:00Z",
                 parent_transaction_hash=before.head,
             )
-            result = commit_transaction(self.layout, transaction)
-            self.assertEqual(result.status, "committed")
-            self.snapshot = replay(self.layout)
+            if kind == "G1_question_benchmark":
+                self.snapshot = install_pre_v5_historical_g1_transaction(
+                    self.layout, transaction
+                )
+            else:
+                result = commit_transaction(self.layout, transaction)
+                self.assertEqual(result.status, "committed")
+                self.snapshot = replay(self.layout)
 
     def _candidate_lock(self) -> tuple[ArtifactRegistration, bytes]:
         candidate = self.fixture.entities[(self.fixture.candidate_ref.entity_id, 1)]

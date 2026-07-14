@@ -9,7 +9,6 @@ from tests.helpers import REPOSITORY_ROOT  # noqa: F401  # installs src
 from econ_theorist.codec import sha256_digest
 from econ_theorist.models import RouteSpecV4
 from econ_theorist.policy import (
-    ROUTE_REGISTRY_HASH,
     ROUTE_REGISTRY_V1_HASH,
     ROUTE_REGISTRY_V2_HASH,
     ROUTE_REGISTRY_V3_HASH,
@@ -28,7 +27,6 @@ from econ_theorist.policy import (
     V4_NATIVE_ROUTE_IDS,
     V4_ROUTE_IDS,
     instruction_bundle_bytes,
-    load_route_registry,
     load_route_registry_by_hash,
     registry_hash,
     selector_version_for_route,
@@ -239,14 +237,13 @@ class Phase4PolicyCompatibilityTests(unittest.TestCase):
                     expected = SELECTOR_VERSION_V1
                 self.assertEqual(selector_version_for_route(route), expected)
 
-    def test_v4_is_the_active_catalog(self) -> None:
-        active = load_route_registry()
-        self.assertEqual(active.registry_version, 4)
+    def test_v4_remains_an_exact_historical_catalog(self) -> None:
+        historical = load_route_registry_by_hash(ROUTE_REGISTRY_V4_HASH)
+        self.assertEqual(historical.registry_version, 4)
         self.assertEqual(ROUTE_REGISTRY_V4_HASH, PHASE4_REGISTRY_HASH)
-        self.assertEqual(ROUTE_REGISTRY_HASH, ROUTE_REGISTRY_V4_HASH)
-        self.assertEqual(registry_hash(active), ROUTE_REGISTRY_V4_HASH)
+        self.assertEqual(registry_hash(historical), ROUTE_REGISTRY_V4_HASH)
         self.assertEqual(
-            tuple(route.route_id for route in active.routes), V4_ROUTE_IDS
+            tuple(route.route_id for route in historical.routes), V4_ROUTE_IDS
         )
 
 

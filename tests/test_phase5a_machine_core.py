@@ -28,7 +28,7 @@ from econ_theorist.machine.operational import (
 from econ_theorist.machine.packets import read_work_packet
 from econ_theorist.machine.resources import (
     HOST_MANIFEST_V1_HASH,
-    NAVIGATION_REGISTRY_V1_HASH,
+    NAVIGATION_REGISTRY_HASH,
     load_host_manifest,
     load_navigation_registry,
 )
@@ -68,10 +68,10 @@ class Phase5AMachineCoreTests(unittest.TestCase):
 
     def test_pinned_machine_resources_cover_all_active_routes(self) -> None:
         navigation = load_navigation_registry()
-        self.assertEqual(len(navigation.routes), 34)
+        self.assertEqual(len(navigation.routes), 35)
         self.assertEqual(
             sha256_digest(canonical_json_bytes(navigation)),
-            NAVIGATION_REGISTRY_V1_HASH,
+            NAVIGATION_REGISTRY_HASH,
         )
         manifest = load_host_manifest()
         self.assertEqual(

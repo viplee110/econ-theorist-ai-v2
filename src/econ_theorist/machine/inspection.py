@@ -6,7 +6,7 @@ from collections.abc import Iterable
 
 from .. import __version__
 from ..models import Actor, Snapshot
-from ..policy import ROUTE_REGISTRY_V4_HASH
+from ..policy import ROUTE_REGISTRY_HASH
 from ..profile_craft_policy import CRAFT_CORPUS_V1_HASH, PROFILE_CATALOG_V1_HASH
 from ..runtime.layout import StoreLayout
 from ..runtime.replay import replay
@@ -18,7 +18,7 @@ from .lifecycle import (
 from .models import ProjectInspectionV1, RunInputBriefV1
 from .navigation import plan_next
 from .operational import ProjectOperationalLayout
-from .resources import NAVIGATION_REGISTRY_V1_HASH
+from .resources import NAVIGATION_REGISTRY_HASH
 from .resume import ResumeDescriptorError, derive_resume_descriptor
 
 
@@ -89,8 +89,8 @@ def inspect_project(
         project_id=current.project_id,
         head=current.head,
         engine_version=__version__,
-        route_registry_hash=ROUTE_REGISTRY_V4_HASH,
-        navigation_registry_hash=NAVIGATION_REGISTRY_V1_HASH,
+        route_registry_hash=ROUTE_REGISTRY_HASH,
+        navigation_registry_hash=NAVIGATION_REGISTRY_HASH,
         profile_catalog_hash=PROFILE_CATALOG_V1_HASH,
         craft_corpus_hash=CRAFT_CORPUS_V1_HASH,
         run_views=views,

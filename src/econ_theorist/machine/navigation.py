@@ -8,10 +8,14 @@ from dataclasses import dataclass
 
 from ..codec import canonical_json_bytes, sha256_digest
 from ..context import compile_context
+from ..framing_quality import (
+    FramingQualityBundle,
+    parse_framing_quality_entity,
+)
 from ..models import Actor, EntityVersion, EntityVersionRef, Snapshot
 from ..policy import (
     KERNEL_HASH,
-    ROUTE_REGISTRY_V4_HASH,
+    ROUTE_REGISTRY_HASH,
     registry_hash_for_route,
     selector_version_for_route,
 )
@@ -28,7 +32,7 @@ from .models import (
     ResumeDescriptorV1,
     RunInputBriefV1,
 )
-from .resources import NAVIGATION_REGISTRY_V1_HASH, load_navigation_registry
+from .resources import NAVIGATION_REGISTRY_HASH, load_navigation_registry
 
 
 class NavigationError(RuntimeError):
@@ -125,6 +129,33 @@ def _focus_sets_for_policy(
         if len(ids) > limit:
             return CandidateEnumeration((), truncated=True)
         return CandidateEnumeration(ids)
+    if selector_id == "framing_or_stale_repair_root.v1":
+        focus_sets = {
+            (entity.entity_id,)
+            for entity in current.values()
+            if entity.entity_type in THEORY_PAYLOAD_MODELS
+        }
+        for entity in current.values():
+            if entity.entity_type != "FramingQualityBundle":
+                continue
+            payload = parse_framing_quality_entity(entity)
+            if not isinstance(payload, FramingQualityBundle):
+                continue
+            for gap in payload.disclosed_gaps:
+                for target in gap.repair_target_refs:
+                    current_target = current.get(target.entity_ref.entity_id)
+                    if (
+                        payload.proposed_action == "revise_framing"
+                        and current_target is not None
+                        and current_target.version == target.entity_ref.version
+                        and current_target.entity_type == target.entity_type
+                    ):
+                        focus_sets.add(
+                            tuple(sorted((entity.entity_id, current_target.entity_id)))
+                        )
+        if len(focus_sets) > limit:
+            return CandidateEnumeration((), truncated=True)
+        return CandidateEnumeration(tuple(sorted(focus_sets)))
     raise NavigationUnsupported(f"unknown focus selector: {selector_id}")
 
 
@@ -250,7 +281,7 @@ def enumerate_navigation_candidates(
                     compartments=compartment_tuple,
                     privacy_clearance=privacy_clearance,
                     focus_entity_ids=focus_ids,
-                    route_registry_hash=ROUTE_REGISTRY_V4_HASH,
+                    route_registry_hash=ROUTE_REGISTRY_HASH,
                 )
                 compiled = compile_context(
                     snapshot,
@@ -296,7 +327,7 @@ def enumerate_navigation_candidates(
                 route_registry_hash=registry_hash_for_route(validated_route),
                 instruction_bundle_hash=validated_route.instruction_bundle_hash,
                 context_selector_version=selector_version_for_route(validated_route),
-                navigation_registry_hash=NAVIGATION_REGISTRY_V1_HASH,
+                navigation_registry_hash=NAVIGATION_REGISTRY_HASH,
                 policy_hashes={
                     "kernel": KERNEL_HASH,
                     "profile_catalog": PROFILE_CATALOG_V1_HASH,

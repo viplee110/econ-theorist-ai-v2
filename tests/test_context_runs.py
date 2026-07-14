@@ -50,8 +50,10 @@ from econ_theorist.policy import (
     ROUTE_REGISTRY_V2_HASH,
     ROUTE_REGISTRY_V3_HASH,
     ROUTE_REGISTRY_V4_HASH,
+    ROUTE_REGISTRY_V5_HASH,
     V2_ENABLED_ROUTE_IDS,
     V4_ENABLED_ROUTE_IDS,
+    V5_ENABLED_ROUTE_IDS,
     load_route_registry,
     load_route_registry_by_hash,
     registry_hash,
@@ -167,7 +169,7 @@ def fixture_snapshot(*, private_neighbor: bool = False) -> Snapshot:
 
 
 class RouteRegistryTests(unittest.TestCase):
-    def test_frozen_v2_disables_authoring_while_active_v4_preserves_phase3_and_adds_phase4(self) -> None:
+    def test_frozen_v2_disables_authoring_while_active_catalog_preserves_later_routes(self) -> None:
         framing = authorize_route(
             "frame.question_and_benchmarks",
             purpose="research_framing",
@@ -237,22 +239,25 @@ class RouteRegistryTests(unittest.TestCase):
             with self.assertRaises(RegistryError):
                 load_route_registry(tampered)
 
-    def test_v1_v2_v3_are_historical_and_v4_is_the_active_catalog(self) -> None:
+    def test_v1_through_v4_are_historical_and_v5_is_active(self) -> None:
         active = load_route_registry()
         historical_v1 = load_route_registry_by_hash(ROUTE_REGISTRY_V1_HASH)
         historical_v2 = load_route_registry_by_hash(ROUTE_REGISTRY_V2_HASH)
         historical_v3 = load_route_registry_by_hash(ROUTE_REGISTRY_V3_HASH)
-        self.assertEqual(active.registry_version, 4)
-        self.assertEqual(registry_hash(active), ROUTE_REGISTRY_V4_HASH)
+        historical_v4 = load_route_registry_by_hash(ROUTE_REGISTRY_V4_HASH)
+        self.assertEqual(active.registry_version, 5)
+        self.assertEqual(registry_hash(active), ROUTE_REGISTRY_V5_HASH)
         self.assertEqual(historical_v1.registry_version, 1)
         self.assertEqual(registry_hash(historical_v1), ROUTE_REGISTRY_V1_HASH)
         self.assertEqual(historical_v2.registry_version, 2)
         self.assertEqual(registry_hash(historical_v2), ROUTE_REGISTRY_V2_HASH)
         self.assertEqual(historical_v3.registry_version, 3)
         self.assertEqual(registry_hash(historical_v3), ROUTE_REGISTRY_V3_HASH)
+        self.assertEqual(historical_v4.registry_version, 4)
+        self.assertEqual(registry_hash(historical_v4), ROUTE_REGISTRY_V4_HASH)
         self.assertEqual(
             sum(route.availability == "enabled" for route in active.routes),
-            len(V4_ENABLED_ROUTE_IDS),
+            len(V5_ENABLED_ROUTE_IDS),
         )
         self.assertEqual(
             sum(route.availability == "enabled" for route in historical_v1.routes), 2
@@ -260,6 +265,10 @@ class RouteRegistryTests(unittest.TestCase):
         self.assertEqual(
             sum(route.availability == "enabled" for route in historical_v2.routes),
             len(V2_ENABLED_ROUTE_IDS),
+        )
+        self.assertEqual(
+            sum(route.availability == "enabled" for route in historical_v4.routes),
+            len(V4_ENABLED_ROUTE_IDS),
         )
 
 

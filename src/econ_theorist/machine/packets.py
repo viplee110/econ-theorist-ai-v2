@@ -25,7 +25,7 @@ from .operational import (
     ProjectOperationalLayout,
     write_immutable_operational,
 )
-from .resources import NAVIGATION_REGISTRY_V1_HASH
+from .resources import NAVIGATION_REGISTRY_HASH
 
 
 _HIDDEN_COMPARTMENTS_BY_ROUTE: dict[str, tuple[str, ...]] = {
@@ -186,7 +186,7 @@ def compile_work_packet(
         or manifest.route_registry_hash != key.route_registry_hash
         or manifest.instruction_bundle_hash != key.instruction_bundle_hash
         or manifest.selector_version != key.context_selector_version
-        or key.navigation_registry_hash != NAVIGATION_REGISTRY_V1_HASH
+        or key.navigation_registry_hash != NAVIGATION_REGISTRY_HASH
     ):
         raise OperationalError("run/context differs from the navigation candidate key")
     route = get_route(

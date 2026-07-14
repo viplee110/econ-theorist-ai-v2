@@ -1092,9 +1092,39 @@ class RouteRegistryV4(StrictModel):
         return self
 
 
-RouteSpecLike: TypeAlias = RouteSpec | RouteSpecV2 | RouteSpecV3 | RouteSpecV4
+class RouteSpecV5(RouteSpecV4):
+    """Catalog-bound additive Phase 5 framing-audit route contract.
+
+    Registry v5 carries every v4 route with unchanged semantics and adds only
+    the framing-economics audit at route version 5.  Payload validation and
+    execution dispatch remain independent from this catalog model.
+    """
+
+    route_version: Literal[2, 3, 4, 5] = 2
+
+
+class RouteRegistryV5(StrictModel):
+    registry_version: Literal[5] = 5
+    aliases: dict[StableId, StableId] = Field(default_factory=dict)
+    routes: Annotated[tuple[RouteSpecV5, ...], Field(min_length=1)]
+
+    @model_validator(mode="after")
+    def _route_ids_are_unique(self) -> "RouteRegistryV5":
+        route_ids = [route.route_id for route in self.routes]
+        if len(set(route_ids)) != len(route_ids):
+            raise ValueError("route registry contains duplicate exact IDs")
+        return self
+
+
+RouteSpecLike: TypeAlias = (
+    RouteSpec | RouteSpecV2 | RouteSpecV3 | RouteSpecV4 | RouteSpecV5
+)
 RouteRegistryLike: TypeAlias = (
-    RouteRegistry | RouteRegistryV2 | RouteRegistryV3 | RouteRegistryV4
+    RouteRegistry
+    | RouteRegistryV2
+    | RouteRegistryV3
+    | RouteRegistryV4
+    | RouteRegistryV5
 )
 
 

@@ -22,9 +22,11 @@ from ..legacy_boundary import (
     snapshot_has_phase2_material,
     snapshot_has_phase3_material,
     snapshot_has_phase4_material,
+    snapshot_has_phase5_material,
     transaction_introduces_phase2_material,
     transaction_introduces_phase3_material,
     transaction_introduces_phase4_material,
+    transaction_introduces_phase5_material,
 )
 from ..models import (
     ArtifactRegistration,
@@ -37,6 +39,7 @@ from ..policy import (
     ROUTE_REGISTRY_V1_HASH,
     ROUTE_REGISTRY_V2_HASH,
     ROUTE_REGISTRY_V3_HASH,
+    ROUTE_REGISTRY_V4_HASH,
 )
 from .faults import inject_fault
 from .layout import StoreLayout
@@ -587,9 +590,11 @@ def _validate_live_registry_boundary(
             transaction
         ) or transaction_introduces_phase3_material(
             transaction
-        ) or transaction_introduces_phase4_material(transaction):
+        ) or transaction_introduces_phase4_material(
+            transaction
+        ) or transaction_introduces_phase5_material(transaction):
             raise CandidateError(
-                "frozen v1 live writes cannot create or mutate packed Phase 2/3/4 "
+                "frozen v1 live writes cannot create or mutate packed Phase 2/3/4/5 "
                 "entities or register blind candidate locks"
             )
         return
@@ -600,9 +605,11 @@ def _validate_live_registry_boundary(
             )
         if transaction_introduces_phase3_material(
             transaction
-        ) or transaction_introduces_phase4_material(transaction):
+        ) or transaction_introduces_phase4_material(
+            transaction
+        ) or transaction_introduces_phase5_material(transaction):
             raise CandidateError(
-                "frozen v2 live writes cannot create or mutate packed Phase 3/4 entities"
+                "frozen v2 live writes cannot create or mutate packed Phase 3/4/5 entities"
             )
         return
     if route_registry_hash == ROUTE_REGISTRY_V3_HASH:
@@ -610,9 +617,21 @@ def _validate_live_registry_boundary(
             raise CandidateError(
                 "frozen v3 routes are replay-only after Phase 4 material enters a project"
             )
-        if transaction_introduces_phase4_material(transaction):
+        if transaction_introduces_phase4_material(
+            transaction
+        ) or transaction_introduces_phase5_material(transaction):
             raise CandidateError(
-                "frozen v3 live writes cannot create or mutate packed Phase 4 entities"
+                "frozen v3 live writes cannot create or mutate packed Phase 4/5 entities"
+            )
+        return
+    if route_registry_hash == ROUTE_REGISTRY_V4_HASH:
+        if base_snapshot is not None and snapshot_has_phase5_material(base_snapshot):
+            raise CandidateError(
+                "frozen v4 routes are replay-only after Phase 5 material enters a project"
+            )
+        if transaction_introduces_phase5_material(transaction):
+            raise CandidateError(
+                "frozen v4 live writes cannot create or mutate packed Phase 5 entities"
             )
 
 
@@ -759,6 +778,7 @@ def preflight_candidate(
         base_snapshot,
         transaction,
         route_registry_hash=route_registry_hash,
+        enforce_live_current_policy=True,
     )
     if candidate_snapshot.head != digest:
         raise CandidateError(
@@ -855,6 +875,7 @@ def commit_prepared(
             base_snapshot,
             transaction,
             route_registry_hash=route_registry_hash,
+            enforce_live_current_policy=True,
         )
         if committed_snapshot.head != digest:
             raise CandidateError(

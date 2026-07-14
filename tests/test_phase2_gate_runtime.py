@@ -6,9 +6,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tests.helpers import REPOSITORY_ROOT  # noqa: F401  # installs src
+from tests.helpers import (  # noqa: F401  # installs src
+    REPOSITORY_ROOT,
+    install_pre_v5_historical_g1_transaction,
+)
 
-from econ_theorist.decisions import commit_decision
+from econ_theorist.decisions import DecisionInputError, commit_decision
 from econ_theorist.models import (
     Actor,
     ChangedFacets,
@@ -564,9 +567,25 @@ class Phase2GateRuntimeTests(unittest.TestCase):
         self, dossier: EntityVersion, *, decision_id: str
     ) -> Decision:
         decision = self._decision(dossier, decision_id=decision_id)
-        result = commit_decision(self.layout, decision)
-        self.assertEqual(result.status, "committed")
-        self.snapshot = replay(self.layout)
+        # Preserve this module's frozen Phase 2 gate-chain fixtures. New live
+        # G1 actions are covered by the additive framing-quality route tests.
+        self.snapshot = install_pre_v5_historical_g1_transaction(
+            self.layout,
+            Transaction(
+                transaction_id=f"transaction.historical.{decision_id}",
+                origin="human_decision",
+                project_id=PROJECT_ID,
+                base_revision=self.snapshot.head,
+                route_run_id=f"run.historical.{decision_id}",
+                actor=decision.decider,
+                intent="Record one historical Phase 2 G1 Decision.",
+                operations=(RecordDecisionOp(decision=decision),),
+                privacy=decision.privacy,
+                access_compartments=decision.access_compartments,
+                created_at=decision.decided_at,
+                parent_transaction_hash=self.snapshot.head,
+            ),
+        )
         return decision
 
     def _unbound_gated_transaction(
@@ -649,7 +668,9 @@ class Phase2GateRuntimeTests(unittest.TestCase):
             decision_id="decision.g1.bad.scope",
             scope_ref=self.snapshot.project_id,
         )
-        with self.assertRaisesRegex(CandidateValidationError, "scope_ref"):
+        with self.assertRaisesRegex(
+            (CandidateValidationError, DecisionInputError), "scope"
+        ):
             commit_decision(self.layout, bad_scope)
         self.assertEqual(replay(self.layout).head, base_head)
 
@@ -658,7 +679,7 @@ class Phase2GateRuntimeTests(unittest.TestCase):
             decision_id="decision.g1.agent.confirmation",
             decider=AGENT,
         )
-        with self.assertRaises(CandidateValidationError):
+        with self.assertRaises((CandidateValidationError, DecisionInputError)):
             commit_decision(self.layout, agent_confirmation)
         self.assertEqual(replay(self.layout).head, base_head)
 
@@ -687,9 +708,23 @@ class Phase2GateRuntimeTests(unittest.TestCase):
             dossier,
             decision_id="decision.g1.gate.runtime",
         )
-        decision_result = commit_decision(self.layout, decision)
-        self.assertEqual(decision_result.status, "committed")
-        self.snapshot = replay(self.layout)
+        self.snapshot = install_pre_v5_historical_g1_transaction(
+            self.layout,
+            Transaction(
+                transaction_id="transaction.historical.decision.g1.gate.runtime",
+                origin="human_decision",
+                project_id=PROJECT_ID,
+                base_revision=self.snapshot.head,
+                route_run_id="run.historical.decision.g1.gate.runtime",
+                actor=decision.decider,
+                intent="Record the historical exact G1 Decision.",
+                operations=(RecordDecisionOp(decision=decision),),
+                privacy=decision.privacy,
+                access_compartments=decision.access_compartments,
+                created_at=decision.decided_at,
+                parent_transaction_hash=self.snapshot.head,
+            ),
+        )
         self.assertEqual(
             self.snapshot.current_decisions[decision.decision_id], decision.version
         )

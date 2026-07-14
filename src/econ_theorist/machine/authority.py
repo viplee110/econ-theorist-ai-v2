@@ -470,14 +470,28 @@ def confirm_decision_with_receipt(
                 }
             )
         )
-        result = commit_decision(
-            layout,
-            decision,
-            expected_head=challenge.head,
-            transaction_id=f"txn_decision_{seed[:48]}",
-            route_run_id=f"run_decision_{seed[:48]}",
-            created_at=receipt.issued_at,
-        )
+        try:
+            result = commit_decision(
+                layout,
+                decision,
+                expected_head=challenge.head,
+                transaction_id=f"txn_decision_{seed[:48]}",
+                route_run_id=f"run_decision_{seed[:48]}",
+                created_at=receipt.issued_at,
+            )
+        except DecisionInputError as exc:
+            _append_event(
+                operational,
+                receipt.receipt_id,
+                event="terminal_failure",
+                operation_key=operation_key,
+                request_digest=request_digest,
+                payload_hash=decision_digest,
+                recorded_at=timestamp,
+            )
+            raise ApprovalError(
+                f"canonical Decision preflight rejected the approval: {exc}"
+            ) from exc
         if result.status != "committed" or result.head_after is None:
             _append_event(
                 operational,

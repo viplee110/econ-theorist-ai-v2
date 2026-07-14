@@ -18,6 +18,7 @@ from .legacy_boundary import (
     snapshot_has_phase2_material,
     snapshot_has_phase3_material,
     snapshot_has_phase4_material,
+    snapshot_has_phase5_material,
 )
 from .authoring_validation import (
     AuthoringValidationError,
@@ -26,6 +27,10 @@ from .authoring_validation import (
 from .profile_craft_validation import (
     ProfileCraftValidationError,
     validate_phase4_route_entry,
+)
+from .framing_quality_validation import (
+    FramingQualityValidationError,
+    validate_phase5_route_entry,
 )
 from .models import (
     Actor,
@@ -36,6 +41,7 @@ from .models import (
     RouteSpecV2,
     RouteSpecV3,
     RouteSpecV4,
+    RouteSpecV5,
     Snapshot,
 )
 from .policy import (
@@ -46,8 +52,10 @@ from .policy import (
     ROUTE_REGISTRY_V1_HASH,
     ROUTE_REGISTRY_V2_HASH,
     ROUTE_REGISTRY_V3_HASH,
+    ROUTE_REGISTRY_V4_HASH,
     V3_NATIVE_ROUTE_IDS,
     V4_NATIVE_ROUTE_IDS,
+    V5_NATIVE_ROUTE_IDS,
     decision_registry_version_for_route,
     instruction_bundle_bytes,
     registry_hash_for_route,
@@ -354,7 +362,21 @@ def validate_run_entry(
         raise RouteEntryError(
             "frozen v3 routes are replay-only after Phase 4 material enters a project"
         )
-    if isinstance(route, RouteSpecV4) and route.route_id in V4_NATIVE_ROUTE_IDS:
+    if (
+        registry_hash_for_route(route) == ROUTE_REGISTRY_V4_HASH
+        and snapshot_has_phase5_material(snapshot)
+    ):
+        raise RouteEntryError(
+            "frozen v4 routes are replay-only after Phase 5 material enters a project"
+        )
+    if isinstance(route, RouteSpecV5) and route.route_id in V5_NATIVE_ROUTE_IDS:
+        try:
+            validate_phase5_route_entry(snapshot, route, focus_tuple, actor=actor)
+        except FramingQualityValidationError as exc:
+            raise RouteEntryError(
+                f"Phase 5 framing route entry rejected {route.route_id}: {exc}"
+            ) from exc
+    elif isinstance(route, RouteSpecV4) and route.route_id in V4_NATIVE_ROUTE_IDS:
         try:
             validate_phase4_route_entry(snapshot, route, focus_tuple, actor=actor)
         except ProfileCraftValidationError as exc:
@@ -626,7 +648,16 @@ def provenance_bytes(layout: StoreLayout, route_run_id: str) -> dict[str, bytes]
         privacy_clearance=run.privacy_clearance,
         route_registry_hash=manifest.route_registry_hash,
     )
-    if isinstance(route, RouteSpecV4) and route.route_id in V4_NATIVE_ROUTE_IDS:
+    if isinstance(route, RouteSpecV5) and route.route_id in V5_NATIVE_ROUTE_IDS:
+        try:
+            validate_phase5_route_entry(
+                snapshot, route, run.focus_entity_ids, actor=run.actor
+            )
+        except FramingQualityValidationError as exc:
+            raise RouteEntryError(
+                f"Phase 5 framing route entry no longer recompiles: {exc}"
+            ) from exc
+    elif isinstance(route, RouteSpecV4) and route.route_id in V4_NATIVE_ROUTE_IDS:
         try:
             validate_phase4_route_entry(
                 snapshot, route, run.focus_entity_ids, actor=run.actor

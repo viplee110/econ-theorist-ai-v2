@@ -38,7 +38,7 @@ from .models import (
 )
 from .resources import (
     HOST_MANIFEST_V1_HASH,
-    NAVIGATION_REGISTRY_V1_HASH,
+    NAVIGATION_REGISTRY_HASH,
     load_compatibility_support,
     load_host_manifest,
     load_navigation_registry,
@@ -475,7 +475,7 @@ def build_engine_manifest(
         ),
         resources=resources,
         host_manifest_hash=HOST_MANIFEST_V1_HASH,
-        navigation_registry_hash=NAVIGATION_REGISTRY_V1_HASH,
+        navigation_registry_hash=NAVIGATION_REGISTRY_HASH,
     )
     return EngineManifestV1(
         engine_version=__version__,
@@ -532,7 +532,7 @@ def current_engine_semantics_hash() -> str:
                 "dependency_versions": dependencies,
                 "resources": resources,
                 "host_manifest_hash": HOST_MANIFEST_V1_HASH,
-                "navigation_registry_hash": NAVIGATION_REGISTRY_V1_HASH,
+                "navigation_registry_hash": NAVIGATION_REGISTRY_HASH,
             }
         )
     )

@@ -27,6 +27,7 @@ where = ["src"]
   "routes/registry.v2.json",
   "routes/registry.v3.json",
   "routes/registry.v4.json",
+  "routes/registry.v5.json",
 ]
 "share/econ-theorist/routes/instructions" = [
   "routes/instructions/frame.question_and_benchmarks.v1.txt",
@@ -66,6 +67,7 @@ where = ["src"]
   "routes/instructions/compose.profiled_manuscript_unit.v4.txt",
   "routes/instructions/review.craft_realization.v4.txt",
   "routes/instructions/close.profile_craft_review.v4.txt",
+  "routes/instructions/audit.framing_economics.v5.txt",
 ]
 "share/econ-theorist/profiles" = [
   "profiles/catalog.v1.json",
@@ -81,6 +83,7 @@ where = ["src"]
 ]
 "share/econ-theorist/machine" = [
   "machine/navigation-registry.v1.json",
+  "machine/navigation-registry.v2.json",
   "machine/host-manifest.v1.json",
   "machine/compatibility-support.v1.json",
 ]
@@ -153,6 +156,9 @@ where = ["src"]
   "schemas/profile_craft/v1/reader-problem-diagnosis.schema.json",
   "schemas/profile_craft/v1/resolved-profile-stack.schema.json",
   "schemas/profile_craft/v1/target-profile.schema.json",
+]
+"share/econ-theorist/schemas/framing_quality/v1" = [
+  "schemas/framing_quality/v1/framing-quality-bundle.schema.json",
 ]
 "share/econ-theorist/schemas/machine/v1" = [
   "schemas/machine/v1/bootstrap-descriptor.schema.json",
