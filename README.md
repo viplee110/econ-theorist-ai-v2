@@ -2,46 +2,69 @@
 
 # 🧠 Econ Theorist AI v2
 
-### A mechanism-first research operating system for economic theory
+### Turn a promising idea into an economic argument you can defend.
 
-**From a sharp question to a traceable, testable, reader-ready argument.**
+**Give AI a research process — not just a writing prompt.**
+
+A mechanism-first operating system for pure and applied economic theory:
+from question and benchmark to mechanism, theorem, intuition, manuscript, and revision.
+
+Built to pursue the discipline expected in general-interest and leading field
+theory — without pretending any workflow can promise publication.
 
 <p>
-  <a href="#-what-it-does"><img alt="Focus: Economic Theory" src="https://img.shields.io/badge/Focus-Economic%20Theory-7C3AED"></a>
-  <a href="#-current-status"><img alt="Status: Research Preview" src="https://img.shields.io/badge/Status-Research%20Preview-F59E0B"></a>
+  <a href="#-from-an-idea-to-a-defensible-argument-in-five-moves"><img alt="Focus: Economic Theory" src="https://img.shields.io/badge/Focus-Economic%20Theory-7C3AED"></a>
+  <a href="#-what-exists-today"><img alt="Status: Research Preview" src="https://img.shields.io/badge/Status-Research%20Preview-F59E0B"></a>
   <a href="routes/registry.v5.json"><img alt="35 enabled routes" src="https://img.shields.io/badge/Routes-35%20enabled-0F766E"></a>
-  <a href="#-verification"><img alt="516 tests passed and 6 skipped" src="https://img.shields.io/badge/Tests-516%20passed%20%7C%206%20skipped-16A34A"></a>
+  <a href="#-evidence-and-verification"><img alt="522-test regression with 6 skips" src="https://img.shields.io/badge/Regression-522%20tests%20%7C%206%20skips-16A34A"></a>
   <a href="https://www.python.org/"><img alt="Python 3.11+" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white"></a>
   <a href="LICENSE"><img alt="Apache 2.0 license" src="https://img.shields.io/badge/License-Apache%202.0-3B82F6"></a>
 </p>
 
-**Mechanism first · Formal rigor · Intuition throughout.**
+**The theorem must survive mathematics. The mechanism must survive economics.<br>
+The exposition must survive a cold reader.**
 
-Built to pursue general-interest and leading field-journal standards — never to promise publication.
-
-**[Start the prepared public preview →](#-quick-start)**
+**[See the five-step journey ↓](#-from-an-idea-to-a-defensible-argument-in-five-moves)**
+&nbsp; · &nbsp;
+**[Try the prepared preview ↓](#-try-the-prepared-public-codex-preview-in-three-steps)**
 
 </div>
 
 ---
 
-## 🎯 Why V2 exists
+## 💸 The expensive part is not writing
+
+A general-purpose model can make a draft look like a paper in minutes. That is
+not the hard part of theory research.
+
+The expensive part is discovering — thirty pages later — that the benchmark
+was ill-defined, the supposed mechanism never changed a choice or equilibrium,
+a true theorem carries the wrong intuition, or an elegant model has no clear
+economic consequence. By then, notation, proofs, exposition, and positioning
+are entangled. The researcher pays the hidden bill: reconstructing the
+economics and rewriting the paper by hand.
 
 > **A good theory paper is not a theorem wearing an introduction.**
 
-Many AI paper workflows start writing too soon. They turn a loose idea into
-notation, find a tractable result, and attach generic intuition afterward. The
-output can be mathematically polished yet economically abstract, difficult to
-read, and expensive for a researcher to repair.
+Econ Theorist AI v2 is built to expose that research debt before it compounds.
+A writing prompt helps produce the next page. V2 asks whether the economics
+deserves the page.
 
-Econ Theorist AI v2 reverses that sequence. Before a result is treated as
-paper-ready, the workflow asks for the benchmark, primitives, the behavioral or
-equilibrium response that actually moves, the economic force or forces, causal
-chain, falsification tests, theorem boundary, and reader-facing intuition.
+## 🔗 V2 builds a chain of reasoning — not a pile of pages
 
-The result is more than generated prose: it is a versioned research process in
-which questions, assumptions, claims, proofs, interpretations, revisions, and
-human decisions remain traceable.
+V2 is not a prompt collection. It is an executable, versioned research
+workflow built around the scientific commitments of a theory paper:
+
+> **Question → Benchmark → Primitives → Mechanism → Predictions → Results →
+> Intuition → Manuscript → Revision**
+
+Each committed object is versioned and provenance-linked. Consequential
+dependencies and promotion decisions are explicit, so later work cannot
+silently redefine the accepted argument. Validators and review findings can
+localize affected objects and identify which route must be reconsidered.
+
+The manuscript is therefore an output of the research process — not a
+substitute for it.
 
 > [!NOTE]
 > V2 is for **pure and applied economic theory**. It does not provide
@@ -49,38 +72,75 @@ human decisions remain traceable.
 > workflows. Numerical and formal tools are used only to discover, falsify, or
 > verify theoretical claims.
 
-## ✨ What it does
+## 🧭 From an idea to a defensible argument in five moves
 
-- 🧭 **Frames the economics** — pins down the question, benchmark, primitives,
-  and the behavioral or equilibrium response that drives the result; then
-  checks what each benchmark truly holds fixed.
-- 🧪 **Falsifies early** — uses hand-solvable examples, ablations, rival
-  mechanisms, and counterexamples before expensive formalization.
-- ∑ **Builds trustworthy results** — links assumptions, theorem statements,
-  proof obligations, verification evidence, interpretation, and boundaries.
-- 💬 **Makes intuition readable and auditable** — important explanations must
-  let a reader recover the benchmark, force, causal chain, and nearby cases;
-  manuscript claims remain connected to the validated economics.
-- 🔁 **Repairs selectively** — a revision invalidates only its real dependents
-  instead of silently regenerating the entire paper.
-- 🧑‍🔬 **Keeps researchers in control** — structural scientific choices remain
-  human-controlled; external release, submission, and destructive actions
-  require explicit authorization.
+### 1. Find the question worth carrying
 
-## 🗺️ How the research route works
+Start from an economic puzzle and an exact benchmark. Clarify what the
+benchmark explains, what it misses, why the answer matters, and what would kill
+the project before months are invested in it.
+
+**Outcome:** a sharply answerable research question with a meaningful
+comparison and an explicit kill condition — not a topic looking for a model.
+
+### 2. Make the economic logic visible
+
+Decompose the primitives and identify the paper's result archetype. The
+decisive economic logic need not be a comparative-static mechanism: it may be
+an equilibrium feedback, the role of an axiom, the minimal conflict behind an
+impossibility, or the mapping behind a representation. Solve the smallest
+useful example and freeze predictions before the full derivation can rewrite
+the original idea.
+
+**Outcome:** economic logic that can be explained before it disappears inside
+notation.
+
+### 3. Try to kill the idea while it is still cheap to change
+
+Run ablations, rival explanations or representations, boundary cases, and
+counterexample searches. Weak stories should fail early. Claims are narrowed,
+revised, or rejected according to what survives.
+
+**Outcome:** an economic argument that has earned the cost of formalization.
+
+### 4. Build the result with proof obligations and intuition attached
+
+Compare formal implementations, state the theorem boundary, record proof
+obligations, and audit the economic interpretation separately from proof
+status and formal validity. Then turn the reviewed argument into the sequence
+of questions a reader must understand.
+
+**Outcome:** a result whose formal status and economic logic are explicit and
+separately reviewable.
+
+### 5. Write, test, and revise without losing the science
+
+Turn the accepted argument into reader-facing manuscript units whose claims
+remain linked to the economics behind them. Run separate formal-fidelity,
+economic-reader, and cold-reader checks. When an assumption or claim changes,
+reopen the affected proof, intuition, and prose while preserving independent
+work.
+
+**Outcome:** an argument that can evolve without losing the evidence,
+boundaries, and decisions that support it.
+
+Between these moves, the researcher explicitly decides whether to promote the
+question and benchmarks, economic logic, formal base, central result, and
+validated argument.
 
 ```mermaid
 flowchart TD
     Q["💡 Economic question"] --> B["🧭 Benchmark & primitives"]
-    B --> F{"🔎 Framing-quality preflight"}
-    F -->|"Revise"| B
-    F -->|"Pass"| M["🧪 Mechanism stress tests"]
-    M --> T["∑ Model, theorem & proof"]
-    T --> E["💬 Economic interpretation"]
-    E --> W["✍️ Reader-ready manuscript"]
-    W --> R{"👁 Cold-reader & referee audit"}
-    R -->|"Targeted repair"| M
-    R -->|"Ready"| H["🧑‍🔬 Human submission decision"]
+    B --> M["🔎 Mechanism, conflict or mapping"]
+    M --> K{"🧪 Survives rivals, examples & ablations?"}
+    K -->|"Revise or kill"| B
+    K -->|"Earns formalization"| T["∑ Model, theorem & proof obligations"]
+    T --> I["💬 Economic interpretation & reader path"]
+    I --> W["✍️ Reader-facing manuscript"]
+    W --> R{"👁 Formal, economic & cold-reader audit"}
+    R -->|"Targeted repair"| X["Reopen the affected link"]
+    X --> R
+    R -->|"Ready for human judgment"| H["🧑‍🔬 Researcher decision"]
 
     classDef idea fill:#EDE9FE,stroke:#7C3AED,color:#1F2937;
     classDef science fill:#CCFBF1,stroke:#0F766E,color:#1F2937;
@@ -89,116 +149,164 @@ flowchart TD
     classDef human fill:#DCFCE7,stroke:#16A34A,color:#1F2937;
 
     class Q,B idea;
-    class M,E science;
+    class M,I,X science;
     class T,W formal;
-    class F,R gate;
+    class K,R gate;
     class H human;
 ```
 
-The current V5 pre-G1 path is deliberately concrete:
+## 🚀 Try the prepared public Codex preview in three steps
 
-```text
-frame.question_and_benchmarks
-→ decompose.primitives
-→ audit.framing_economics
-→ human G1 decision
-```
+**Target experience:** install once, then enable V2 in any paper project with
+one sentence.
 
-Only a human can promote the central question and benchmarks. Later gates do
-the same for the mechanism, formal base, main result, and argument spine;
-external release remains a separate human-only action.
+The prepared preview below is the first working slice of that experience. It
+runs inside a cloned source checkout and initializes one public theory project
+there. You do not need to learn route names, schemas, or state commands.
 
-## 🚀 Quick start
+> [!CAUTION]
+> The current Codex bridge is **public-only**. Use only public or deliberately
+> synthetic research content. This preview has demonstrated one natural-language
+> handoff into a route-valid canonical commit; a fresh real-model run through
+> the V5 framing audit and a complete paper run remain unproved. Clean first-use
+> activation in an arbitrary paper directory, positive private execution, and
+> Claude Code/Cursor parity also remain pending.
 
-### Prepared public preview — Codex checkout
+### Before you start
 
-#### 1. Set up the checkout
+You need [Git](https://git-scm.com/), [Python 3.11+](https://www.python.org/),
+and Codex.
+
+### 1. Prepare the checkout — first time only
 
 ```bash
 git clone https://github.com/viplee110/econ-theorist-ai-v2.git
 cd econ-theorist-ai-v2
+python --version
 python -m venv .venv
 ```
 
-Activate the environment:
+The reported version must be 3.11 or newer. On Windows, if `python` is
+unavailable but the Python launcher is installed, use `py -3` in those two
+commands. On macOS or Linux, use `python3` if `python` is unavailable.
+
+Install and check the engine without activating the environment:
 
 ```powershell
 # Windows PowerShell
-.\.venv\Scripts\Activate.ps1
+.\.venv\Scripts\python.exe -m pip install -e .
+.\.venv\Scripts\etai.exe doctor
 ```
 
 ```bash
 # macOS / Linux
-source .venv/bin/activate
+./.venv/bin/python -m pip install -e .
+./.venv/bin/etai doctor
 ```
 
-Then install and check the engine:
+The checkout is ready when `doctor` reports `"required_ok": true`.
 
-```bash
-python -m pip install -e .
-etai doctor
-```
+### 2. Open the exact cloned root in Codex
 
-#### 2. Open the checkout in Codex
+Open the `econ-theorist-ai-v2` directory itself — the folder containing
+`.agents`, `pyproject.toml`, and this README.
 
-#### 3. Say this
+### 3. Paste one safe public instruction
 
 ```text
-Use $econ-theorist-v2 in this repository.
-
-Initialize a public theory project named "My Theory Project" and study this
-question: [describe the economic problem].
-
-Target [general-interest theory / a leading field journal]. Stop at every
-substantive human decision gate.
+Use $econ-theorist-v2 in this exact repository root. Initialize a public theory
+project called "My Theory Project" and complete only the first engine-selected
+framing route. Research question: [a public or deliberately synthetic economic
+question]. Stop after the first route-valid canonical commit or whenever my
+judgment is required. Do not continue to another route.
 ```
 
-Codex uses the repository's thin project skill and the engine-owned
-`etai codex invoke` bridge in the background. The engine chooses the legal next
-research task, supplies only the relevant context, validates the result, and
-records only accepted scientific state.
+<details>
+<summary><strong>Ready-to-paste public demo</strong></summary>
 
-> [!CAUTION]
-> The current Codex bridge is **public-only**. Do not provide non-public research
-> content through it. Clean first-use installation, positive private execution,
-> and Claude Code/Cursor parity remain pending.
+```text
+Use $econ-theorist-v2 in this exact repository root. Initialize a public theory
+project called "Consumable Quality Certificates" and complete only the first
+engine-selected framing route. Ask whether lowering the cost of a truthful but
+consumable quality certificate can reduce buyer search by changing the
+composition of the uncertified pool. Stop after the first route-valid canonical
+commit or whenever my judgment is required. Do not continue to another route.
+```
+
+This synthetic question is adapted from the repository's recorded public
+Codex pilot.
+
+</details>
+
+### What happens after you press Enter
+
+1. V2 reads the current scientific state.
+2. It selects the next legal, bounded research task.
+3. It gives the model only the context needed for that task.
+4. It applies the selected route's schema, domain, lineage, freshness,
+   project-policy, and authority validators.
+5. It commits only validator-accepted state, preserves disclosed failures, and
+   pauses at substantive human gates.
 
 <details>
 <summary><strong>Direct terminal path</strong></summary>
-
-After installing the package, initialize a paper directory explicitly:
 
 ```bash
 etai --project /path/to/paper init --name "My theory project"
 etai --project /path/to/paper validate
 etai --project /path/to/paper status
-```
-
-Advanced users can open the first route directly:
-
-```bash
 etai --project /path/to/paper begin frame.question_and_benchmarks
 ```
 
-The machine protocol and Codex bridge remain the preferred hosted interfaces.
-The lower-level `begin`, `stage`, `commit`, `decide`, `stale`, and `recover`
-commands exist for testing, automation, inspection, and recovery — not as a
-second scientific workflow.
+The machine protocol and Codex bridge remain the preferred host-facing
+interfaces. The lower-level commands exist for testing, automation,
+inspection, and recovery — not as a second scientific workflow.
 
 </details>
 
-## 🔁 Why revisions do not become full rewrites
+## ⚡ What changes when AI works inside a research system
 
-Every important object carries an exact version and dependency lineage. When a
-benchmark, primitive, assumption, or claim changes, V2 derives the smallest
-affected subgraph and sends only that material back through repair and review.
+| Research task | Risk in an unstructured AI session | V2 control |
+|---|---|---|
+| **Where research begins** | Drafting starts before the benchmark is fixed | Require a question, exact benchmark, and kill condition |
+| **How an idea earns formalization** | Plausibility is mistaken for evidence | Run rivals, examples, ablations, and counterexamples first |
+| **How results are judged** | Proof status and intuition are blended | Review formal validity and economic interpretation separately |
+| **What the system remembers** | Decisions disappear into the conversation | Preserve versioned decisions, predictions, claims, and dependencies |
+| **What happens after a revision** | Broad regeneration hides what changed | Invalidate, repair, and revalidate exact dependents |
+| **Who controls the science** | Core choices drift inside the chat | Reserve structural decisions for the researcher |
+
+> **The AI may propose. The validators may reject. Only the researcher can
+> promote a structural scientific decision.**
+
+## 🧠 Research history should compound — not disappear into chat
+
+**Chat threads accumulate words. V2 accumulates research state.**
+
+Accepted benchmarks remain visible. Failed predictions are not erased.
+Theorem boundaries travel with their claims. Human decisions remain visible
+and govern later work until explicitly superseded. Reviewer objections can be
+traced to the objects they challenge. Revisions preserve work that is still
+valid.
+
+The goal is not to replace the economist's judgment. It is to make that
+judgment compound instead of evaporating at the end of every session.
+
+## ♻️ Change one assumption. Keep everything that still holds.
+
+Suppose a researcher changes a search-cost benchmark. Some comparative
+statics, proofs, interpretations, and manuscript paragraphs may depend on that
+benchmark. An independent lemma may not.
+
+V2 records those dependencies explicitly. When the dependency structure
+permits, it marks only the affected facets and objects as stale, sends that path
+through repair and fresh review, and leaves independent results available.
 
 ```mermaid
 flowchart LR
-    C["A primitive or benchmark changes"] --> D["Dependency graph finds the affected claims"]
-    D --> S["Only dependent objects become stale"]
-    S --> X["Exact repair route reruns"]
-    X --> V["Proof, intuition & prose are revalidated"]
+    C["A benchmark or assumption changes"] --> D["Dependency graph finds what relies on it"]
+    D --> S["Affected claims, proofs, intuition & prose become stale"]
+    S --> X["Affected route or repair path reruns"]
+    X --> V["Changed work is revalidated"]
     D -.-> U["Independent results remain fresh"]
 
     classDef change fill:#FEE2E2,stroke:#DC2626,color:#1F2937;
@@ -210,12 +318,62 @@ flowchart LR
     class V,U result;
 ```
 
-This is the central efficiency bet of V2: spend machine effort early on exact
-diagnosis and validation so that researchers spend less time reconstructing
-the argument or rewriting unaffected parts later. The comparative human-effort
-claim remains to be tested in Phase 6.
+This is **selective scientific revision**, not cosmetic editing. V2's central
+efficiency hypothesis is that more exact diagnosis early can mean less
+reconstruction and less human rewriting later. Phase 6 will test that
+hypothesis against V1 using model tokens, machine time, revision scope, and
+active researcher effort.
 
-## 🧩 What sits under the hood
+## 🏛️ Built for ambition. Measured with humility.
+
+Top-journal ambition is not a style prompt. It is a higher burden of argument.
+At that standard, correctness is only the floor. A paper needs a consequential
+question or conceptual update; archetype-appropriate economic logic that
+survives serious alternatives; intuition that lets a reader reconstruct the
+result; and exposition that carries the central insight to a nearby case.
+
+V2 represents those burdens through explicit scientific gates, review routes,
+and audience profiles. Profiles can change emphasis, never the correctness
+floor. V2 does not imitate Econometrica prose or dress a field contribution in
+general-interest rhetoric.
+
+**Top-journal ambition is the target. Evidence decides whether the system is
+getting closer.**
+
+## 🚦 What exists today
+
+### Implemented in the current engine
+
+- ✅ Typed, versioned research state with immutable transactions and replay
+- ✅ Thirty-five enabled, bounded research routes
+- ✅ Deterministic scientific, lineage, freshness, privacy, and authority checks
+- ✅ Human G1–G5 promotion gates; no external-release route is enabled, and any
+  future release remains L3 human-controlled
+- ✅ Dependency-driven invalidation and bounded repair/revision routes
+- ✅ Paper IR and manuscript-unit routes with formal-fidelity, economic-reader,
+  cold-reader, and profile/craft review
+- ✅ One recorded public Codex handoff from a natural-language question to a
+  canonical, route-valid `frame.question_and_benchmarks` commit
+- ✅ V5 pre-G1 framing-quality audit passing its deterministic acceptance suite
+
+### Still being tested or built
+
+- 🧪 Fresh real-model V5 pilot and held-out V1/V2 comparison
+- 🧪 Comparative readability, token, wall-time, and active-human-effort gains
+- 🚧 Clean first-use installation and positive private execution
+- 🚧 Claude Code and Cursor host parity
+- ⏳ End-to-end human–AI paper development at the intended quality bar
+
+> [!IMPORTANT]
+> Econ Theorist AI v2 is an experimental research system — not an autonomous
+> economist, a truth oracle, or a publication guarantee. It can enforce a more
+> disciplined and traceable process; novelty, economic judgment, correctness,
+> authorship, and submission responsibility remain with the researchers.
+
+## 🧩 Technical depth
+
+<details>
+<summary><strong>How the engine is organized</strong></summary>
 
 | Layer | Purpose |
 |---|---|
@@ -226,30 +384,19 @@ claim remains to be tested in Phase 6.
 | **Human gates** | AI may explore provisionally, while structural research choices and submission remain human-owned. |
 | **Bounded manuscript compiler** | Validated argument objects feed Paper IR, reader paths, manuscript units, and independent review. |
 
-## 🚦 Current status
+The current V5 pre-G1 path is:
 
-- ✅ Deterministic scientific-state kernel and accepted Phase 1–4 routes
-- ✅ IDE-neutral machine protocol and local machine facade
-- ✅ Recorded public Codex route from natural language to a validated research-state commit
-- ✅ V5 framing-quality preflight passes deterministic acceptance
-- ✅ Thirty-five enabled routes and seven checked schema/resource exporters
-- 🧪 Fresh real-model V5 pilot and held-out V1/V2 comparison pending
-- 🚧 Clean first-use installer, positive private execution, and broader IDE
-  adapters pending
-- ⏳ Complete autonomous paper generation and lower human effort not yet
-  demonstrated
+```text
+frame.question_and_benchmarks
+→ decompose.primitives
+→ audit.framing_economics
+→ human G1 decision
+```
 
-The latest deterministic V5 checkpoint completed **522 routine non-long tests**
-with six platform/optional skips. After the final independent review repair,
-the affected framing-quality route suite passed **14/14**.
+</details>
 
-> [!IMPORTANT]
-> Econ Theorist AI v2 is an experimental research system — not an autonomous
-> economist, a truth oracle, or a publication guarantee. It can enforce a more
-> disciplined and traceable process; novelty, economic judgment, correctness,
-> authorship, and submission responsibility remain with the researchers.
-
-## 📁 Project map
+<details>
+<summary><strong>Project map and architecture documents</strong></summary>
 
 ```text
 econ-theorist-ai-v2/
@@ -264,8 +411,6 @@ econ-theorist-ai-v2/
 └── tests/                 Positive, negative, adversarial, and replay checks
 ```
 
-## 📚 Start with these documents
-
 - [Architecture and constitution](ARCHITECTURE.md)
 - [Positive theory research kernel](docs/architecture/theory_kernel.md)
 - [State and runtime architecture](docs/architecture/state_runtime.md)
@@ -276,20 +421,21 @@ econ-theorist-ai-v2/
 - [V5 framing-quality preflight](docs/implementation/framing_quality_contract.md)
 - [V1 capability migration](docs/architecture/v1_migration.md)
 
-## 🧪 Verification
+</details>
+
+## 🧪 Evidence and verification
+
+The V5 deterministic checkpoint ran **522 routine non-long tests** with six
+platform/optional skips. After the final targeted review fix, the affected
+framing-quality route suite passed **14/14**. Seven schema and
+resource exporters, Python compilation, `doctor`, Markdown links, and diff
+checks also passed.
 
 <details>
 <summary><strong>Show verification commands</strong></summary>
 
-Run the routine deterministic suite:
-
 ```bash
 python scripts/run_non_long_tests.py
-```
-
-Verify every generated schema and packaged resource:
-
-```bash
 python scripts/export_schemas.py --check
 python scripts/export_theory_schemas.py --check
 python scripts/export_authoring_schemas.py --check
