@@ -21,26 +21,32 @@ Codex host over the engine-owned bridge.
 4. Set initialization intent only when the user explicitly asked to enable or
    initialize v2 in that root. Never infer permission to create genesis from a
    request merely to inspect or discuss a paper.
-5. Follow the bridge status exactly. Stop and surface the smallest necessary
+5. Send `requested_scope` and `framing_intent` only to start an unframed
+   project or when the user explicitly requests a new frame/reframe. Omit both
+   on every ordinary continuation after a committed route; their presence is
+   an explicit request to run framing again. If an omitted-input continuation
+   is blocked, surface its diagnostic rather than replaying the old framing
+   inputs to obtain a different route.
+6. Follow the bridge status exactly. Stop and surface the smallest necessary
    user choice for an ambiguous route, structural human gate, privacy blocker,
    incompatible root, repair requirement, or unsupported host capability.
-6. Treat the returned WorkPacket as the only scientific instruction, context,
+7. Treat the returned WorkPacket as the only scientific instruction, context,
    and output contract for the route. Do not supplement it with a remembered
    workflow, a journal stereotype, or instructions copied from another run.
-7. Write helper code only under the packet's shadow root and the candidate only
+8. Write helper code only under the packet's shadow root and the candidate only
    at its declared candidate path. Never edit canonical ObjectStore bytes or
    overwrite a human-owned paper or instruction file.
-8. Construct the candidate only from the ready response's
+9. Construct the candidate only from the ready response's
    `candidate_authoring_contract` and exact WorkPacket. Copy its same-named
    `transaction_bindings`, use only its `output_locations`, and follow its
    transaction/payload/relation schemas and output cardinalities. The bridge
    computes canonical identity from ordinary strict JSON. Do not read package source, tests,
    fixtures, or reference candidates to guess the Transaction shape. Concentrate
    model judgment on the economic content requested by the WorkPacket.
-9. Submit the candidate through the bridge's completion request. Report success
+10. Submit the candidate through the bridge's completion request. Report success
    only when the canonical response says the candidate was committed; a file
    write, plausible draft, or staged candidate is not completion.
-10. After interruption, invoke the same bridge request or inspect its recorded
+11. After interruption, invoke the same bridge request or inspect its recorded
     operation state. Preserve exact operation keys and bindings; do not create a
     replacement run merely because chat history is missing.
 

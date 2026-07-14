@@ -32,7 +32,10 @@ NAVIGATION_REGISTRY_V2_HASH = (
 NAVIGATION_REGISTRY_V3_HASH = (
     "fe285a46a1da5e1dd0f9c2953d0c6a6cf7474ff39129d53c5be96548548bf594"
 )
-NAVIGATION_REGISTRY_HASH = NAVIGATION_REGISTRY_V3_HASH
+NAVIGATION_REGISTRY_V4_HASH = (
+    "4027c38ffbc43af55f2c8fc1fd6bdf634024e9b7a3cc1e88b426c20556634833"
+)
+NAVIGATION_REGISTRY_HASH = NAVIGATION_REGISTRY_V4_HASH
 HOST_MANIFEST_V1_HASH = (
     "f9e254ddd20f01d765f9d056d18610796bb33ba07aaa2d971fe87b44dc0bd57a"
 )
@@ -92,8 +95,19 @@ class NavigationRegistryV3(StrictModel):
     routes: tuple[NavigationRoutePolicyV3, ...]
 
 
+class NavigationRegistryV4(StrictModel):
+    navigation_registry_schema: Literal[1]
+    navigation_registry_version: Literal[4]
+    route_registry_hash: Digest
+    max_candidate_sets: Annotated[int, Field(ge=1)]
+    routes: tuple[NavigationRoutePolicyV3, ...]
+
+
 NavigationRegistryLike: TypeAlias = (
-    NavigationRegistryV1 | NavigationRegistryV2 | NavigationRegistryV3
+    NavigationRegistryV1
+    | NavigationRegistryV2
+    | NavigationRegistryV3
+    | NavigationRegistryV4
 )
 
 
@@ -149,6 +163,11 @@ def _load_navigation_registry_resource(
                 canonical_json_bytes(raw), strict=True
             )
             expected_route_registry_hash = ROUTE_REGISTRY_V5_HASH
+        elif version == 4:
+            registry = NavigationRegistryV4.model_validate_json(
+                canonical_json_bytes(raw), strict=True
+            )
+            expected_route_registry_hash = ROUTE_REGISTRY_V5_HASH
         else:
             raise ValueError(f"unsupported navigation registry version: {version!r}")
     except ValueError as exc:
@@ -183,17 +202,17 @@ def _load_navigation_registry_resource(
 
 
 @lru_cache(maxsize=1)
-def load_navigation_registry() -> NavigationRegistryV3:
-    """Load the active v3 navigation policy bound to route registry v5."""
+def load_navigation_registry() -> NavigationRegistryV4:
+    """Load the active v4 navigation policy bound to route registry v5."""
 
     registry = _load_navigation_registry_resource(
-        "navigation-registry.v3.json", NAVIGATION_REGISTRY_V3_HASH
+        "navigation-registry.v4.json", NAVIGATION_REGISTRY_V4_HASH
     )
-    assert isinstance(registry, NavigationRegistryV3)
+    assert isinstance(registry, NavigationRegistryV4)
     return registry
 
 
-@lru_cache(maxsize=3)
+@lru_cache(maxsize=4)
 def load_navigation_registry_by_hash(
     navigation_registry_hash: str,
 ) -> NavigationRegistryLike:
@@ -203,6 +222,7 @@ def load_navigation_registry_by_hash(
         NAVIGATION_REGISTRY_V1_HASH: "navigation-registry.v1.json",
         NAVIGATION_REGISTRY_V2_HASH: "navigation-registry.v2.json",
         NAVIGATION_REGISTRY_V3_HASH: "navigation-registry.v3.json",
+        NAVIGATION_REGISTRY_V4_HASH: "navigation-registry.v4.json",
     }
     try:
         filename = resources[navigation_registry_hash]
@@ -232,6 +252,7 @@ def machine_resource_path(filename: str) -> Path:
         "navigation-registry.v1.json": NAVIGATION_REGISTRY_V1_HASH,
         "navigation-registry.v2.json": NAVIGATION_REGISTRY_V2_HASH,
         "navigation-registry.v3.json": NAVIGATION_REGISTRY_V3_HASH,
+        "navigation-registry.v4.json": NAVIGATION_REGISTRY_V4_HASH,
         "host-manifest.v1.json": HOST_MANIFEST_V1_HASH,
         "compatibility-support.v1.json": COMPATIBILITY_SUPPORT_V1_HASH,
     }.get(filename)
@@ -248,10 +269,12 @@ __all__ = [
     "NAVIGATION_REGISTRY_V1_HASH",
     "NAVIGATION_REGISTRY_V2_HASH",
     "NAVIGATION_REGISTRY_V3_HASH",
+    "NAVIGATION_REGISTRY_V4_HASH",
     "NavigationRegistryLike",
     "NavigationRegistryV1",
     "NavigationRegistryV2",
     "NavigationRegistryV3",
+    "NavigationRegistryV4",
     "NavigationRoutePolicyV1",
     "NavigationRoutePolicyV3",
     "load_compatibility_support",

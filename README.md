@@ -16,7 +16,7 @@ theory — without pretending any workflow can promise publication.
   <a href="#-from-an-idea-to-a-defensible-argument-in-five-moves"><img alt="Focus: Economic Theory" src="https://img.shields.io/badge/Focus-Economic%20Theory-7C3AED"></a>
   <a href="#-what-exists-today"><img alt="Status: Research Preview" src="https://img.shields.io/badge/Status-Research%20Preview-F59E0B"></a>
   <a href="routes/registry.v5.json"><img alt="35 enabled routes" src="https://img.shields.io/badge/Routes-35%20enabled-0F766E"></a>
-  <a href="#-evidence-and-verification"><img alt="522-test regression with 6 skips" src="https://img.shields.io/badge/Regression-522%20tests%20%7C%206%20skips-16A34A"></a>
+  <a href="#-evidence-and-verification"><img alt="530-test regression with 6 skips" src="https://img.shields.io/badge/Regression-530%20tests%20%7C%206%20skips-16A34A"></a>
   <a href="https://www.python.org/"><img alt="Python 3.11+" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white"></a>
   <a href="LICENSE"><img alt="Apache 2.0 license" src="https://img.shields.io/badge/License-Apache%202.0-3B82F6"></a>
 </p>
@@ -425,7 +425,7 @@ econ-theorist-ai-v2/
 
 ## 🧪 Evidence and verification
 
-The V5 deterministic checkpoint ran **522 routine non-long tests** with six
+The V5 deterministic checkpoint ran **530 routine non-long tests** with six
 platform/optional skips. After the final targeted review fix, the affected
 framing-quality route suite passed **14/14**. Seven schema and
 resource exporters, Python compilation, `doctor`, Markdown links, and diff

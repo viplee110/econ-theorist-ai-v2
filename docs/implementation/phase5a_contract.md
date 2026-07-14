@@ -726,6 +726,12 @@ multiple genuinely legal candidates.
 - A new genesis project may open the unique framing route when the user's
   request provides the required research question or explicitly requests
   framing.
+- `requested_scope` plus `framing_intent` means **frame or explicitly
+  reframe**. A host includes them for the first framing request, or for a later
+  reframe the user actually requested. After a committed route, an ordinary
+  continuation omits both fields so navigation can advance from current
+  scientific state. A host must surface a blocked no-brief continuation; it
+  must not replay the prior brief merely to make framing enterable again.
 - Open a new run only from an exact current head and exact legal route/focus.
 - Return a work packet and candidate workspace; do not return write access to
   canonical storage.

@@ -31,6 +31,9 @@ class Phase5A2CodexSkillTests(unittest.TestCase):
         self.assertIn("compatibility error instead of inspecting", text)
         self.assertIn("Keep Phase 5A execution single-agent", text)
         self.assertIn("Do not choose or reorder routes yourself", text)
+        self.assertIn("Omit both", text)
+        self.assertIn("on every ordinary continuation", text)
+        self.assertIn("rather than replaying the old framing", text)
 
         for route in load_route_registry().routes:
             self.assertNotIn(route.route_id, text)

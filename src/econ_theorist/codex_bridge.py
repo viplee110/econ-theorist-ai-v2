@@ -108,8 +108,20 @@ class CodexStartRequestV1(StrictModel):
     project_root: NonEmpty
     initialize: bool = False
     project_name: NonEmpty | None = None
-    requested_scope: NonEmpty | None = None
-    framing_intent: NonEmpty | None = None
+    requested_scope: NonEmpty | None = Field(
+        default=None,
+        description=(
+            "Initial framing or an explicitly requested reframe only. Omit for "
+            "ordinary continuation so the engine can select the next route."
+        ),
+    )
+    framing_intent: NonEmpty | None = Field(
+        default=None,
+        description=(
+            "Initial framing or an explicitly requested reframe only; provide "
+            "together with requested_scope and omit for ordinary continuation."
+        ),
+    )
     profile_request: NonEmpty | None = None
     budget_units: Annotated[int, Field(ge=1)] | None = None
     session: CodexSessionV1

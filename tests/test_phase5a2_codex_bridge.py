@@ -495,7 +495,7 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
         )
         self.assertEqual(replay(StoreLayout.at(self.root)).head, digest)
 
-    def test_omitted_budget_advances_from_one_decomposition_to_audit(self) -> None:
+    def test_omitted_decomposition_budget_and_explicit_audit_cap_are_exact(self) -> None:
         layout = StoreLayout.at(self.root)
         start_request = self._start_request()
         self.assertIsNone(start_request.budget_units)
@@ -523,18 +523,19 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
         )
         self.assertEqual(framing_completed.outcome, "committed", framing_completed)
 
-        decomposition = self.bridge.invoke(
-            CodexStartRequestV1(
-                project_root=str(self.root),
-                session=self.session.model_copy(
-                    update={"session_id": "codex-session-decomposition"}
-                ),
-            )
+        continuation_request = CodexStartRequestV1(
+            project_root=str(self.root),
+            session=self.session.model_copy(
+                update={"session_id": "codex-session-decomposition"}
+            ),
         )
+        self.assertIsNone(continuation_request.requested_scope)
+        self.assertIsNone(continuation_request.framing_intent)
+        decomposition = self.bridge.invoke(continuation_request)
         self.assertEqual(decomposition.outcome, "ready", decomposition)
         self.assertEqual(decomposition.work_packet.route_id, "decompose.primitives")
         self.assertEqual(
-            read_context(layout, decomposition.route_run_id).budget_units, 4_000
+            read_context(layout, decomposition.route_run_id).budget_units, 8_000
         )
         decomposition_transaction = self._decomposition_transaction(
             decomposition.route_run_id
@@ -564,16 +565,17 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
 
         audit_request = CodexStartRequestV1(
             project_root=str(self.root),
+            budget_units=10_000,
             session=self.session.model_copy(
                 update={"session_id": "codex-session-framing-audit"}
             ),
         )
-        self.assertIsNone(audit_request.budget_units)
+        self.assertEqual(audit_request.budget_units, 10_000)
         audit = self.bridge.invoke(audit_request)
         self.assertEqual(audit.outcome, "ready", audit)
         self.assertEqual(audit.work_packet.route_id, "audit.framing_economics")
         self.assertNotEqual(audit.work_packet.route_id, "decompose.primitives")
-        self.assertEqual(read_context(layout, audit.route_run_id).budget_units, 18_000)
+        self.assertEqual(read_context(layout, audit.route_run_id).budget_units, 10_000)
 
     def test_route_invalid_candidate_can_be_repaired_with_same_auto_digest_request(
         self,
@@ -956,6 +958,17 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
         request_schema = codex_bridge_schema("request")
         response_schema = codex_bridge_schema("response")
         self.assertIn("oneOf", request_schema)
+        start_properties = request_schema["$defs"]["CodexStartRequestV1"][
+            "properties"
+        ]
+        self.assertIn(
+            "Omit for ordinary continuation",
+            start_properties["requested_scope"]["description"],
+        )
+        self.assertIn(
+            "omit for ordinary continuation",
+            start_properties["framing_intent"]["description"],
+        )
         self.assertEqual(response_schema["title"], "CodexBridgeResponseV1")
         parsed = build_parser().parse_args(
             ["codex", "invoke", "--schema", "bundle"]
