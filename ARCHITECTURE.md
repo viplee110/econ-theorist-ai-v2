@@ -128,7 +128,9 @@ The detailed owners are:
 - state and execution substrate: `docs/architecture/state_runtime.md`;
 - authoring: `docs/architecture/manuscript_compiler.md`;
 - craft and target calibration: `docs/architecture/profiles_and_craft.md`;
-- evaluation: `docs/architecture/evaluation.md`.
+- optional upstream research-move design:
+  `docs/architecture/scientific_discovery_craft.md`;
+- evaluation: `docs/architecture/evaluation.md`;
 - integration walkthroughs: `docs/architecture/scenario_walkthroughs.md`.
 - Phase 5A host bootstrap, natural-language onboarding, and cross-host
   acceptance: `docs/implementation/phase5a_contract.md`.

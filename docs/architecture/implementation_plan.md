@@ -347,6 +347,14 @@ They do not establish complete-paper coverage, a broad production craft corpus,
 held-out quality superiority, lower human effort, external-LLM performance, or
 publication readiness.
 
+The evidence-informed discovery extension in
+`scientific_discovery_craft.md` is deliberately outside the accepted Phase 4
+behavior. It proposes a separate, noncanonical `ResearchMove` library for
+question, benchmark, model, mechanism, and theorem discovery; it does not
+overload the implemented local-exposition `CraftMove`, add a route or gate, or
+change live WorkPackets before source audit, held-out paired replication, and
+an experimental end-to-end pilot justify an incremental release.
+
 ## 7. Phase 5 -- host adaptation and controlled multi-agent execution
 
 Phase 5 is split into two ordered capability groups. Phase 5A makes the
