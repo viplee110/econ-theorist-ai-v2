@@ -1,0 +1,9 @@
+{
+    "started_at":  "2026-07-15T04:33:34.5325353+08:00",
+    "ended_at":  "2026-07-15T04:33:38.6312164+08:00",
+    "exit_code":  2,
+    "request_path":  "generator_artifacts\\009_decompose_complete_attempt_01_request.json",
+    "stdout_path":  "generator_artifacts\\009_decompose_complete_attempt_01_stdout.jsonl",
+    "stderr_path":  "generator_artifacts\\009_decompose_complete_attempt_01_stderr.txt",
+    "localappdata":  "C:\\tmp\\etai-v5_2-public-pilot-20260715\\.host-localappdata"
+}

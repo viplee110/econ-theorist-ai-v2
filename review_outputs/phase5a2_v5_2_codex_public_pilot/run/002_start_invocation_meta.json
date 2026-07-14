@@ -1,0 +1,9 @@
+{
+  "started_at": "2026-07-15T04:05:21.7838887+08:00",
+  "ended_at": "2026-07-15T04:05:26.2593644+08:00",
+  "exit_code": 2,
+  "request_path": "generator_artifacts\\001_start_request.json",
+  "localappdata": "C:\\tmp\\etai-v5_2-public-pilot-20260715\\.host-localappdata",
+  "mutated": false,
+  "outcome": "error"
+}

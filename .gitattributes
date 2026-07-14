@@ -8,3 +8,10 @@
 *.toml text eol=lf
 routes/instructions/* text eol=lf
 NOTICE text eol=lf
+
+# Preserve frozen pilot evidence byte-for-byte. Public redactions are disclosed
+# separately, but Git must not rewrite any retained evidence line endings.
+review_outputs/phase5a2_v5_2_codex_public_pilot/generator_case.md -text -eol
+review_outputs/phase5a2_v5_2_codex_public_pilot/evidence_inventory.json -text -eol
+review_outputs/phase5a2_v5_2_codex_public_pilot/run/** -text -eol
+review_outputs/phase5a2_v5_2_codex_public_pilot/canonical_store/** -text -eol

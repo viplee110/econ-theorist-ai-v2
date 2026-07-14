@@ -1,0 +1,9 @@
+{
+    "started_at":  "2026-07-15T04:50:30.0691184+08:00",
+    "ended_at":  "2026-07-15T04:50:36.7006781+08:00",
+    "exit_code":  2,
+    "request_path":  "generator_artifacts\\012_audit_complete_attempt_01_request.json",
+    "stdout_path":  "generator_artifacts\\012_audit_complete_attempt_01_stdout.jsonl",
+    "stderr_path":  "generator_artifacts\\012_audit_complete_attempt_01_stderr.txt",
+    "localappdata":  "C:\\tmp\\etai-v5_2-public-pilot-20260715\\.host-localappdata"
+}

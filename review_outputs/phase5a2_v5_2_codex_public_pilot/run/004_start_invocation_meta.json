@@ -1,0 +1,12 @@
+{
+  "started_at": "2026-07-15T04:08:45.4855201+08:00",
+  "ended_at": "2026-07-15T04:09:05.1665348+08:00",
+  "exit_code": 0,
+  "request_path": "generator_artifacts\\001_start_request.json",
+  "localappdata": "C:\\tmp\\etai-v5_2-public-pilot-20260715\\.host-localappdata",
+  "mutated": true,
+  "outcome": "ready",
+  "route_id": "frame.question_and_benchmarks",
+  "route_run_id": "run_op_df6e11c9049ea9a746a2467c04a4774ecf22f65dfc4c11b2",
+  "stdout_capture_note": "The host tool rendered only a truncated base64 transport copy of this successful response. An ordinary no-framing resume request is used next to capture the authoritative open-route packet without replaying the initial brief."
+}

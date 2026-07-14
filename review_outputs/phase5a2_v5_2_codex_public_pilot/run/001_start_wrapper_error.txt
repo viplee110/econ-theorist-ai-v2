@@ -1,0 +1,6 @@
+Cannot index into a null array.
+At line:2 char:397
++ ... ow = $true; $psi.EnvironmentVariables['LOCALAPPDATA'] = (Join-Path (G ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (:) [], RuntimeException
+    + FullyQualifiedErrorId : NullArray

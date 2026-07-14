@@ -1,0 +1,479 @@
+{
+    "inventory_schema":  "etai-isolated-generator-evidence-inventory/v1",
+    "root":  "C:\\tmp\\etai-v5_2-public-pilot-20260715",
+    "generated_at":  "2026-07-15T04:56:58.0891886+08:00",
+    "hash_algorithm":  "sha256",
+    "bridge_request_invocations":  14,
+    "route_sequence":  [
+                           "frame.question_and_benchmarks",
+                           "decompose.primitives",
+                           "audit.framing_economics"
+                       ],
+    "terminal_route":  "audit.framing_economics",
+    "terminal_attempt":  3,
+    "raw_capture_gaps":  [
+                             {
+                                 "invocation":  4,
+                                 "path_expected":  "generator_artifacts/004_start_stdout.jsonl",
+                                 "status":  "not_captured",
+                                 "reason":  "host transport truncated the large base64 rendering before archival",
+                                 "substitute_for_packet_inspection":  "generator_artifacts/005_resume_stdout.jsonl",
+                                 "substitute_is_not_claimed_identical":  true
+                             }
+                         ],
+    "explicit_exclusions":  [
+                                "canonical ObjectStore and LOCALAPPDATA operational state are not inventoried",
+                                "no parent or sibling paths",
+                                "no web or literature",
+                                "no repository checkout, tests, fixtures, reference answers, or prior outputs",
+                                "no other-agent scientific context",
+                                "no human-owned decision or approval"
+                            ],
+    "entry_count":  74,
+    "entries":  [
+                    {
+                        "path":  ".agents/skills/econ-theorist-v2/SKILL.md",
+                        "category":  "local_skill",
+                        "bytes":  4399,
+                        "sha256":  "77c5b53b5247e503dcb1f3d1ac7954eaccc1f107fb193173c005118ac296b731"
+                    },
+                    {
+                        "path":  ".econ-theorist/operational/v1/runs/run_op_10750bc4052cfad55c10259f2bd109fb941dabcc725eb49f/shadow/attempt_01_candidate.full.json",
+                        "category":  "candidate_attempt",
+                        "bytes":  58497,
+                        "sha256":  "84aa759397d8cb22ca28527e220db7fcfa99db718ee846d224f7caacd0ef0e8c"
+                    },
+                    {
+                        "path":  ".econ-theorist/operational/v1/runs/run_op_10750bc4052cfad55c10259f2bd109fb941dabcc725eb49f/shadow/attempt_02_candidate.full.json",
+                        "category":  "candidate_attempt",
+                        "bytes":  58612,
+                        "sha256":  "6e496b177b1c4410257879589f08f74a60bbfc06e756673f9c27d8956535e27f"
+                    },
+                    {
+                        "path":  ".econ-theorist/operational/v1/runs/run_op_10750bc4052cfad55c10259f2bd109fb941dabcc725eb49f/shadow/attempt_03_candidate.full.json",
+                        "category":  "candidate_attempt",
+                        "bytes":  58777,
+                        "sha256":  "7305217d0c1348616d865f21c021b312d164b0a1c3c22f31f1ed38481f8a843b"
+                    },
+                    {
+                        "path":  ".econ-theorist/operational/v1/runs/run_op_10750bc4052cfad55c10259f2bd109fb941dabcc725eb49f/shadow/capture_bridge.ps1",
+                        "category":  "capture_helper",
+                        "bytes":  1597,
+                        "sha256":  "ea0b3d26a366b3f94479736a228087a386a546115d615fc9f5d38006781e531a"
+                    },
+                    {
+                        "path":  ".econ-theorist/operational/v1/runs/run_op_10750bc4052cfad55c10259f2bd109fb941dabcc725eb49f/shadow/repair_01_diagnostic.json",
+                        "category":  "structured_repair_diagnostic",
+                        "bytes":  887,
+                        "sha256":  "e19958f66887623e2cda089534ec1d2d3e7b06d3514c976b04d6619778a57c60"
+                    },
+                    {
+                        "path":  ".econ-theorist/operational/v1/runs/run_op_10750bc4052cfad55c10259f2bd109fb941dabcc725eb49f/shadow/repair_02_diagnostic.json",
+                        "category":  "structured_repair_diagnostic",
+                        "bytes":  917,
+                        "sha256":  "3616e7562024e54247d1366e38934dfeba104051214222fd4325d046d4966291"
+                    },
+                    {
+                        "path":  ".econ-theorist/operational/v1/runs/run_op_94a0530b42e272a8d384e92a4d9e88f9aaabe3d150605895/shadow/attempt_01_candidate.full.json",
+                        "category":  "candidate_attempt",
+                        "bytes":  40284,
+                        "sha256":  "e5daa7f4d53d6f076ef027b2ca00f96cd45ec1fb66873ac18f10f765d284f803"
+                    },
+                    {
+                        "path":  ".econ-theorist/operational/v1/runs/run_op_94a0530b42e272a8d384e92a4d9e88f9aaabe3d150605895/shadow/attempt_02_candidate.full.json",
+                        "category":  "candidate_attempt",
+                        "bytes":  40284,
+                        "sha256":  "9c32b1f4e62c1a137c35cdcb7554610c76e99e9a2ce2e0c7574f13974d6bf178"
+                    },
+                    {
+                        "path":  ".econ-theorist/operational/v1/runs/run_op_94a0530b42e272a8d384e92a4d9e88f9aaabe3d150605895/shadow/capture_bridge.ps1",
+                        "category":  "capture_helper",
+                        "bytes":  1598,
+                        "sha256":  "2b3a45df0f637da721a3392c0e987f542c4cb45b84c2efb0d94c2b1e94314321"
+                    },
+                    {
+                        "path":  ".econ-theorist/operational/v1/runs/run_op_94a0530b42e272a8d384e92a4d9e88f9aaabe3d150605895/shadow/repair_01_diagnostic.json",
+                        "category":  "structured_repair_diagnostic",
+                        "bytes":  524,
+                        "sha256":  "1242370dfa5938039075284cf4539fff5f8dedbae80473a706bbe6f986c6b7a0"
+                    },
+                    {
+                        "path":  ".econ-theorist/operational/v1/runs/run_op_df6e11c9049ea9a746a2467c04a4774ecf22f65dfc4c11b2/shadow/attempt_01_candidate.full.json",
+                        "category":  "candidate_attempt",
+                        "bytes":  20500,
+                        "sha256":  "c332bfe9cd08ad201e028408e50315b408a3ad0d25bca78e76770ee5fb7c6ab8"
+                    },
+                    {
+                        "path":  ".econ-theorist/operational/v1/runs/run_op_df6e11c9049ea9a746a2467c04a4774ecf22f65dfc4c11b2/shadow/attempt_01_candidate.json",
+                        "category":  "candidate_attempt",
+                        "bytes":  386,
+                        "sha256":  "3c31ab62d585039d2c2a33c425706fbd7b77bb2303bee4302287518983ce0fd1"
+                    },
+                    {
+                        "path":  ".econ-theorist/operational/v1/runs/run_op_df6e11c9049ea9a746a2467c04a4774ecf22f65dfc4c11b2/shadow/attempt_02_candidate.full.json",
+                        "category":  "candidate_attempt",
+                        "bytes":  20461,
+                        "sha256":  "a4ef216d4c25ee59b73f2b24ec7006f33f594bb4fade7ca96251b5faaff75873"
+                    },
+                    {
+                        "path":  ".econ-theorist/operational/v1/runs/run_op_df6e11c9049ea9a746a2467c04a4774ecf22f65dfc4c11b2/shadow/capture_bridge.ps1",
+                        "category":  "capture_helper",
+                        "bytes":  1641,
+                        "sha256":  "2a22348cc3735f38bb4c8eab217646bfabb28bd209b2bb74bdc5bea066d2aefe"
+                    },
+                    {
+                        "path":  ".econ-theorist/operational/v1/runs/run_op_df6e11c9049ea9a746a2467c04a4774ecf22f65dfc4c11b2/shadow/repair_01_diagnostic.json",
+                        "category":  "structured_repair_diagnostic",
+                        "bytes":  467,
+                        "sha256":  "858cfb822548e736f901b6c98c220f0f5724fcb8c316264720e8b48080aa88fd"
+                    },
+                    {
+                        "path":  ".econ-theorist/staging/run_op_10750bc4052cfad55c10259f2bd109fb941dabcc725eb49f/candidate.json",
+                        "category":  "declared_candidate",
+                        "bytes":  58777,
+                        "sha256":  "7305217d0c1348616d865f21c021b312d164b0a1c3c22f31f1ed38481f8a843b"
+                    },
+                    {
+                        "path":  ".econ-theorist/staging/run_op_94a0530b42e272a8d384e92a4d9e88f9aaabe3d150605895/candidate.json",
+                        "category":  "declared_candidate",
+                        "bytes":  40284,
+                        "sha256":  "9c32b1f4e62c1a137c35cdcb7554610c76e99e9a2ce2e0c7574f13974d6bf178"
+                    },
+                    {
+                        "path":  ".econ-theorist/staging/run_op_df6e11c9049ea9a746a2467c04a4774ecf22f65dfc4c11b2/candidate.json",
+                        "category":  "declared_candidate",
+                        "bytes":  20461,
+                        "sha256":  "a4ef216d4c25ee59b73f2b24ec7006f33f594bb4fade7ca96251b5faaff75873"
+                    },
+                    {
+                        "path":  "CASE.md",
+                        "category":  "researcher_seed",
+                        "bytes":  2798,
+                        "sha256":  "f61ee776fbb1fcaac2a28ef53ed3b903433378d74aad522e1f5c5045dfbe38fd"
+                    },
+                    {
+                        "path":  "generator_artifacts/001_start_invocation_meta.json",
+                        "category":  "invocation_metadata",
+                        "bytes":  381,
+                        "sha256":  "2b3a872274d8107a0a97c19d547c5cccca2a7dde2f4e4ce491da4b8f4d56783b"
+                    },
+                    {
+                        "path":  "generator_artifacts/001_start_request.json",
+                        "category":  "bridge_request",
+                        "bytes":  1813,
+                        "sha256":  "568116c7275b42e833dcc9cc95331a97ee1978dfb66b1e1a66cf7b748d3ff3f6"
+                    },
+                    {
+                        "path":  "generator_artifacts/001_start_stderr.txt",
+                        "category":  "bridge_stderr",
+                        "bytes":  0,
+                        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    },
+                    {
+                        "path":  "generator_artifacts/001_start_stdout.jsonl",
+                        "category":  "bridge_stdout",
+                        "bytes":  697,
+                        "sha256":  "a3636a1f710b35afa9e7fc3c92c444ed42e540b5cc73518fd76b4b0291fbeb56"
+                    },
+                    {
+                        "path":  "generator_artifacts/001_start_wrapper_error.txt",
+                        "category":  "wrapper_error",
+                        "bytes":  320,
+                        "sha256":  "4b593c9c4a28558430d4c4a54daf7524db5a5e523571823b2ec1a4f4d46ce930"
+                    },
+                    {
+                        "path":  "generator_artifacts/002_start_invocation_meta.json",
+                        "category":  "invocation_metadata",
+                        "bytes":  314,
+                        "sha256":  "d5d480a1d56e3f988144890a412812c08011158856133e3f5239af2d32c7bd68"
+                    },
+                    {
+                        "path":  "generator_artifacts/002_start_stderr.txt",
+                        "category":  "bridge_stderr",
+                        "bytes":  0,
+                        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    },
+                    {
+                        "path":  "generator_artifacts/002_start_stdout.jsonl",
+                        "category":  "bridge_stdout",
+                        "bytes":  738,
+                        "sha256":  "e9bf16266e77128a00716bff60b24fbba29466ee33b28bb18ba2a509473a03c1"
+                    },
+                    {
+                        "path":  "generator_artifacts/003_start_invocation_meta.json",
+                        "category":  "invocation_metadata",
+                        "bytes":  314,
+                        "sha256":  "f698795ef143f2cff348e3d8b9b0395481d85e4862d91420886f7324c2aa0c90"
+                    },
+                    {
+                        "path":  "generator_artifacts/003_start_stderr.txt",
+                        "category":  "bridge_stderr",
+                        "bytes":  0,
+                        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    },
+                    {
+                        "path":  "generator_artifacts/003_start_stdout.jsonl",
+                        "category":  "bridge_stdout",
+                        "bytes":  753,
+                        "sha256":  "b931e3485bcd7e04df3a5a998ec0b40f34e1be6685013c806aaf98a4e0cbf205"
+                    },
+                    {
+                        "path":  "generator_artifacts/004_start_invocation_meta.json",
+                        "category":  "invocation_metadata",
+                        "bytes":  691,
+                        "sha256":  "1b4471286cba7834707d69c84716f05f1c5a878910bc3bae59aaaa26cf85de69"
+                    },
+                    {
+                        "path":  "generator_artifacts/004_start_stderr.txt",
+                        "category":  "bridge_stderr",
+                        "bytes":  0,
+                        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    },
+                    {
+                        "path":  "generator_artifacts/005_resume_invocation_meta.json",
+                        "category":  "invocation_metadata",
+                        "bytes":  431,
+                        "sha256":  "dfdcf5216d63cf9370b8613926d6f3a29812ec9666d81200e3b567a3d89fa941"
+                    },
+                    {
+                        "path":  "generator_artifacts/005_resume_request.json",
+                        "category":  "bridge_request",
+                        "bytes":  474,
+                        "sha256":  "956c9317d8529a435cd9abdc9727ec6949ddabd8f1c80173c41e085c54277d2f"
+                    },
+                    {
+                        "path":  "generator_artifacts/005_resume_stderr.txt",
+                        "category":  "bridge_stderr",
+                        "bytes":  0,
+                        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    },
+                    {
+                        "path":  "generator_artifacts/005_resume_stdout.jsonl",
+                        "category":  "bridge_stdout",
+                        "bytes":  53924,
+                        "sha256":  "85f48ba693aa2a462051b9cb60e5a801c3a4733b77f6c5ed0da5323309002d73"
+                    },
+                    {
+                        "path":  "generator_artifacts/006_complete_attempt_01_invocation_meta.json",
+                        "category":  "invocation_metadata",
+                        "bytes":  470,
+                        "sha256":  "832e25926e811d277671fe2ba223c4c1a18e0ab6e718d8d9204be88ec2a88dce"
+                    },
+                    {
+                        "path":  "generator_artifacts/006_complete_attempt_01_request.json",
+                        "category":  "bridge_request",
+                        "bytes":  599,
+                        "sha256":  "ced47a0a82b03bb16eb0b3a56036c72f7903b65a5928b74f9ba7de3439a721d8"
+                    },
+                    {
+                        "path":  "generator_artifacts/006_complete_attempt_01_stderr.txt",
+                        "category":  "bridge_stderr",
+                        "bytes":  0,
+                        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    },
+                    {
+                        "path":  "generator_artifacts/006_complete_attempt_01_stdout.jsonl",
+                        "category":  "bridge_stdout",
+                        "bytes":  723,
+                        "sha256":  "9ad55ffec5151994ae16df98638bd3664b391e5ff52088aeef35b05beadf1a45"
+                    },
+                    {
+                        "path":  "generator_artifacts/007_complete_attempt_02_invocation_meta.json",
+                        "category":  "invocation_metadata",
+                        "bytes":  470,
+                        "sha256":  "831e69803b5dffdb9ed52ad6168f2b1e40e44247fe8b23276807eb6d67405043"
+                    },
+                    {
+                        "path":  "generator_artifacts/007_complete_attempt_02_request.json",
+                        "category":  "bridge_request",
+                        "bytes":  599,
+                        "sha256":  "ced47a0a82b03bb16eb0b3a56036c72f7903b65a5928b74f9ba7de3439a721d8"
+                    },
+                    {
+                        "path":  "generator_artifacts/007_complete_attempt_02_stderr.txt",
+                        "category":  "bridge_stderr",
+                        "bytes":  0,
+                        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    },
+                    {
+                        "path":  "generator_artifacts/007_complete_attempt_02_stdout.jsonl",
+                        "category":  "bridge_stdout",
+                        "bytes":  1463,
+                        "sha256":  "70ea3e5f314f22eb4f3b2e483a87cf7faf20abe17af486f3288c757191aa91bc"
+                    },
+                    {
+                        "path":  "generator_artifacts/008_continue_invocation_meta.json",
+                        "category":  "invocation_metadata",
+                        "bytes":  437,
+                        "sha256":  "da70801239ddf2356b2d14e66cdb2c95bc47eac577ef54a3654b82b0c5828275"
+                    },
+                    {
+                        "path":  "generator_artifacts/008_continue_request.json",
+                        "category":  "bridge_request",
+                        "bytes":  474,
+                        "sha256":  "a7d053ae9ae420743d1d8198653d1f6794f23ee6d4044b069df3fa764afbced6"
+                    },
+                    {
+                        "path":  "generator_artifacts/008_continue_stderr.txt",
+                        "category":  "bridge_stderr",
+                        "bytes":  0,
+                        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    },
+                    {
+                        "path":  "generator_artifacts/008_continue_stdout.jsonl",
+                        "category":  "bridge_stdout",
+                        "bytes":  65796,
+                        "sha256":  "44abba9de0ecfbf73e014464726d5ea00bdd24be1753e506027c839e4372b623"
+                    },
+                    {
+                        "path":  "generator_artifacts/009_decompose_complete_attempt_01_invocation_meta.json",
+                        "category":  "invocation_metadata",
+                        "bytes":  500,
+                        "sha256":  "dbbf6935253297083f6a432b27f2b76992c71d3152c37d465a855411dce5054e"
+                    },
+                    {
+                        "path":  "generator_artifacts/009_decompose_complete_attempt_01_request.json",
+                        "category":  "bridge_request",
+                        "bytes":  599,
+                        "sha256":  "ff25e23c40266a877fff50349b484d3f1755d32097830e3475596bd772c6e4f3"
+                    },
+                    {
+                        "path":  "generator_artifacts/009_decompose_complete_attempt_01_stderr.txt",
+                        "category":  "bridge_stderr",
+                        "bytes":  0,
+                        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    },
+                    {
+                        "path":  "generator_artifacts/009_decompose_complete_attempt_01_stdout.jsonl",
+                        "category":  "bridge_stdout",
+                        "bytes":  722,
+                        "sha256":  "42909ea77240fd54ab85a8f133bec773eae14f37c2a94ed90a85ec1a80aec695"
+                    },
+                    {
+                        "path":  "generator_artifacts/010_decompose_complete_attempt_02_invocation_meta.json",
+                        "category":  "invocation_metadata",
+                        "bytes":  500,
+                        "sha256":  "3ebceb8bdb8cb307ade192bc74f9d6782395637aedcdc3e884fd626643131e8a"
+                    },
+                    {
+                        "path":  "generator_artifacts/010_decompose_complete_attempt_02_request.json",
+                        "category":  "bridge_request",
+                        "bytes":  599,
+                        "sha256":  "ff25e23c40266a877fff50349b484d3f1755d32097830e3475596bd772c6e4f3"
+                    },
+                    {
+                        "path":  "generator_artifacts/010_decompose_complete_attempt_02_stderr.txt",
+                        "category":  "bridge_stderr",
+                        "bytes":  0,
+                        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    },
+                    {
+                        "path":  "generator_artifacts/010_decompose_complete_attempt_02_stdout.jsonl",
+                        "category":  "bridge_stdout",
+                        "bytes":  1463,
+                        "sha256":  "89cf9b0ff6f903a61120a9f7b5f6380901df8e50471368d4c1b04e2ca9c9265b"
+                    },
+                    {
+                        "path":  "generator_artifacts/011_continue_after_decompose_invocation_meta.json",
+                        "category":  "invocation_metadata",
+                        "bytes":  485,
+                        "sha256":  "28fc330842a6d466169f5d333cc3cf9d236742a2bc15f5f80f43b460eac0e45e"
+                    },
+                    {
+                        "path":  "generator_artifacts/011_continue_after_decompose_request.json",
+                        "category":  "bridge_request",
+                        "bytes":  474,
+                        "sha256":  "da2b7a2f2f066e2bf3b3f8d16d71010cbfb7711be1839a599a5fed63b82ace9d"
+                    },
+                    {
+                        "path":  "generator_artifacts/011_continue_after_decompose_stderr.txt",
+                        "category":  "bridge_stderr",
+                        "bytes":  0,
+                        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    },
+                    {
+                        "path":  "generator_artifacts/011_continue_after_decompose_stdout.jsonl",
+                        "category":  "bridge_stdout",
+                        "bytes":  109817,
+                        "sha256":  "6649463b50278b475234c086e507270f4955ff01c368f9a3d38434aaad9301b7"
+                    },
+                    {
+                        "path":  "generator_artifacts/012_audit_complete_attempt_01_invocation_meta.json",
+                        "category":  "invocation_metadata",
+                        "bytes":  488,
+                        "sha256":  "15432bf362309aed437d030e4207d0ab4ec30923f6e138b9fce199f6660665d2"
+                    },
+                    {
+                        "path":  "generator_artifacts/012_audit_complete_attempt_01_request.json",
+                        "category":  "bridge_request",
+                        "bytes":  599,
+                        "sha256":  "e19b02dceefc0e9a059c0079430a9669f0c76a448bb2b445975f454923bdb297"
+                    },
+                    {
+                        "path":  "generator_artifacts/012_audit_complete_attempt_01_stderr.txt",
+                        "category":  "bridge_stderr",
+                        "bytes":  0,
+                        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    },
+                    {
+                        "path":  "generator_artifacts/012_audit_complete_attempt_01_stdout.jsonl",
+                        "category":  "bridge_stdout",
+                        "bytes":  1063,
+                        "sha256":  "a66c2c2546bacf1255c7534108f256d46178e1b3811cf80783c18f09967fa238"
+                    },
+                    {
+                        "path":  "generator_artifacts/013_audit_complete_attempt_02_invocation_meta.json",
+                        "category":  "invocation_metadata",
+                        "bytes":  488,
+                        "sha256":  "272377924bf12f2ff3a5004a5d09426e338d120fc639bf592a6febcf02c5aa3b"
+                    },
+                    {
+                        "path":  "generator_artifacts/013_audit_complete_attempt_02_request.json",
+                        "category":  "bridge_request",
+                        "bytes":  599,
+                        "sha256":  "e19b02dceefc0e9a059c0079430a9669f0c76a448bb2b445975f454923bdb297"
+                    },
+                    {
+                        "path":  "generator_artifacts/013_audit_complete_attempt_02_stderr.txt",
+                        "category":  "bridge_stderr",
+                        "bytes":  0,
+                        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    },
+                    {
+                        "path":  "generator_artifacts/013_audit_complete_attempt_02_stdout.jsonl",
+                        "category":  "bridge_stdout",
+                        "bytes":  1065,
+                        "sha256":  "d079600c51b0b98a34c7b57088c3c6c841865317472a6ddb3eb7d0a232367b9b"
+                    },
+                    {
+                        "path":  "generator_artifacts/014_audit_complete_attempt_03_invocation_meta.json",
+                        "category":  "invocation_metadata",
+                        "bytes":  488,
+                        "sha256":  "93bcc424921f70ff0e2d307a30709a38fa6ce6cdc86900fdf945911f45e520ca"
+                    },
+                    {
+                        "path":  "generator_artifacts/014_audit_complete_attempt_03_request.json",
+                        "category":  "bridge_request",
+                        "bytes":  599,
+                        "sha256":  "e19b02dceefc0e9a059c0079430a9669f0c76a448bb2b445975f454923bdb297"
+                    },
+                    {
+                        "path":  "generator_artifacts/014_audit_complete_attempt_03_stderr.txt",
+                        "category":  "bridge_stderr",
+                        "bytes":  0,
+                        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    },
+                    {
+                        "path":  "generator_artifacts/014_audit_complete_attempt_03_stdout.jsonl",
+                        "category":  "bridge_stdout",
+                        "bytes":  748,
+                        "sha256":  "ebfca8f6d48a5bad261486d14e50c205b086deddf59e615cead4cd792551f88f"
+                    },
+                    {
+                        "path":  "generator_artifacts/generator_report.md",
+                        "category":  "generator_report",
+                        "bytes":  4761,
+                        "sha256":  "6b3f4730125a6b0cc42d76b4da05dd01c50cbdcf132937ff36fa842d33b774f3"
+                    }
+                ]
+}
