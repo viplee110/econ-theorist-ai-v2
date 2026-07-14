@@ -1,0 +1,13 @@
+{
+  "started_at": "2026-07-15T00:02:16.9033940+08:00",
+  "ended_at": "2026-07-15T00:02:22.7013233+08:00",
+  "wall_time_ms": 5797,
+  "exit_code": 0,
+  "command": "C:\\tmp\\etai-v5_1-public-pilot-20260714\\.venv\\Scripts\\etai.exe codex invoke --request C:\\tmp\\etai-v5_1-public-pilot-20260714\\run\\014_start_next_with_brief.request.json",
+  "LOCALAPPDATA": "C:\\tmp\\etai-v5_1-public-pilot-20260714\\.host-localappdata",
+  "bridge_outcome": "ready",
+  "route_id": "frame.question_and_benchmarks",
+  "route_run_id": "run_op_acaa89f3d3444b25d963ff8ec936917d6408083be4150a13",
+  "budget_units": 4000,
+  "budget_units_source": "route_default"
+}

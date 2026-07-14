@@ -1,0 +1,10 @@
+{
+  "started_at": "2026-07-14T23:57:36.1441937+08:00",
+  "ended_at": "2026-07-14T23:57:40.6711826+08:00",
+  "wall_time_ms": 4520,
+  "exit_code": 2,
+  "command": "C:\\tmp\\etai-v5_1-public-pilot-20260714\\.venv\\Scripts\\etai.exe codex invoke --request C:\\tmp\\etai-v5_1-public-pilot-20260714\\run\\010_complete_attempt1.request.json",
+  "LOCALAPPDATA": "C:\\tmp\\etai-v5_1-public-pilot-20260714\\.host-localappdata",
+  "bridge_outcome": "error",
+  "diagnostic_code": "CandidateValidationError"
+}

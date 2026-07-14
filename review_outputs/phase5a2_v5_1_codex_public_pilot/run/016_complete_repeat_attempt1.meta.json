@@ -1,0 +1,11 @@
+{
+  "started_at": "2026-07-15T00:06:24.9656329+08:00",
+  "ended_at": "2026-07-15T00:06:29.7337408+08:00",
+  "wall_time_ms": 4768,
+  "exit_code": 0,
+  "command": "C:\\tmp\\etai-v5_1-public-pilot-20260714\\.venv\\Scripts\\etai.exe codex invoke --request C:\\tmp\\etai-v5_1-public-pilot-20260714\\run\\016_complete_repeat_attempt1.request.json",
+  "LOCALAPPDATA": "C:\\tmp\\etai-v5_1-public-pilot-20260714\\.host-localappdata",
+  "bridge_outcome": "committed",
+  "transaction_digest": "75563ecf65fb8943aaa9abf0f36becd089828d23ce8683136e585ef350cc2253",
+  "head_after": "75563ecf65fb8943aaa9abf0f36becd089828d23ce8683136e585ef350cc2253"
+}

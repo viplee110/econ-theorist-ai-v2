@@ -1,0 +1,10 @@
+{
+  "started_at_capture_file_time": "2026-07-14T23:50:59.744+08:00",
+  "ended_at": null,
+  "host_reported_wall_time_ms": 10691,
+  "exit_code": null,
+  "host_outcome": "timeout_exit_124",
+  "command": "C:\\tmp\\etai-v5_1-public-pilot-20260714\\.venv\\Scripts\\etai.exe codex invoke --request C:\\tmp\\etai-v5_1-public-pilot-20260714\\run\\007_start.request.json",
+  "LOCALAPPDATA": "C:\\tmp\\etai-v5_1-public-pilot-20260714\\.host-localappdata",
+  "note": "The host terminated the launcher before its in-command stopwatch could emit metadata. Both redirected streams are preserved as exact zero-byte files; no etai process remained. The identical request was resumed in invocation 008."
+}

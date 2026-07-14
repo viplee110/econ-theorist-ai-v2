@@ -1,0 +1,8 @@
+{
+  "started_at": "2026-07-14T23:48:36.5401757+08:00",
+  "ended_at": "2026-07-14T23:48:39.0437633+08:00",
+  "wall_time_ms": 2490,
+  "exit_code": 0,
+  "command": "C:\\tmp\\etai-v5_1-public-pilot-20260714\\.venv\\Scripts\\etai.exe --help",
+  "LOCALAPPDATA": "C:\\tmp\\etai-v5_1-public-pilot-20260714\\.host-localappdata"
+}

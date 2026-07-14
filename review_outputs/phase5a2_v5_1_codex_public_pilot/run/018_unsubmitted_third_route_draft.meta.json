@@ -1,0 +1,13 @@
+{
+  "route_id": "frame.question_and_benchmarks",
+  "route_run_id": "run_op_3e47218ad496305bffbd295213b0c3aed3294b553659b27f",
+  "submitted_candidate_attempts": 0,
+  "completion_requests_created": 0,
+  "completion_bridge_invocations": 0,
+  "unsubmitted_draft_authored": true,
+  "unsubmitted_draft_snapshot_path": "run/018_frame_question_and_benchmarks_repeat2.attempt1.candidate.json",
+  "unsubmitted_draft_declared_path": ".econ-theorist/staging/run_op_3e47218ad496305bffbd295213b0c3aed3294b553659b27f/candidate.json",
+  "unsubmitted_draft_sha256": "ac22a358a7c6bc7e8576313e7e5548e286d517693a444d1f5f5675ff8cd065ef",
+  "classification": "unsubmitted_draft_not_counted_as_a_scientific_candidate_or_completion_attempt",
+  "stop_timing_note": "The draft had already been written and copied before the supervisory stop instruction arrived. It was never submitted, reread after the final stop instruction, modified, or deleted. No completion request exists for this route."
+}

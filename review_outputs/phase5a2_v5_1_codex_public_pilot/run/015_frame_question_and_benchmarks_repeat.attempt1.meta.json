@@ -1,0 +1,9 @@
+{
+  "route_id": "frame.question_and_benchmarks",
+  "route_run_id": "run_op_acaa89f3d3444b25d963ff8ec936917d6408083be4150a13",
+  "attempt": 1,
+  "candidate_logical_path": ".econ-theorist/staging/run_op_acaa89f3d3444b25d963ff8ec936917d6408083be4150a13/candidate.json",
+  "snapshot_path": "run/015_frame_question_and_benchmarks_repeat.attempt1.candidate.json",
+  "source_sha256": "54264d26df954cd11199914b6f04a7c57a76c73fc1e05b4bc0ca6481747c9742",
+  "snapshot_sha256": "54264d26df954cd11199914b6f04a7c57a76c73fc1e05b4bc0ca6481747c9742"
+}

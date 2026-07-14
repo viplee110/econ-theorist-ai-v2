@@ -1,0 +1,11 @@
+{
+  "started_at": "2026-07-15T00:01:03.2047511+08:00",
+  "ended_at": "2026-07-15T00:01:08.0847854+08:00",
+  "wall_time_ms": 4875,
+  "exit_code": 0,
+  "command": "C:\\tmp\\etai-v5_1-public-pilot-20260714\\.venv\\Scripts\\etai.exe codex invoke --request C:\\tmp\\etai-v5_1-public-pilot-20260714\\run\\013_start_next.request.json",
+  "LOCALAPPDATA": "C:\\tmp\\etai-v5_1-public-pilot-20260714\\.host-localappdata",
+  "bridge_outcome": "blocked",
+  "mutated": false,
+  "blocking_diagnostic": "run_input_brief_required"
+}
