@@ -1571,6 +1571,72 @@ def _gate_dossier_is_fresh(
     return True
 
 
+def has_current_fresh_g1_decomposition_package(
+    snapshot: Snapshot,
+    *,
+    research_question_ref: EntityVersionRef,
+    benchmark_set_ref: EntityVersionRef,
+) -> bool:
+    """Return whether automatic discovery already completed this exact scope.
+
+    A direct, explicitly requested decomposition remains a legal scientific
+    operation.  Machine navigation uses this predicate only to avoid opening
+    the same upstream route indefinitely after one current PrimitiveGraph and
+    its exact current pre-audit G1 dossier already exist.  An authorized
+    upstream repair makes their exact-reference closure stale and re-enables
+    decomposition.  A post-audit replacement dossier cannot close this route.
+    """
+
+    if not _exact_reference_is_current_and_fresh(
+        snapshot, research_question_ref
+    ) or not _exact_reference_is_current_and_fresh(snapshot, benchmark_set_ref):
+        return False
+    entity_index = {_entity_key(item): item for item in snapshot.entity_versions}
+    payload_index = {
+        _entity_key(item): validate_theory_entity(item)
+        for item in snapshot.entity_versions
+        if item.entity_type in t.THEORY_PAYLOAD_MODELS
+        and t.is_packed_theory_entity(item)
+    }
+    graph_refs: list[EntityVersionRef] = []
+    for key, payload in payload_index.items():
+        if not isinstance(payload, t.PrimitiveGraph):
+            continue
+        graph_ref = EntityVersionRef(entity_id=key[0], version=key[1])
+        if (
+            payload.question_ref == research_question_ref
+            and payload.benchmark_set_ref == benchmark_set_ref
+            and _typed_reference_closure_is_current_and_fresh(snapshot, graph_ref)
+        ):
+            graph_refs.append(graph_ref)
+    for graph_ref in graph_refs:
+        required_refs = {
+            research_question_ref,
+            benchmark_set_ref,
+            graph_ref,
+        }
+        for key, payload in payload_index.items():
+            if not isinstance(payload, t.GateDossier):
+                continue
+            dossier_entity = entity_index[key]
+            if any(
+                (
+                    referenced := entity_index.get(_entity_key(reference))
+                ) is not None
+                and referenced.entity_type == "FramingQualityBundle"
+                for reference in payload.ordered_object_refs
+            ):
+                continue
+            if (
+                payload.gate_kind == "G1_question_benchmark"
+                and payload.research_question_ref == research_question_ref
+                and required_refs.issubset(set(payload.ordered_object_refs))
+                and _gate_dossier_is_fresh(snapshot, dossier_entity, payload)
+            ):
+                return True
+    return False
+
+
 def _effective_approved_gates(
     snapshot: Snapshot,
 ) -> dict[str, list[tuple[Decision, EntityVersion, t.GateDossier]]]:
@@ -3639,6 +3705,7 @@ __all__ = [
     "TheoryReadinessReport",
     "TheoryRouteEntryReport",
     "TheoryValidationError",
+    "has_current_fresh_g1_decomposition_package",
     "validate_phase2_human_gate_transaction",
     "validate_phase2_route_transaction",
     "validate_phase2_route_entry",

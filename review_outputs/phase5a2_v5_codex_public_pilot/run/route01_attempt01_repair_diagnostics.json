@@ -1,0 +1,9 @@
+[
+  {
+    "code": "CandidateValidationError",
+    "details": {},
+    "diagnostic_schema": "econ-theorist/diagnostic/v1",
+    "message": "Phase 2 route contract rejected the transaction: every v2 scientific output and relation endpoint must resolve to one exact ResearchQuestion",
+    "severity": "error"
+  }
+]

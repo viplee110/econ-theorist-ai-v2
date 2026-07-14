@@ -1,0 +1,14 @@
+{
+  "diagnostic_schema": "etai/host-read-only-navigation-audit/v1",
+  "observed_head": "d2af9d75342625ac8cc9cb2c0844e35d23679b4a2eb8c7fad48a94a1fec3b514",
+  "requested_budget_units": 10000,
+  "budget_estimator": "etai_lexical_v1",
+  "excluded_route": "audit.framing_economics",
+  "excluded_route_required_context_units": 10226,
+  "alternative_candidate": "old dossier focus",
+  "alternative_rejection": "lineage mismatch",
+  "remaining_selected_route": "decompose.primitives",
+  "opened_route_run_id": "run_op_27eae34430c5945ec59642c3a9a4b3561ae135412ae692e3",
+  "generator_action": "Stopped without authoring a candidate or completion request for the repeated route; the frozen budget was not raised.",
+  "source_note": "Mechanical cause supplied by a read-only host enumeration after the exact 016 canonical response opened the repeated route."
+}

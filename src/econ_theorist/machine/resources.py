@@ -17,8 +17,8 @@ from ..distribution_resources import (
 from ..errors import RegistryError
 from ..models import Digest, StrictModel
 from ..policy import (
-    ROUTE_REGISTRY_HASH,
     ROUTE_REGISTRY_V4_HASH,
+    ROUTE_REGISTRY_V5_HASH,
     load_route_registry_by_hash,
 )
 
@@ -29,7 +29,10 @@ NAVIGATION_REGISTRY_V1_HASH = (
 NAVIGATION_REGISTRY_V2_HASH = (
     "262140bc73fb2b0a14c0d7ea884b36d07997aae4c63403f9091bb28ad2fccf81"
 )
-NAVIGATION_REGISTRY_HASH = NAVIGATION_REGISTRY_V2_HASH
+NAVIGATION_REGISTRY_V3_HASH = (
+    "fe285a46a1da5e1dd0f9c2953d0c6a6cf7474ff39129d53c5be96548548bf594"
+)
+NAVIGATION_REGISTRY_HASH = NAVIGATION_REGISTRY_V3_HASH
 HOST_MANIFEST_V1_HASH = (
     "f9e254ddd20f01d765f9d056d18610796bb33ba07aaa2d971fe87b44dc0bd57a"
 )
@@ -71,7 +74,27 @@ class NavigationRegistryV2(StrictModel):
     routes: tuple[NavigationRoutePolicyV1, ...]
 
 
-NavigationRegistryLike: TypeAlias = NavigationRegistryV1 | NavigationRegistryV2
+class NavigationRoutePolicyV3(NavigationRoutePolicyV1):
+    selector_id: Literal[
+        "empty_focus.v1",
+        "framing_or_stale_repair_root.v1",
+        "registry_cardinality.v1",
+        "stale_current_typed_root.v1",
+        "uncompleted_decomposition_scope.v1",
+    ]
+
+
+class NavigationRegistryV3(StrictModel):
+    navigation_registry_schema: Literal[1]
+    navigation_registry_version: Literal[3]
+    route_registry_hash: Digest
+    max_candidate_sets: Annotated[int, Field(ge=1)]
+    routes: tuple[NavigationRoutePolicyV3, ...]
+
+
+NavigationRegistryLike: TypeAlias = (
+    NavigationRegistryV1 | NavigationRegistryV2 | NavigationRegistryV3
+)
 
 
 def _machine_resource_root() -> Path:
@@ -120,7 +143,12 @@ def _load_navigation_registry_resource(
             registry = NavigationRegistryV2.model_validate_json(
                 canonical_json_bytes(raw), strict=True
             )
-            expected_route_registry_hash = ROUTE_REGISTRY_HASH
+            expected_route_registry_hash = ROUTE_REGISTRY_V5_HASH
+        elif version == 3:
+            registry = NavigationRegistryV3.model_validate_json(
+                canonical_json_bytes(raw), strict=True
+            )
+            expected_route_registry_hash = ROUTE_REGISTRY_V5_HASH
         else:
             raise ValueError(f"unsupported navigation registry version: {version!r}")
     except ValueError as exc:
@@ -155,17 +183,17 @@ def _load_navigation_registry_resource(
 
 
 @lru_cache(maxsize=1)
-def load_navigation_registry() -> NavigationRegistryV2:
-    """Load the active v2 navigation policy bound to route registry v5."""
+def load_navigation_registry() -> NavigationRegistryV3:
+    """Load the active v3 navigation policy bound to route registry v5."""
 
     registry = _load_navigation_registry_resource(
-        "navigation-registry.v2.json", NAVIGATION_REGISTRY_V2_HASH
+        "navigation-registry.v3.json", NAVIGATION_REGISTRY_V3_HASH
     )
-    assert isinstance(registry, NavigationRegistryV2)
+    assert isinstance(registry, NavigationRegistryV3)
     return registry
 
 
-@lru_cache(maxsize=2)
+@lru_cache(maxsize=3)
 def load_navigation_registry_by_hash(
     navigation_registry_hash: str,
 ) -> NavigationRegistryLike:
@@ -174,6 +202,7 @@ def load_navigation_registry_by_hash(
     resources = {
         NAVIGATION_REGISTRY_V1_HASH: "navigation-registry.v1.json",
         NAVIGATION_REGISTRY_V2_HASH: "navigation-registry.v2.json",
+        NAVIGATION_REGISTRY_V3_HASH: "navigation-registry.v3.json",
     }
     try:
         filename = resources[navigation_registry_hash]
@@ -202,6 +231,7 @@ def machine_resource_path(filename: str) -> Path:
     expected = {
         "navigation-registry.v1.json": NAVIGATION_REGISTRY_V1_HASH,
         "navigation-registry.v2.json": NAVIGATION_REGISTRY_V2_HASH,
+        "navigation-registry.v3.json": NAVIGATION_REGISTRY_V3_HASH,
         "host-manifest.v1.json": HOST_MANIFEST_V1_HASH,
         "compatibility-support.v1.json": COMPATIBILITY_SUPPORT_V1_HASH,
     }.get(filename)
@@ -217,10 +247,13 @@ __all__ = [
     "NAVIGATION_REGISTRY_HASH",
     "NAVIGATION_REGISTRY_V1_HASH",
     "NAVIGATION_REGISTRY_V2_HASH",
+    "NAVIGATION_REGISTRY_V3_HASH",
     "NavigationRegistryLike",
     "NavigationRegistryV1",
     "NavigationRegistryV2",
+    "NavigationRegistryV3",
     "NavigationRoutePolicyV1",
+    "NavigationRoutePolicyV3",
     "load_compatibility_support",
     "load_host_manifest",
     "load_navigation_registry",

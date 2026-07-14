@@ -24,6 +24,7 @@ from ..route_registry import load_registry
 from ..runs import RouteEntryError, validate_run_entry
 from ..runtime.layout import StoreLayout
 from ..theory import THEORY_PAYLOAD_MODELS
+from ..theory_validation import has_current_fresh_g1_decomposition_package
 from .models import (
     DiagnosticV1,
     NavigationCandidateKeyV1,
@@ -119,6 +120,12 @@ def _focus_sets_for_policy(
     if selector_id == "empty_focus.v1":
         return CandidateEnumeration(((),))
     if selector_id == "registry_cardinality.v1":
+        return _registry_focus_sets(route, current, limit=limit)
+    if selector_id == "uncompleted_decomposition_scope.v1":
+        if getattr(route, "route_id", None) != "decompose.primitives":
+            raise NavigationUnsupported(
+                "uncompleted decomposition selector is bound to the wrong route"
+            )
         return _registry_focus_sets(route, current, limit=limit)
     if selector_id == "stale_current_typed_root.v1":
         ids = tuple(
@@ -272,6 +279,44 @@ def enumerate_navigation_candidates(
             continue
         for focus_ids in enumeration.focus_sets:
             effective_budget = budget_units or policy.default_budget_units
+            if policy.selector_id == "uncompleted_decomposition_scope.v1":
+                focused = tuple(current[entity_id] for entity_id in focus_ids)
+                questions = tuple(
+                    item for item in focused if item.entity_type == "ResearchQuestion"
+                )
+                benchmarks = tuple(
+                    item for item in focused if item.entity_type == "BenchmarkSet"
+                )
+                if len(questions) == 1 and benchmarks and all(
+                    has_current_fresh_g1_decomposition_package(
+                        snapshot,
+                        research_question_ref=EntityVersionRef(
+                            entity_id=questions[0].entity_id,
+                            version=questions[0].version,
+                        ),
+                        benchmark_set_ref=EntityVersionRef(
+                            entity_id=benchmark.entity_id,
+                            version=benchmark.version,
+                        ),
+                    )
+                    for benchmark in benchmarks
+                ):
+                    diagnostics.setdefault(
+                        (route_id, "route_scope_complete"),
+                        DiagnosticV1(
+                            code="route_scope_complete",
+                            severity="info",
+                            message=(
+                                "route decompose.primitives already has one current "
+                                "fresh PrimitiveGraph and exact pre-audit G1 dossier "
+                                "for every selected question/benchmark scope; "
+                                "automatic navigation must continue to framing audit "
+                                "or an authorized repair"
+                            ),
+                            details={"route_id": route_id},
+                        ),
+                    )
+                    continue
             try:
                 validated_route, clearance = validate_run_entry(
                     snapshot,
@@ -447,6 +492,8 @@ def plan_next(
         outcome = "unique_next"
     elif len(candidates) > 1:
         outcome = "ambiguous_next"
+    elif any(item.code == "context_budget_insufficient" for item in diagnostics):
+        outcome = "repair_required"
     elif any(item.code == "human_decision_prerequisite" for item in diagnostics):
         outcome = "human_decision_required"
     elif complete_if_none:

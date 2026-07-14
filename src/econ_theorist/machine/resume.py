@@ -14,6 +14,7 @@ from .models import (
     RunExecutionViewV1,
 )
 from .operational import OperationalError, ProjectOperationalLayout
+from .resources import NAVIGATION_REGISTRY_HASH
 from .packets import (
     WorkPacketBindingV1,
     read_run_input_brief,
@@ -78,12 +79,16 @@ def derive_resume_descriptor(
             root / "navigation-candidate.json",
             NavigationCandidateV1,
         )
+        assert isinstance(candidate, NavigationCandidateV1)
+        if candidate.key.navigation_registry_hash != NAVIGATION_REGISTRY_HASH:
+            raise ResumeDescriptorError(
+                "unfinished run uses an inactive navigation policy and requires inspection"
+            )
         packet_binding = _read_exact_model(
             operational.project_root,
             root / "packet-binding.json",
             WorkPacketBindingV1,
         )
-        assert isinstance(candidate, NavigationCandidateV1)
         assert isinstance(packet_binding, WorkPacketBindingV1)
         packet = read_work_packet(
             operational, route_run_id, packet_binding.work_packet_hash

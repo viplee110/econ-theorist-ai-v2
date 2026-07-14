@@ -47,13 +47,17 @@ from econ_theorist.models import (
     Transaction,
 )
 from econ_theorist.project import _genesis_transaction
-from econ_theorist.runs import read_run, transaction_bindings
+from econ_theorist.runs import read_context, read_run, transaction_bindings
 from econ_theorist.runtime import ObjectStore, StoreLayout
 from econ_theorist.runtime.replay import replay
 from econ_theorist.theory import (
     THEORY_PAYLOAD_MODELS,
     BenchmarkRecord,
     BenchmarkSet,
+    GateDossier,
+    GateRequirement,
+    PrimitiveGraph,
+    PrimitiveNode,
     ResearchQuestion,
     pack_theory_payload,
 )
@@ -211,6 +215,157 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
             parent_transaction_hash=run.base_revision,
         )
 
+    def _decomposition_transaction(self, route_run_id: str) -> Transaction:
+        layout = StoreLayout.at(self.root)
+        snapshot = replay(layout)
+        run = read_run(layout, route_run_id)
+        current = tuple(
+            item
+            for item in snapshot.entity_versions
+            if snapshot.current_entities.get(item.entity_id) == item.version
+        )
+        question = next(
+            item for item in current if item.entity_type == "ResearchQuestion"
+        )
+        benchmarks = next(
+            item for item in current if item.entity_type == "BenchmarkSet"
+        )
+        question_ref = EntityVersionRef(
+            entity_id=question.entity_id, version=question.version
+        )
+        benchmark_ref = EntityVersionRef(
+            entity_id=benchmarks.entity_id, version=benchmarks.version
+        )
+        graph = EntityVersion(
+            entity_id="primitives.codex.bridge",
+            entity_type="PrimitiveGraph",
+            version=1,
+            project_id=snapshot.project_id,
+            title="Codex bridge primitive graph",
+            summary="The exact primitive closure for the bridge fixture.",
+            status=ScientificStatus(lifecycle="proposed"),
+            facets=pack_theory_payload(
+                PrimitiveGraph(
+                    question_ref=question_ref,
+                    benchmark_set_ref=benchmark_ref,
+                    nodes=(
+                        PrimitiveNode(
+                            node_id="node.codex.bridge.participation",
+                            kind="choice",
+                            label="Participation",
+                            economic_meaning=(
+                                "The decision maker chooses whether to participate."
+                            ),
+                            status="primitive",
+                        ),
+                    ),
+                )
+            ),
+            privacy="public",
+            access_compartments=("project_research",),
+            created_at=run.created_at,
+        )
+        graph_ref = EntityVersionRef(entity_id=graph.entity_id, version=1)
+        dossier = EntityVersion(
+            entity_id="dossier.g1.codex.bridge",
+            entity_type="GateDossier",
+            version=1,
+            project_id=snapshot.project_id,
+            title="Codex bridge G1 dossier",
+            summary="The exact G1 package for the bridge fixture.",
+            status=ScientificStatus(lifecycle="proposed"),
+            facets=pack_theory_payload(
+                GateDossier(
+                    gate_kind="G1_question_benchmark",
+                    research_question_ref=question_ref,
+                    ordered_object_refs=(question_ref, benchmark_ref, graph_ref),
+                    requirements=(
+                        GateRequirement(
+                            requirement_id="g1.codex.bridge.delta",
+                            description=(
+                                "The question and benchmark delta are explicit."
+                            ),
+                            evidence_refs=(question_ref, benchmark_ref, graph_ref),
+                            recorded_condition="evidence_supplied",
+                        ),
+                    ),
+                    proposed_action="approve",
+                    rationale=(
+                        "The package is ready for an economics audit, but this "
+                        "does not confirm G1."
+                    ),
+                    prepared_at=run.created_at,
+                )
+            ),
+            privacy="public",
+            access_compartments=("project_research",),
+            created_at=run.created_at,
+        )
+        dossier_ref = EntityVersionRef(entity_id=dossier.entity_id, version=1)
+        decomposes = RelationVersion(
+            relation_id="relation.codex.bridge.decomposes",
+            relation_type="decomposes",
+            version=1,
+            project_id=snapshot.project_id,
+            source=question_ref,
+            target=graph_ref,
+            dependency_mode="trace_only",
+            privacy="public",
+            access_compartments=("project_research",),
+            created_at=run.created_at,
+        )
+        governs = RelationVersion(
+            relation_id="relation.codex.bridge.governs",
+            relation_type="governs",
+            version=1,
+            project_id=snapshot.project_id,
+            source=dossier_ref,
+            target=question_ref,
+            dependency_mode="trace_only",
+            privacy="public",
+            access_compartments=("project_research",),
+            created_at=run.created_at,
+        )
+        refs = (
+            graph_ref,
+            dossier_ref,
+            RelationVersionRef(relation_id=decomposes.relation_id, version=1),
+            RelationVersionRef(relation_id=governs.relation_id, version=1),
+        )
+        return Transaction(
+            **transaction_bindings(layout, route_run_id),
+            transaction_id="transaction.codex.bridge.decomposition",
+            origin="route_run",
+            project_id=snapshot.project_id,
+            base_revision=run.base_revision,
+            route_run_id=run.route_run_id,
+            route_id=run.route_id,
+            actor=run.actor,
+            intent="Commit one exact decomposition package.",
+            operations=(
+                CreateEntityOp(entity=graph),
+                CreateEntityOp(entity=dossier),
+                CreateRelationOp(relation=decomposes),
+                CreateRelationOp(relation=governs),
+                RecordRouteOutcomeOp(
+                    outcome=RouteOutcome(
+                        route_run_id=run.route_run_id,
+                        route_id=run.route_id,
+                        outcome="completed_with_candidate",
+                        rationale="One exact decomposition package was produced.",
+                        candidate_refs=refs,
+                        privacy="public",
+                        access_compartments=("project_research",),
+                    )
+                ),
+            ),
+            evidence_refs=(question_ref, benchmark_ref),
+            privacy="public",
+            access_compartments=("project_research",),
+            created_at=run.created_at,
+            parent_transaction_hash=run.base_revision,
+        )
+
     def _delivery_identity(
         self, response: CodexBridgeResponseV1
     ) -> tuple[ProjectOperationalLayout, DeliveryEnvelopeV1, EgressPlanV1]:
@@ -339,6 +494,86 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
             conflict.diagnostics[0].message,
         )
         self.assertEqual(replay(StoreLayout.at(self.root)).head, digest)
+
+    def test_omitted_budget_advances_from_one_decomposition_to_audit(self) -> None:
+        layout = StoreLayout.at(self.root)
+        start_request = self._start_request()
+        self.assertIsNone(start_request.budget_units)
+
+        framing = self.bridge.invoke(start_request)
+        self.assertEqual(framing.outcome, "ready", framing)
+        self.assertEqual(
+            framing.work_packet.route_id, "frame.question_and_benchmarks"
+        )
+        self.assertEqual(read_context(layout, framing.route_run_id).budget_units, 4_000)
+        framing_transaction = self._framing_transaction(framing.route_run_id)
+        framing_path = self.root / framing.candidate_logical_path
+        framing_path.parent.mkdir(parents=True, exist_ok=True)
+        framing_path.write_text(
+            json.dumps(framing_transaction.model_dump(mode="json"), indent=2) + "\n",
+            encoding="utf-8",
+        )
+        framing_completed = self.bridge.invoke(
+            CodexCompleteRequestV1(
+                project_root=str(self.root),
+                route_run_id=framing.route_run_id,
+                work_packet_hash=framing.work_packet_hash,
+                delivery_envelope_hash=framing.delivery_envelope_hash,
+            )
+        )
+        self.assertEqual(framing_completed.outcome, "committed", framing_completed)
+
+        decomposition = self.bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(self.root),
+                session=self.session.model_copy(
+                    update={"session_id": "codex-session-decomposition"}
+                ),
+            )
+        )
+        self.assertEqual(decomposition.outcome, "ready", decomposition)
+        self.assertEqual(decomposition.work_packet.route_id, "decompose.primitives")
+        self.assertEqual(
+            read_context(layout, decomposition.route_run_id).budget_units, 4_000
+        )
+        decomposition_transaction = self._decomposition_transaction(
+            decomposition.route_run_id
+        )
+        decomposition_path = self.root / decomposition.candidate_logical_path
+        decomposition_path.parent.mkdir(parents=True, exist_ok=True)
+        decomposition_path.write_text(
+            json.dumps(
+                decomposition_transaction.model_dump(mode="json"), indent=2
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        decomposition_completed = self.bridge.invoke(
+            CodexCompleteRequestV1(
+                project_root=str(self.root),
+                route_run_id=decomposition.route_run_id,
+                work_packet_hash=decomposition.work_packet_hash,
+                delivery_envelope_hash=decomposition.delivery_envelope_hash,
+            )
+        )
+        self.assertEqual(
+            decomposition_completed.outcome,
+            "committed",
+            decomposition_completed,
+        )
+
+        audit_request = CodexStartRequestV1(
+            project_root=str(self.root),
+            session=self.session.model_copy(
+                update={"session_id": "codex-session-framing-audit"}
+            ),
+        )
+        self.assertIsNone(audit_request.budget_units)
+        audit = self.bridge.invoke(audit_request)
+        self.assertEqual(audit.outcome, "ready", audit)
+        self.assertEqual(audit.work_packet.route_id, "audit.framing_economics")
+        self.assertNotEqual(audit.work_packet.route_id, "decompose.primitives")
+        self.assertEqual(read_context(layout, audit.route_run_id).budget_units, 18_000)
 
     def test_route_invalid_candidate_can_be_repaired_with_same_auto_digest_request(
         self,
@@ -726,6 +961,27 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
             ["codex", "invoke", "--schema", "bundle"]
         )
         self.assertEqual(parsed.schema, "bundle")
+        self.assertIsNone(self._start_request().budget_units)
+        explicit_null = CodexStartRequestV1.model_validate_json(
+            canonical_json_bytes(
+                {
+                    **self._start_request().model_dump(mode="json"),
+                    "budget_units": None,
+                }
+            ),
+            strict=True,
+        )
+        self.assertIsNone(explicit_null.budget_units)
+        with self.assertRaises(ValueError):
+            CodexStartRequestV1.model_validate_json(
+                canonical_json_bytes(
+                    {
+                        **self._start_request().model_dump(mode="json"),
+                        "budget_units": 0,
+                    }
+                ),
+                strict=True,
+            )
         environment = os.environ.copy()
         environment["PYTHONPATH"] = str(Path(__file__).resolve().parents[1] / "src")
         emitted = subprocess.run(

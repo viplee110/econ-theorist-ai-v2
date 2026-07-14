@@ -1,0 +1,9 @@
+[
+  {
+    "code": "CandidateValidationError",
+    "details": {},
+    "diagnostic_schema": "econ-theorist/diagnostic/v1",
+    "message": "Phase 2 route contract rejected the transaction: decomposes relation does not target PrimitiveGraph",
+    "severity": "error"
+  }
+]

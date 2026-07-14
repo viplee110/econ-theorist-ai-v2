@@ -1,0 +1,8 @@
+{
+  "capture_schema": "etai/raw-response-capture/v1",
+  "etai_exit_code": 0,
+  "char_count": 64837,
+  "utf8_byte_count": 64837,
+  "sha256": "976d75738eac8317b9aaaa2889565ac036bae93983276f9ca159c62a143477d7",
+  "transport": "gzip_base64_from_tool_result_then_chunk_decoded_without_filesystem_writes"
+}

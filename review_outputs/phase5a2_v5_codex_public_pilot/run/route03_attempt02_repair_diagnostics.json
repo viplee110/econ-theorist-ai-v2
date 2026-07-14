@@ -1,0 +1,9 @@
+[
+  {
+    "code": "ChangedFacetError",
+    "details": {},
+    "diagnostic_schema": "econ-theorist/diagnostic/v1",
+    "message": "changed_facets for primitive_graph_cqc@2 declared ('economic_interpretation',), actual semantic diff is ('economic_interpretation', 'terminology_presentation')",
+    "severity": "error"
+  }
+]

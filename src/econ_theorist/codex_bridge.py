@@ -111,7 +111,7 @@ class CodexStartRequestV1(StrictModel):
     requested_scope: NonEmpty | None = None
     framing_intent: NonEmpty | None = None
     profile_request: NonEmpty | None = None
-    budget_units: Annotated[int, Field(ge=1)] = 10_000
+    budget_units: Annotated[int, Field(ge=1)] | None = None
     session: CodexSessionV1
 
     @model_validator(mode="after")
@@ -579,8 +579,9 @@ class CodexBridge:
         navigation_parameters: dict[str, Any] = {
             "compartments": ["project_research"],
             "privacy_clearance": "public",
-            "budget_units": request.budget_units,
         }
+        if request.budget_units is not None:
+            navigation_parameters["budget_units"] = request.budget_units
         if brief is not None:
             navigation_parameters["run_input_brief"] = brief.model_dump(mode="json")
         navigation = dispatcher.dispatch(

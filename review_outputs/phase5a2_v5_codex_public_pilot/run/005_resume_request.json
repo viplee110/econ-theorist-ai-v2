@@ -1,0 +1,18 @@
+{
+  "bridge_request_schema": "econ-theorist/codex-start-request/v1",
+  "bridge_version": 1,
+  "operation": "start_or_resume",
+  "project_root": "C:\\tmp\\etai-v5-public-pilot-20260714",
+  "session": {
+    "session_schema": "econ-theorist/codex-session/v1",
+    "session_id": "69d7d28b-00f7-4774-b4f8-ce27e3319a34",
+    "selected_model": "gpt-5",
+    "installed_models": [
+      "gpt-5"
+    ],
+    "observed_at": "2026-07-14T21:09:20.2443662+08:00"
+  },
+  "initialize": false,
+  "budget_units": 10000,
+  "requested_scope": "Continue through each engine-selected, agent-authorized pre-G1 framing route one canonical commit at a time and stop before a human-owned G1 decision. The engine, not the Codex host, owns route selection."
+}

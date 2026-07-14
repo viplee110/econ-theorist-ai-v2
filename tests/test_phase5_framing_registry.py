@@ -11,8 +11,10 @@ from econ_theorist.machine.resources import (
     NAVIGATION_REGISTRY_HASH,
     NAVIGATION_REGISTRY_V1_HASH,
     NAVIGATION_REGISTRY_V2_HASH,
+    NAVIGATION_REGISTRY_V3_HASH,
     NavigationRegistryV1,
     NavigationRegistryV2,
+    NavigationRegistryV3,
     load_navigation_registry,
     load_navigation_registry_by_hash,
 )
@@ -51,6 +53,9 @@ FROZEN_CANONICAL_REGISTRY_HASHES = {
 FROZEN_NAVIGATION_V1_RAW_HASH = (
     "970a40842ce298945b67bbdd65f4191d8506565de7363324bb79f504e2cdacbd"
 )
+FROZEN_NAVIGATION_V2_RAW_HASH = (
+    "f2d3990cf1c22ab20ec13a047e024b4488fde465a67098da37e915b753fe2048"
+)
 
 
 class Phase5FramingRegistryTests(unittest.TestCase):
@@ -83,6 +88,11 @@ class Phase5FramingRegistryTests(unittest.TestCase):
         self.assertEqual(
             sha256_digest(navigation_v1.read_bytes()),
             FROZEN_NAVIGATION_V1_RAW_HASH,
+        )
+        navigation_v2 = REPOSITORY_ROOT / "machine" / "navigation-registry.v2.json"
+        self.assertEqual(
+            sha256_digest(navigation_v2.read_bytes()),
+            FROZEN_NAVIGATION_V2_RAW_HASH,
         )
 
     def test_v5_preserves_v4_except_framing_repair_and_adds_framing_audit(self) -> None:
@@ -218,27 +228,58 @@ class Phase5FramingRegistryTests(unittest.TestCase):
         self.assertEqual(policy.route_id, route.route_id)
         self.assertEqual(policy.selector_id, "registry_cardinality.v1")
 
-    def test_route_and_navigation_v2_are_active_while_v1_remains_addressable(self) -> None:
+    def test_route_and_navigation_v3_are_active_while_v1_v2_remain_addressable(self) -> None:
         active_routes = load_route_registry()
         self.assertEqual(active_routes.registry_version, 5)
         self.assertEqual(ROUTE_REGISTRY_HASH, ROUTE_REGISTRY_V5_HASH)
         self.assertEqual(registry_hash(active_routes), ROUTE_REGISTRY_V5_HASH)
 
         active_navigation = load_navigation_registry()
-        self.assertIsInstance(active_navigation, NavigationRegistryV2)
-        self.assertEqual(NAVIGATION_REGISTRY_HASH, NAVIGATION_REGISTRY_V2_HASH)
-        self.assertEqual(active_navigation.navigation_registry_version, 2)
+        self.assertIsInstance(active_navigation, NavigationRegistryV3)
+        self.assertEqual(NAVIGATION_REGISTRY_HASH, NAVIGATION_REGISTRY_V3_HASH)
+        self.assertEqual(active_navigation.navigation_registry_version, 3)
         self.assertEqual(active_navigation.route_registry_hash, ROUTE_REGISTRY_V5_HASH)
         policy = active_navigation.routes[-1]
         self.assertEqual(policy.route_id, "audit.framing_economics")
         self.assertEqual(policy.selector_id, "registry_cardinality.v1")
         self.assertEqual(policy.purpose, "scientific_framing_audit")
         self.assertEqual(policy.default_budget_units, 18000)
+        decompose = next(
+            item
+            for item in active_navigation.routes
+            if item.route_id == "decompose.primitives"
+        )
+        self.assertEqual(
+            decompose.selector_id, "uncompleted_decomposition_scope.v1"
+        )
+        specialized = tuple(
+            item
+            for item in active_navigation.routes
+            if item.selector_id == "uncompleted_decomposition_scope.v1"
+        )
+        self.assertEqual(tuple(item.route_id for item in specialized), ("decompose.primitives",))
 
         historical = load_navigation_registry_by_hash(NAVIGATION_REGISTRY_V1_HASH)
         self.assertIsInstance(historical, NavigationRegistryV1)
         self.assertEqual(historical.navigation_registry_version, 1)
         self.assertEqual(historical.route_registry_hash, ROUTE_REGISTRY_V4_HASH)
+        historical_v2 = load_navigation_registry_by_hash(NAVIGATION_REGISTRY_V2_HASH)
+        self.assertIsInstance(historical_v2, NavigationRegistryV2)
+        self.assertEqual(historical_v2.navigation_registry_version, 2)
+        self.assertEqual(historical_v2.route_registry_hash, ROUTE_REGISTRY_V5_HASH)
+        historical_decompose = next(
+            item
+            for item in historical_v2.routes
+            if item.route_id == "decompose.primitives"
+        )
+        self.assertEqual(historical_decompose.selector_id, "registry_cardinality.v1")
+        v2_payload = historical_v2.model_dump(mode="json")
+        v3_payload = active_navigation.model_dump(mode="json")
+        v3_payload["navigation_registry_version"] = 2
+        for item in v3_payload["routes"]:
+            if item["route_id"] == "decompose.primitives":
+                item["selector_id"] = "registry_cardinality.v1"
+        self.assertEqual(v3_payload, v2_payload)
 
 
 if __name__ == "__main__":

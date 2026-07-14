@@ -1,0 +1,22 @@
+[
+  {
+    "code": "codex_candidate_transaction_invalid",
+    "details": {
+      "issue_count": 1,
+      "issues": [
+        {
+          "location": [],
+          "message": "Value error, changed_facets must declare exactly every superseding entity operation",
+          "type": "value_error"
+        }
+      ],
+      "model": "Transaction",
+      "repairable": true,
+      "retry_action": "edit_declared_candidate_and_retry_same_request",
+      "truncated": false
+    },
+    "diagnostic_schema": "econ-theorist/diagnostic/v1",
+    "message": "Candidate Transaction failed strict model validation; edit the declared candidate and retry the same complete request.",
+    "severity": "error"
+  }
+]

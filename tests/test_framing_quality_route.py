@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from collections.abc import Callable
 from pathlib import Path
+from unittest.mock import patch
 
 from pydantic import ValidationError
 from tests.helpers import REPOSITORY_ROOT  # noqa: F401  # installs src
@@ -36,8 +37,11 @@ from econ_theorist.framing_quality import (
     SelectionAssurance,
     pack_framing_quality_payload,
 )
-from econ_theorist.machine.models import WorkPacketV1
-from econ_theorist.machine.navigation import enumerate_navigation_candidates
+from econ_theorist.machine.models import DiagnosticV1, WorkPacketV1
+from econ_theorist.machine.navigation import (
+    enumerate_navigation_candidates,
+    plan_next,
+)
 from econ_theorist.models import (
     Actor,
     ChangedFacets,
@@ -59,6 +63,7 @@ from econ_theorist.models import (
     Transaction,
 )
 from econ_theorist.policy import (
+    ROUTE_REGISTRY_HASH,
     instruction_bundle_bytes,
     route_spec_by_hash,
 )
@@ -70,6 +75,7 @@ from econ_theorist.runs import (
     read_context,
     read_run,
     transaction_bindings,
+    validate_run_entry,
 )
 from econ_theorist.runtime import StoreLayout
 from econ_theorist.runtime.commit import commit_transaction
@@ -92,6 +98,9 @@ from econ_theorist.theory import (
     TheoryPayload,
     pack_theory_payload,
     parse_theory_entity,
+)
+from econ_theorist.theory_validation import (
+    has_current_fresh_g1_decomposition_package,
 )
 
 
@@ -552,6 +561,360 @@ class FramingQualityRouteTests(unittest.TestCase):
             created_at=T2,
         )
         return question, benchmarks, graph, source_dossier
+
+    def test_navigation_closes_completed_decomposition_and_uses_audit_default(
+        self,
+    ) -> None:
+        question, benchmarks, _, _ = self._phase2_prefix()
+        direct_route, _ = validate_run_entry(
+            self.snapshot,
+            route_id="decompose.primitives",
+            actor=AGENT,
+            purpose="research_discovery",
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            focus_entity_ids=(question.entity_id, benchmarks.entity_id),
+            route_registry_hash=ROUTE_REGISTRY_HASH,
+        )
+        self.assertEqual(direct_route.route_id, "decompose.primitives")
+        candidates, diagnostics = enumerate_navigation_candidates(
+            self.layout,
+            self.snapshot,
+            actor=AGENT,
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            requested_route_ids=(
+                "decompose.primitives",
+                "audit.framing_economics",
+            ),
+        )
+
+        self.assertEqual(
+            tuple(item.key.route_id for item in candidates),
+            ("audit.framing_economics",),
+        )
+        self.assertEqual(candidates[0].key.context_budget, 18_000)
+        self.assertIn("route_scope_complete", {item.code for item in diagnostics})
+
+        under_budget = plan_next(
+            self.layout,
+            self.snapshot,
+            actor=AGENT,
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            budget_units=1,
+            requested_route_ids=(
+                "decompose.primitives",
+                "audit.framing_economics",
+            ),
+        )
+        self.assertEqual(under_budget.outcome, "repair_required")
+        self.assertFalse(under_budget.candidates)
+        self.assertIn(
+            "context_budget_insufficient",
+            {item.code for item in under_budget.blockers},
+        )
+
+    def test_authorized_upstream_repair_reopens_decomposition_scope(self) -> None:
+        core = self._phase2_prefix()
+        graph = core[2]
+        bundle, _, _ = self._commit_audit(
+            core,
+            proposed_action="revise_framing",
+            repair_target=graph,
+        )
+        revised_graph = self._revised_upstream(graph)
+        self.snapshot = self._commit_route(
+            route_id="repair.dependency",
+            purpose="research_repair",
+            focus=(graph.entity_id, bundle.entity_id),
+            outputs=(revised_graph,),
+            relations=(),
+            evidence_refs=(eref(graph), eref(bundle)),
+            created_at=T4,
+        )
+
+        candidates, diagnostics = enumerate_navigation_candidates(
+            self.layout,
+            self.snapshot,
+            actor=AGENT,
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            budget_units=32_000,
+            requested_route_ids=("decompose.primitives",),
+        )
+        self.assertEqual(
+            tuple(item.key.route_id for item in candidates),
+            ("decompose.primitives",),
+            tuple(item.message for item in diagnostics),
+        )
+
+    def test_explicit_ten_thousand_budget_remains_a_hard_audit_cap(self) -> None:
+        _, _, graph, _ = self._phase2_prefix()
+        graph_payload = parse_theory_entity(graph)
+        assert isinstance(graph_payload, PrimitiveGraph)
+        padded_node = graph_payload.nodes[0].model_copy(
+            update={
+                "economic_meaning": (
+                    graph_payload.nodes[0].economic_meaning
+                    + " "
+                    + ("margin " * 7_000)
+                )
+            }
+        )
+        padded_graph = graph.model_copy(
+            update={
+                "facets": pack_theory_payload(
+                    graph_payload.model_copy(
+                        update={"nodes": (padded_node, *graph_payload.nodes[1:])}
+                    )
+                )
+            }
+        )
+        padded = self.snapshot.model_copy(
+            update={
+                "entity_versions": tuple(
+                    padded_graph if eref(item) == eref(graph) else item
+                    for item in self.snapshot.entity_versions
+                )
+            }
+        )
+
+        route_default, default_diagnostics = enumerate_navigation_candidates(
+            self.layout,
+            padded,
+            actor=AGENT,
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            requested_route_ids=(
+                "decompose.primitives",
+                "audit.framing_economics",
+            ),
+        )
+        self.assertEqual(
+            tuple(item.key.route_id for item in route_default),
+            ("audit.framing_economics",),
+            tuple(item.message for item in default_diagnostics),
+        )
+        self.assertEqual(route_default[0].key.context_budget, 18_000)
+
+        capped, capped_diagnostics = enumerate_navigation_candidates(
+            self.layout,
+            padded,
+            actor=AGENT,
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            budget_units=10_000,
+            requested_route_ids=(
+                "decompose.primitives",
+                "audit.framing_economics",
+            ),
+        )
+        self.assertFalse(capped)
+        self.assertIn(
+            "context_budget_insufficient",
+            {item.code for item in capped_diagnostics},
+        )
+
+    def test_navigation_suppresses_every_completed_multi_benchmark_focus(self) -> None:
+        question, benchmarks, _, _ = self._phase2_prefix()
+        second_benchmarks = self._theory_entity(
+            "benchmarks.certification.alternative",
+            BenchmarkSet(
+                question_ref=eref(question),
+                benchmarks=(
+                    BenchmarkRecord(
+                        benchmark_id="benchmark.fixed_inspection",
+                        label="Fixed buyer inspection",
+                        exact_primitives=("Inspection is held fixed.",),
+                        timing=("Certification", "Purchase"),
+                        solution_concept="Optimal seller response",
+                        prediction="Only the supply response remains.",
+                        unresolved_delta="Buyer inspection cannot adjust.",
+                    ),
+                ),
+                exact_question_delta="Allow buyer inspection to respond.",
+            ),
+            title="Alternative certification benchmark",
+            created_at=T2,
+        )
+        partial_current = dict(self.snapshot.current_entities)
+        partial_current[second_benchmarks.entity_id] = second_benchmarks.version
+        partial = self.snapshot.model_copy(
+            update={
+                "entity_versions": (
+                    *self.snapshot.entity_versions,
+                    second_benchmarks,
+                ),
+                "current_entities": partial_current,
+            }
+        )
+        partial_candidates, partial_diagnostics = enumerate_navigation_candidates(
+            self.layout,
+            partial,
+            actor=AGENT,
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            budget_units=32_000,
+            requested_route_ids=("decompose.primitives",),
+        )
+        self.assertEqual(
+            {
+                frozenset(reference.entity_id for reference in item.key.focus_refs)
+                for item in partial_candidates
+            },
+            {
+                frozenset((question.entity_id, second_benchmarks.entity_id)),
+                frozenset(
+                    (
+                        question.entity_id,
+                        benchmarks.entity_id,
+                        second_benchmarks.entity_id,
+                    )
+                ),
+            },
+        )
+        self.assertIn(
+            "route_scope_complete", {item.code for item in partial_diagnostics}
+        )
+        second_graph = self._theory_entity(
+            "primitives.certification.alternative",
+            PrimitiveGraph(
+                question_ref=eref(question),
+                benchmark_set_ref=eref(second_benchmarks),
+                nodes=(
+                    PrimitiveNode(
+                        node_id="node.alternative.inspection",
+                        kind="choice",
+                        label="Inspection response",
+                        economic_meaning="Inspection responds outside the benchmark.",
+                        status="primitive",
+                    ),
+                ),
+            ),
+            title="Alternative primitive graph",
+            created_at=T2,
+        )
+        second_dossier = self._theory_entity(
+            "dossier.g1.certification.alternative",
+            GateDossier(
+                gate_kind="G1_question_benchmark",
+                research_question_ref=eref(question),
+                ordered_object_refs=(
+                    eref(question),
+                    eref(second_benchmarks),
+                    eref(second_graph),
+                ),
+                requirements=(
+                    GateRequirement(
+                        requirement_id="g1.alternative.delta",
+                        description="The alternative benchmark delta is explicit.",
+                        evidence_refs=(eref(question), eref(second_benchmarks)),
+                        recorded_condition="evidence_supplied",
+                    ),
+                ),
+                proposed_action="approve",
+                rationale="This exact package is ready for its economics audit.",
+                prepared_at=T2,
+            ),
+            title="Alternative source G1 dossier",
+            created_at=T2,
+        )
+        current_entities = dict(self.snapshot.current_entities)
+        for entity in (second_benchmarks, second_graph, second_dossier):
+            current_entities[entity.entity_id] = entity.version
+        synthetic = self.snapshot.model_copy(
+            update={
+                "entity_versions": (
+                    *self.snapshot.entity_versions,
+                    second_benchmarks,
+                    second_graph,
+                    second_dossier,
+                ),
+                "current_entities": current_entities,
+            }
+        )
+
+        candidates, diagnostics = enumerate_navigation_candidates(
+            self.layout,
+            synthetic,
+            actor=AGENT,
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            budget_units=32_000,
+            requested_route_ids=("decompose.primitives",),
+        )
+        self.assertFalse(candidates)
+        self.assertIn("route_scope_complete", {item.code for item in diagnostics})
+
+    def test_post_audit_dossier_alone_does_not_close_decomposition_scope(self) -> None:
+        core = self._phase2_prefix()
+        question, benchmarks, _, source_dossier = core
+        bundle, replacement, _ = self._commit_audit(core)
+        replacement_payload = parse_theory_entity(replacement)
+        self.assertIsInstance(replacement_payload, GateDossier)
+        assert isinstance(replacement_payload, GateDossier)
+        self.assertIn(eref(bundle), replacement_payload.ordered_object_refs)
+        self.assertTrue(
+            has_current_fresh_g1_decomposition_package(
+                self.snapshot,
+                research_question_ref=eref(question),
+                benchmark_set_ref=eref(benchmarks),
+            )
+        )
+        post_audit_only = self.snapshot.model_copy(
+            update={
+                "entity_versions": tuple(
+                    item
+                    for item in self.snapshot.entity_versions
+                    if item.entity_id != source_dossier.entity_id
+                ),
+                "current_entities": {
+                    entity_id: version
+                    for entity_id, version in self.snapshot.current_entities.items()
+                    if entity_id != source_dossier.entity_id
+                },
+                "derived_status": {
+                    entity_id: status
+                    for entity_id, status in self.snapshot.derived_status.items()
+                    if entity_id != source_dossier.entity_id
+                },
+            }
+        )
+        self.assertFalse(
+            has_current_fresh_g1_decomposition_package(
+                post_audit_only,
+                research_question_ref=eref(question),
+                benchmark_set_ref=eref(benchmarks),
+            )
+        )
+
+    def test_budget_blocker_precedes_human_prerequisite_diagnostic(self) -> None:
+        diagnostics = (
+            DiagnosticV1(
+                code="context_budget_insufficient",
+                severity="info",
+                message="The exact audit context exceeds the supplied budget.",
+            ),
+            DiagnosticV1(
+                code="human_decision_prerequisite",
+                severity="info",
+                message="A mismatched dossier does not satisfy the gate prerequisite.",
+            ),
+        )
+        with patch(
+            "econ_theorist.machine.navigation.enumerate_navigation_candidates",
+            return_value=((), diagnostics),
+        ):
+            planned = plan_next(
+                self.layout,
+                self.snapshot,
+                actor=AGENT,
+                compartments=("project_research",),
+                privacy_clearance="project_private",
+            )
+        self.assertEqual(planned.outcome, "repair_required")
+        self.assertEqual(planned.blockers, diagnostics)
 
     def _assessment(
         self,

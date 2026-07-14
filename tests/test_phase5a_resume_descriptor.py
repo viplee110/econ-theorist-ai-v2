@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
 
-from econ_theorist.codec import canonical_json_bytes
+from econ_theorist.codec import canonical_json_bytes, sha256_digest
 from econ_theorist.machine.dispatcher import MachineDispatcher
+from econ_theorist.machine.lifecycle import derive_all_run_execution_views
 from econ_theorist.machine.models import (
     DiscoveryGrantV1,
     MachineRequestV1,
@@ -13,6 +15,11 @@ from econ_theorist.machine.models import (
     ResumeDescriptorV1,
     RunInputBriefV1,
 )
+from econ_theorist.machine.resources import NAVIGATION_REGISTRY_V2_HASH
+from econ_theorist.machine.operational import ProjectOperationalLayout
+from econ_theorist.machine.resume import ResumeDescriptorError, derive_resume_descriptor
+from econ_theorist.runtime import StoreLayout
+from econ_theorist.runtime.replay import replay
 
 
 class Phase5AResumeDescriptorTests(unittest.TestCase):
@@ -180,6 +187,51 @@ class Phase5AResumeDescriptorTests(unittest.TestCase):
         self.assertEqual(repaired.result["resume_descriptors"], [])
         self.assertEqual(
             repaired.result["active_run_ids"],
+            [opened.result["route_run_id"]],
+        )
+
+    def test_incomplete_run_from_inactive_navigation_policy_requires_repair(self) -> None:
+        opened = self._open_run()
+        binding_path = (
+            self.root
+            / ".econ-theorist"
+            / "operational"
+            / "v1"
+            / "runs"
+            / opened.result["route_run_id"]
+            / "navigation-candidate.json"
+        )
+        candidate = json.loads(binding_path.read_text(encoding="utf-8"))
+        candidate["key"]["navigation_registry_hash"] = NAVIGATION_REGISTRY_V2_HASH
+        candidate["candidate_digest"] = sha256_digest(
+            canonical_json_bytes(candidate["key"])
+        )
+        binding_path.write_bytes(canonical_json_bytes(candidate))
+
+        layout = StoreLayout.at(self.root)
+        snapshot = replay(layout)
+        view = next(
+            item
+            for item in derive_all_run_execution_views(layout, snapshot)
+            if item.route_run_id == opened.result["route_run_id"]
+        )
+        with self.assertRaisesRegex(
+            ResumeDescriptorError, "inactive navigation policy"
+        ):
+            derive_resume_descriptor(
+                layout,
+                ProjectOperationalLayout.at(layout),
+                view,
+            )
+
+        inspected = MachineDispatcher(
+            preproject_operational_home=self.local_home
+        ).dispatch(self._request("navigation.plan_next"))
+        self.assertEqual(inspected.outcome, "repair_required", inspected)
+        self.assertEqual(inspected.result["outcome"], "repair_required")
+        self.assertEqual(inspected.result["resume_descriptors"], [])
+        self.assertEqual(
+            inspected.result["active_run_ids"],
             [opened.result["route_run_id"]],
         )
 
