@@ -225,6 +225,55 @@ policy connection is a `policy_edge`, not a theory coauthorship edge; Volker
 Nocke is M3/topic rather than M2; and Annie Liang remains `outside_checked`
 rather than being pulled inward by an unverified Acemoglu--Fudenberg edge.
 
+### Syllabus-derived IO additions and foundational anchors
+
+A researcher-provided graduate IO syllabus reveals five undercovered mechanism
+lineages in the initial 50-scholar pool: product differentiation, firm and
+industry dynamics, switching costs, vertical exclusion, and the shared lineage
+linking search, platform, and pricing theory. A compact active addition is:
+
+- [Yongmin Chen](https://www.colorado.edu/faculty/chen-yongmin/), for price
+  discrimination, dynamic pricing, consumer search, innovation, vertical
+  contracting, and exclusion;
+- [Michael D. Whinston](https://economics.mit.edu/people/faculty/michael-whinston),
+  for entry, scale economies, vertical contracts, exclusion, and antitrust;
+- [Simon P. Anderson](https://economics.virginia.edu/people/simon-anderson),
+  for discrete-choice product differentiation, search, price dispersion,
+  advertising, and media or platform markets;
+- [Luís Cabral](https://www.stern.nyu.edu/faculty/bio/luis-cabral), for firm
+  and industry dynamics, innovation, learning, reputation, network effects,
+  and platforms; and
+- [Patrick Rey](https://www.tse-fr.eu/people/patrick-rey?tab=bio-and-research-interests),
+  for vertical restraints, foreclosure, competition policy, information, and
+  the digital economy.
+
+These five scholars extend the active discovery pool; they do not become
+runtime quotas. Admission still occurs at the paper level, and only qualifying
+theory outputs enter the corpus. Fame or appearance on a syllabus is never
+itself a research-move claim. The network labels and anti-echo percentages
+above remain statistics for the initial 50; the expanded active pool receives
+a fresh provenance and coverage audit before production sampling.
+
+Two separate foundation-role anchors preserve intellectual ancestry without,
+in that role, receiving the recency or collaboration-network weight of active
+discovery nodes:
+
+- [Jean Tirole](https://www.tse-fr.eu/people/jean-tirole), for the integrated
+  IO language connecting market power, dynamic competition, vertical
+  relations, regulation, and two-sided markets; and
+- [Paul Klemperer](https://www.nuffield.ox.ac.uk/people/profiles/paul-klemperer/),
+  for switching costs, dynamic competition, auctions, and the discipline of
+  moving between simple theory and institutional design.
+
+Thus the curation structure is **50 core contemporary nodes + 5
+syllabus-derived active additions + 2 foundation-role anchors**, not 57
+equally weighted scholar personas. The foundation layer is used to recover
+canonical benchmarks, mechanism ancestry, and known failure modes, helping
+the system avoid rediscovering an old result under new notation. It is not a
+style-transfer library. Xavier Vives is the first reserve if later coverage
+audits find product-market rivalry or strategic complementarities too thin;
+reserve status is a curation note, not a lower assessment of the scholar.
+
 ## 5. Research-move representation
 
 Each candidate move is a compact, versioned, copyright-safe derived card:
