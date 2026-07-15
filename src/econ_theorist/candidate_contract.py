@@ -69,6 +69,14 @@ class CandidateTransactionBindingsV1(StrictModel):
     privacy: PrivacyLabel
     access_compartments: tuple[StableId, ...]
     created_at: NonEmptyString
+    required_entity_evidence_refs: tuple[EntityVersionRef, ...] = ()
+
+    @model_serializer(mode="wrap")
+    def _omit_historical_evidence_binding(self, handler: Any) -> dict[str, Any]:
+        serialized = handler(self)
+        if not self.required_entity_evidence_refs:
+            serialized.pop("required_entity_evidence_refs", None)
+        return serialized
 
     def model_post_init(self, __context: Any) -> None:
         if self.base_revision != self.parent_transaction_hash:
@@ -181,6 +189,20 @@ class CandidateHardRelationTemplateV1(StrictModel):
         return self
 
 
+class CandidateEndpointConstraintV1(StrictModel):
+    """A small route-exit endpoint fact exposed to the authoring model."""
+
+    endpoint_constraint_schema: Literal[
+        "econ-theorist/candidate-endpoint-constraint/v1"
+    ] = "econ-theorist/candidate-endpoint-constraint/v1"
+    relation_type: StableId
+    endpoint_role: Literal["source", "target"]
+    entity_type: StableId
+    output_ordinal: Annotated[int, Field(ge=1)]
+    count: Literal[1] = 1
+    repair_hint: NonEmptyString
+
+
 class CandidateRouteOutputContractV1(StrictModel):
     """Exact generic route exit surface; route instructions retain science."""
 
@@ -197,6 +219,7 @@ class CandidateRouteOutputContractV1(StrictModel):
     required_output_entities: tuple[RouteEntityRequirement, ...]
     required_output_relations: tuple[RouteRelationRequirement, ...]
     required_relation_templates: tuple[CandidateHardRelationTemplateV1, ...] = ()
+    required_endpoint_constraints: tuple[CandidateEndpointConstraintV1, ...] = ()
     required_route_outcome_count: Literal[1] = 1
     model_invariants: tuple[CandidateModelInvariantV1, ...]
     relation_json_schema: dict[str, Any]
@@ -209,6 +232,8 @@ class CandidateRouteOutputContractV1(StrictModel):
         serialized = handler(self)
         if not self.required_relation_templates:
             serialized.pop("required_relation_templates", None)
+        if not self.required_endpoint_constraints:
+            serialized.pop("required_endpoint_constraints", None)
         return serialized
 
 
@@ -220,7 +245,7 @@ class CandidateAuthoringContractV1(StrictModel):
     ] = "econ-theorist/candidate-authoring-contract/v1"
     work_packet_hash: Digest
     packet_schema: Literal["econ-theorist/work-packet/v1"]
-    packet_compiler_version: Literal[1]
+    packet_compiler_version: Literal[1, 2]
     engine_version: NonEmptyString
     engine_semantics_hash: Digest
     candidate_draft_semantics: Literal[
@@ -288,6 +313,14 @@ _PRE_MATERIALIZATION_AUTHORING_INSTRUCTIONS = (
 _HISTORICAL_AUTHORING_INSTRUCTIONS = (
     *_AUTHORING_INSTRUCTION_PREFIX,
     *_AUTHORING_INSTRUCTION_SUFFIX,
+)
+
+
+_V2_INPUT_EVIDENCE_AUTHORING_INSTRUCTION = (
+    "For packet compiler v2, copy output_contract.required_entity_evidence_refs "
+    "exactly, in order, into Transaction.evidence_refs as EntityVersionRefs. "
+    "Preconditions and route.outcome candidate_refs do not substitute for "
+    "Transaction.evidence_refs; they have different meanings."
 )
 
 
@@ -838,6 +871,26 @@ def _relation_templates_for_route(
     )
 
 
+def _endpoint_constraints_for_route(
+    route: RouteSpecV2, packet: WorkPacketV1
+) -> tuple[CandidateEndpointConstraintV1, ...]:
+    if packet.packet_compiler_version < 2 or route.route_id != "decompose.primitives":
+        return ()
+    return (
+        CandidateEndpointConstraintV1(
+            relation_type="decomposes",
+            endpoint_role="target",
+            entity_type="PrimitiveGraph",
+            output_ordinal=1,
+            repair_hint=(
+                "At least one decomposes relation must target the new "
+                "PrimitiveGraph output; if the endpoints are reversed, swap "
+                "source and target."
+            ),
+        ),
+    )
+
+
 def _candidate_transaction_schema(
     *, runtime_facet_hash_drafts: bool
 ) -> dict[str, Any]:
@@ -938,6 +991,9 @@ def compile_candidate_authoring_contract(
         privacy=packet.privacy_clearance,
         access_compartments=packet.compartments,
         created_at=run.created_at,
+        required_entity_evidence_refs=(
+            packet.focus_refs if packet.packet_compiler_version >= 2 else ()
+        ),
     )
     output_locations = CandidateOutputLocationsV1(
         candidate_logical_path=packet.candidate_logical_path,
@@ -958,6 +1014,7 @@ def compile_candidate_authoring_contract(
         allowed_relation_types=route.allowed_relation_types,
         required_output_entities=route.required_output_entities,
         required_output_relations=route.required_output_relations,
+        required_endpoint_constraints=_endpoint_constraints_for_route(route, packet),
         required_relation_templates=relation_templates,
         model_invariants=_model_invariants_for_route(
             route.route_id,
@@ -974,6 +1031,20 @@ def compile_candidate_authoring_contract(
         packet.route_registry_hash == ROUTE_REGISTRY_V7_HASH
         and route.route_version == _FRAMING_ROUTE_VERSION
     )
+    authoring_instructions = (
+        _AUTHORING_INSTRUCTIONS
+        if runtime_hash_drafts
+        else (
+            _PRE_MATERIALIZATION_AUTHORING_INSTRUCTIONS
+            if relation_templates
+            else _HISTORICAL_AUTHORING_INSTRUCTIONS
+        )
+    )
+    if packet.packet_compiler_version >= 2:
+        authoring_instructions = (
+            *authoring_instructions,
+            _V2_INPUT_EVIDENCE_AUTHORING_INSTRUCTION,
+        )
     return CandidateAuthoringContractV1(
         work_packet_hash=work_packet_hash,
         packet_schema=packet.packet_schema,
@@ -1011,15 +1082,7 @@ def compile_candidate_authoring_contract(
             for requirement in route.required_output_entities
         ),
         output_contract=output_contract,
-        authoring_instructions=(
-            _AUTHORING_INSTRUCTIONS
-            if runtime_hash_drafts
-            else (
-                _PRE_MATERIALIZATION_AUTHORING_INSTRUCTIONS
-                if relation_templates
-                else _HISTORICAL_AUTHORING_INSTRUCTIONS
-            )
-        ),
+        authoring_instructions=authoring_instructions,
     )
 
 
@@ -1032,6 +1095,7 @@ def candidate_authoring_contract_hash(
 __all__ = [
     "CandidateAuthoringContractV1",
     "CandidateHardRelationTemplateV1",
+    "CandidateEndpointConstraintV1",
     "CandidateOutputLocationsV1",
     "CandidatePayloadSchemaV1",
     "CandidateRelationEndpointV1",

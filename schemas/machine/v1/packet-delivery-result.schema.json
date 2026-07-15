@@ -252,8 +252,11 @@
           "type": "array"
         },
         "packet_compiler_version": {
-          "const": 1,
           "default": 1,
+          "enum": [
+            1,
+            2
+          ],
           "title": "Packet Compiler Version",
           "type": "integer"
         },

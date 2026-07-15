@@ -215,6 +215,7 @@ def compile_work_packet(
     from .bootstrap import current_engine_semantics_hash
 
     packet = WorkPacketV1(
+        packet_compiler_version=2,
         engine_version=__version__,
         engine_semantics_hash=current_engine_semantics_hash(),
         project_id=run.project_id,

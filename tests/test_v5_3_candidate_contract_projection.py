@@ -9,6 +9,7 @@ from tests import test_framing_quality_route as framing_fixture
 from tests.helpers import REPOSITORY_ROOT  # noqa: F401  # installs src
 
 from econ_theorist.candidate_contract import (
+    _endpoint_constraints_for_route,
     _relation_templates_for_route,
     candidate_authoring_contract_hash,
     compile_candidate_authoring_contract,
@@ -650,6 +651,42 @@ class V53CandidateContractProjectionTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "unknown route registry"):
             _relation_templates_for_route(route, unknown_packet, snapshot)
+
+    def test_compiler_v2_exposes_exact_focus_evidence_binding(self) -> None:
+        _, packet, _, _, _ = self._open_audit_contract()
+        packet = packet.model_copy(update={"packet_compiler_version": 2})
+        contract = compile_candidate_authoring_contract(
+            self.fixture.layout,
+            packet,
+            sha256_digest(canonical_json_bytes(packet)),
+        )
+        self.assertEqual(
+            contract.transaction_bindings.required_entity_evidence_refs,
+            packet.focus_refs,
+        )
+        self.assertTrue(
+            any(
+                "Transaction.evidence_refs" in instruction
+                for instruction in contract.authoring_instructions
+            )
+        )
+
+    def test_decompose_endpoint_constraint_targets_primitive_graph_output(self) -> None:
+        _, packet, _, _, _ = self._open_audit_contract()
+        route = route_spec_by_hash("decompose.primitives", ROUTE_REGISTRY_V7_HASH)
+        decompose_packet = packet.model_copy(
+            update={
+                "packet_compiler_version": 2,
+                "route_id": "decompose.primitives",
+                "route_version": route.route_version,
+            }
+        )
+        constraints = _endpoint_constraints_for_route(route, decompose_packet)
+        self.assertEqual(len(constraints), 1)
+        self.assertEqual(constraints[0].relation_type, "decomposes")
+        self.assertEqual(constraints[0].endpoint_role, "target")
+        self.assertEqual(constraints[0].entity_type, "PrimitiveGraph")
+        self.assertEqual(constraints[0].output_ordinal, 1)
 
 
 

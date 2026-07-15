@@ -1743,7 +1743,10 @@ def _validate_phase2_route_entry_refs(
         route_spec.required_input_entities,
         counts,
         type_field="entity_type",
-        label=f"route {route_spec.route_id} input",
+        label=(
+            f"route {route_spec.route_id} input; copy exact WorkPacket.focus_refs "
+            "into Transaction.evidence_refs"
+        ),
     )
 
     root_memo: dict[tuple[str, int], frozenset[EntityVersionRef]] = {}
@@ -2294,7 +2297,11 @@ def _validate_phase2_route_exit_semantics(
             and relation.target == primitive_ref
             for relation in produced_relations
         ):
-            raise TheoryValidationError("decomposes relation does not target PrimitiveGraph")
+            raise TheoryValidationError(
+                "decomposes relation does not target PrimitiveGraph; "
+                "set operations[*].relation.target to the new PrimitiveGraph "
+                "output (swap source and target if the relation is reversed)"
+            )
         if not any(
             relation.relation_type == "governs"
             and dossier_ref in {relation.source, relation.target}

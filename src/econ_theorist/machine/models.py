@@ -543,7 +543,10 @@ class WorkPacketV1(StrictModel):
     packet_schema: Literal["econ-theorist/work-packet/v1"] = (
         "econ-theorist/work-packet/v1"
     )
-    packet_compiler_version: Literal[1] = 1
+    # Compiler v1 packets remain byte-frozen for historical replay.  New
+    # packets use v2 to expose deterministic input-evidence bindings to the
+    # candidate authoring contract.
+    packet_compiler_version: Literal[1, 2] = 1
     engine_version: NonEmpty
     engine_semantics_hash: Digest
     project_id: NonEmpty
