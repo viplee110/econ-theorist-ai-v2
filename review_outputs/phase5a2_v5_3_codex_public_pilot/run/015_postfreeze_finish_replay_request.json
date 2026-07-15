@@ -1,0 +1,15 @@
+{
+  "bridge_request_schema": "econ-theorist/codex-finish-request/v1",
+  "bridge_version": 1,
+  "operation": "finish",
+  "project_root": "C:\\tmp\\etai-v5_3-public-pilot-20260715-f7f34ef",
+  "route_run_id": "run_op_9303bc77ae7a5282451f0c40ee1dfe31bf670fa4fa36e038",
+  "work_packet_hash": "54c2298e3986e75f9c63c810d96f2132b9773babdcd258d8d92ddcf8ee5a7f32",
+  "delivery_envelope_hash": "1e258f7a657f9059a30955bd9a4feb6f9c41a9b7c2a2b49e64c0b987ea9fe1eb",
+  "completion_status": "failed_terminal",
+  "expected_candidate_digest": null,
+  "warnings": [
+    "engine_compatibility.runtime_facet_hash_unbound",
+    "candidate_attempts.one"
+  ]
+}

@@ -1,0 +1,1294 @@
+{
+  "transaction_id": "txn_audit_consumable_certificates_001",
+  "transaction_schema": 1,
+  "origin": "route_run",
+  "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+  "base_revision": "7575110612a3faff6d5784f1fb2bf34d1a31780d6b761d251a1c353460d7c789",
+  "route_run_id": "run_op_9303bc77ae7a5282451f0c40ee1dfe31bf670fa4fa36e038",
+  "route_id": "audit.framing_economics",
+  "route_run_hash": "761b73573569949c8c9427cfa10a7f0f10f679c6416359a930a80cd064bd6ef8",
+  "actor": {
+    "kind": "agent",
+    "actor_id": "scientific_agent"
+  },
+  "intent": "Audit the exact framing objects, diagnose active margins and benchmark attribution, and prepare a replacement G1 dossier that proposes revision without recording a human decision.",
+  "preconditions": [
+    {
+      "entity": {
+        "entity_id": "rq_consumable_certificates_nonmonotonicity",
+        "version": 1
+      }
+    },
+    {
+      "entity": {
+        "entity_id": "bench_consumable_certificates_factorial",
+        "version": 1
+      }
+    },
+    {
+      "entity": {
+        "entity_id": "pg_consumable_certificates_primitives",
+        "version": 1
+      }
+    },
+    {
+      "entity": {
+        "entity_id": "gate_g1_consumable_certificates",
+        "version": 1
+      }
+    }
+  ],
+  "changed_facets": [],
+  "operations": [
+    {
+      "op": "entity.create",
+      "entity": {
+        "entity_id": "fqb_consumable_certificates_audit",
+        "entity_type": "FramingQualityBundle",
+        "version": 1,
+        "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+        "title": "Economic framing audit for consumable quality certificates",
+        "summary": "An audit of the exact question, benchmarks, primitive graph, and pre-audit G1 dossier that establishes local choice margins but discloses aggregate-invariance, selector, and scope defects requiring upstream revision.",
+        "status": {
+          "lifecycle": "proposed",
+          "formal_validity": "unassessed",
+          "interpretation_validity": "unassessed",
+          "literature": {
+            "coverage": "not_started",
+            "novelty": "unassessed"
+          }
+        },
+        "facets": {
+          "formal": {},
+          "economic_interpretation": {
+            "schema": "econ_theorist.framing_quality/FramingQualityBundle/v1",
+            "payload": {
+              "schema_version": 1,
+              "research_question_ref": {
+                "entity_id": "rq_consumable_certificates_nonmonotonicity",
+                "version": 1
+              },
+              "benchmark_set_ref": {
+                "entity_id": "bench_consumable_certificates_factorial",
+                "version": 1
+              },
+              "primitive_graph_ref": {
+                "entity_id": "pg_consumable_certificates_primitives",
+                "version": 1
+              },
+              "source_g1_dossier_ref": {
+                "entity_id": "gate_g1_consumable_certificates",
+                "version": 1
+              },
+              "tension": {
+                "result_archetype": "mechanism_explanation",
+                "tension_kind": "causal_channel",
+                "conventional_prediction": "A lower issuance cost mechanically makes certification more attractive to an eligible high-capacity seller, so a reader may expect more visible certification and less need for costly buyer inspection.",
+                "countervailing_logic": null,
+                "economic_puzzle": "With certificates carried across periods and removed by trade, selective issuance and depletion alter the conditional quality of sellers who remain uncertified and the certified outside option. The exact puzzle is whether this stock-mediated composition channel is operative at both seller and buyer margins, not what sign it ultimately has.",
+                "resolution_target": "Trace an active continuation-inclusive seller issuance margin into the uncertified-pool composition and then an active buyer inspection margin, while separating that channel from flow certification, frozen pointwise inspection rules, aggregate state reweighting, and equilibrium selection."
+              },
+              "forces": [
+                {
+                  "force_id": "f_certification_composition",
+                  "label": "Issuance-to-composition force",
+                  "role": "baseline_force",
+                  "operative_margin": "An eligible seller compares issuing at cost k with remaining uncertified, including the different continuation states created by an outstanding certificate.",
+                  "direction": "changes_composition",
+                  "economic_logic": "Lower k raises the issue-versus-not payoff difference one-for-one; when issuance responds, selective removal of high-capacity seller-periods and later depletion can change the capacity distribution conditional on no certificate.",
+                  "active_when": "The continuation-inclusive gross value of issuance is positive and admissible k values cross or approach that value, so neither issue nor do-not-issue is globally dominated.",
+                  "source_node_id": "n_cost_k",
+                  "margin_node_id": "n_certification_choice",
+                  "target_node_id": "n_inspection_return"
+                },
+                {
+                  "force_id": "f_search_response",
+                  "label": "Composition-to-search response",
+                  "role": "equilibrium_feedback",
+                  "operative_margin": "The buyer compares inspecting one uncertified seller with the best feasible uninspected purchase or exit under the same public state and beliefs.",
+                  "direction": "ambiguous",
+                  "economic_logic": "Uncertified-pool beliefs change the value of a perfect signal and the payoff from buying without it. The inspection payoff difference is hump-shaped in a symmetric high-capacity belief p, so composition can raise or lower inspection incentives depending on the state.",
+                  "active_when": "Some reachable public state has c at or below p(1-p), with p strictly between zero and one, so inspection is not dominated by the no-inspection payoff envelope.",
+                  "source_node_id": "n_certification_choice",
+                  "margin_node_id": "n_inspection_choice",
+                  "target_node_id": "n_outcome_Q"
+                }
+              ],
+              "causal_chain": [
+                {
+                  "step_number": 1,
+                  "force_ids": [
+                    "f_certification_composition"
+                  ],
+                  "cause": "Certification cost k enters the eligible seller's issuance payoff.",
+                  "endogenous_response": "The seller chooses whether to issue a banked certificate.",
+                  "consequence": "Issuance can respond to k only where the continuation-inclusive gross benefit is not uniformly below or above the admissible cost range.",
+                  "source_node_id": "n_cost_k",
+                  "target_node_id": "n_certification_choice",
+                  "active_margin_witness": {
+                    "decision_node_id": "n_certification_choice",
+                    "payoff_node_ids": [
+                      "n_seller_payoff"
+                    ],
+                    "concrete_state": "Seller j is high, has no outstanding certificate, observes public state s before the buyer acts, and evaluates both actions with the same stationary continuation convention. Illustratively set m=1, delta=1/2, current certified-versus-uncertified trade-probability difference to 1/2, and continuation-value difference E[V(s'_issue)-V(s'_no)] to 1/4.",
+                    "decision_maker": "Eligible high-capacity seller j",
+                    "focal_action": "Issue one truthful certificate and pay k",
+                    "alternative_action": "Do not issue and remain uncertified",
+                    "focal_payoff": "Pi_issue = -k + m P_trade_success(issue|s) + delta E[V(s'_issue)].",
+                    "alternative_payoff": "Pi_no = m P_trade_success(no|s,H) + delta E[V(s'_no)].",
+                    "feasibility_basis": "At the eligible binary node the upstream action set contains exactly issue and do not issue: low-capacity issuance is infeasible, multiple simultaneous certificates are excluded, and waiting is the do-not-issue action. Both payoffs use the same timing, information, beliefs, and continuation value convention.",
+                    "best_response_inequality": "Issue is a best response iff D_S = m[P_trade_success(issue|s)-P_trade_success(no|s,H)] + delta E[V(s'_issue)-V(s'_no)] - k >= 0; mixing requires D_S=0. The illustrative gross benefit is 1/2+(1/2)(1/4)=5/8, so k=1/2 gives D_S=1/8 and k=3/4 gives D_S=-1/8, demonstrating a nonempty admissible response region without claiming an equilibrium.",
+                    "activity_status": "active",
+                    "status_basis": "The source k subtracts only from Pi_issue, so lowering k raises D_S one-for-one. The displayed feasible ledger has both strict-action regions and an interior indifference cost, which rules out global dominance of either action for the proposed primitive ranges; it does not establish stationary issuance or a direction for downstream outcomes.",
+                    "kill_condition": "Kill this link if the exact formal ledger implies the gross issuance benefit is nonpositive in every reachable eligible state, or every admissible k lies strictly on one side of it so the same issuance action is dominant throughout the comparison."
+                  }
+                },
+                {
+                  "step_number": 2,
+                  "force_ids": [
+                    "f_certification_composition",
+                    "f_search_response"
+                  ],
+                  "cause": "Selective issuance changes which seller-periods display a certificate, while carryover and trade depletion determine how long those selections remain outside the uncertified set.",
+                  "endogenous_response": "The stationary conditional capacity distribution among uncertified sellers changes with seller behavior and stock transitions.",
+                  "consequence": "The gross value of inspecting an uncertified seller changes through both the search target's conditional quality and the certified purchase outside option.",
+                  "source_node_id": "n_certification_choice",
+                  "target_node_id": "n_inspection_return",
+                  "active_margin_witness": null
+                },
+                {
+                  "step_number": 3,
+                  "force_ids": [
+                    "f_search_response"
+                  ],
+                  "cause": "The gross return to a perfect inspection signal changes at a given public certificate state.",
+                  "endogenous_response": "In F and N the buyer chooses inspection against the best feasible no-inspection action; in X and NX the pointwise inspection kernel is imposed rather than reoptimized.",
+                  "consequence": "The state-contingent inspection action changes Q in endogenous-inspection cells, while fixed-policy cells can still exhibit aggregate Q changes through endogenous state weights.",
+                  "source_node_id": "n_inspection_return",
+                  "target_node_id": "n_outcome_Q",
+                  "active_margin_witness": {
+                    "decision_node_id": "n_inspection_choice",
+                    "payoff_node_ids": [
+                      "n_buyer_payoff",
+                      "n_search_cost_c"
+                    ],
+                    "concrete_state": "No seller displays a certificate; the short-lived buyer assigns independent high-capacity probability p=1/3 to each uncertified seller, inspection is perfect, c=1/9, successful service has value one, and continuation payoff is zero under every current action.",
+                    "decision_maker": "Current short-lived buyer",
+                    "focal_action": "Inspect one seller, buy from it if high, and if it is low choose the best remaining uninspected purchase or exit",
+                    "alternative_action": "Take the best feasible no-inspection deviation among buying seller 1, buying seller 2, and exiting",
+                    "focal_payoff": "V_I = -c + p + (1-p)max{p,0} = -1/9 + 1/3 + (2/3)(1/3) = 4/9.",
+                    "alternative_payoff": "V_0 = max{p,p,0} = 1/3. This is the full no-inspection deviation envelope, not a convenient single alternative.",
+                    "feasibility_basis": "The buyer's feasible actions at the same timing and public information are inspect seller 1, inspect seller 2, buy seller 1, buy seller 2, or exit. Symmetry makes the two inspection actions payoff-equivalent and the two direct purchases payoff-equivalent; the displayed envelopes therefore exhaust the multi-action set, with no continuation term because the buyer is short-lived.",
+                    "best_response_inequality": "Inspection is a best response iff -c+2p-p^2 >= max{p,0}; for p in [0,1] this is p(1-p)>=c, with mixing at equality. At p=1/3 and c=1/9 the strict gain is 1/9, and the region is nonempty whenever c<1/4.",
+                    "activity_status": "active",
+                    "status_basis": "The upstream conditional belief p enters the payoff difference D_B=p(1-p)-c. Around p=1/3, dD_B/dp=1/3, so a local composition change moves the inspection margin; globally the response is hump-shaped and its direction is not established. The ledger rules out dominance at the illustrated state but does not establish how k changes p in equilibrium.",
+                    "kill_condition": "Kill the buyer-choice link if c exceeds p(1-p) at every reachable uncertified-pool belief, or if a certified outside option makes the best no-inspection envelope strictly dominate inspection in every reachable public state."
+                  }
+                }
+              ],
+              "minimal_example": {
+                "role": "illustrative_only",
+                "title": "Two active margins connected by an uncertified-pool belief",
+                "setup": "Use the seller ledger with gross issuance benefit 5/8 and compare k=3/4 with k=1/2. In a no-certificate buyer state use p=1/3 and c=1/9, so inspection yields 4/9 versus the best no-inspection payoff 1/3.",
+                "moving_primitive": "Only certification cost k moves; the illustrative payoffs, beliefs conditional on each displayed state, m, delta, c, timing, and continuation convention are held fixed for the local comparisons.",
+                "held_fixed": [
+                  "Binary eligibility and truthful banked-service certificate semantics",
+                  "The seller continuation-value convention used in both issuance actions",
+                  "The buyer's p=1/3 belief and perfect inspection technology within the buyer margin comparison",
+                  "Seller margin m=1, discount delta=1/2, buyer value one, and c=1/9"
+                ],
+                "endogenous_responses": [
+                  "The illustrative seller switches from do not issue at k=3/4 to issue at k=1/2 in the local payoff ledger",
+                  "If equilibrium issuance and depletion move the uncertified belief through the inspection threshold, the buyer inspection action can respond",
+                  "The public-state weighting distribution remains endogenous even under a fixed pointwise q_bar rule"
+                ],
+                "predicted_pattern": "The two local payoff margins can both be active, so the proposed causal chain is not a placebo by dominance alone. No stationary sign, strict k-triple reversal, or benchmark attribution is predicted by this illustration.",
+                "economic_intuition": "Cheaper issuance can change who is left uncertified; the value of learning about that residual group is highest at intermediate uncertainty and low when the group is nearly all high or nearly all low.",
+                "limitation": "The numbers do not solve seller continuation values, stationary state weights, cross-cell equilibrium consistency, or the map from k to p. They are an admissible local illustration only.",
+                "cannot_establish": [
+                  "Existence or uniqueness of a stationary Markov-perfect equilibrium",
+                  "A direction or non-monotonicity for Q, A, or U",
+                  "That the F-N-X-NX decomposition isolates causal components",
+                  "Selection robustness, welfare, validation, or novelty"
+                ]
+              },
+              "economist_memo": {
+                "headline": "A consumable certificate can alter the object a buyer is searching over",
+                "opening_question": "Can lowering truthful certification cost change inspection, successful allocation, or buyer surplus non-monotonically because outstanding certificates are selectively created and depleted?",
+                "benchmark_message": "The four cells aim to cross stock versus flow certification with endogenous versus frozen inspection, but freezing a state-contingent inspection rule does not freeze its aggregate when k changes the stationary public-state distribution.",
+                "tension_message": "The mechanical seller incentive from a lower k is clear locally; the unresolved economic issue is how selective issuance and depletion reshape the uncertified pool and therefore the buyer's information margin.",
+                "mechanism_message": "An eligible seller has a genuine issue-versus-not tradeoff when k crosses a continuation-inclusive gross issuance benefit, and a buyer has a genuine inspect-versus-best-deviation tradeoff when c crosses p(1-p). The equilibrium link from k to the relevant p remains to be established.",
+                "result_preview": "No result is claimed. The audit supports nonempty local activity regions but finds that the current frozen-inspection benchmarks cannot yet deliver the stated aggregate attribution.",
+                "contribution_message": "If repaired and later solved, the framing would distinguish mechanical certification incentives from stock-mediated composition and endogenous information acquisition; it does not claim that this distinction is novel or validated.",
+                "scope_condition": "The interpretation requires banked successful service, fixed buyer transfers, exact q_bar support, stationary symmetric behavior, and a reproducible selector; each remains a declared scope or robustness condition.",
+                "reader_takeaway": "Revise the benchmark semantics and selection claims before G1: active margins exist illustratively, but aggregate invariance and causal decomposition are not yet clean."
+              },
+              "benchmark_assessments": [
+                {
+                  "benchmark_id": "bm_F_stock_endo",
+                  "changed": [
+                    {
+                      "object_id": "F_k",
+                      "label": "Certification cost k",
+                      "semantic_level": "primitive",
+                      "primitive_node_id": "n_cost_k"
+                    }
+                  ],
+                  "held_fixed": [
+                    {
+                      "object_id": "F_capacity",
+                      "label": "Binary capacity transition law",
+                      "semantic_level": "primitive",
+                      "fixing_level": "transition_kernel",
+                      "primitive_node_id": "n_capacity"
+                    },
+                    {
+                      "object_id": "F_search_cost",
+                      "label": "Inspection cost c",
+                      "semantic_level": "primitive",
+                      "fixing_level": "primitive",
+                      "primitive_node_id": "n_search_cost_c"
+                    },
+                    {
+                      "object_id": "F_stock_rule",
+                      "label": "Carryover and trade-triggered depletion rule",
+                      "semantic_level": "primitive",
+                      "fixing_level": "transition_kernel",
+                      "primitive_node_id": "n_certificate_stock"
+                    }
+                  ],
+                  "reoptimizing": [
+                    {
+                      "object_id": "F_cert_choice",
+                      "label": "Seller certification choice",
+                      "semantic_level": "choice",
+                      "primitive_node_id": "n_certification_choice"
+                    },
+                    {
+                      "object_id": "F_inspect_choice",
+                      "label": "Buyer inspection choice",
+                      "semantic_level": "choice",
+                      "primitive_node_id": "n_inspection_choice"
+                    },
+                    {
+                      "object_id": "F_trade_choice",
+                      "label": "Buyer purchase or exit choice",
+                      "semantic_level": "choice",
+                      "primitive_node_id": "n_trade_exit_choice"
+                    }
+                  ],
+                  "still_endogenous": [
+                    {
+                      "object_id": "F_pool",
+                      "label": "Uncertified-pool composition",
+                      "semantic_level": "conditional_distribution",
+                      "primitive_node_id": "n_uncertified_pool"
+                    },
+                    {
+                      "object_id": "F_equilibrium",
+                      "label": "Selected stationary equilibrium",
+                      "semantic_level": "equilibrium_object",
+                      "primitive_node_id": "n_equilibrium_selection"
+                    }
+                  ],
+                  "targets": [
+                    {
+                      "object_id": "F_Q",
+                      "label": "Inspection rate Q_F",
+                      "semantic_level": "outcome",
+                      "primitive_node_id": "n_outcome_Q"
+                    },
+                    {
+                      "object_id": "F_A",
+                      "label": "Successful-allocation rate A_F",
+                      "semantic_level": "outcome",
+                      "primitive_node_id": "n_outcome_A"
+                    },
+                    {
+                      "object_id": "F_U",
+                      "label": "Buyer surplus U_F",
+                      "semantic_level": "outcome",
+                      "primitive_node_id": "n_outcome_U"
+                    }
+                  ],
+                  "channel_kind": "active_response",
+                  "channel_path": [
+                    "n_cost_k",
+                    "n_certification_choice",
+                    "n_uncertified_pool",
+                    "n_inspection_return",
+                    "n_inspection_choice",
+                    "n_outcome_Q"
+                  ],
+                  "channel_summary": "The displayed exact path reaches Q_F through both active local choice margins. A_F is reached by n_cost_k -> n_certification_choice -> n_certificate_stock -> n_public_information -> n_trade_exit_choice -> n_outcome_A, and U_F is reached from A_F and Q_F through n_outcome_A -> n_outcome_U and n_outcome_Q -> n_outcome_U. These paths establish framing coherence, not signs.",
+                  "aggregate_invariance": {
+                    "aggregate_object": "Q_F, A_F, and U_F under the selected stationary distribution",
+                    "pointwise_policy_fixed": false,
+                    "weighting_distribution_status": "endogenous",
+                    "claims_aggregate_fixed": false,
+                    "basis": "Sellers and buyers reoptimize and the stock transition changes state weights as k changes.",
+                    "implication_for_attribution": "F is the full equilibrium response and cannot itself identify a component without the other cells."
+                  },
+                  "selection_assurance": {
+                    "status": "selector_only",
+                    "selection_rule": "Use the same pre-registered stationary symmetric selector across k and map it to each benchmark cell.",
+                    "basis": "The current objects state a selector but do not establish uniqueness, a continuous branch, or conclusions across all equilibria.",
+                    "implication_for_attribution": "The selector makes the exercise reproducible but does not show that any response or reversal survives equilibrium multiplicity."
+                  },
+                  "attribution_strength": "qualified",
+                  "attribution_basis": "Both local choice margins have nonempty illustrative activity regions, but stationary composition and selector robustness remain unresolved and are linked to disclosed gaps."
+                },
+                {
+                  "benchmark_id": "bm_N_flow_endo",
+                  "changed": [
+                    {
+                      "object_id": "N_k",
+                      "label": "Certification cost k",
+                      "semantic_level": "primitive",
+                      "primitive_node_id": "n_cost_k"
+                    },
+                    {
+                      "object_id": "N_flow",
+                      "label": "End-of-period expiration replaces carryover and depletion",
+                      "semantic_level": "primitive",
+                      "primitive_node_id": "n_flow_intervention"
+                    }
+                  ],
+                  "held_fixed": [
+                    {
+                      "object_id": "N_capacity",
+                      "label": "Binary capacity transition law",
+                      "semantic_level": "primitive",
+                      "fixing_level": "transition_kernel",
+                      "primitive_node_id": "n_capacity"
+                    },
+                    {
+                      "object_id": "N_search_cost",
+                      "label": "Inspection cost c",
+                      "semantic_level": "primitive",
+                      "fixing_level": "primitive",
+                      "primitive_node_id": "n_search_cost_c"
+                    }
+                  ],
+                  "reoptimizing": [
+                    {
+                      "object_id": "N_cert_choice",
+                      "label": "Current-period seller certification choice",
+                      "semantic_level": "choice",
+                      "primitive_node_id": "n_certification_choice"
+                    },
+                    {
+                      "object_id": "N_inspect_choice",
+                      "label": "Buyer inspection choice",
+                      "semantic_level": "choice",
+                      "primitive_node_id": "n_inspection_choice"
+                    },
+                    {
+                      "object_id": "N_trade_choice",
+                      "label": "Buyer purchase or exit choice",
+                      "semantic_level": "choice",
+                      "primitive_node_id": "n_trade_exit_choice"
+                    }
+                  ],
+                  "still_endogenous": [
+                    {
+                      "object_id": "N_pool",
+                      "label": "Current uncertified-pool composition",
+                      "semantic_level": "conditional_distribution",
+                      "primitive_node_id": "n_uncertified_pool"
+                    },
+                    {
+                      "object_id": "N_equilibrium",
+                      "label": "Selected stationary flow-certificate equilibrium",
+                      "semantic_level": "equilibrium_object",
+                      "primitive_node_id": "n_equilibrium_selection"
+                    }
+                  ],
+                  "targets": [
+                    {
+                      "object_id": "N_Q",
+                      "label": "Inspection rate Q_N",
+                      "semantic_level": "outcome",
+                      "primitive_node_id": "n_outcome_Q"
+                    },
+                    {
+                      "object_id": "N_A",
+                      "label": "Successful-allocation rate A_N",
+                      "semantic_level": "outcome",
+                      "primitive_node_id": "n_outcome_A"
+                    },
+                    {
+                      "object_id": "N_U",
+                      "label": "Buyer surplus U_N",
+                      "semantic_level": "outcome",
+                      "primitive_node_id": "n_outcome_U"
+                    }
+                  ],
+                  "channel_kind": "active_response",
+                  "channel_path": [
+                    "n_cost_k",
+                    "n_certification_choice",
+                    "n_uncertified_pool",
+                    "n_inspection_return",
+                    "n_inspection_choice",
+                    "n_outcome_Q"
+                  ],
+                  "channel_summary": "N removes the cross-period stock state but retains active seller and buyer choices. The shown path reaches Q_N; A_N and U_N follow the graph's public-information, trade, success, and payoff paths. N therefore measures endogenous inspection in a flow environment, subject to the same selector limitation.",
+                  "aggregate_invariance": {
+                    "aggregate_object": "Q_N, A_N, and U_N under the flow equilibrium",
+                    "pointwise_policy_fixed": false,
+                    "weighting_distribution_status": "endogenous",
+                    "claims_aggregate_fixed": false,
+                    "basis": "Current issuance, buyer inspection, trade, and the stationary capacity distribution remain endogenous as k changes even though certificates do not carry over.",
+                    "implication_for_attribution": "N is not a mechanical-only benchmark; its response combines current certification and endogenous buyer inspection."
+                  },
+                  "selection_assurance": {
+                    "status": "selector_only",
+                    "selection_rule": "Apply the same declared selector to stationary symmetric equilibria after removing certificate carryover.",
+                    "basis": "No uniqueness, continuous correspondence, or all-equilibria statement is supplied.",
+                    "implication_for_attribution": "N-F differences can depend on selector mapping and cannot be called selection-robust."
+                  },
+                  "attribution_strength": "qualified",
+                  "attribution_basis": "The flow boundary is exact, but equilibrium selection and the map from issuance to current uncertified composition remain unresolved."
+                },
+                {
+                  "benchmark_id": "bm_X_stock_fixed",
+                  "changed": [
+                    {
+                      "object_id": "X_k",
+                      "label": "Certification cost k",
+                      "semantic_level": "primitive",
+                      "primitive_node_id": "n_cost_k"
+                    },
+                    {
+                      "object_id": "X_frozen_rule",
+                      "label": "Endogenous inspection is replaced by q_bar",
+                      "semantic_level": "primitive",
+                      "primitive_node_id": "n_frozen_inspection_intervention"
+                    }
+                  ],
+                  "held_fixed": [
+                    {
+                      "object_id": "X_qbar",
+                      "label": "State-contingent inspection policy q_bar",
+                      "semantic_level": "behavioral_response",
+                      "fixing_level": "policy_rule",
+                      "primitive_node_id": "n_frozen_inspection_intervention"
+                    },
+                    {
+                      "object_id": "X_capacity",
+                      "label": "Binary capacity transition law",
+                      "semantic_level": "primitive",
+                      "fixing_level": "transition_kernel",
+                      "primitive_node_id": "n_capacity"
+                    },
+                    {
+                      "object_id": "X_search_cost",
+                      "label": "Inspection cost c in buyer surplus",
+                      "semantic_level": "primitive",
+                      "fixing_level": "primitive",
+                      "primitive_node_id": "n_search_cost_c"
+                    }
+                  ],
+                  "reoptimizing": [
+                    {
+                      "object_id": "X_cert_choice",
+                      "label": "Seller certification choice under q_bar",
+                      "semantic_level": "choice",
+                      "primitive_node_id": "n_certification_choice"
+                    },
+                    {
+                      "object_id": "X_trade_choice",
+                      "label": "Buyer purchase or exit conditional on imposed information",
+                      "semantic_level": "choice",
+                      "primitive_node_id": "n_trade_exit_choice"
+                    }
+                  ],
+                  "still_endogenous": [
+                    {
+                      "object_id": "X_pool",
+                      "label": "Uncertified-pool composition and public-state weights",
+                      "semantic_level": "conditional_distribution",
+                      "primitive_node_id": "n_uncertified_pool"
+                    },
+                    {
+                      "object_id": "X_equilibrium",
+                      "label": "Selected seller equilibrium under q_bar",
+                      "semantic_level": "equilibrium_object",
+                      "primitive_node_id": "n_equilibrium_selection"
+                    }
+                  ],
+                  "targets": [
+                    {
+                      "object_id": "X_Q",
+                      "label": "Aggregate inspection rate Q_X",
+                      "semantic_level": "outcome",
+                      "primitive_node_id": "n_outcome_Q"
+                    },
+                    {
+                      "object_id": "X_A",
+                      "label": "Successful-allocation rate A_X",
+                      "semantic_level": "outcome",
+                      "primitive_node_id": "n_outcome_A"
+                    },
+                    {
+                      "object_id": "X_U",
+                      "label": "Buyer surplus U_X",
+                      "semantic_level": "outcome",
+                      "primitive_node_id": "n_outcome_U"
+                    }
+                  ],
+                  "channel_kind": "active_response",
+                  "channel_path": [
+                    "n_cost_k",
+                    "n_certification_choice",
+                    "n_certificate_stock",
+                    "n_public_information",
+                    "n_inspection_choice",
+                    "n_outcome_Q"
+                  ],
+                  "channel_summary": "Seller issuance and the certificate-stock transition remain active under q_bar. The shown path reaches aggregate Q_X because fixed pointwise inspection probabilities are reweighted by an endogenous public-state distribution. A_X and U_X remain endogenous through purchase, depletion, success, and state weighting. This makes X informative but not an aggregate-inspection freeze.",
+                  "aggregate_invariance": {
+                    "aggregate_object": "Aggregate inspection rate Q_X = sum_s mu_X(s;k) q_bar(s)",
+                    "pointwise_policy_fixed": true,
+                    "weighting_distribution_status": "endogenous",
+                    "claims_aggregate_fixed": false,
+                    "basis": "q_bar(s) is fixed pointwise, but seller certification, trade, depletion, and carryover make the stationary weights mu_X(s;k) depend on k.",
+                    "implication_for_attribution": "The upstream statement that Q_X is mechanically fixed is unsupported; X cannot isolate the stock term as written without fixing or explicitly accounting for the weighting distribution."
+                  },
+                  "selection_assurance": {
+                    "status": "selector_only",
+                    "selection_rule": "Use the declared stationary seller-equilibrium selector under the imposed q_bar policy.",
+                    "basis": "The selector is reproducible but no uniqueness, continuous branch, or all-equilibria invariance is established.",
+                    "implication_for_attribution": "The X response is both state-weight and selector dependent, so its stock attribution is not robust."
+                  },
+                  "attribution_strength": "weak",
+                  "attribution_basis": "An active seller and stock response exists in the ledger, but the benchmark's claimed aggregate freeze fails and q_bar is not defined on all potentially reached states."
+                },
+                {
+                  "benchmark_id": "bm_NX_flow_fixed",
+                  "changed": [
+                    {
+                      "object_id": "NX_k",
+                      "label": "Certification cost k",
+                      "semantic_level": "primitive",
+                      "primitive_node_id": "n_cost_k"
+                    },
+                    {
+                      "object_id": "NX_flow",
+                      "label": "End-of-period expiration replaces carryover and depletion",
+                      "semantic_level": "primitive",
+                      "primitive_node_id": "n_flow_intervention"
+                    },
+                    {
+                      "object_id": "NX_frozen_rule",
+                      "label": "Endogenous inspection is replaced by q_bar",
+                      "semantic_level": "primitive",
+                      "primitive_node_id": "n_frozen_inspection_intervention"
+                    }
+                  ],
+                  "held_fixed": [
+                    {
+                      "object_id": "NX_qbar",
+                      "label": "State-contingent inspection policy q_bar",
+                      "semantic_level": "behavioral_response",
+                      "fixing_level": "policy_rule",
+                      "primitive_node_id": "n_frozen_inspection_intervention"
+                    },
+                    {
+                      "object_id": "NX_capacity",
+                      "label": "Binary capacity transition law",
+                      "semantic_level": "primitive",
+                      "fixing_level": "transition_kernel",
+                      "primitive_node_id": "n_capacity"
+                    },
+                    {
+                      "object_id": "NX_search_cost",
+                      "label": "Inspection cost c in buyer surplus",
+                      "semantic_level": "primitive",
+                      "fixing_level": "primitive",
+                      "primitive_node_id": "n_search_cost_c"
+                    }
+                  ],
+                  "reoptimizing": [
+                    {
+                      "object_id": "NX_cert_choice",
+                      "label": "Current-period seller certification choice under q_bar",
+                      "semantic_level": "choice",
+                      "primitive_node_id": "n_certification_choice"
+                    },
+                    {
+                      "object_id": "NX_trade_choice",
+                      "label": "Buyer purchase or exit conditional on imposed information",
+                      "semantic_level": "choice",
+                      "primitive_node_id": "n_trade_exit_choice"
+                    }
+                  ],
+                  "still_endogenous": [
+                    {
+                      "object_id": "NX_pool",
+                      "label": "Current-period uncertified composition and public-state weights",
+                      "semantic_level": "conditional_distribution",
+                      "primitive_node_id": "n_uncertified_pool"
+                    },
+                    {
+                      "object_id": "NX_equilibrium",
+                      "label": "Selected flow seller equilibrium under q_bar",
+                      "semantic_level": "equilibrium_object",
+                      "primitive_node_id": "n_equilibrium_selection"
+                    }
+                  ],
+                  "targets": [
+                    {
+                      "object_id": "NX_Q",
+                      "label": "Aggregate inspection rate Q_NX",
+                      "semantic_level": "outcome",
+                      "primitive_node_id": "n_outcome_Q"
+                    },
+                    {
+                      "object_id": "NX_A",
+                      "label": "Successful-allocation rate A_NX",
+                      "semantic_level": "outcome",
+                      "primitive_node_id": "n_outcome_A"
+                    },
+                    {
+                      "object_id": "NX_U",
+                      "label": "Buyer surplus U_NX",
+                      "semantic_level": "outcome",
+                      "primitive_node_id": "n_outcome_U"
+                    }
+                  ],
+                  "channel_kind": "active_response",
+                  "channel_path": [
+                    "n_cost_k",
+                    "n_certification_choice",
+                    "n_certificate_stock",
+                    "n_public_information",
+                    "n_inspection_choice",
+                    "n_outcome_Q"
+                  ],
+                  "channel_summary": "Even with flow expiration and pointwise q_bar fixed, current issuance and purchase behavior reweight current public states. The shown path therefore reaches Q_NX through endogenous state weights; A_NX and U_NX also respond through current certification and trade. NX is not a pure mechanical cheaper-certification baseline as presently described.",
+                  "aggregate_invariance": {
+                    "aggregate_object": "Aggregate inspection rate Q_NX = sum_s mu_NX(s;k) q_bar(s)",
+                    "pointwise_policy_fixed": true,
+                    "weighting_distribution_status": "endogenous",
+                    "claims_aggregate_fixed": false,
+                    "basis": "Flow expiration removes cross-period certificate inventory but does not fix the distribution of current certification configurations or seller behavior as k changes.",
+                    "implication_for_attribution": "Delta Y_NX still includes endogenous state reweighting and seller response; calling it purely mechanical requires a revised fixing level or a different decomposition."
+                  },
+                  "selection_assurance": {
+                    "status": "selector_only",
+                    "selection_rule": "Apply the declared stationary seller-equilibrium selector in the flow environment under q_bar.",
+                    "basis": "No uniqueness, continuous branch, or all-equilibria conclusion is supplied.",
+                    "implication_for_attribution": "The purported mechanical baseline remains selector dependent."
+                  },
+                  "attribution_strength": "weak",
+                  "attribution_basis": "Flow expiration is exact, but aggregate inspection is not fixed and the remaining seller response prevents a pure mechanical interpretation."
+                }
+              ],
+              "disclosed_gaps": [
+                {
+                  "gap_id": "gap_qbar_aggregate",
+                  "category": "aggregate_endogeneity",
+                  "description": "The upstream X prediction says Q_X is mechanically fixed by q_bar, but q_bar fixes only state-contingent inspection probabilities. The stationary public-state weights remain endogenous to k in X and the current-state weights remain endogenous in NX.",
+                  "consequence": "S, I, and R in the exact_question_delta cannot be interpreted as clean stock, standalone inspection, and interaction components under the current aggregate claims.",
+                  "resolution_needed": "Revise the BenchmarkSet to state the fixing level exactly and either hold the weighting distribution fixed, redefine outcomes conditionally by state, or retain endogenous aggregate Q while downgrading the decomposition's causal labels.",
+                  "affected_benchmark_ids": [
+                    "bm_X_stock_fixed",
+                    "bm_NX_flow_fixed"
+                  ],
+                  "repair_target_refs": [
+                    {
+                      "entity_type": "BenchmarkSet",
+                      "entity_ref": {
+                        "entity_id": "bench_consumable_certificates_factorial",
+                        "version": 1
+                      }
+                    }
+                  ]
+                },
+                {
+                  "gap_id": "gap_qbar_support",
+                  "category": "benchmark_semantics",
+                  "description": "q_bar is defined as an anchor equilibrium policy, but the upstream objects do not define its action on public states that are off the anchor support or present only after the stock-versus-flow intervention.",
+                  "consequence": "X and NX are not yet exact policy-rule interventions on a common state domain.",
+                  "resolution_needed": "Specify one total q_bar mapping on the union of public states for F, N, X, and NX before calculating any benchmark response.",
+                  "affected_benchmark_ids": [
+                    "bm_X_stock_fixed",
+                    "bm_NX_flow_fixed"
+                  ],
+                  "repair_target_refs": [
+                    {
+                      "entity_type": "BenchmarkSet",
+                      "entity_ref": {
+                        "entity_id": "bench_consumable_certificates_factorial",
+                        "version": 1
+                      }
+                    },
+                    {
+                      "entity_type": "PrimitiveGraph",
+                      "entity_ref": {
+                        "entity_id": "pg_consumable_certificates_primitives",
+                        "version": 1
+                      }
+                    }
+                  ]
+                },
+                {
+                  "gap_id": "gap_selector_only",
+                  "category": "equilibrium_selection",
+                  "description": "The common selector is a reproducibility convention; the current framing does not establish uniqueness, a continuous equilibrium branch across k, or the same qualitative response for all equilibria.",
+                  "consequence": "Any sign change or component contrast may be selector dependent and cannot be described as selection robust.",
+                  "resolution_needed": "Pre-register the selector and admissible parameter domain exactly, then either establish uniqueness or branch continuity, report the correspondence, or make all claims explicitly selector conditional.",
+                  "affected_benchmark_ids": [
+                    "bm_F_stock_endo",
+                    "bm_N_flow_endo",
+                    "bm_X_stock_fixed",
+                    "bm_NX_flow_fixed"
+                  ],
+                  "repair_target_refs": [
+                    {
+                      "entity_type": "ResearchQuestion",
+                      "entity_ref": {
+                        "entity_id": "rq_consumable_certificates_nonmonotonicity",
+                        "version": 1
+                      }
+                    },
+                    {
+                      "entity_type": "BenchmarkSet",
+                      "entity_ref": {
+                        "entity_id": "bench_consumable_certificates_factorial",
+                        "version": 1
+                      }
+                    },
+                    {
+                      "entity_type": "PrimitiveGraph",
+                      "entity_ref": {
+                        "entity_id": "pg_consumable_certificates_primitives",
+                        "version": 1
+                      }
+                    }
+                  ]
+                },
+                {
+                  "gap_id": "gap_certificate_scope",
+                  "category": "scope",
+                  "description": "The banked-successful-service interpretation resolves how a persistent certificate remains truthful after capacity changes, but it is a proposed interpretation rather than a researcher-confirmed primitive from the seed.",
+                  "consequence": "A current-state-information interpretation would change certified service success, state transitions, payoffs, and the economic object being framed.",
+                  "resolution_needed": "At revision, state the certificate's intertemporal claim explicitly and have the human accept, narrow, or reject it before G1.",
+                  "affected_benchmark_ids": [
+                    "bm_F_stock_endo",
+                    "bm_N_flow_endo",
+                    "bm_X_stock_fixed",
+                    "bm_NX_flow_fixed"
+                  ],
+                  "repair_target_refs": [
+                    {
+                      "entity_type": "ResearchQuestion",
+                      "entity_ref": {
+                        "entity_id": "rq_consumable_certificates_nonmonotonicity",
+                        "version": 1
+                      }
+                    },
+                    {
+                      "entity_type": "PrimitiveGraph",
+                      "entity_ref": {
+                        "entity_id": "pg_consumable_certificates_primitives",
+                        "version": 1
+                      }
+                    }
+                  ]
+                }
+              ],
+              "proposed_action": "revise_framing",
+              "action_rationale": "The local seller and buyer choice margins are economically active in nonempty illustrative regions, but the exact BenchmarkSet makes a false aggregate-invariance move from fixed q_bar(s) to fixed Q, leaves q_bar off-support behavior unspecified, and offers only selector-conditional attribution. The audit must not repair those upstream objects internally. Revise the exact BenchmarkSet and associated ResearchQuestion/PrimitiveGraph scope statements, then rerun the audit before any G1 readiness proposal."
+            }
+          },
+          "literature_novelty": {},
+          "terminology_presentation": {},
+          "authority": {}
+        },
+        "artifact_refs": [],
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "scope_ref": "rq_consumable_certificates_nonmonotonicity",
+        "created_at": "2026-07-15T12:13:05.028529Z"
+      }
+    },
+    {
+      "op": "entity.create",
+      "entity": {
+        "entity_id": "gate_g1_consumable_certificates_audit_replacement",
+        "entity_type": "GateDossier",
+        "version": 1,
+        "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+        "title": "Replacement G1 dossier after economic framing audit",
+        "summary": "A new proposal-only G1 dossier preserving the source evidence while adding the framing audit and recommending upstream revision.",
+        "status": {
+          "lifecycle": "proposed",
+          "formal_validity": "not_applicable",
+          "interpretation_validity": "unassessed",
+          "literature": {
+            "coverage": "not_started",
+            "novelty": "unassessed"
+          }
+        },
+        "facets": {
+          "formal": {},
+          "economic_interpretation": {},
+          "literature_novelty": {},
+          "terminology_presentation": {},
+          "authority": {
+            "schema": "econ_theorist.theory/GateDossier/v1",
+            "payload": {
+              "schema_version": 1,
+              "gate_kind": "G1_question_benchmark",
+              "research_question_ref": {
+                "entity_id": "rq_consumable_certificates_nonmonotonicity",
+                "version": 1
+              },
+              "ordered_object_refs": [
+                {
+                  "entity_id": "rq_consumable_certificates_nonmonotonicity",
+                  "version": 1
+                },
+                {
+                  "entity_id": "bench_consumable_certificates_factorial",
+                  "version": 1
+                },
+                {
+                  "entity_id": "pg_consumable_certificates_primitives",
+                  "version": 1
+                },
+                {
+                  "entity_id": "fqb_consumable_certificates_audit",
+                  "version": 1
+                }
+              ],
+              "requirements": [
+                {
+                  "requirement_id": "g1_exact_question",
+                  "description": "The question fixes Q(k), A(k), U(k), a strict adjacent-difference sign-reversal test, non-k primitives, and a common equilibrium-selection rule.",
+                  "recorded_condition": "evidence_supplied",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "rq_consumable_certificates_nonmonotonicity",
+                      "version": 1
+                    }
+                  ]
+                },
+                {
+                  "requirement_id": "g1_importance",
+                  "description": "The economic consequence is whether certification take-up suffices for comparative-static diagnosis or stock, depletion, uncertified-pool composition, and private inspection must also be tracked; no welfare claim is made.",
+                  "recorded_condition": "evidence_supplied",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "rq_consumable_certificates_nonmonotonicity",
+                      "version": 1
+                    }
+                  ]
+                },
+                {
+                  "requirement_id": "g1_kill_condition",
+                  "description": "The channel is killed if the pre-registered domain and selection yield no strict reversal requiring a nonzero stock or stock-by-inspection component, and stock attribution is rejected when flow benchmarks fully reproduce any reversal.",
+                  "recorded_condition": "evidence_supplied",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "rq_consumable_certificates_nonmonotonicity",
+                      "version": 1
+                    },
+                    {
+                      "entity_id": "bench_consumable_certificates_factorial",
+                      "version": 1
+                    }
+                  ]
+                },
+                {
+                  "requirement_id": "g1_exact_benchmarks",
+                  "description": "F, N, X, and NX cross consumable versus flow certification with endogenous versus frozen inspection, generating exact mechanical, stock, inspection, and interaction cost-response contrasts.",
+                  "recorded_condition": "evidence_supplied",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "bench_consumable_certificates_factorial",
+                      "version": 1
+                    },
+                    {
+                      "entity_id": "pg_consumable_certificates_primitives",
+                      "version": 1
+                    }
+                  ]
+                },
+                {
+                  "requirement_id": "g1_primitive_decomposition",
+                  "description": "Actors, capacity, certificate semantics and stock, timing, public and inspected information, seller and buyer actions, payoffs, solution concept, benchmark interventions, derived pool composition, inspection return, and measured outcomes are explicitly separated.",
+                  "recorded_condition": "evidence_supplied",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "pg_consumable_certificates_primitives",
+                      "version": 1
+                    }
+                  ]
+                },
+                {
+                  "requirement_id": "g1_scope_risk_certificate_semantics",
+                  "description": "Human review must accept, revise, or narrow the banked-successful-service interpretation; treating a persistent certificate as information only about issuance-period capacity would define a different dynamic environment.",
+                  "recorded_condition": "risk_disclosed",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "rq_consumable_certificates_nonmonotonicity",
+                      "version": 1
+                    },
+                    {
+                      "entity_id": "pg_consumable_certificates_primitives",
+                      "version": 1
+                    }
+                  ]
+                },
+                {
+                  "requirement_id": "g1_scope_risk_selection",
+                  "description": "Symmetric stationary Markov equilibrium and the common cross-k, cross-cell selection rule exclude apparent reversals caused solely by untracked equilibrium switching, but they are substantive restrictions needing human scope ownership.",
+                  "recorded_condition": "risk_disclosed",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "rq_consumable_certificates_nonmonotonicity",
+                      "version": 1
+                    },
+                    {
+                      "entity_id": "pg_consumable_certificates_primitives",
+                      "version": 1
+                    }
+                  ]
+                },
+                {
+                  "requirement_id": "g1_scope_risk_inspection_anchor",
+                  "description": "The frozen kernel q_bar needs a human-accepted anchor k_bar and a rule on public states outside the anchor equilibrium support so X and NX remain exact benchmarks.",
+                  "recorded_condition": "risk_disclosed",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "bench_consumable_certificates_factorial",
+                      "version": 1
+                    },
+                    {
+                      "entity_id": "pg_consumable_certificates_primitives",
+                      "version": 1
+                    }
+                  ]
+                },
+                {
+                  "requirement_id": "g1_scope_risk_payments",
+                  "description": "Buyer surplus currently normalizes purchase transfers as fixed; endogenous prices or margins would be an extension and require reframing before formal work.",
+                  "recorded_condition": "risk_disclosed",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "pg_consumable_certificates_primitives",
+                      "version": 1
+                    }
+                  ]
+                },
+                {
+                  "requirement_id": "g1_human_authority",
+                  "description": "No human G1 question-and-benchmark decision is recorded. The dossier and its approve recommendation are proposals only and cannot promote the scope.",
+                  "recorded_condition": "gap_disclosed",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "rq_consumable_certificates_nonmonotonicity",
+                      "version": 1
+                    },
+                    {
+                      "entity_id": "bench_consumable_certificates_factorial",
+                      "version": 1
+                    },
+                    {
+                      "entity_id": "pg_consumable_certificates_primitives",
+                      "version": 1
+                    }
+                  ]
+                },
+                {
+                  "requirement_id": "g1.framing_quality",
+                  "description": "The exact economic-framing audit records active local seller and buyer margins but discloses unsupported aggregate invariance under q_bar, incomplete off-support benchmark semantics, selector-only assurance, and unresolved certificate scope; current action is revise rather than approve.",
+                  "recorded_condition": "gap_disclosed",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "fqb_consumable_certificates_audit",
+                      "version": 1
+                    }
+                  ]
+                }
+              ],
+              "proposed_action": "revise",
+              "rationale": "The resulting FramingQualityBundle is now the governing current audit evidence and proposes revise_framing. Preserve the source question, benchmark set, primitive graph, and historical dossier as exact evidence, but do not seek G1 approval until the frozen-inspection fixing level and q_bar support are repaired, selection claims are made explicitly conditional or strengthened, and the certificate's intertemporal meaning is human-owned. No effective G1 decision is recorded.",
+              "prepared_at": "2026-07-15T12:13:05.028529Z",
+              "ordered_artifact_refs": []
+            }
+          }
+        },
+        "artifact_refs": [],
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "scope_ref": "rq_consumable_certificates_nonmonotonicity",
+        "created_at": "2026-07-15T12:13:05.028529Z"
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_audits_rq_fqb",
+        "relation_type": "audits",
+        "version": 1,
+        "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+        "source": {
+          "entity_id": "rq_consumable_certificates_nonmonotonicity",
+          "version": 1
+        },
+        "target": {
+          "entity_id": "fqb_consumable_certificates_audit",
+          "version": 1
+        },
+        "dependency_mode": "hard",
+        "upstream": {
+          "entity_id": "rq_consumable_certificates_nonmonotonicity",
+          "version": 1,
+          "facet": "economic_interpretation",
+          "field_path": null,
+          "semantic_hash": "550ea2d29293bff8bcad2433b49f7eba4cfde6cb5900d581fff48059c474ffd3"
+        },
+        "downstream": {
+          "entity_id": "fqb_consumable_certificates_audit",
+          "version": 1,
+          "facet": "economic_interpretation",
+          "field_path": null
+        },
+        "scope_ref": "rq_consumable_certificates_nonmonotonicity",
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "created_at": "2026-07-15T12:13:05.028529Z"
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_audits_bench_fqb",
+        "relation_type": "audits",
+        "version": 1,
+        "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+        "source": {
+          "entity_id": "bench_consumable_certificates_factorial",
+          "version": 1
+        },
+        "target": {
+          "entity_id": "fqb_consumable_certificates_audit",
+          "version": 1
+        },
+        "dependency_mode": "hard",
+        "upstream": {
+          "entity_id": "bench_consumable_certificates_factorial",
+          "version": 1,
+          "facet": "economic_interpretation",
+          "field_path": null,
+          "semantic_hash": "24a0c0c49407dd21abf37dc1900e9f80a9b1b5a13ac2a5e1da0f4974404407d7"
+        },
+        "downstream": {
+          "entity_id": "fqb_consumable_certificates_audit",
+          "version": 1,
+          "facet": "economic_interpretation",
+          "field_path": null
+        },
+        "scope_ref": "rq_consumable_certificates_nonmonotonicity",
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "created_at": "2026-07-15T12:13:05.028529Z"
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_audits_pg_fqb",
+        "relation_type": "audits",
+        "version": 1,
+        "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+        "source": {
+          "entity_id": "pg_consumable_certificates_primitives",
+          "version": 1
+        },
+        "target": {
+          "entity_id": "fqb_consumable_certificates_audit",
+          "version": 1
+        },
+        "dependency_mode": "hard",
+        "upstream": {
+          "entity_id": "pg_consumable_certificates_primitives",
+          "version": 1,
+          "facet": "economic_interpretation",
+          "field_path": null,
+          "semantic_hash": "f02e2a89804232b19eb9488978fa56b387d7ecf4d6ce8658c872cffe648ed4b8"
+        },
+        "downstream": {
+          "entity_id": "fqb_consumable_certificates_audit",
+          "version": 1,
+          "facet": "economic_interpretation",
+          "field_path": null
+        },
+        "scope_ref": "rq_consumable_certificates_nonmonotonicity",
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "created_at": "2026-07-15T12:13:05.028529Z"
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_audits_source_gate_fqb",
+        "relation_type": "audits",
+        "version": 1,
+        "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+        "source": {
+          "entity_id": "gate_g1_consumable_certificates",
+          "version": 1
+        },
+        "target": {
+          "entity_id": "fqb_consumable_certificates_audit",
+          "version": 1
+        },
+        "dependency_mode": "hard",
+        "upstream": {
+          "entity_id": "gate_g1_consumable_certificates",
+          "version": 1,
+          "facet": "authority",
+          "field_path": null,
+          "semantic_hash": "ca6c923d338087e6331ac96042bf1e7d45038894600f2e6bd3ad3403f25a38ab"
+        },
+        "downstream": {
+          "entity_id": "fqb_consumable_certificates_audit",
+          "version": 1,
+          "facet": "economic_interpretation",
+          "field_path": null
+        },
+        "scope_ref": "rq_consumable_certificates_nonmonotonicity",
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "created_at": "2026-07-15T12:13:05.028529Z"
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_governs_fqb_replacement_gate",
+        "relation_type": "governs",
+        "version": 1,
+        "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+        "source": {
+          "entity_id": "fqb_consumable_certificates_audit",
+          "version": 1
+        },
+        "target": {
+          "entity_id": "gate_g1_consumable_certificates_audit_replacement",
+          "version": 1
+        },
+        "dependency_mode": "hard",
+        "upstream": {
+          "entity_id": "fqb_consumable_certificates_audit",
+          "version": 1,
+          "facet": "economic_interpretation",
+          "field_path": null,
+          "semantic_hash": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "downstream": {
+          "entity_id": "gate_g1_consumable_certificates_audit_replacement",
+          "version": 1,
+          "facet": "authority",
+          "field_path": null
+        },
+        "scope_ref": "rq_consumable_certificates_nonmonotonicity",
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "created_at": "2026-07-15T12:13:05.028529Z"
+      }
+    },
+    {
+      "op": "route.outcome",
+      "outcome": {
+        "route_run_id": "run_op_9303bc77ae7a5282451f0c40ee1dfe31bf670fa4fa36e038",
+        "route_id": "audit.framing_economics",
+        "outcome": "completed_with_candidate",
+        "rationale": "Creates one first-lineage FramingQualityBundle and one new replacement GateDossier. Four exact hard audits relations bind the current ResearchQuestion, BenchmarkSet, PrimitiveGraph, and historical source dossier to the bundle; one hard governs relation makes the bundle current evidence for the replacement dossier. The audit proposes revise_framing and records no human G1 decision.",
+        "candidate_refs": [
+          {
+            "entity_id": "fqb_consumable_certificates_audit",
+            "version": 1
+          },
+          {
+            "entity_id": "gate_g1_consumable_certificates_audit_replacement",
+            "version": 1
+          },
+          {
+            "relation_id": "rel_audits_rq_fqb",
+            "version": 1
+          },
+          {
+            "relation_id": "rel_audits_bench_fqb",
+            "version": 1
+          },
+          {
+            "relation_id": "rel_audits_pg_fqb",
+            "version": 1
+          },
+          {
+            "relation_id": "rel_audits_source_gate_fqb",
+            "version": 1
+          },
+          {
+            "relation_id": "rel_governs_fqb_replacement_gate",
+            "version": 1
+          }
+        ],
+        "validator_report_refs": [],
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ]
+      }
+    }
+  ],
+  "evidence_refs": [
+    {
+      "entity_id": "rq_consumable_certificates_nonmonotonicity",
+      "version": 1
+    },
+    {
+      "entity_id": "bench_consumable_certificates_factorial",
+      "version": 1
+    },
+    {
+      "entity_id": "pg_consumable_certificates_primitives",
+      "version": 1
+    },
+    {
+      "entity_id": "gate_g1_consumable_certificates",
+      "version": 1
+    }
+  ],
+  "authority_basis": [],
+  "privacy": "public",
+  "access_compartments": [
+    "project_research"
+  ],
+  "compiled_context_hash": "9c187ca67397842a489b5c6976caf36dc71d2ec542d3e127cbeb9f4052505578",
+  "context_manifest_hash": "c0eb87763ef6e50f1bc373f60616cb9ad6b1701f715d1a651b5ae0a87cde9a21",
+  "created_at": "2026-07-15T12:13:05.028529Z",
+  "parent_transaction_hash": "7575110612a3faff6d5784f1fb2bf34d1a31780d6b761d251a1c353460d7c789"
+}

@@ -72,6 +72,21 @@ AI may search, derive, criticize, and prepare decision-complete proposals. A hum
 
 Canonical state is a thin, typed spine. It contains only information needed for routing, authority, dependencies, claim scope, provenance, privacy, and evaluation. Rich prose, proofs, scripts, and papers remain substantive artifacts referenced by the state.
 
+### Research quality owns the engineering budget
+
+V2 is a trusted-local research system for scholars. Engineering work is
+justified only when it directly improves economic reasoning, manuscript
+quality, researcher time, local usability, interruption recovery, result
+preservation, or reproducibility. Machine-derived bookkeeping must be computed
+by the engine and hidden from research agents whenever possible.
+
+Adversarial security is an explicit non-goal of the active local-research
+profile. The roadmap allocates no work to hostile-user resistance, zero-trust
+authorization, malicious-IDE defense, network attack hardening, or similar
+enterprise threat models. Ordinary safeguards against accidental loss, stale
+state, silent overwrites, and irreproducible results remain scientific
+reliability requirements, not a security program.
+
 ### Writing is reader belief engineering
 
 The manuscript is compiled from a validated economic argument and an explicit reader path. A theorem does not substitute for intuition, and an intuition paragraph does not substitute for a tested mechanism. The same result may be expressed at different resolutions, but every expression must remain within the formal claim's scope.
@@ -234,9 +249,10 @@ trusts the researcher, operating system, user-selected IDE/account, and
 ordinary package manager. Its controls address AI mistakes, stale or repeated
 operations, ordinary interruption, wrong-project writes, accidental context
 mixing, and unintended disclosure. Resistance to a malicious IDE, provider,
-local account, operating system, or package infrastructure is a separate
-public-distribution hardening profile and is not a prerequisite for scientific
-experimentation.
+local account, operating system, or package infrastructure is outside the
+active product scope and receives no roadmap budget. If a future maintainer
+chooses to build a separately funded hostile-environment distribution, it must
+not add friction or constraints to the trusted-local research profile.
 
 The Phase 5A target is a provider-neutral, host-portable v2 engine. Runtime host
 support is not implemented by the 5A.0 design slice, and host portability is a

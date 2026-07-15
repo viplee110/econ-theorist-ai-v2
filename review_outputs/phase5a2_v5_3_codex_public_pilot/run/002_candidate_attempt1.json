@@ -1,0 +1,408 @@
+{
+  "transaction_id": "txn_frame_consumable_certificates_001",
+  "transaction_schema": 1,
+  "origin": "route_run",
+  "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+  "base_revision": "d888ff4c3b9e75333fdffa668b31cfafd6452fcc19874afc40a21fa47080049a",
+  "route_run_id": "run_op_21c0d1a13e0074ee33fd8839e3d7af2cbcf212ed0138974a",
+  "route_id": "frame.question_and_benchmarks",
+  "route_run_hash": "70c6ad13a6c4a73e1fa5cfc58bbd5dcfb2dcc3caf317c35d469fa2d2b7572e72",
+  "actor": {
+    "kind": "agent",
+    "actor_id": "scientific_agent"
+  },
+  "intent": "Propose one falsifiable question and an exact factorial benchmark set for identifying whether consumable certificate stock and depletion can generate non-monotone certification-cost comparative statics.",
+  "preconditions": [],
+  "changed_facets": [],
+  "operations": [
+    {
+      "op": "entity.create",
+      "entity": {
+        "entity_id": "rq_consumable_certificates_nonmonotonicity",
+        "entity_type": "ResearchQuestion",
+        "version": 1,
+        "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+        "title": "Can consumable certificate stock make lower-cost certification non-monotone?",
+        "summary": "A proposed existence-and-attribution question for stationary inspection, successful allocation, and buyer surplus as certification cost varies.",
+        "status": {
+          "lifecycle": "proposed",
+          "formal_validity": "unassessed",
+          "interpretation_validity": "unassessed",
+          "literature": {
+            "coverage": "not_started",
+            "novelty": "unassessed"
+          }
+        },
+        "facets": {
+          "formal": {},
+          "economic_interpretation": {
+            "schema": "econ_theorist.theory/ResearchQuestion/v1",
+            "payload": {
+              "schema_version": 1,
+              "phenomenon": "As truthful certification cost k varies, the endogenous inventory and trade-triggered depletion of visible certificates can change which current capacities remain in the uncertified pool and therefore the return to inspecting one uncertified seller; the proposed object is a possible strict non-monotonicity, with no direction asserted.",
+              "object_to_explain": "Fix all primitives other than k and one pre-registered equilibrium-selection rule. For each stationary outcome define Q(k) as the probability an arriving buyer pays c to inspect, A(k) as the probability the buyer receives successful service, and U(k) as expected service value minus c times the inspection indicator, with exit normalized to zero. Does there exist an admissible primitive vector and 0 <= k1 < k2 < k3 such that, for at least one Y in {Q,A,U}, (Y(k2)-Y(k1)) times (Y(k3)-Y(k2)) is strictly negative in the full consumable-certificate model, and an exact benchmark decomposition assigns a nonzero component to certificate stock/depletion or its interaction with endogenous inspection?",
+              "unresolved_delta": "Whether any fixed admissible primitives and consistently selected stationary equilibrium satisfy the strict sign-reversal test, and if so whether the stock term or stock-by-inspection interaction is necessary after separately measuring the mechanical cheaper-certification and inspection-response terms.",
+              "importance": "The answer determines whether certification take-up alone is an adequate comparative-static statistic or whether a regulator or platform must also track the inventory of outstanding certificates, depletion by trade, the resulting uncertified-pool composition, and buyers' private information acquisition. This is an economic identification consequence, not a claimed welfare ranking.",
+              "kill_condition": "Kill the proposed consumable-stock channel if, over the pre-registered admissible parameter domain and the same equilibrium-selection rule, no Y in {Q,A,U} and no ordered triple k1 < k2 < k3 satisfies the strict sign-reversal test with a nonzero stock-dependent component on at least one adjacent cost interval; also reject a stock attribution whenever every observed reversal is fully reproduced by the flow-certificate/frozen-inspection mechanical benchmark or by the flow-certificate/endogenous-inspection benchmark with zero stock and stock-by-inspection residuals.",
+              "proposed_scope": "A discrete-time stationary two-seller game with an infinite sequence of short-lived buyers. Each long-lived seller privately observes a binary capacity each period; capacity follows a fixed two-state Markov law independent across sellers conditional on common parameters. A high-capacity seller with no outstanding certificate may pay k to bank one truthful certified unit of successful service. The binary certificate stock is public, carries over until a buyer trades with that seller, guarantees that trade's success, and is then depleted. An uncertified trade succeeds exactly when current capacity is high. After certification choices and public stock observation, the buyer may pay c to inspect one uncertified seller's current capacity, buy without inspection, or exit. A successful trade gives normalized buyer value one and seller margin m; sellers discount by delta. Outcomes use stationary symmetric Markov-perfect equilibria under a single selection rule fixed before varying k and before applying the benchmark interventions.",
+              "candidate_archetypes": [
+                "comparative_statics_threshold",
+                "mechanism_explanation"
+              ],
+              "prohibited_claims": [
+                "No direction for Q(k), A(k), or U(k)",
+                "No existence or proof of non-monotonicity",
+                "No validation of the stock/depletion mechanism",
+                "No novelty or literature-priority claim",
+                "No welfare ranking or policy optimum",
+                "No human confirmation of the question, scope, benchmarks, or equilibrium selection"
+              ]
+            }
+          },
+          "literature_novelty": {},
+          "terminology_presentation": {},
+          "authority": {}
+        },
+        "artifact_refs": [],
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "scope_ref": null,
+        "supersedes": null,
+        "created_at": "2026-07-15T11:52:47.656138Z"
+      }
+    },
+    {
+      "op": "entity.create",
+      "entity": {
+        "entity_id": "bench_consumable_certificates_factorial",
+        "entity_type": "BenchmarkSet",
+        "version": 1,
+        "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+        "title": "Certificate stock by buyer inspection factorial benchmarks",
+        "summary": "Four exact benchmark cells separate mechanical cheaper certification, certificate stock/depletion, endogenous inspection, and their interaction.",
+        "status": {
+          "lifecycle": "proposed",
+          "formal_validity": "unassessed",
+          "interpretation_validity": "unassessed",
+          "literature": {
+            "coverage": "not_started",
+            "novelty": "unassessed"
+          }
+        },
+        "facets": {
+          "formal": {},
+          "economic_interpretation": {
+            "schema": "econ_theorist.theory/BenchmarkSet/v1",
+            "payload": {
+              "schema_version": 1,
+              "question_ref": {
+                "entity_id": "rq_consumable_certificates_nonmonotonicity",
+                "version": 1
+              },
+              "benchmarks": [
+                {
+                  "benchmark_id": "bm_F_stock_endo",
+                  "label": "F: consumable stock with endogenous inspection",
+                  "exact_primitives": [
+                    "Two long-lived sellers and one new short-lived buyer per period",
+                    "Independent binary seller capacities with one fixed Markov transition matrix",
+                    "Seller-observed current capacity and publicly observed binary certificate stocks",
+                    "A high-capacity seller without a certificate may pay k to bank one truthful certified successful service",
+                    "A certificate carries over until trade with its seller and is depleted by that trade",
+                    "An uncertified trade succeeds exactly when current capacity is high",
+                    "Buyer actions are inspect one uncertified seller at cost c, buy without inspection, or exit",
+                    "Successful service yields buyer value one and seller margin m; seller discount factor is delta"
+                  ],
+                  "timing": [
+                    "Capacities transition and are privately observed by their sellers",
+                    "Eligible high-capacity sellers simultaneously choose whether to pay k and certify",
+                    "The buyer observes both certificate stocks",
+                    "The buyer chooses inspection, uninspected purchase, or exit; an inspection reveals one uncertified seller's current capacity before the purchase decision",
+                    "Trade and service occur; certified trade succeeds and depletes that certificate, while uncertified trade succeeds only at high current capacity",
+                    "Payoffs accrue and any unconsumed certificates carry into the next period"
+                  ],
+                  "solution_concept": "Stationary symmetric Markov-perfect equilibrium with one pre-registered selection rule held fixed for every k and benchmark cell.",
+                  "prediction": "Compute Q_F(k), A_F(k), and U_F(k) and apply the strict adjacent-difference sign-reversal test; no sign or existence is imposed.",
+                  "unresolved_delta": "This cell contains mechanical certification-cost effects, stock/depletion effects, endogenous inspection effects, and their interaction, to be separated by the other three cells.",
+                  "evidence_refs": []
+                },
+                {
+                  "benchmark_id": "bm_N_flow_endo",
+                  "label": "N: flow-only certificate with endogenous inspection",
+                  "exact_primitives": [
+                    "All primitives of F except certificate carryover and trade-triggered depletion",
+                    "A high-capacity seller may pay k for a truthful certificate usable by the current buyer only",
+                    "An unused certificate expires at the end of its issuance period, so certificate stock is always zero at the next period's start",
+                    "The buyer still chooses whether to inspect one uncertified seller at cost c"
+                  ],
+                  "timing": [
+                    "Capacities transition and are privately observed",
+                    "High-capacity sellers may pay k for a current-period certificate",
+                    "The buyer observes current certificates and endogenously chooses inspection, purchase, or exit",
+                    "Trade and service occur",
+                    "Every current certificate expires after this buyer, whether used or unused"
+                  ],
+                  "solution_concept": "Stationary symmetric Markov-perfect equilibrium under the same pre-registered selection rule as F, with no certificate-stock state.",
+                  "prediction": "Compute Q_N(k), A_N(k), and U_N(k); relative to the frozen-inspection flow cell, the cost response measures endogenous inspection without a certificate stock.",
+                  "unresolved_delta": "For any cost interval, Delta Y_N minus Delta Y_NX is the endogenous-inspection component when stock and depletion are absent; its sign is not specified.",
+                  "evidence_refs": []
+                },
+                {
+                  "benchmark_id": "bm_X_stock_fixed",
+                  "label": "X: consumable stock with frozen inspection",
+                  "exact_primitives": [
+                    "All capacity, certification, carryover, depletion, payoff, and discount primitives of F",
+                    "Before varying k, fix an anchor cost k_bar and record F's selected stationary state-contingent inspection kernel q_bar",
+                    "Replace the buyer's inspection choice by q_bar in every state and at every k",
+                    "Conditional on the imposed inspection realization and signal, the buyer retains the purchase-versus-exit choice"
+                  ],
+                  "timing": [
+                    "Capacities transition and are privately observed",
+                    "Eligible high-capacity sellers choose certification and pay k",
+                    "Public certificate stocks are observed",
+                    "Inspection is drawn from the fixed kernel q_bar rather than re-optimized as k changes",
+                    "The buyer purchases or exits, trade occurs, and any traded certificate is depleted",
+                    "Unconsumed certificates carry over"
+                  ],
+                  "solution_concept": "Stationary symmetric seller Markov-perfect equilibrium with the fixed buyer inspection kernel q_bar and optimal purchase-or-exit behavior conditional on realized information, using the same seller-equilibrium selection rule across k.",
+                  "prediction": "Compute Q_X(k), A_X(k), and U_X(k), with Q_X mechanically fixed by q_bar; relative to NX, the cost response measures the stock/depletion component when inspection does not respond to k.",
+                  "unresolved_delta": "For any cost interval, Delta Y_X minus Delta Y_NX is the pure stock/depletion component under frozen inspection; its sign is not specified.",
+                  "evidence_refs": []
+                },
+                {
+                  "benchmark_id": "bm_NX_flow_fixed",
+                  "label": "NX: flow-only certificate with frozen inspection",
+                  "exact_primitives": [
+                    "All primitives of N's flow-only certificate environment",
+                    "The same anchor inspection kernel q_bar used in X",
+                    "Inspection is imposed by q_bar for every k and no certificate carries into another period",
+                    "Conditional on imposed information, the buyer retains the purchase-versus-exit choice"
+                  ],
+                  "timing": [
+                    "Capacities transition and are privately observed",
+                    "High-capacity sellers may pay k for current-period certification",
+                    "The buyer observes current certificates",
+                    "Inspection is drawn from q_bar, followed by purchase or exit",
+                    "Trade occurs and all certificates expire at period end"
+                  ],
+                  "solution_concept": "Stationary symmetric seller Markov-perfect equilibrium with q_bar fixed, no certificate-stock state, and the same seller-equilibrium selection rule across k.",
+                  "prediction": "Compute Q_NX(k), A_NX(k), and U_NX(k); each cost response is the mechanical cheaper-certification baseline with neither carryover/depletion nor an endogenous inspection response.",
+                  "unresolved_delta": "For any cost interval, Delta Y_NX is the mechanical certification-cost component; its sign is not specified.",
+                  "evidence_refs": []
+                }
+              ],
+              "exact_question_delta": "For each Y in {Q,A,U}, each benchmark B in {F,N,X,NX}, and each lowering from k_H to k_L < k_H, define Delta Y_B = Y_B(k_L)-Y_B(k_H). Decompose Delta Y_F exactly as M_Y + S_Y + I_Y + R_Y, where M_Y = Delta Y_NX is the mechanical cheaper-certification component, S_Y = Delta Y_X-Delta Y_NX is the consumable-stock/depletion component under frozen inspection, I_Y = Delta Y_N-Delta Y_NX is the endogenous-inspection component without stock, and R_Y = Delta Y_F-Delta Y_X-Delta Y_N+Delta Y_NX is the stock-by-inspection interaction. Apply this identity on both adjacent intervals of every candidate k1 < k2 < k3. A strict full-model sign reversal is attributed to the proposed channel only if S_Y or R_Y is nonzero on an interval needed for the reversal; no component's sign is presupposed."
+            }
+          },
+          "literature_novelty": {},
+          "terminology_presentation": {},
+          "authority": {}
+        },
+        "artifact_refs": [],
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "scope_ref": null,
+        "supersedes": null,
+        "created_at": "2026-07-15T11:52:47.656138Z"
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_frames_rq_bench",
+        "relation_type": "frames",
+        "version": 1,
+        "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+        "source": {
+          "entity_id": "rq_consumable_certificates_nonmonotonicity",
+          "version": 1
+        },
+        "target": {
+          "entity_id": "bench_consumable_certificates_factorial",
+          "version": 1
+        },
+        "dependency_mode": "trace_only",
+        "upstream": null,
+        "downstream": null,
+        "scope_ref": null,
+        "scope_overlap": null,
+        "supersedes": null,
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "created_at": "2026-07-15T11:52:47.656138Z"
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_delta_bm_F_stock_endo",
+        "relation_type": "benchmark_delta",
+        "version": 1,
+        "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+        "source": {
+          "entity_id": "bench_consumable_certificates_factorial",
+          "version": 1
+        },
+        "target": {
+          "entity_id": "rq_consumable_certificates_nonmonotonicity",
+          "version": 1
+        },
+        "dependency_mode": "trace_only",
+        "upstream": null,
+        "downstream": null,
+        "scope_ref": null,
+        "scope_overlap": null,
+        "supersedes": null,
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "created_at": "2026-07-15T11:52:47.656138Z"
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_delta_bm_N_flow_endo",
+        "relation_type": "benchmark_delta",
+        "version": 1,
+        "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+        "source": {
+          "entity_id": "bench_consumable_certificates_factorial",
+          "version": 1
+        },
+        "target": {
+          "entity_id": "rq_consumable_certificates_nonmonotonicity",
+          "version": 1
+        },
+        "dependency_mode": "trace_only",
+        "upstream": null,
+        "downstream": null,
+        "scope_ref": null,
+        "scope_overlap": null,
+        "supersedes": null,
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "created_at": "2026-07-15T11:52:47.656138Z"
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_delta_bm_X_stock_fixed",
+        "relation_type": "benchmark_delta",
+        "version": 1,
+        "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+        "source": {
+          "entity_id": "bench_consumable_certificates_factorial",
+          "version": 1
+        },
+        "target": {
+          "entity_id": "rq_consumable_certificates_nonmonotonicity",
+          "version": 1
+        },
+        "dependency_mode": "trace_only",
+        "upstream": null,
+        "downstream": null,
+        "scope_ref": null,
+        "scope_overlap": null,
+        "supersedes": null,
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "created_at": "2026-07-15T11:52:47.656138Z"
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_delta_bm_NX_flow_fixed",
+        "relation_type": "benchmark_delta",
+        "version": 1,
+        "project_id": "prj_daca32112d999b9a185964e29f75ba728ec66da721dd331b",
+        "source": {
+          "entity_id": "bench_consumable_certificates_factorial",
+          "version": 1
+        },
+        "target": {
+          "entity_id": "rq_consumable_certificates_nonmonotonicity",
+          "version": 1
+        },
+        "dependency_mode": "trace_only",
+        "upstream": null,
+        "downstream": null,
+        "scope_ref": null,
+        "scope_overlap": null,
+        "supersedes": null,
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "created_at": "2026-07-15T11:52:47.656138Z"
+      }
+    },
+    {
+      "op": "route.outcome",
+      "outcome": {
+        "route_run_id": "run_op_21c0d1a13e0074ee33fd8839e3d7af2cbcf212ed0138974a",
+        "route_id": "frame.question_and_benchmarks",
+        "outcome": "completed_with_candidate",
+        "rationale": "Proposes exactly one falsifiable ResearchQuestion and one four-cell BenchmarkSet. One frames relation binds the set to the question, and one exact benchmark_delta relation binds each benchmark record to the same ResearchQuestion. All content remains agent-proposed and unvalidated pending a later human G1 decision.",
+        "candidate_refs": [
+          {
+            "entity_id": "rq_consumable_certificates_nonmonotonicity",
+            "version": 1
+          },
+          {
+            "entity_id": "bench_consumable_certificates_factorial",
+            "version": 1
+          },
+          {
+            "relation_id": "rel_frames_rq_bench",
+            "version": 1
+          },
+          {
+            "relation_id": "rel_delta_bm_F_stock_endo",
+            "version": 1
+          },
+          {
+            "relation_id": "rel_delta_bm_N_flow_endo",
+            "version": 1
+          },
+          {
+            "relation_id": "rel_delta_bm_X_stock_fixed",
+            "version": 1
+          },
+          {
+            "relation_id": "rel_delta_bm_NX_flow_fixed",
+            "version": 1
+          }
+        ],
+        "validator_report_refs": [],
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ]
+      }
+    }
+  ],
+  "evidence_refs": [],
+  "authority_basis": [],
+  "privacy": "public",
+  "access_compartments": [
+    "project_research"
+  ],
+  "compiled_context_hash": "0b5ce39c95b3afe76013e3c90382168bd5f27631935ce2b084b782e7a699239b",
+  "context_manifest_hash": "35c664328adaf9f28834f1725eb4dd7588a7986a61dfde5f65e773a2d5ed9f9c",
+  "created_at": "2026-07-15T11:52:47.656138Z",
+  "parent_transaction_hash": "d888ff4c3b9e75333fdffa668b31cfafd6452fcc19874afc40a21fa47080049a"
+}

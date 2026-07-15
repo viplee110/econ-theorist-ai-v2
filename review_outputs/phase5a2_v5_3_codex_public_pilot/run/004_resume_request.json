@@ -1,0 +1,16 @@
+{
+  "bridge_request_schema": "econ-theorist/codex-start-request/v1",
+  "bridge_version": 1,
+  "operation": "start_or_resume",
+  "project_root": "C:\\tmp\\etai-v5_3-public-pilot-20260715-f7f34ef",
+  "session": {
+    "session_schema": "econ-theorist/codex-session/v1",
+    "session_id": "5fbdffbf-7150-46c9-9e01-7ea022a58c6b",
+    "selected_model": "gpt-5.3-codex",
+    "installed_models": [
+      "gpt-5.3-codex"
+    ],
+    "observed_at": "2026-07-15T12:01:22.4814039+00:00"
+  },
+  "initialize": false
+}

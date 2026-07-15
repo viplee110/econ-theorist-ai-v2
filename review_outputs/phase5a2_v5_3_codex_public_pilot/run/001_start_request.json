@@ -1,0 +1,19 @@
+{
+  "bridge_request_schema": "econ-theorist/codex-start-request/v1",
+  "bridge_version": 1,
+  "operation": "start_or_resume",
+  "project_root": "C:\\tmp\\etai-v5_3-public-pilot-20260715-f7f34ef",
+  "session": {
+    "session_schema": "econ-theorist/codex-session/v1",
+    "session_id": "5fbdffbf-7150-46c9-9e01-7ea022a58c6b",
+    "selected_model": "gpt-5.3-codex",
+    "installed_models": [
+      "gpt-5.3-codex"
+    ],
+    "observed_at": "2026-07-15T11:50:54.8844568+00:00"
+  },
+  "initialize": true,
+  "project_name": "Consumable Quality Certificates",
+  "requested_scope": "Initialize a public economic-theory project and continue only through engine-selected, agent-authorized pre-G1 framing routes, one canonical commit at a time, stopping before any human-owned structural decision.",
+  "framing_intent": "An infinite sequence of short-lived buyers chooses between two long-lived sellers. In each period a seller privately observes whether its service capacity is high or low. A high-capacity seller may pay cost k for a truthful public certificate. A certificate remains visible until one buyer trades with that seller, at which point it is consumed. An uncertified seller may be high or low. Before choosing, a buyer can pay search cost c to inspect one uncertified seller's current capacity, can buy without inspecting, or can exit. A successful service gives the buyer value one; sellers earn a margin from a successful trade and discount future profits. Frame, without solving, whether lowering certificate cost k can make buyer search, allocative efficiency, or buyer surplus non-monotone because the endogenous stock and depletion of certificates changes the composition of the uncertified pool and the return to inspection. State an exact falsifiable question, why its answer matters economically, a kill condition, and exact benchmarks that separate the consumable-stock channel from mechanical cheaper certification and from endogenous buyer inspection. Do not claim a direction, novelty, proof, validation, or welfare result."
+}
