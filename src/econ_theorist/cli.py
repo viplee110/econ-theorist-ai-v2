@@ -319,7 +319,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     codex_commands = codex.add_subparsers(dest="codex_command", required=True)
     command = codex_commands.add_parser(
-        "invoke", help="start/resume or complete one Codex WorkPacket"
+        "invoke", help="start/resume, complete, or finish one Codex WorkPacket"
     )
     source = command.add_mutually_exclusive_group(required=True)
     source.add_argument(

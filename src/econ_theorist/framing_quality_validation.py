@@ -236,11 +236,11 @@ def _validate_entry_refs(
 ) -> FramingQualityRouteEntryReport:
     if (
         route_spec.route_id != FRAMING_ROUTE_ID
-        or route_spec.route_version != 5
+        or route_spec.route_version != 6
         or route_spec.availability != "enabled"
         or route_spec.entry_validator_id != FRAMING_ENTRY_VALIDATOR_ID
     ):
-        raise FramingQualityValidationError("unknown or malformed v5 framing route")
+        raise FramingQualityValidationError("unknown or malformed v6 framing route")
     if len({_entity_key(item) for item in references}) != len(references):
         raise FramingQualityValidationError("framing route input repeats an exact ref")
 
@@ -686,6 +686,10 @@ def _validate_bundle_science(
 
     steps = bundle.causal_chain
     used_force_ids: set[str] = set()
+    witnessed_choice_nodes: set[str] = set()
+    mechanism_margin_audit = (
+        bundle.tension.tension_kind in fq.MECHANISM_MARGIN_TENSION_KINDS
+    )
     for step in steps:
         if {step.source_node_id, step.target_node_id}.difference(node_ids):
             raise FramingQualityValidationError(
@@ -699,6 +703,82 @@ def _validate_bundle_science(
             raise FramingQualityValidationError(
                 "causal_force_binding: every causal-chain step must be nonzero"
             )
+        choice_nodes_on_step = {
+            node_id
+            for node_id, node in node_by_id.items()
+            if node.kind == "choice"
+            and _reachable(frozen_adjacency, step.source_node_id, node_id)
+            and _reachable(frozen_adjacency, node_id, step.target_node_id)
+        }
+        # A choice already realized at the source can support a downstream
+        # mechanical consequence without repeating the same payoff comparison.
+        # Supplied witnesses may still bind that source choice, and the global
+        # force-margin check below still requires every operative choice to be
+        # witnessed somewhere in the chain.
+        newly_reached_choice_nodes = choice_nodes_on_step.difference(
+            {step.source_node_id}
+        )
+        witness = step.active_margin_witness
+        if (
+            mechanism_margin_audit
+            and newly_reached_choice_nodes
+            and witness is None
+        ):
+            raise FramingQualityValidationError(
+                "active_margin_witness_missing: every choice-dependent mechanism "
+                "step requires a concrete payoff comparison"
+            )
+        if witness is not None:
+            decision = node_by_id.get(witness.decision_node_id)
+            if (
+                decision is None
+                or decision.kind != "choice"
+                or witness.decision_node_id not in choice_nodes_on_step
+            ):
+                raise FramingQualityValidationError(
+                    "active_margin_witness_binding: the witnessed decision must be "
+                    "an exact PrimitiveGraph choice on the causal step"
+                )
+            payoff_nodes = tuple(
+                node_by_id.get(node_id) for node_id in witness.payoff_node_ids
+            )
+            if any(node is None for node in payoff_nodes) or any(
+                node is not None
+                and node.kind not in {"preference_technology", "equilibrium_object"}
+                for node in payoff_nodes
+            ):
+                raise FramingQualityValidationError(
+                    "active_margin_payoff_binding: every payoff reference must bind "
+                    "an exact PrimitiveGraph payoff-basis or continuation node"
+                )
+            if any(
+                not (
+                    _reachable(
+                        frozen_adjacency, node_id, witness.decision_node_id
+                    )
+                    or _reachable(
+                        frozen_adjacency, witness.decision_node_id, node_id
+                    )
+                )
+                for node_id in witness.payoff_node_ids
+            ):
+                raise FramingQualityValidationError(
+                    "active_margin_payoff_binding: every cited payoff object must be "
+                    "connected to the witnessed decision"
+                )
+            if not any(
+                node is not None
+                and node.kind == "preference_technology"
+                and _reachable(
+                    frozen_adjacency, node.node_id, witness.decision_node_id
+                )
+                for node in payoff_nodes
+            ):
+                raise FramingQualityValidationError(
+                    "active_margin_payoff_binding: at least one exact payoff-basis "
+                    "node must reach the witnessed decision"
+                )
+            witnessed_choice_nodes.add(witness.decision_node_id)
         for force_id in step.force_ids:
             force = force_by_id[force_id]
             if not _step_is_on_force_path(frozen_adjacency, force, step):
@@ -718,6 +798,18 @@ def _validate_bundle_science(
         raise FramingQualityValidationError(
             "causal_force_binding: every declared economic force must appear in "
             "the causal chain; missing=" + ",".join(missing_force_ids)
+        )
+    unwitnessed_force_margins = sorted(
+        force.margin_node_id
+        for force in bundle.forces
+        if node_by_id[force.margin_node_id].kind == "choice"
+        and force.margin_node_id not in witnessed_choice_nodes
+    )
+    if unwitnessed_force_margins:
+        raise FramingQualityValidationError(
+            "active_margin_witness_missing: every operative choice margin used "
+            "by an economic force must be payoff-witnessed; missing="
+            + ",".join(unwitnessed_force_margins)
         )
     if bundle.tension.tension_kind in {
         "force_conflict",
@@ -999,18 +1091,18 @@ def validate_framing_quality_projection(
 def validate_framing_quality_route_transaction(
     snapshot: Snapshot, transaction: Transaction, route_spec: RouteSpecV5
 ) -> FramingQualityProjectionReport:
-    """Validate one additive v5 route transaction against its exact base."""
+    """Validate one active v6 audit transaction against its exact base."""
 
     if (
         transaction.origin != "route_run"
         or transaction.route_id != FRAMING_ROUTE_ID
         or route_spec.route_id != FRAMING_ROUTE_ID
-        or route_spec.route_version != 5
+        or route_spec.route_version != 6
         or route_spec.availability != "enabled"
         or route_spec.exit_validator_id != FRAMING_EXIT_VALIDATOR_ID
     ):
         raise FramingQualityValidationError(
-            "transaction is not bound to the enabled v5 framing route"
+            "transaction is not bound to the enabled v6 framing route"
         )
     if transaction.project_id != snapshot.project_id:
         raise FramingQualityValidationError("framing transaction crosses projects")

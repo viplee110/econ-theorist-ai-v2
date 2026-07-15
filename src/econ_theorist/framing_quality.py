@@ -117,11 +117,17 @@ FramingProposedAction: TypeAlias = Literal[
     "continue_diagnostic",
     "revise_framing",
 ]
+MarginActivityStatus: TypeAlias = Literal["active", "inactive", "unresolved"]
 FramingRepairTargetType: TypeAlias = Literal[
     "ResearchQuestion",
     "BenchmarkSet",
     "PrimitiveGraph",
 ]
+
+
+MECHANISM_MARGIN_TENSION_KINDS = frozenset(
+    {"causal_channel", "force_conflict", "sign_or_threshold_reversal"}
+)
 
 
 ARCHETYPE_TENSION_KINDS: Mapping[ResultArchetype, TensionKind] = MappingProxyType(
@@ -224,6 +230,33 @@ class EconomicForce(StrictModel):
     target_node_id: StableId
 
 
+class ActiveMarginWitness(StrictModel):
+    """A diagnostic payoff comparison for one choice-dependent mechanism link."""
+
+    decision_node_id: StableId
+    payoff_node_ids: Annotated[tuple[StableId, ...], Field(min_length=1)]
+    concrete_state: NonEmptyString
+    decision_maker: NonEmptyString
+    focal_action: NonEmptyString
+    alternative_action: NonEmptyString
+    focal_payoff: NonEmptyString
+    alternative_payoff: NonEmptyString
+    feasibility_basis: NonEmptyString
+    best_response_inequality: NonEmptyString
+    activity_status: MarginActivityStatus
+    status_basis: NonEmptyString
+    kill_condition: NonEmptyString
+
+    @model_validator(mode="after")
+    def _compares_distinct_actions(self) -> "ActiveMarginWitness":
+        _unique(self.payoff_node_ids, "active-margin payoff node IDs")
+        if self.focal_action == self.alternative_action:
+            raise ValueError(
+                "active_margin_witness: focal and alternative actions must differ"
+            )
+        return self
+
+
 class CausalChainStep(StrictModel):
     step_number: Literal[1, 2, 3]
     force_ids: Annotated[tuple[StableId, ...], Field(min_length=1)]
@@ -232,6 +265,7 @@ class CausalChainStep(StrictModel):
     consequence: NonEmptyString
     source_node_id: StableId
     target_node_id: StableId
+    active_margin_witness: ActiveMarginWitness | None = None
 
     @field_validator("force_ids")
     @classmethod
@@ -546,6 +580,49 @@ class FramingQualityBundle(FramingQualityPayload):
             if not set(gap.affected_benchmark_ids).issubset(known_benchmark_ids):
                 raise ValueError("disclosed gap references an unknown benchmark")
 
+        supplied_witnesses = tuple(
+            step.active_margin_witness
+            for step in self.causal_chain
+            if step.active_margin_witness is not None
+        )
+        inactive_witnesses = tuple(
+            witness
+            for witness in supplied_witnesses
+            if witness.activity_status == "inactive"
+        )
+        unresolved_witnesses = tuple(
+            witness
+            for witness in supplied_witnesses
+            if witness.activity_status == "unresolved"
+        )
+        causal_gaps = tuple(
+            gap
+            for gap in self.disclosed_gaps
+            if gap.category == "causal_attribution"
+        )
+        if inactive_witnesses and (
+            self.proposed_action != "revise_framing"
+            or not any(gap.repair_target_refs for gap in causal_gaps)
+        ):
+            raise ValueError(
+                "inactive_mechanism_link: an inactive payoff margin requires "
+                "revise_framing and a causal-attribution gap with an exact repair "
+                "target"
+            )
+        if unresolved_witnesses and not causal_gaps:
+            raise ValueError(
+                "unresolved_active_margin: an unresolved payoff margin requires a "
+                "causal-attribution gap"
+            )
+        if (
+            self.proposed_action == "ready_for_g1"
+            and (inactive_witnesses or unresolved_witnesses)
+        ):
+            raise ValueError(
+                "inactive_mechanism_link: inactive or unresolved mechanism links "
+                "cannot be promoted to ready_for_g1"
+            )
+
         exact_repair_targets = {
             "ResearchQuestion": self.research_question_ref,
             "BenchmarkSet": self.benchmark_set_ref,
@@ -801,6 +878,20 @@ def render_framing_quality_memo(
             f"-> {_markdown_text(step.endogenous_response)} "
             f"-> {_markdown_text(step.consequence)}"
         )
+        witness = step.active_margin_witness
+        if witness is not None:
+            lines.append(
+                f"   - **Payoff check ({_display_token(witness.activity_status)}).** "
+                f"At {_markdown_text(witness.concrete_state)}, "
+                f"{_markdown_text(witness.decision_maker)} compares "
+                f"{_markdown_text(witness.focal_action)} "
+                f"(payoff {_markdown_text(witness.focal_payoff)}) with "
+                f"{_markdown_text(witness.alternative_action)} "
+                f"(payoff {_markdown_text(witness.alternative_payoff)}). "
+                f"The response requires {_markdown_text(witness.best_response_inequality)}. "
+                f"{_markdown_text(witness.status_basis)} "
+                f"Kill this link if {_markdown_text(witness.kill_condition)}"
+            )
 
     lines.extend(
         [
@@ -893,6 +984,7 @@ __all__ = [
     "FRAMING_QUALITY_PAYLOAD_MODELS",
     "FRAMING_QUALITY_PAYLOAD_OWNER_FACETS",
     "AggregateInvarianceAssessment",
+    "ActiveMarginWitness",
     "ArchetypeTension",
     "BenchmarkFramingAssessment",
     "CausalChainStep",
@@ -906,6 +998,8 @@ __all__ = [
     "FramingRepairTargetRef",
     "HeldFixedObjectRef",
     "IllustrativeMinimalExample",
+    "MECHANISM_MARGIN_TENSION_KINDS",
+    "MarginActivityStatus",
     "SelectionAssurance",
     "framing_quality_payload_entity_type",
     "framing_quality_schema_id",

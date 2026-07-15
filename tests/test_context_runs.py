@@ -51,9 +51,10 @@ from econ_theorist.policy import (
     ROUTE_REGISTRY_V3_HASH,
     ROUTE_REGISTRY_V4_HASH,
     ROUTE_REGISTRY_V5_HASH,
+    ROUTE_REGISTRY_V6_HASH,
     V2_ENABLED_ROUTE_IDS,
     V4_ENABLED_ROUTE_IDS,
-    V5_ENABLED_ROUTE_IDS,
+    V6_ENABLED_ROUTE_IDS,
     load_route_registry,
     load_route_registry_by_hash,
     registry_hash,
@@ -239,14 +240,15 @@ class RouteRegistryTests(unittest.TestCase):
             with self.assertRaises(RegistryError):
                 load_route_registry(tampered)
 
-    def test_v1_through_v4_are_historical_and_v5_is_active(self) -> None:
+    def test_v1_through_v5_are_historical_and_v6_is_active(self) -> None:
         active = load_route_registry()
         historical_v1 = load_route_registry_by_hash(ROUTE_REGISTRY_V1_HASH)
         historical_v2 = load_route_registry_by_hash(ROUTE_REGISTRY_V2_HASH)
         historical_v3 = load_route_registry_by_hash(ROUTE_REGISTRY_V3_HASH)
         historical_v4 = load_route_registry_by_hash(ROUTE_REGISTRY_V4_HASH)
-        self.assertEqual(active.registry_version, 5)
-        self.assertEqual(registry_hash(active), ROUTE_REGISTRY_V5_HASH)
+        historical_v5 = load_route_registry_by_hash(ROUTE_REGISTRY_V5_HASH)
+        self.assertEqual(active.registry_version, 6)
+        self.assertEqual(registry_hash(active), ROUTE_REGISTRY_V6_HASH)
         self.assertEqual(historical_v1.registry_version, 1)
         self.assertEqual(registry_hash(historical_v1), ROUTE_REGISTRY_V1_HASH)
         self.assertEqual(historical_v2.registry_version, 2)
@@ -255,9 +257,11 @@ class RouteRegistryTests(unittest.TestCase):
         self.assertEqual(registry_hash(historical_v3), ROUTE_REGISTRY_V3_HASH)
         self.assertEqual(historical_v4.registry_version, 4)
         self.assertEqual(registry_hash(historical_v4), ROUTE_REGISTRY_V4_HASH)
+        self.assertEqual(historical_v5.registry_version, 5)
+        self.assertEqual(registry_hash(historical_v5), ROUTE_REGISTRY_V5_HASH)
         self.assertEqual(
             sum(route.availability == "enabled" for route in active.routes),
-            len(V5_ENABLED_ROUTE_IDS),
+            len(V6_ENABLED_ROUTE_IDS),
         )
         self.assertEqual(
             sum(route.availability == "enabled" for route in historical_v1.routes), 2

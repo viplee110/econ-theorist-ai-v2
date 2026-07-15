@@ -34,6 +34,13 @@ class Phase5A2CodexSkillTests(unittest.TestCase):
         self.assertIn("Omit both", text)
         self.assertIn("on every ordinary continuation", text)
         self.assertIn("rather than replaying the old framing", text)
+        self.assertIn("Submit a bridge `finish` request", text)
+        self.assertIn("exhausted declared retries", text)
+        self.assertIn("explicit user cancellation", text)
+        self.assertIn("abnormal host/model abort", text)
+        self.assertIn("Do not finish an ordinary human wait", text)
+        self.assertIn("Do not use `finish` as a generic pause", text)
+        self.assertIn("Do not rewrite `run.json`", text)
 
         for route in load_route_registry().routes:
             self.assertNotIn(route.route_id, text)

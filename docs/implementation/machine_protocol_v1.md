@@ -30,14 +30,31 @@ etai codex invoke --schema bundle
 ```
 
 This is a thin engine-owned projection over the same machine operations. Its
-v1 start request binds one Codex session, exact root, optional public project
-initialization, and bounded research brief. It currently accepts public work
-only and fails closed before packet delivery for unsupported privacy. A ready
-response includes the exact WorkPacket plus a mechanical candidate-authoring
-contract: transaction bindings, output cardinalities, JSON Schemas, and typed
-cross-field model invariants. An invalid candidate returns bounded structured
-repair diagnostics rather than exposing a traceback or accepting direct
-canonical edits.
+v1 requests start or resume work, complete one exact candidate, or record an
+honest host-session finish. The start request binds one Codex session, exact
+root, optional public project initialization, and bounded research brief. It
+currently accepts public work only and fails closed before packet delivery for
+unsupported privacy. A ready response includes the exact WorkPacket plus a
+mechanical candidate-authoring contract: transaction bindings, output
+cardinalities, JSON Schemas, and typed cross-field model invariants. An invalid
+candidate returns bounded structured repair diagnostics rather than exposing a
+traceback or accepting direct canonical edits. A finish response reuses the
+host-neutral `host.finish` receipt. The Codex projection uses it only for an
+otherwise-unrecorded real termination after delivery: exhausted declared
+retries, explicit user cancellation, or an abnormal host/model abort. Ordinary
+human waits, clarifications, handoffs, and intentional pauses are not finishes.
+A recorded finish does not rewrite the immutable `RouteRun` or prevent a later
+exact resume.
+
+The repository's pilot capture helper is evaluation tooling, not another
+machine or Codex interface. It pre-reads and strictly validates one bridge
+request, binds its selected root, sends those exact bytes over standard input,
+and streams raw stdout and stderr directly to local evidence files. It records
+JSON-object validity separately from strict `CodexBridgeResponseV1` validity;
+a successful child process that emits arbitrary JSON still makes the capture
+command fail. Those captures can contain local paths or research content: they
+must be frozen, hashed, secret-scanned, and, where necessary, redacted with an
+explicit manifest before any public archive is created.
 
 The exported schemas are in [`schemas/machine/v1`](../../schemas/machine/v1/).
 The packaged [`host-manifest.v1.json`](../../machine/host-manifest.v1.json)

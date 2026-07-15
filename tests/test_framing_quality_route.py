@@ -22,6 +22,7 @@ from econ_theorist.candidate_contract import compile_candidate_authoring_contrac
 from econ_theorist.codec import canonical_json_bytes, sha256_digest
 from econ_theorist.decisions import DecisionInputError, commit_decision
 from econ_theorist.framing_quality import (
+    ActiveMarginWitness,
     AggregateInvarianceAssessment,
     ArchetypeTension,
     BenchmarkFramingAssessment,
@@ -36,6 +37,7 @@ from econ_theorist.framing_quality import (
     IllustrativeMinimalExample,
     SelectionAssurance,
     pack_framing_quality_payload,
+    parse_framing_quality_payload,
 )
 from econ_theorist.machine.models import DiagnosticV1, WorkPacketV1
 from econ_theorist.machine.navigation import (
@@ -145,6 +147,30 @@ def href(
         semantic_level=semantic_level,
         primitive_node_id=node_id,
         fixing_level=fixing_level,
+    )
+
+
+def margin_witness(
+    decision_node_id: str,
+    payoff_node_id: str,
+    *,
+    focal_action: str,
+    alternative_action: str,
+) -> ActiveMarginWitness:
+    return ActiveMarginWitness(
+        decision_node_id=decision_node_id,
+        payoff_node_ids=(payoff_node_id,),
+        concrete_state="The same public state, information, and continuation convention",
+        decision_maker="The optimizing agent",
+        focal_action=focal_action,
+        alternative_action=alternative_action,
+        focal_payoff="u_f including continuation value",
+        alternative_payoff="u_a including continuation value",
+        feasibility_basis="Both actions are available at the same decision node and timing.",
+        best_response_inequality="u_f >= u_a",
+        activity_status="active",
+        status_basis="The maintained parameter region contains values satisfying the inequality.",
+        kill_condition="the exact ledger makes u_f < u_a at every admissible value.",
     )
 
 
@@ -378,6 +404,7 @@ class FramingQualityRouteTests(unittest.TestCase):
         self,
         *,
         quality_node_kind: str = "choice",
+        candidate_archetypes: tuple[str, ...] = ("mechanism_explanation",),
     ) -> tuple[EntityVersion, EntityVersion, EntityVersion, EntityVersion]:
         question = self._theory_entity(
             "question.certification",
@@ -388,7 +415,7 @@ class FramingQualityRouteTests(unittest.TestCase):
                 importance="Information policy changes both targeting and product quality.",
                 kill_condition="The reversal survives when quality and inspection are fixed.",
                 proposed_scope="One certification margin with endogenous quality and inspection.",
-                candidate_archetypes=("mechanism_explanation",),
+                candidate_archetypes=candidate_archetypes,
                 prohibited_claims=("The framing audit proves the theorem.",),
             ),
             title="Certification question",
@@ -485,6 +512,20 @@ class FramingQualityRouteTests(unittest.TestCase):
                         economic_meaning="The benchmark holds search cost fixed.",
                         status="primitive",
                     ),
+                    PrimitiveNode(
+                        node_id="node.buyer_payoff",
+                        kind="preference_technology",
+                        label="Buyer payoff ledger",
+                        economic_meaning="Buyer value and search cost determine inspection payoffs.",
+                        status="primitive",
+                    ),
+                    PrimitiveNode(
+                        node_id="node.seller_payoff",
+                        kind="preference_technology",
+                        label="Seller payoff ledger",
+                        economic_meaning="Quality cost and trade returns determine seller quality payoffs.",
+                        status="primitive",
+                    ),
                 ),
                 edges=(
                     PrimitiveEdge(
@@ -504,6 +545,18 @@ class FramingQualityRouteTests(unittest.TestCase):
                         source_node_id="node.quality",
                         target_node_id="node.match",
                         economic_meaning="Quality changes the realized match.",
+                    ),
+                    PrimitiveEdge(
+                        edge_id="edge.buyer_payoff.inspection",
+                        source_node_id="node.buyer_payoff",
+                        target_node_id="node.inspection",
+                        economic_meaning="The buyer payoff comparison determines inspection.",
+                    ),
+                    PrimitiveEdge(
+                        edge_id="edge.seller_payoff.quality",
+                        source_node_id="node.seller_payoff",
+                        target_node_id="node.quality",
+                        economic_meaning="The seller payoff comparison determines quality.",
                     ),
                 ),
             ),
@@ -1009,6 +1062,27 @@ class FramingQualityRouteTests(unittest.TestCase):
         attribution_strength: str = "clean",
         repair_target: EntityVersion | None = None,
     ) -> FramingQualityBundle:
+        graph_payload = parse_theory_entity(graph)
+        assert isinstance(graph_payload, PrimitiveGraph)
+        quality_kind = {
+            node.node_id: node.kind for node in graph_payload.nodes
+        }["node.quality"]
+        quality_witness = (
+            margin_witness(
+                "node.quality",
+                "node.seller_payoff",
+                focal_action="Supply high quality",
+                alternative_action="Supply low quality",
+            )
+            if quality_kind == "choice"
+            else None
+        )
+        inspection_witness = margin_witness(
+            "node.inspection",
+            "node.buyer_payoff",
+            focal_action="Inspect",
+            alternative_action="Buy without inspection",
+        )
         risky_selection = selection_status in {"selector_only", "unresolved"}
         selection_gaps = (
             (
@@ -1091,6 +1165,7 @@ class FramingQualityRouteTests(unittest.TestCase):
                     consequence="The return to hidden quality changes.",
                     source_node_id="node.certification",
                     target_node_id="node.inspection",
+                    active_margin_witness=inspection_witness,
                 ),
                 CausalChainStep(
                     step_number=2,
@@ -1100,6 +1175,11 @@ class FramingQualityRouteTests(unittest.TestCase):
                     consequence="Offer quality deteriorates.",
                     source_node_id="node.inspection",
                     target_node_id="node.quality",
+                    active_margin_witness=(
+                        quality_witness
+                        if quality_witness is not None
+                        else inspection_witness
+                    ),
                 ),
                 CausalChainStep(
                     step_number=3,
@@ -1109,6 +1189,7 @@ class FramingQualityRouteTests(unittest.TestCase):
                     consequence="Match quality falls when supply dominates.",
                     source_node_id="node.quality",
                     target_node_id="node.match",
+                    active_margin_witness=quality_witness,
                 ),
             ),
             minimal_example=IllustrativeMinimalExample(
@@ -1664,6 +1745,7 @@ class FramingQualityRouteTests(unittest.TestCase):
         core = self._phase2_prefix(quality_node_kind="equilibrium_object")
 
         def transition_channel(bundle: FramingQualityBundle) -> FramingQualityBundle:
+            self.assertIsNone(bundle.causal_chain[2].active_margin_witness)
             assessment = bundle.benchmark_assessments[0]
             transition = oref(
                 "object.quality.transition",
@@ -1778,6 +1860,322 @@ class FramingQualityRouteTests(unittest.TestCase):
                 core = self._phase2_prefix()
                 with self.assertRaisesRegex(CandidateValidationError, message):
                     self._commit_audit(core, bundle_mutator=mutator)
+
+    def test_choice_dependent_mechanism_requires_exact_margin_witness(self) -> None:
+        core = self._phase2_prefix()
+
+        def missing(bundle: FramingQualityBundle) -> FramingQualityBundle:
+            steps = (
+                bundle.causal_chain[0].model_copy(
+                    update={"active_margin_witness": None}
+                ),
+                *bundle.causal_chain[1:],
+            )
+            return bundle.model_copy(update={"causal_chain": steps})
+
+        with self.assertRaisesRegex(
+            CandidateValidationError, "active_margin_witness_missing"
+        ):
+            self._commit_audit(core, bundle_mutator=missing)
+
+    def test_downstream_mechanical_step_reuses_upstream_choice_witness(self) -> None:
+        core = self._phase2_prefix()
+
+        def mechanical_consequence(
+            bundle: FramingQualityBundle,
+        ) -> FramingQualityBundle:
+            self.assertIsNotNone(bundle.causal_chain[1].active_margin_witness)
+            third = bundle.causal_chain[2].model_copy(
+                update={"active_margin_witness": None}
+            )
+            return bundle.model_copy(
+                update={"causal_chain": (*bundle.causal_chain[:2], third)}
+            )
+
+        bundle_entity, replacement, _ = self._commit_audit(
+            core, bundle_mutator=mechanical_consequence
+        )
+        payload = parse_framing_quality_payload(
+            "FramingQualityBundle", bundle_entity.facets
+        )
+        assert isinstance(payload, FramingQualityBundle)
+        self.assertIsNone(payload.causal_chain[2].active_margin_witness)
+        result = commit_decision(
+            self.layout,
+            self._g1_decision(
+                core[0],
+                replacement,
+                decision_id="decision.g1.mechanical.consequence",
+                decided_at=T4,
+            ),
+        )
+        self.assertEqual(result.status, "committed")
+
+    def test_nonmechanism_archetype_cannot_hide_an_operative_choice_force(
+        self,
+    ) -> None:
+        core = self._phase2_prefix(
+            candidate_archetypes=("concept_representation_foundation",)
+        )
+
+        def hidden_choice_force(bundle: FramingQualityBundle) -> FramingQualityBundle:
+            tension = ArchetypeTension(
+                result_archetype="concept_representation_foundation",
+                tension_kind="conceptual_distinction_or_representation",
+                conventional_prediction="Certification is only a signal label.",
+                economic_puzzle="The label also changes strategic choices.",
+                resolution_target="Represent the induced choices explicitly.",
+            )
+            steps = tuple(
+                step.model_copy(update={"active_margin_witness": None})
+                for step in bundle.causal_chain
+            )
+            return bundle.model_copy(
+                update={"tension": tension, "causal_chain": steps}
+            )
+
+        with self.assertRaisesRegex(
+            CandidateValidationError, "active_margin_witness_missing"
+        ):
+            self._commit_audit(core, bundle_mutator=hidden_choice_force)
+
+    def test_nonmechanism_nonchoice_forces_do_not_invent_payoff_witnesses(
+        self,
+    ) -> None:
+        core = self._phase2_prefix(
+            quality_node_kind="equilibrium_object",
+            candidate_archetypes=("concept_representation_foundation",),
+        )
+
+        def nonchoice_forces(bundle: FramingQualityBundle) -> FramingQualityBundle:
+            tension = ArchetypeTension(
+                result_archetype="concept_representation_foundation",
+                tension_kind="conceptual_distinction_or_representation",
+                conventional_prediction="Certification is represented as a fixed label.",
+                economic_puzzle="Its equilibrium representation changes the state mapping.",
+                resolution_target="Separate the institutional and equilibrium objects.",
+            )
+            forces = (
+                bundle.forces[0].model_copy(
+                    update={
+                        "operative_margin": "Certification institution",
+                        "margin_node_id": "node.certification",
+                    }
+                ),
+                bundle.forces[1],
+            )
+            steps = tuple(
+                step.model_copy(update={"active_margin_witness": None})
+                for step in bundle.causal_chain
+            )
+            assessment = bundle.benchmark_assessments[0]
+            transition = oref(
+                "object.quality.transition.nonchoice",
+                "Endogenous quality transition",
+                "transition_kernel",
+                "node.quality",
+            )
+            assessment = assessment.model_copy(
+                update={"reoptimizing": (), "still_endogenous": (transition,)}
+            )
+            return bundle.model_copy(
+                update={
+                    "tension": tension,
+                    "forces": forces,
+                    "causal_chain": steps,
+                    "benchmark_assessments": (assessment,),
+                }
+            )
+
+        bundle_entity, replacement, _ = self._commit_audit(
+            core, bundle_mutator=nonchoice_forces
+        )
+        payload = parse_framing_quality_payload(
+            "FramingQualityBundle", bundle_entity.facets
+        )
+        assert isinstance(payload, FramingQualityBundle)
+        self.assertTrue(
+            all(step.active_margin_witness is None for step in payload.causal_chain)
+        )
+        result = commit_decision(
+            self.layout,
+            self._g1_decision(
+                core[0],
+                replacement,
+                decision_id="decision.g1.nonchoice.forces",
+                decided_at=T4,
+            ),
+        )
+        self.assertEqual(result.status, "committed")
+
+    def test_margin_witness_rejects_nonchoice_and_unrelated_payoff_bindings(self) -> None:
+        def nonchoice(bundle: FramingQualityBundle) -> FramingQualityBundle:
+            witness = bundle.causal_chain[0].active_margin_witness
+            assert witness is not None
+            step = bundle.causal_chain[0].model_copy(
+                update={
+                    "active_margin_witness": witness.model_copy(
+                        update={"decision_node_id": "node.match"}
+                    )
+                }
+            )
+            return bundle.model_copy(
+                update={"causal_chain": (step, *bundle.causal_chain[1:])}
+            )
+
+        def unrelated_payoff(bundle: FramingQualityBundle) -> FramingQualityBundle:
+            witness = bundle.causal_chain[0].active_margin_witness
+            assert witness is not None
+            step = bundle.causal_chain[0].model_copy(
+                update={
+                    "active_margin_witness": witness.model_copy(
+                        update={"payoff_node_ids": ("node.seller_payoff",)}
+                    )
+                }
+            )
+            return bundle.model_copy(
+                update={"causal_chain": (step, *bundle.causal_chain[1:])}
+            )
+
+        for index, (mutator, message) in enumerate(
+            (
+                (nonchoice, "active_margin_witness_binding"),
+                (unrelated_payoff, "active_margin_payoff_binding"),
+            )
+        ):
+            with self.subTest(message=message):
+                if index:
+                    self._reset_project()
+                core = self._phase2_prefix()
+                with self.assertRaisesRegex(CandidateValidationError, message):
+                    self._commit_audit(core, bundle_mutator=mutator)
+
+    def test_inactive_margin_commits_an_honest_upstream_revision(self) -> None:
+        core = self._phase2_prefix()
+
+        def inactive(bundle: FramingQualityBundle) -> FramingQualityBundle:
+            witness = bundle.causal_chain[0].active_margin_witness
+            assert witness is not None
+            step = bundle.causal_chain[0].model_copy(
+                update={
+                    "active_margin_witness": witness.model_copy(
+                        update={
+                            "activity_status": "inactive",
+                            "status_basis": (
+                                "The feasible alternative strictly dominates under "
+                                "the exact payoff ledger."
+                            ),
+                        }
+                    )
+                }
+            )
+            causal_gap = DisclosedFramingGap(
+                gap_id="gap.inactive.margin",
+                category="causal_attribution",
+                description="The proposed choice response is payoff-inactive.",
+                repair_target_refs=(
+                    FramingRepairTargetRef(
+                        entity_type="ResearchQuestion",
+                        entity_ref=eref(core[0]),
+                    ),
+                ),
+                consequence="The claimed mechanism path is not a best response.",
+                resolution_needed="Revise the payoff tradeoff or remove the link.",
+            )
+            return bundle.model_copy(
+                update={
+                    "causal_chain": (step, *bundle.causal_chain[1:]),
+                    "disclosed_gaps": (*bundle.disclosed_gaps, causal_gap),
+                }
+            )
+
+        bundle_entity, replacement, _ = self._commit_audit(
+            core,
+            proposed_action="revise_framing",
+            repair_target=core[0],
+            bundle_mutator=inactive,
+        )
+        payload = parse_framing_quality_payload(
+            "FramingQualityBundle", bundle_entity.facets
+        )
+        assert isinstance(payload, FramingQualityBundle)
+        assert payload.causal_chain[0].active_margin_witness is not None
+        self.assertEqual(
+            payload.causal_chain[0].active_margin_witness.activity_status,
+            "inactive",
+        )
+        replacement_payload = parse_theory_entity(replacement)
+        assert isinstance(replacement_payload, GateDossier)
+        self.assertEqual(replacement_payload.proposed_action, "revise")
+
+    def test_unresolved_margin_can_continue_diagnostic_and_then_resolve(self) -> None:
+        core = self._phase2_prefix()
+
+        def unresolved(bundle: FramingQualityBundle) -> FramingQualityBundle:
+            witness = bundle.causal_chain[0].active_margin_witness
+            assert witness is not None
+            step = bundle.causal_chain[0].model_copy(
+                update={
+                    "active_margin_witness": witness.model_copy(
+                        update={
+                            "activity_status": "unresolved",
+                            "status_basis": (
+                                "The upstream certification effect on the payoff "
+                                "difference has not yet been established."
+                            ),
+                        }
+                    )
+                }
+            )
+            causal_gap = DisclosedFramingGap(
+                gap_id="gap.unresolved.margin",
+                category="causal_attribution",
+                description="The comparative payoff response remains unresolved.",
+                consequence="The proposed choice response may not be induced.",
+                resolution_needed=(
+                    "Establish how certification shifts the best-deviation payoff gap."
+                ),
+            )
+            return bundle.model_copy(
+                update={
+                    "causal_chain": (step, *bundle.causal_chain[1:]),
+                    "disclosed_gaps": (causal_gap,),
+                }
+            )
+
+        first_bundle, first_dossier, _ = self._commit_audit(
+            core,
+            proposed_action="continue_diagnostic",
+            bundle_mutator=unresolved,
+        )
+        first_payload = parse_framing_quality_payload(
+            "FramingQualityBundle", first_bundle.facets
+        )
+        assert isinstance(first_payload, FramingQualityBundle)
+        assert first_payload.causal_chain[0].active_margin_witness is not None
+        self.assertEqual(
+            first_payload.causal_chain[0].active_margin_witness.activity_status,
+            "unresolved",
+        )
+        first_dossier_payload = parse_theory_entity(first_dossier)
+        assert isinstance(first_dossier_payload, GateDossier)
+        self.assertEqual(first_dossier_payload.proposed_action, "revise")
+
+        second_bundle, second_dossier, _ = self._commit_audit(
+            core,
+            prior_bundle=first_bundle,
+        )
+        self.assertEqual(second_bundle.version, first_bundle.version + 1)
+        result = commit_decision(
+            self.layout,
+            self._g1_decision(
+                core[0],
+                second_dossier,
+                decision_id="decision.g1.resolved.margin",
+                decided_at=T4,
+            ),
+        )
+        self.assertEqual(result.status, "committed")
 
     def test_one_direction_causal_channel_can_reach_human_g1(self) -> None:
         core = self._phase2_prefix()

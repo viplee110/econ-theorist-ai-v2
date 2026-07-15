@@ -27,7 +27,11 @@ def _fallback_operation(data: bytes) -> str:
     except (UnicodeDecodeError, json.JSONDecodeError):
         return "start_or_resume"
     operation = value.get("operation") if isinstance(value, dict) else None
-    return operation if operation in {"start_or_resume", "complete"} else "start_or_resume"
+    return (
+        operation
+        if operation in {"start_or_resume", "complete", "finish"}
+        else "start_or_resume"
+    )
 
 
 def invoke_codex_bytes(

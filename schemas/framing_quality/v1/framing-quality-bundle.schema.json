@@ -1,5 +1,101 @@
 {
   "$defs": {
+    "ActiveMarginWitness": {
+      "additionalProperties": false,
+      "description": "A diagnostic payoff comparison for one choice-dependent mechanism link.",
+      "properties": {
+        "activity_status": {
+          "enum": [
+            "active",
+            "inactive",
+            "unresolved"
+          ],
+          "title": "Activity Status",
+          "type": "string"
+        },
+        "alternative_action": {
+          "minLength": 1,
+          "title": "Alternative Action",
+          "type": "string"
+        },
+        "alternative_payoff": {
+          "minLength": 1,
+          "title": "Alternative Payoff",
+          "type": "string"
+        },
+        "best_response_inequality": {
+          "minLength": 1,
+          "title": "Best Response Inequality",
+          "type": "string"
+        },
+        "concrete_state": {
+          "minLength": 1,
+          "title": "Concrete State",
+          "type": "string"
+        },
+        "decision_maker": {
+          "minLength": 1,
+          "title": "Decision Maker",
+          "type": "string"
+        },
+        "decision_node_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Decision Node Id",
+          "type": "string"
+        },
+        "feasibility_basis": {
+          "minLength": 1,
+          "title": "Feasibility Basis",
+          "type": "string"
+        },
+        "focal_action": {
+          "minLength": 1,
+          "title": "Focal Action",
+          "type": "string"
+        },
+        "focal_payoff": {
+          "minLength": 1,
+          "title": "Focal Payoff",
+          "type": "string"
+        },
+        "kill_condition": {
+          "minLength": 1,
+          "title": "Kill Condition",
+          "type": "string"
+        },
+        "payoff_node_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Payoff Node Ids",
+          "type": "array"
+        },
+        "status_basis": {
+          "minLength": 1,
+          "title": "Status Basis",
+          "type": "string"
+        }
+      },
+      "required": [
+        "decision_node_id",
+        "payoff_node_ids",
+        "concrete_state",
+        "decision_maker",
+        "focal_action",
+        "alternative_action",
+        "focal_payoff",
+        "alternative_payoff",
+        "feasibility_basis",
+        "best_response_inequality",
+        "activity_status",
+        "status_basis",
+        "kill_condition"
+      ],
+      "title": "ActiveMarginWitness",
+      "type": "object"
+    },
     "AggregateInvarianceAssessment": {
       "additionalProperties": false,
       "properties": {
@@ -231,6 +327,17 @@
     "CausalChainStep": {
       "additionalProperties": false,
       "properties": {
+        "active_margin_witness": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ActiveMarginWitness"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "cause": {
           "minLength": 1,
           "title": "Cause",

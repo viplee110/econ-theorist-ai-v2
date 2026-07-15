@@ -1,7 +1,7 @@
 # Framing-quality preflight contract
 
-Status: additive v5 implementation candidate; deterministic acceptance
-complete, fresh real-Codex rerun pending
+Status: additive v6 active-margin revision candidate; focused and routine
+non-long deterministic verification passed, fresh real-Codex rerun pending
 
 This contract owns the first pilot-driven scientific strengthening after the
 Phase 5A.2 public Codex framing run. It addresses a narrow failure: a
@@ -55,18 +55,19 @@ reinterpret an incorrect benchmark into correctness.
 
 ## 2. Compatibility boundary
 
-Registry v5 adds the audit route and advances `repair.dependency` to an explicit
-v5 contract for gap-authorized proactive framing revision while retaining its
-one-stale-root mode. Registry v1--v4 files, instruction bundles, payload
-meanings, exported schemas, selectors, and frozen fixtures remain byte-for-byte
-unchanged. Framing-quality records live in the independent
-`framing_quality/v1` payload namespace.
+Registry v5 added the audit route and advanced `repair.dependency` to an
+explicit v5 contract for gap-authorized proactive framing revision while
+retaining its one-stale-root mode. Registry v6 preserves that complete catalog
+and advances only `audit.framing_economics` to its active-margin instruction.
+Registry v1--v5 files, instruction bundles, payload meanings, exported schemas,
+selectors, and frozen fixtures remain byte-for-byte unchanged. Framing-quality
+records live in the independent `framing_quality/v1` payload namespace.
 
 Historical chains replay under the registry hash to which they were bound.
-The current CLI and machine facade use v5 for new work. The v5 G1 user-action
-preflight accepts only a current replacement dossier that includes a fresh
-`FramingQualityBundle`; this current-action rule does not rewrite historical
-Phase 2 transactions.
+The current CLI and machine facade use route registry v6 and navigation
+registry v5 for new work. The current G1 user-action preflight accepts only a
+current replacement dossier that includes a fresh `FramingQualityBundle`; this
+current-action rule does not rewrite historical Phase 2 transactions.
 
 ## 3. Canonical bundle
 
@@ -93,6 +94,26 @@ its appropriate tension rather than inventing two comparative-static effects.
 Every declared force must appear in the three-link explanation. Each cited
 step is a nonzero directed subpath of that force's source--operative-margin--
 target path; a zero-length or merely named force is not an economic mechanism.
+
+A choice-dependent mechanism step also carries an `ActiveMarginWitness`. In
+one concrete state it names the exact decision and payoff objects and compares
+the claimed response with an economically exhaustive deviation under the same
+timing, information, beliefs, and continuation convention. A binary comparison
+states why its two actions exhaust the feasible set. A multi-action or
+continuous choice instead uses the best feasible deviation, a deviation payoff
+envelope, or the appropriate local variation rather than a convenient single
+alternative. The witness states continuation-inclusive payoffs and the
+necessary best-response, mixing, or local optimality condition. Its
+`status_basis` also explains how the upstream source changes the payoff gap,
+deviation envelope, or local incentive; without that comparative response the
+margin remains unresolved. It classifies the margin as active, inactive, or
+unresolved and gives a link-specific kill condition.
+
+A downstream technological transition that introduces no new choice does not
+repeat an upstream action comparison. But every choice margin on which a
+declared force operates must be witnessed somewhere in the chain, regardless
+of the paper's result archetype. These comparisons are diagnostic economic
+evidence, not proofs of existence or global comparative statics.
 
 The canonical bundle is scientific state. Its rendered one-page Markdown memo
 and compact benchmark table are derived views. A rendered view must not expose
@@ -131,7 +152,7 @@ is robust to equilibrium selection.
 
 ## 5. Noncompensatory automatic checks
 
-The v5 exit validator checks exact bindings, complete benchmark coverage,
+The v6 exit validator checks exact bindings, complete benchmark coverage,
 primitive-node closure, causal-chain closure, channel reachability, and the
 consistency of the proposed attribution. It must emit stable diagnostic codes
 for at least these three blockers:
@@ -145,6 +166,14 @@ for at least these three blockers:
   control;
 - `selection_robustness_unsupported`: `selector_only` or unresolved selection
   is used to claim that an equilibrium-selection artifact has been ruled out.
+- `active_margin_witness_missing`: a choice-dependent mechanism step, or a
+  force's operative choice margin, has no exact payoff comparison;
+- `active_margin_witness_binding`: the purported decision is not a choice on
+  the claimed PrimitiveGraph subpath;
+- `active_margin_payoff_binding`: cited payoff or continuation objects do not
+  bind a connected payoff basis for that decision;
+- `inactive_mechanism_link`: a payoff comparison kills a claimed active link,
+  but the bundle does not propose an exact causal-attribution revision.
 
 These checks are noncompensatory. Good prose, formal precision, or another
 clean benchmark cannot offset one blocker. An honest bundle may retain an
@@ -159,6 +188,11 @@ limitation and may be ready; `weak` or `unresolved` attribution may not.
 
 Automatic validation establishes internal consistency and declared channel
 identification, not the truth of a model-produced economic classification.
+It can require a complete, graph-bound comparison and prevent an honestly
+inactive or unresolved margin from being promoted. It does not symbolically
+solve arbitrary payoff expressions. Semantic acceptance therefore also
+requires a blinded rerun to perform the stated dominance and best-response
+check rather than merely fill the fields.
 
 ## 6. Human G1 authority
 
@@ -179,11 +213,23 @@ G1 or turn an unresolved scientific gap into an approval.
 
 The implementation slice is not accepted until it demonstrates:
 
-- unchanged v1--v4 registry and instruction identities;
+- unchanged v1--v5 registry and instruction identities;
 - strict payload/schema round trips and candidate-contract exposure;
 - rejection of each of the three defects found in the Phase 5A.2 pilot;
 - rejection of every gap category at `ready_for_g1`;
 - rejection of unused, zero-length, or path-detached economic forces;
+- rejection of missing, non-choice, off-path, or payoff-detached active-margin
+  witnesses for choice-dependent mechanism links;
+- acceptance of an unwitnessed downstream mechanical step that introduces no
+  new choice when its operative upstream choice is witnessed elsewhere;
+- rejection of a declared operative choice margin that tries to bypass the
+  witness by changing the result archetype, while non-choice forces remain
+  free of invented action comparisons;
+- binary exhaustiveness or an appropriate best-deviation, envelope, or local
+  variation basis, plus an upstream payoff-sensitivity explanation;
+- acceptance of an honestly inactive link only as `revise_framing` with an
+  exact causal-attribution repair target, and rejection of inactive or
+  unresolved margins at `ready_for_g1`;
 - rejection of self-declared reoptimization on outcome nodes and of same-level
   fixed/movable aliases;
 - acceptance of a typed endogenous transition as the active response margin;
@@ -200,21 +246,25 @@ The implementation slice is not accepted until it demonstrates:
 - all seven current schema/resource exporter checks, including
   `python scripts/export_framing_quality_schemas.py --check`;
 - a derived memo with one puzzle, the relevant tension, a closed three-link
-  explanation, one illustrative example, a compact benchmark table, and no
-  system vocabulary;
+  explanation, plain-language state/action/payoff/inequality/kill checks for
+  its choice margins, one illustrative example, a compact benchmark table,
+  and no system vocabulary;
 - a fresh Codex rerun on the same public pilot before any claim about improved
   readability or lower human intervention.
 
 The rerun is exploratory evidence. Confirmatory v1/v2 quality, editing-time,
 and human-effort claims remain owned by Phase 6.
 
-The deterministic portion of this predicate passed on the implementation
-branch: 522 routine non-long tests passed with six reported platform/optional
-skips; all seven schema/resource exporters, compilation of 144 Python files,
-`doctor` with `required_ok=true`, local Markdown-link validation, and
-`git diff --check` passed. Registry v5 is pinned at
-`91ef2dcf75bcc4bce22241466477a99f9e34cbd8ac537974e1017a2e1fe92195`
-and navigation v2 at
-`262140bc73fb2b0a14c0d7ea884b36d07997aae4c63403f9091bb28ad2fccf81`.
-The fresh Codex rerun bullet remains open, so this checkpoint is not evidence
-that readability, paper quality, or human effort has improved.
+The earlier v5 deterministic checkpoint does not establish acceptance of this
+v6 active-margin revision. Against the final current pins, 59 focused framing,
+registry, model, and distribution tests passed. Route registry v6 is pinned at
+`532329cad6ce302f9f390f1d726fceee94560114c7fb9b3f6d5e2968486bcdde`
+and navigation registry v5 at
+`50b3943aa43aa989e33a27bef48eb6de66e41cf8048ff856fa2183397caa9a4c`.
+The final current tree passed 560 routine non-long tests with six declared
+platform/optional skips, a final 28-test affected cross-slice suite, all seven current
+schema/resource exporter checks, Python compilation, and diff checks. The
+three hour-scale historical gold chains were not rerun because this additive
+change preserves their frozen resources. The fresh Codex rerun remains open,
+so this checkpoint is not evidence that readability, paper quality, or human
+effort has improved.

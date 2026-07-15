@@ -17,6 +17,7 @@ from econ_theorist.codex_bridge import (
     CodexBridge,
     CodexBridgeResponseV1,
     CodexCompleteRequestV1,
+    CodexFinishRequestV1,
     CodexSessionV1,
     CodexStartRequestV1,
     codex_bridge_schema,
@@ -458,7 +459,37 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
         self.assertEqual(completed.outcome, "committed", completed)
         self.assertEqual(completed.completion.transaction_digest, digest)
         self.assertEqual(replay(StoreLayout.at(self.root)).head, digest)
-        self.assertEqual(self.bridge.invoke(completion_request), completed)
+        layout = StoreLayout.at(self.root)
+        operational_run = (
+            ProjectOperationalLayout.at(layout).runs / first.route_run_id
+        )
+        transaction_names = {item.name for item in layout.transactions_root.iterdir()}
+        operation_names = {
+            item.name
+            for item in (operational_run / "completion-operations").iterdir()
+        }
+        receipt_names = {
+            item.name for item in (operational_run / "host-receipts").iterdir()
+        }
+        main_bytes = layout.main_ref.read_bytes()
+        replayed_completion = self.bridge.invoke(completion_request)
+        self.assertEqual(replayed_completion, completed)
+        self.assertEqual(layout.main_ref.read_bytes(), main_bytes)
+        self.assertEqual(
+            {item.name for item in layout.transactions_root.iterdir()},
+            transaction_names,
+        )
+        self.assertEqual(
+            {
+                item.name
+                for item in (operational_run / "completion-operations").iterdir()
+            },
+            operation_names,
+        )
+        self.assertEqual(
+            {item.name for item in (operational_run / "host-receipts").iterdir()},
+            receipt_names,
+        )
 
         next_route = self.bridge.invoke(
             CodexStartRequestV1(
@@ -494,6 +525,119 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
             conflict.diagnostics[0].message,
         )
         self.assertEqual(replay(StoreLayout.at(self.root)).head, digest)
+
+    def test_finish_records_terminal_host_receipt_and_same_run_can_resume(
+        self,
+    ) -> None:
+        ready = self.bridge.invoke(self._start_request())
+        self.assertEqual(ready.outcome, "ready", ready)
+        layout = StoreLayout.at(self.root)
+        original_head = replay(layout).head
+        valid = self._framing_transaction(ready.route_run_id)
+        operations = list(valid.operations)
+        frames = operations[2]
+        self.assertIsInstance(frames, CreateRelationOp)
+        assert isinstance(frames, CreateRelationOp)
+        operations[2] = frames.model_copy(
+            update={
+                "relation": frames.relation.model_copy(
+                    update={
+                        "source": frames.relation.target,
+                        "target": frames.relation.source,
+                    }
+                )
+            }
+        )
+        invalid = valid.model_copy(
+            update={
+                "transaction_id": "transaction.codex.bridge.before.finish",
+                "operations": tuple(operations),
+            }
+        )
+        candidate_path = self.root / ready.candidate_logical_path
+        candidate_path.parent.mkdir(parents=True, exist_ok=True)
+        candidate_path.write_text(
+            json.dumps(invalid.model_dump(mode="json"), indent=2) + "\n",
+            encoding="utf-8",
+        )
+        rejected = self.bridge.invoke(
+            CodexCompleteRequestV1(
+                project_root=str(self.root),
+                route_run_id=ready.route_run_id,
+                work_packet_hash=ready.work_packet_hash,
+                delivery_envelope_hash=ready.delivery_envelope_hash,
+            )
+        )
+        self.assertEqual(rejected.outcome, "error", rejected)
+        self.assertEqual(replay(layout).head, original_head)
+        finish_request = CodexFinishRequestV1(
+            project_root=str(self.root),
+            route_run_id=ready.route_run_id,
+            work_packet_hash=ready.work_packet_hash,
+            delivery_envelope_hash=ready.delivery_envelope_hash,
+            completion_status="failed_terminal",
+            warnings=("retry_budget_exhausted",),
+        )
+
+        finished = self.bridge.invoke(finish_request)
+        self.assertEqual(finished.outcome, "recorded_failure", finished)
+        self.assertTrue(finished.mutated)
+        self.assertEqual(finished.completion.status, "recorded_failure")
+        self.assertIsNotNone(finished.completion.candidate_digest)
+        self.assertEqual(finished.head, original_head)
+        self.assertEqual(replay(layout).head, original_head)
+        self.assertEqual(read_run(layout, ready.route_run_id).status, "running")
+        operational_run = (
+            ProjectOperationalLayout.at(layout).runs / ready.route_run_id
+        )
+        operation_names = {
+            item.name
+            for item in (operational_run / "completion-operations").iterdir()
+        }
+        receipt_names = {
+            item.name for item in (operational_run / "host-receipts").iterdir()
+        }
+        self.assertEqual(self.bridge.invoke(finish_request), finished)
+        self.assertEqual(
+            {
+                item.name
+                for item in (operational_run / "completion-operations").iterdir()
+            },
+            operation_names,
+        )
+        self.assertEqual(
+            {item.name for item in (operational_run / "host-receipts").iterdir()},
+            receipt_names,
+        )
+
+        recovered = self.bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(self.root),
+                session=self.session.model_copy(
+                    update={"session_id": "codex-session-after-terminal-stop"}
+                ),
+            )
+        )
+        self.assertEqual(recovered.outcome, "ready", recovered)
+        self.assertEqual(recovered.route_run_id, ready.route_run_id)
+        self.assertEqual(recovered.work_packet_hash, ready.work_packet_hash)
+        self.assertEqual(recovered.head, original_head)
+
+        candidate_path = self.root / recovered.candidate_logical_path
+        candidate_path.write_text(
+            json.dumps(valid.model_dump(mode="json"), indent=2) + "\n",
+            encoding="utf-8",
+        )
+        committed = self.bridge.invoke(
+            CodexCompleteRequestV1(
+                project_root=str(self.root),
+                route_run_id=recovered.route_run_id,
+                work_packet_hash=recovered.work_packet_hash,
+                delivery_envelope_hash=recovered.delivery_envelope_hash,
+            )
+        )
+        self.assertEqual(committed.outcome, "committed", committed)
+        self.assertEqual(replay(layout).head, committed.head)
 
     def test_omitted_decomposition_budget_and_explicit_audit_cap_are_exact(self) -> None:
         layout = StoreLayout.at(self.root)
@@ -958,6 +1102,7 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
         request_schema = codex_bridge_schema("request")
         response_schema = codex_bridge_schema("response")
         self.assertIn("oneOf", request_schema)
+        self.assertIn("CodexFinishRequestV1", request_schema["$defs"])
         start_properties = request_schema["$defs"]["CodexStartRequestV1"][
             "properties"
         ]
@@ -1027,6 +1172,9 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
         self.assertEqual(
             invalid.diagnostics[0].code, "invalid_codex_bridge_request"
         )
+        invalid_finish = invoke_codex_bytes(b'{"operation":"finish"}')
+        self.assertEqual(invalid_finish.operation, "finish")
+        self.assertEqual(invalid_finish.outcome, "error")
 
     def test_default_private_genesis_bytes_and_ids_remain_unchanged(self) -> None:
         arguments = {

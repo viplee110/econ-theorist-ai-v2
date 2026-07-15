@@ -49,6 +49,11 @@ Codex host over the engine-owned bridge.
 11. After interruption, invoke the same bridge request or inspect its recorded
     operation state. Preserve exact operation keys and bindings; do not create a
     replacement run merely because chat history is missing.
+12. Submit a bridge `finish` request only after an otherwise-unrecorded real
+    termination following packet delivery: exhausted declared retries,
+    explicit user cancellation, or an abnormal host/model abort. Use the exact
+    packet and envelope bindings. Do not finish an ordinary human wait,
+    clarification, handoff, or intentional pause; resume the same immutable run.
 
 ## Preserve boundaries
 
@@ -66,5 +71,8 @@ Codex host over the engine-owned bridge.
   for the bridge and machine protocol.
 - Do not read test fixtures, gold candidates, or reference answers while
   producing a real evaluation candidate.
+- Do not rewrite `run.json` or claim that a recorded host failure canonically
+  abandoned a route.
+- Do not use `finish` as a generic pause or handoff marker.
 
 When the bridge has not delivered a packet, do not begin scientific generation.

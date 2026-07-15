@@ -12,6 +12,7 @@ from econ_theorist.framing_quality import (
     FRAMING_QUALITY_JSON_SCHEMA_REGISTRY,
     FRAMING_QUALITY_PAYLOAD_MODELS,
     FRAMING_QUALITY_PAYLOAD_OWNER_FACETS,
+    ActiveMarginWitness,
     AggregateInvarianceAssessment,
     ArchetypeTension,
     BenchmarkFramingAssessment,
@@ -66,6 +67,30 @@ def href(
         semantic_level=semantic_level,
         primitive_node_id=primitive_node_id,
         fixing_level=fixing_level,
+    )
+
+
+def margin_witness(
+    decision_node_id: str,
+    payoff_node_id: str,
+    *,
+    focal_action: str,
+    alternative_action: str,
+) -> ActiveMarginWitness:
+    return ActiveMarginWitness(
+        decision_node_id=decision_node_id,
+        payoff_node_ids=(payoff_node_id,),
+        concrete_state="The two actions are feasible at the same public state and beliefs",
+        decision_maker="The optimizing agent",
+        focal_action=focal_action,
+        alternative_action=alternative_action,
+        focal_payoff="u_f including the relevant continuation value",
+        alternative_payoff="u_a including the same continuation convention",
+        feasibility_basis="The timing and action set admit both actions before uncertainty resolves.",
+        best_response_inequality="u_f >= u_a",
+        activity_status="active",
+        status_basis="The stated admissible region contains values with u_f >= u_a.",
+        kill_condition="the exact payoff ledger implies u_f < u_a throughout the admissible region.",
     )
 
 
@@ -231,6 +256,12 @@ def bundle() -> FramingQualityBundle:
                 consequence="The private return to hidden quality changes.",
                 source_node_id="node.certificate",
                 target_node_id="node.inspection",
+                active_margin_witness=margin_witness(
+                    "node.inspection",
+                    "node.buyer_payoff",
+                    focal_action="Inspect",
+                    alternative_action="Buy without inspection",
+                ),
             ),
             CausalChainStep(
                 step_number=2,
@@ -240,6 +271,12 @@ def bundle() -> FramingQualityBundle:
                 consequence="The quality distribution deteriorates.",
                 source_node_id="node.inspection",
                 target_node_id="node.quality_choice",
+                active_margin_witness=margin_witness(
+                    "node.quality_choice",
+                    "node.seller_payoff",
+                    focal_action="Invest in hidden quality",
+                    alternative_action="Do not invest",
+                ),
             ),
             CausalChainStep(
                 step_number=3,
@@ -249,6 +286,12 @@ def bundle() -> FramingQualityBundle:
                 consequence="Match quality falls when the incentive force dominates.",
                 source_node_id="node.quality_choice",
                 target_node_id="node.match_quality",
+                active_margin_witness=margin_witness(
+                    "node.quality_choice",
+                    "node.seller_payoff",
+                    focal_action="Invest in hidden quality",
+                    alternative_action="Do not invest",
+                ),
             ),
         ),
         minimal_example=IllustrativeMinimalExample(
@@ -463,6 +506,131 @@ class FramingQualityStrictnessTests(unittest.TestCase):
                     "forces": (zero_force, original.forces[1]),
                 }
             )
+
+    def test_active_margin_witness_requires_distinct_actions_and_payoff_refs(self) -> None:
+        original = bundle().causal_chain[0].active_margin_witness
+        assert original is not None
+        with self.assertRaisesRegex(ValidationError, "focal and alternative actions"):
+            ActiveMarginWitness.model_validate(
+                {
+                    **original.model_dump(mode="python"),
+                    "alternative_action": original.focal_action,
+                }
+            )
+        with self.assertRaisesRegex(ValidationError, "payoff node IDs"):
+            ActiveMarginWitness.model_validate(
+                {
+                    **original.model_dump(mode="python"),
+                    "payoff_node_ids": (
+                        original.payoff_node_ids[0],
+                        original.payoff_node_ids[0],
+                    ),
+                }
+            )
+
+    def test_inactive_margin_requires_exact_causal_revision(self) -> None:
+        original = bundle()
+        first_witness = original.causal_chain[0].active_margin_witness
+        assert first_witness is not None
+        inactive_step = original.causal_chain[0].model_copy(
+            update={
+                "active_margin_witness": first_witness.model_copy(
+                    update={
+                        "activity_status": "inactive",
+                        "status_basis": "The alternative strictly dominates throughout.",
+                    }
+                )
+            }
+        )
+        inactive_steps = (inactive_step, *original.causal_chain[1:])
+        with self.assertRaisesRegex(ValidationError, "inactive_mechanism_link"):
+            FramingQualityBundle.model_validate(
+                {
+                    **original.model_dump(mode="python"),
+                    "causal_chain": inactive_steps,
+                }
+            )
+
+        causal_gap = DisclosedFramingGap(
+            gap_id="gap.inactive_margin",
+            category="causal_attribution",
+            description="A claimed choice margin is inactive under the payoff ledger.",
+            repair_target_refs=(
+                FramingRepairTargetRef(
+                    entity_type="ResearchQuestion",
+                    entity_ref=original.research_question_ref,
+                ),
+            ),
+            consequence="The proposed mechanism chain is not an equilibrium path.",
+            resolution_needed="Revise the payoff tradeoff or remove the inactive link.",
+        )
+        accepted = FramingQualityBundle.model_validate(
+            {
+                **original.model_dump(mode="python"),
+                "causal_chain": inactive_steps,
+                "disclosed_gaps": (*original.disclosed_gaps, causal_gap),
+            }
+        )
+        self.assertEqual(
+            accepted.causal_chain[0].active_margin_witness.activity_status,
+            "inactive",
+        )
+
+    def test_unresolved_margin_cannot_be_ready_for_g1(self) -> None:
+        original = bundle()
+        first_witness = original.causal_chain[0].active_margin_witness
+        assert first_witness is not None
+        unresolved_step = original.causal_chain[0].model_copy(
+            update={
+                "active_margin_witness": first_witness.model_copy(
+                    update={
+                        "activity_status": "unresolved",
+                        "status_basis": "The admissible best-response region is unknown.",
+                    }
+                )
+            }
+        )
+        causal_gap = DisclosedFramingGap(
+            gap_id="gap.unresolved_margin",
+            category="causal_attribution",
+            description="The payoff comparison has not established an active margin.",
+            consequence="The mechanism may be a verbal rather than equilibrium path.",
+            resolution_needed="Solve the best-response inequality before G1.",
+        )
+        with self.assertRaisesRegex(ValidationError, "cannot be promoted|mechanism_link"):
+            FramingQualityBundle.model_validate(
+                {
+                    **original.model_dump(mode="python"),
+                    "causal_chain": (unresolved_step, *original.causal_chain[1:]),
+                    "disclosed_gaps": (causal_gap,),
+                    "proposed_action": "ready_for_g1",
+                    "action_rationale": "Attempt readiness without an active margin.",
+                }
+            )
+
+    def test_nonmechanism_chain_may_omit_payoff_witnesses(self) -> None:
+        original = bundle()
+        tension = original.tension.model_copy(
+            update={
+                "result_archetype": "concept_representation_foundation",
+                "tension_kind": "conceptual_distinction_or_representation",
+                "countervailing_logic": None,
+            }
+        )
+        steps = tuple(
+            step.model_copy(update={"active_margin_witness": None})
+            for step in original.causal_chain
+        )
+        accepted = FramingQualityBundle.model_validate(
+            {
+                **original.model_dump(mode="python"),
+                "tension": tension,
+                "causal_chain": steps,
+            }
+        )
+        self.assertTrue(
+            all(step.active_margin_witness is None for step in accepted.causal_chain)
+        )
 
     def test_ready_blocks_every_disclosed_gap_category(self) -> None:
         original = bundle()
@@ -767,11 +935,16 @@ class FramingQualityRendererTests(unittest.TestCase):
         self.assertIn("| No certification |", markdown)
         self.assertIn("| Fixed public signal |", markdown)
         self.assertIn("## Three-step economic logic", markdown)
+        self.assertIn("**Payoff check (active).**", markdown)
+        self.assertIn("compares Inspect (payoff u_f", markdown)
+        self.assertIn("The response requires u_f >= u_a", markdown)
+        self.assertIn("Kill this link if", markdown)
         self.assertIn("## Benchmark comparison", markdown)
         self.assertIn("**Open issues.**", markdown)
         self.assertNotIn("question.certificates", markdown)
         self.assertNotIn("benchmark.no_certificate", markdown)
         self.assertNotIn("force.information", markdown)
+        self.assertNotIn("node.buyer_payoff", markdown)
         self.assertNotIn("schema", markdown.lower())
         self.assertNotIn("entity", markdown.lower())
         self.assertNotIn("system", markdown.lower())

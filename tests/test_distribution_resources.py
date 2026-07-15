@@ -106,6 +106,24 @@ class DistributionResourceTests(unittest.TestCase):
             self.assertTrue(expected)
             self.assertEqual(set(data_files[installed_namespace]), expected)
 
+    def test_active_v6_policy_resources_are_packaged(self) -> None:
+        configuration = tomllib.loads(
+            (REPOSITORY_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+        )
+        data_files = configuration["tool"]["setuptools"]["data-files"]
+        self.assertIn(
+            "routes/registry.v6.json",
+            data_files["share/econ-theorist/routes"],
+        )
+        self.assertIn(
+            "routes/instructions/audit.framing_economics.v6.txt",
+            data_files["share/econ-theorist/routes/instructions"],
+        )
+        self.assertIn(
+            "machine/navigation-registry.v5.json",
+            data_files["share/econ-theorist/machine"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

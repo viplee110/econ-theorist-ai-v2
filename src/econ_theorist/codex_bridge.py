@@ -62,12 +62,13 @@ CODEX_ADAPTER_ID = "econ-theorist.codex.phase5a2"
 CODEX_ADAPTER_VERSION = "1"
 CODEX_PROVIDER = "openai"
 
-CodexBridgeOperation: TypeAlias = Literal["start_or_resume", "complete"]
+CodexBridgeOperation: TypeAlias = Literal["start_or_resume", "complete", "finish"]
 CodexBridgeOutcome: TypeAlias = Literal[
     "ready",
     "staged",
     "committed",
     "stale_base",
+    "recorded_failure",
     "complete",
     "blocked",
     "human_decision_required",
@@ -163,8 +164,30 @@ class CodexCompleteRequestV1(StrictModel):
         return self
 
 
+class CodexFinishRequestV1(StrictModel):
+    """Record an honest host-session stop without abandoning the route."""
+
+    bridge_request_schema: Literal[
+        "econ-theorist/codex-finish-request/v1"
+    ] = "econ-theorist/codex-finish-request/v1"
+    bridge_version: Literal[1] = 1
+    operation: Literal["finish"] = "finish"
+    project_root: NonEmpty
+    route_run_id: NonEmpty
+    work_packet_hash: Digest
+    delivery_envelope_hash: Digest
+    expected_candidate_digest: Digest | None = None
+    completion_status: Literal[
+        "failed_no_effect",
+        "failed_terminal",
+        "cancelled",
+        "unknown_possible_effect",
+    ]
+    warnings: tuple[NonEmpty, ...] = ()
+
+
 CodexBridgeRequest: TypeAlias = Annotated[
-    CodexStartRequestV1 | CodexCompleteRequestV1,
+    CodexStartRequestV1 | CodexCompleteRequestV1 | CodexFinishRequestV1,
     Field(discriminator="operation"),
 ]
 CODEX_BRIDGE_REQUEST_ADAPTER = TypeAdapter(CodexBridgeRequest)
@@ -237,10 +260,21 @@ class CodexBridgeResponseV1(StrictModel):
                 raise ValueError(
                     "ready Codex response has a mismatched candidate authoring contract"
                 )
-        if self.outcome in {"staged", "committed", "stale_base"} and (
+        if self.outcome in {
+            "staged",
+            "committed",
+            "stale_base",
+            "recorded_failure",
+        } and (
             self.completion is None
         ):
             raise ValueError("completion outcomes require a completion result")
+        if self.outcome == "recorded_failure":
+            assert self.completion is not None
+            if self.completion.status != "recorded_failure":
+                raise ValueError(
+                    "recorded_failure responses require a recorded host failure"
+                )
         return self
 
 
@@ -433,12 +467,17 @@ class CodexBridge:
         self._preproject_operational_home = preproject_operational_home
 
     def invoke(
-        self, request: CodexStartRequestV1 | CodexCompleteRequestV1
+        self,
+        request: (
+            CodexStartRequestV1 | CodexCompleteRequestV1 | CodexFinishRequestV1
+        ),
     ) -> CodexBridgeResponseV1:
         try:
             if isinstance(request, CodexStartRequestV1):
                 return self._start(request)
-            return self._complete(request)
+            if isinstance(request, CodexCompleteRequestV1):
+                return self._complete(request)
+            return self._finish(request)
         except (CompletionError, OSError, RuntimeError, ValueError) as exc:
             code = (
                 "codex_completion_protocol_error"
@@ -457,7 +496,9 @@ class CodexBridge:
 
     def _blocked_from_machine(
         self,
-        request: CodexStartRequestV1 | CodexCompleteRequestV1,
+        request: (
+            CodexStartRequestV1 | CodexCompleteRequestV1 | CodexFinishRequestV1
+        ),
         response: MachineResponseV1,
         *,
         mutated: bool,
@@ -972,6 +1013,91 @@ class CodexBridge:
             diagnostics=completed.diagnostics,
         )
 
+    def _finish(self, request: CodexFinishRequestV1) -> CodexBridgeResponseV1:
+        """Persist a bounded terminal host receipt while leaving the run resumable."""
+
+        root = Path(request.project_root).resolve()
+        if not root.is_dir():
+            raise ValueError("Codex project_root must be an existing directory")
+        grant = _grant(root)
+        envelope, plan, packet = _read_provider_delivery(
+            root,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+            delivery_envelope_hash=request.delivery_envelope_hash,
+        )
+        finish_key = _operation_key(
+            "finish",
+            {
+                "request": request.model_dump(mode="json"),
+                "provider": plan.provider,
+                "model": plan.model,
+                "adapter_id": envelope.adapter_id,
+            },
+        )
+        observation = TrustedHostCompletionObservation(
+            operation_key=finish_key,
+            delivery_envelope_hash=request.delivery_envelope_hash,
+            host_product=envelope.host_product,
+            host_version=envelope.host_version,
+            adapter_id=envelope.adapter_id,
+            adapter_version=envelope.adapter_version,
+            provider=plan.provider,
+            model=plan.model,
+            reasoning_class="provider_hidden",
+            tool_identities=("openai.codex",),
+            completion_status=request.completion_status,
+            warnings=request.warnings,
+        )
+        dispatcher = MachineDispatcher(
+            trusted_clock=self._trusted_clock,
+            completion_observations={finish_key: observation},
+        )
+        finished = dispatcher.dispatch(
+            _machine_request(
+                root,
+                grant,
+                "host.finish",
+                operation_key=finish_key,
+                parameters={
+                    "route_run_id": request.route_run_id,
+                    "work_packet_hash": request.work_packet_hash,
+                    "delivery_envelope_hash": request.delivery_envelope_hash,
+                    "expected_candidate_digest": request.expected_candidate_digest,
+                    "reasoning_class": "provider_hidden",
+                    "tool_identities": ["openai.codex"],
+                    "completion_status": request.completion_status,
+                    "warnings": list(request.warnings),
+                },
+            )
+        )
+        if finished.outcome != "blocked" or not finished.result:
+            return self._blocked_from_machine(
+                request,
+                finished,
+                mutated=finished.mutated,
+                fallback_code="codex_host_finish_blocked",
+            )
+        completion = CandidateCompletionResultV1.model_validate_json(
+            canonical_json_bytes(finished.result), strict=True
+        )
+        if completion.status != "recorded_failure":
+            raise ValueError("host.finish did not return a recorded failure")
+        return CodexBridgeResponseV1(
+            operation=request.operation,
+            request_digest=_request_digest(request),
+            outcome="recorded_failure",
+            mutated=finished.mutated,
+            project_id=packet.project_id,
+            head=completion.head_after,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+            delivery_envelope_hash=request.delivery_envelope_hash,
+            candidate_logical_path=packet.candidate_logical_path,
+            completion=completion,
+            diagnostics=finished.diagnostics,
+        )
+
 
 __all__ = [
     "CODEX_ADAPTER_ID",
@@ -984,6 +1110,7 @@ __all__ = [
     "CodexBridgeRequest",
     "CodexBridgeResponseV1",
     "CodexCompleteRequestV1",
+    "CodexFinishRequestV1",
     "CodexSessionV1",
     "CodexStartRequestV1",
     "codex_bridge_schema",

@@ -3,9 +3,9 @@
 Status: Architecture v0.1 with accepted Phase 1--4 implementations, the Phase
 5A.0 host-bootstrap contract, and the Phase 5A.1 generic machine facade on
 `main`; one Phase 5A.2 public Codex functional slice is recorded, and the
-current tree contains a deterministically accepted additive registry-v5
-framing-quality implementation candidate. A fresh real-Codex rerun and the
-full local research-ready gate remain open.
+current tree contains a deterministically accepted additive registry-v6
+active-margin framing-quality implementation candidate. A fresh real-Codex
+rerun and the full local research-ready gate remain open.
 
 Current implementation milestone: pilot-driven scientific strengthening --
 rerun the same public Codex pilot through the accepted economist-facing

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Literal
 
-from pydantic import Field
+from pydantic import Field, model_serializer, model_validator
 
 from . import authoring as a
 from . import framing_quality as fq
@@ -21,6 +21,8 @@ from .models import (
     FACET_ORDER,
     Actor,
     Digest,
+    EntityVersion,
+    EntityVersionRef,
     Facet,
     PrivacyLabel,
     NonEmptyString,
@@ -29,13 +31,20 @@ from .models import (
     RouteOutcome,
     RouteRelationRequirement,
     RouteSpecV2,
+    Snapshot,
     StableId,
     StrictModel,
     Transaction,
 )
-from .policy import route_spec_by_hash
+from .policy import (
+    ROUTE_REGISTRY_V5_HASH,
+    ROUTE_REGISTRY_V6_HASH,
+    route_spec_by_hash,
+)
 from .runs import read_run, transaction_bindings
 from .runtime import StoreLayout
+from .runtime.freshness import authority_semantic_hash, facet_semantic_hash
+from .runtime.replay import replay_at
 
 
 class CandidateTransactionBindingsV1(StrictModel):
@@ -104,6 +113,72 @@ class CandidateModelInvariantV1(StrictModel):
     repair_hint: NonEmptyString
 
 
+class CandidateRelationEndpointV1(StrictModel):
+    """One exact input or uniquely indexed candidate-output relation endpoint."""
+
+    endpoint_schema: Literal[
+        "econ-theorist/candidate-relation-endpoint/v1"
+    ] = "econ-theorist/candidate-relation-endpoint/v1"
+    binding_kind: Literal["exact_input", "candidate_output"]
+    entity_type: StableId
+    entity_ref: EntityVersionRef | None = None
+    output_ordinal: Annotated[int, Field(ge=1)] | None = None
+    facet: Facet
+    field_path: Literal[None] = None
+
+    @model_validator(mode="after")
+    def _binding_is_unambiguous(self) -> "CandidateRelationEndpointV1":
+        if self.binding_kind == "exact_input":
+            if self.entity_ref is None or self.output_ordinal is not None:
+                raise ValueError(
+                    "exact-input relation endpoints require only an entity_ref"
+                )
+        elif self.entity_ref is not None or self.output_ordinal is None:
+            raise ValueError(
+                "candidate-output relation endpoints require only an output_ordinal"
+            )
+        return self
+
+
+class CandidateHardRelationTemplateV1(StrictModel):
+    """Required whole-facet hard relation projected by a route exit validator."""
+
+    relation_template_schema: Literal[
+        "econ-theorist/candidate-hard-relation-template/v1"
+    ] = "econ-theorist/candidate-hard-relation-template/v1"
+    template_id: StableId
+    relation_type: StableId
+    count: Literal[1] = 1
+    relation_id_policy: Literal["new_unique"] = "new_unique"
+    version: Literal[1] = 1
+    supersedes: Literal[None] = None
+    dependency_mode: Literal["hard"] = "hard"
+    source: CandidateRelationEndpointV1
+    target: CandidateRelationEndpointV1
+    upstream_semantic_hash_binding: Literal[
+        "contract_value", "runtime_facet_semantic_hash_v1"
+    ]
+    upstream_semantic_hash: Digest | None = None
+
+    @model_validator(mode="after")
+    def _hash_binding_is_exact(self) -> "CandidateHardRelationTemplateV1":
+        if self.upstream_semantic_hash_binding == "contract_value":
+            if self.upstream_semantic_hash is None:
+                raise ValueError(
+                    "contract-value relation templates require a semantic hash"
+                )
+        else:
+            if self.upstream_semantic_hash is not None:
+                raise ValueError(
+                    "runtime facet hash templates cannot carry a precomputed hash"
+                )
+            if self.source.binding_kind != "candidate_output":
+                raise ValueError(
+                    "runtime facet hash templates require a candidate-output source"
+                )
+        return self
+
+
 class CandidateRouteOutputContractV1(StrictModel):
     """Exact generic route exit surface; route instructions retain science."""
 
@@ -119,10 +194,20 @@ class CandidateRouteOutputContractV1(StrictModel):
     allowed_relation_types: tuple[StableId, ...]
     required_output_entities: tuple[RouteEntityRequirement, ...]
     required_output_relations: tuple[RouteRelationRequirement, ...]
+    required_relation_templates: tuple[CandidateHardRelationTemplateV1, ...] = ()
     required_route_outcome_count: Literal[1] = 1
     model_invariants: tuple[CandidateModelInvariantV1, ...]
     relation_json_schema: dict[str, Any]
     route_outcome_json_schema: dict[str, Any]
+
+    @model_serializer(mode="wrap")
+    def _omit_pre_projection_default(self, handler: Any) -> dict[str, Any]:
+        """Keep frozen contracts byte-compatible while extending this v1 model."""
+
+        serialized = handler(self)
+        if not self.required_relation_templates:
+            serialized.pop("required_relation_templates", None)
+        return serialized
 
 
 class CandidateAuthoringContractV1(StrictModel):
@@ -144,6 +229,11 @@ class CandidateAuthoringContractV1(StrictModel):
     authoring_instructions: tuple[NonEmptyString, ...]
 
 
+_RELATION_TEMPLATE_AUTHORING_INSTRUCTION = (
+    "Instantiate every output_contract.required_relation_template exactly. Copy exact_input entity_ref values; bind candidate_output endpoints to the exact output of that entity type and ordinal. For runtime_facet_semantic_hash_v1, compute econ_theorist.runtime.freshness.facet_semantic_hash over the complete candidate source EntityVersion and the declared whole facet; do not hash the raw facet JSON alone."
+)
+
+
 _AUTHORING_INSTRUCTIONS = (
     "Use work_packet.instruction_text and work_packet.compiled_context for scientific judgment; this authoring contract supplies mechanics only.",
     "Write one bare Transaction JSON object, not a candidate wrapper, at output_locations.candidate_logical_path; write helper files only below output_locations.shadow_logical_root.",
@@ -151,10 +241,18 @@ _AUTHORING_INSTRUCTIONS = (
     "For each typed entity, put {schema: payload_schema_id, payload: <schema-valid object>} in owner_facet and set every listed empty_facet to an empty object.",
     "Set every new EntityVersion and RelationVersion project_id, privacy, access_compartments, and created_at exactly to the corresponding transaction_bindings values; never rely on privacy or compartment defaults.",
     "Use only output_contract allowed operation, entity, and relation types; satisfy every output cardinality and the exact scientific exit conditions in work_packet.instruction_text.",
+    _RELATION_TEMPLATE_AUTHORING_INSTRUCTION,
     "JSON Schema is necessary but not sufficient: obey output_contract.model_invariants exactly and use the bridge's structured candidate diagnostics for any remaining model-level repair.",
     "Include exactly one route.outcome operation bound to transaction_bindings.route_run_id and transaction_bindings.route_id, with the same privacy and access compartments; candidate_refs must enumerate every exact canonical object produced by the Transaction, including any entity, relation, artifact, blocker, or other schema-permitted reference required by the route validator.",
     "Do not fabricate a human decision or approval; obey every work_packet.forbidden_actions entry and stop if the route requires unavailable human authority.",
     "The candidate source may be ordinary readable UTF-8 JSON and may end with a newline. The bridge validates it as a strict Transaction and computes the digest from engine-canonical Transaction bytes; do not hash the source file bytes or put a digest inside the object.",
+)
+
+
+_HISTORICAL_AUTHORING_INSTRUCTIONS = tuple(
+    instruction
+    for instruction in _AUTHORING_INSTRUCTIONS
+    if instruction != _RELATION_TEMPLATE_AUTHORING_INSTRUCTION
 )
 
 
@@ -241,6 +339,20 @@ _FRAMING_MODEL_INVARIANTS = (
         repair_hint="Do not invent an opposing force for a single active channel, and do not omit the baseline/counterforce structure from a genuine reversal.",
     ),
     CandidateModelInvariantV1(
+        invariant_id="framing.force_conflict_geometry",
+        model="FramingQualityBundle",
+        condition="tension.tension_kind is force_conflict or sign_or_threshold_reversal",
+        requirement="include at least one baseline_force and one countervailing_force; every baseline and countervailing force must act on the same target_node_id; all baseline directions must be raises_target and all countervailing directions lowers_target, or all baseline directions lowers_target and all countervailing directions raises_target; the causal chain must use both roles",
+        repair_hint="Bind the two forces to one shared economic target and encode genuinely opposite effects; if there is no shared-target opposition, use causal_channel rather than manufacturing a force conflict.",
+    ),
+    CandidateModelInvariantV1(
+        invariant_id="framing.active_margin_witness",
+        model="FramingQualityBundle",
+        condition="a mechanism-oriented causal-chain step relies on an operative PrimitiveGraph choice margin",
+        requirement="identify one concrete state and two feasible actions available at that same choice margin, compare their payoffs, and state the inequality under which the response is nontrivial; do not invent an action witness for a purely mechanical or technological step with no choice on its ordered path; an inactive margin kills or downgrades the claimed link, and an unresolved margin cannot support ready_for_g1",
+        repair_hint="Supply the same-state two-action payoff comparison for each operative choice margin, or honestly mark the link inactive or unresolved and downgrade the proposed action.",
+    ),
+    CandidateModelInvariantV1(
         invariant_id="framing.noncompensatory_action",
         model="FramingQualityBundle",
         condition="proposed_action == ready_for_g1",
@@ -257,9 +369,31 @@ _FRAMING_MODEL_INVARIANTS = (
 )
 
 
-def _model_invariants_for_route(route_id: str) -> tuple[CandidateModelInvariantV1, ...]:
+_V6_ONLY_FRAMING_INVARIANTS = frozenset(
+    {
+        "framing.force_conflict_geometry",
+        "framing.active_margin_witness",
+    }
+)
+_HISTORICAL_FRAMING_MODEL_INVARIANTS = tuple(
+    invariant
+    for invariant in _FRAMING_MODEL_INVARIANTS
+    if invariant.invariant_id not in _V6_ONLY_FRAMING_INVARIANTS
+)
+
+
+def _model_invariants_for_route(
+    route_id: str,
+    *,
+    relation_templates_enabled: bool = False,
+) -> tuple[CandidateModelInvariantV1, ...]:
     if route_id == "audit.framing_economics":
-        return (*_MODEL_INVARIANTS, *_FRAMING_MODEL_INVARIANTS)
+        framing_invariants = (
+            _FRAMING_MODEL_INVARIANTS
+            if relation_templates_enabled
+            else _HISTORICAL_FRAMING_MODEL_INVARIANTS
+        )
+        return (*_MODEL_INVARIANTS, *framing_invariants)
     return _MODEL_INVARIANTS
 
 
@@ -325,6 +459,166 @@ def _payload_contract(
     )
 
 
+_FRAMING_RELATION_INPUTS = (
+    ("ResearchQuestion", "framing.audits.research_question"),
+    ("BenchmarkSet", "framing.audits.benchmark_set"),
+    ("PrimitiveGraph", "framing.audits.primitive_graph"),
+    ("GateDossier", "framing.audits.source_g1_dossier"),
+)
+_FRAMING_ROUTE_ID = "audit.framing_economics"
+_FRAMING_FROZEN_ROUTE_VERSION = 5
+_FRAMING_ROUTE_VERSION = 6
+_FRAMING_EXIT_VALIDATOR_ID = "framing_quality_route_exit.v1"
+_FRAMING_RELATION_CARDINALITIES = (
+    ("audits", 4, 4),
+    ("governs", 1, 1),
+)
+
+
+def _candidate_output_endpoint(entity_type: str) -> CandidateRelationEndpointV1:
+    _, owner_facet, _ = _payload_registration(entity_type)
+    return CandidateRelationEndpointV1(
+        binding_kind="candidate_output",
+        entity_type=entity_type,
+        output_ordinal=1,
+        facet=owner_facet,
+    )
+
+
+def _exact_input_endpoint(entity: EntityVersion) -> CandidateRelationEndpointV1:
+    _, owner_facet, _ = _payload_registration(entity.entity_type)
+    return CandidateRelationEndpointV1(
+        binding_kind="exact_input",
+        entity_type=entity.entity_type,
+        entity_ref=EntityVersionRef(
+            entity_id=entity.entity_id,
+            version=entity.version,
+        ),
+        facet=owner_facet,
+    )
+
+
+def _whole_facet_hash(snapshot: Snapshot, entity: EntityVersion, facet: Facet) -> str:
+    if facet == "authority":
+        return authority_semantic_hash(
+            entity,
+            snapshot.decisions,
+            snapshot.effective_decisions,
+        )
+    return facet_semantic_hash(entity, facet)
+
+
+def _relation_templates_for_route(
+    route: RouteSpecV2,
+    packet: WorkPacketV1,
+    snapshot: Snapshot,
+) -> tuple[CandidateHardRelationTemplateV1, ...]:
+    """Project exact route-specific hard dependencies without changing a route."""
+
+    if route.route_id != packet.route_id or route.route_version != packet.route_version:
+        raise ValueError(
+            "relation-template projection requires the exact resolved WorkPacket route"
+        )
+    if route.route_id != _FRAMING_ROUTE_ID:
+        return ()
+
+    if packet.route_registry_hash == ROUTE_REGISTRY_V5_HASH:
+        expected_version = _FRAMING_FROZEN_ROUTE_VERSION
+    elif packet.route_registry_hash == ROUTE_REGISTRY_V6_HASH:
+        expected_version = _FRAMING_ROUTE_VERSION
+    else:
+        raise ValueError(
+            "framing relation templates reject an unknown route registry"
+        )
+    expected_route = route_spec_by_hash(
+        _FRAMING_ROUTE_ID,
+        packet.route_registry_hash,
+    )
+    if (
+        route.route_version != expected_version
+        or canonical_json_bytes(route) != canonical_json_bytes(expected_route)
+    ):
+        raise ValueError(
+            "framing relation templates require the exact frozen or active "
+            "framing route semantics"
+        )
+
+    # Registry v5 predates relation-template projection.  Its immutable packets
+    # must remain byte-for-byte resumable with the historical empty contract.
+    if expected_version == _FRAMING_FROZEN_ROUTE_VERSION:
+        return ()
+
+    relation_cardinalities = tuple(
+        (item.relation_type, item.min_count, item.max_count)
+        for item in route.required_output_relations
+    )
+    if (
+        route.route_version != _FRAMING_ROUTE_VERSION
+        or route.exit_validator_id != _FRAMING_EXIT_VALIDATOR_ID
+        or relation_cardinalities != _FRAMING_RELATION_CARDINALITIES
+    ):
+        raise ValueError(
+            "framing relation templates require the exact active framing route "
+            "version, exit validator, and relation cardinalities"
+        )
+
+    exact_entities = {
+        (entity.entity_id, entity.version): entity
+        for entity in snapshot.entity_versions
+    }
+    focused_entities: list[EntityVersion] = []
+    for reference in packet.focus_refs:
+        entity = exact_entities.get((reference.entity_id, reference.version))
+        if entity is None:
+            raise ValueError(
+                "framing relation templates require every exact WorkPacket focus"
+            )
+        focused_entities.append(entity)
+
+    by_type: dict[str, list[EntityVersion]] = {}
+    for entity in focused_entities:
+        by_type.setdefault(entity.entity_type, []).append(entity)
+    resolved_inputs: dict[str, EntityVersion] = {}
+    for entity_type, _ in _FRAMING_RELATION_INPUTS:
+        matches = by_type.get(entity_type, [])
+        if len(matches) != 1:
+            raise ValueError(
+                "framing relation templates require one exact focused "
+                f"{entity_type}"
+            )
+        resolved_inputs[entity_type] = matches[0]
+
+    bundle_output = _candidate_output_endpoint("FramingQualityBundle")
+    dossier_output = _candidate_output_endpoint("GateDossier")
+    audit_templates: list[CandidateHardRelationTemplateV1] = []
+    for entity_type, template_id in _FRAMING_RELATION_INPUTS:
+        source = _exact_input_endpoint(resolved_inputs[entity_type])
+        audit_templates.append(
+            CandidateHardRelationTemplateV1(
+                template_id=template_id,
+                relation_type="audits",
+                source=source,
+                target=bundle_output,
+                upstream_semantic_hash_binding="contract_value",
+                upstream_semantic_hash=_whole_facet_hash(
+                    snapshot,
+                    resolved_inputs[entity_type],
+                    source.facet,
+                ),
+            )
+        )
+    return (
+        *audit_templates,
+        CandidateHardRelationTemplateV1(
+            template_id="framing.governs.replacement_g1_dossier",
+            relation_type="governs",
+            source=bundle_output,
+            target=dossier_output,
+            upstream_semantic_hash_binding="runtime_facet_semantic_hash_v1",
+        ),
+    )
+
+
 def compile_candidate_authoring_contract(
     layout: StoreLayout,
     packet: WorkPacketV1,
@@ -366,6 +660,25 @@ def compile_candidate_authoring_contract(
     if route.entry_validator_id is None or route.exit_validator_id is None:
         raise ValueError("typed route lacks exact entry or exit validator binding")
 
+    base_snapshot = replay_at(layout, packet.base_head)
+    try:
+        expected_focus_refs = tuple(
+            EntityVersionRef(
+                entity_id=entity_id,
+                version=base_snapshot.current_entities[entity_id],
+            )
+            for entity_id in run.focus_entity_ids
+        )
+    except KeyError as exc:
+        raise ValueError(
+            "candidate contract canonical run focus is absent at its exact base"
+        ) from exc
+    if packet.focus_refs != expected_focus_refs:
+        raise ValueError(
+            "candidate contract WorkPacket focus refs differ from the canonical "
+            "run focus at its exact base"
+        )
+
     bindings = CandidateTransactionBindingsV1(
         project_id=packet.project_id,
         base_revision=packet.base_head,
@@ -384,6 +697,11 @@ def compile_candidate_authoring_contract(
         candidate_logical_path=packet.candidate_logical_path,
         shadow_logical_root=packet.shadow_logical_root,
     )
+    relation_templates = _relation_templates_for_route(
+        route,
+        packet,
+        base_snapshot,
+    )
     output_contract = CandidateRouteOutputContractV1(
         route_id=route.route_id,
         route_version=route.route_version,
@@ -394,7 +712,11 @@ def compile_candidate_authoring_contract(
         allowed_relation_types=route.allowed_relation_types,
         required_output_entities=route.required_output_entities,
         required_output_relations=route.required_output_relations,
-        model_invariants=_model_invariants_for_route(route.route_id),
+        required_relation_templates=relation_templates,
+        model_invariants=_model_invariants_for_route(
+            route.route_id,
+            relation_templates_enabled=bool(relation_templates),
+        ),
         relation_json_schema=RelationVersion.model_json_schema(mode="validation"),
         route_outcome_json_schema=RouteOutcome.model_json_schema(mode="validation"),
     )
@@ -412,7 +734,11 @@ def compile_candidate_authoring_contract(
             for requirement in route.required_output_entities
         ),
         output_contract=output_contract,
-        authoring_instructions=_AUTHORING_INSTRUCTIONS,
+        authoring_instructions=(
+            _AUTHORING_INSTRUCTIONS
+            if relation_templates
+            else _HISTORICAL_AUTHORING_INSTRUCTIONS
+        ),
     )
 
 
@@ -424,8 +750,10 @@ def candidate_authoring_contract_hash(
 
 __all__ = [
     "CandidateAuthoringContractV1",
+    "CandidateHardRelationTemplateV1",
     "CandidateOutputLocationsV1",
     "CandidatePayloadSchemaV1",
+    "CandidateRelationEndpointV1",
     "CandidateRouteOutputContractV1",
     "CandidateTransactionBindingsV1",
     "candidate_authoring_contract_hash",

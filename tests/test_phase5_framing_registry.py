@@ -13,14 +13,16 @@ from econ_theorist.machine.resources import (
     NAVIGATION_REGISTRY_V2_HASH,
     NAVIGATION_REGISTRY_V3_HASH,
     NAVIGATION_REGISTRY_V4_HASH,
+    NAVIGATION_REGISTRY_V5_HASH,
     NavigationRegistryV1,
     NavigationRegistryV2,
     NavigationRegistryV3,
     NavigationRegistryV4,
+    NavigationRegistryV5,
     load_navigation_registry,
     load_navigation_registry_by_hash,
 )
-from econ_theorist.models import RouteSpecV5
+from econ_theorist.models import RouteSpecV5, RouteSpecV6
 from econ_theorist.policy import (
     KERNEL_HASH,
     ROUTE_REGISTRY_HASH,
@@ -29,10 +31,14 @@ from econ_theorist.policy import (
     ROUTE_REGISTRY_V3_HASH,
     ROUTE_REGISTRY_V4_HASH,
     ROUTE_REGISTRY_V5_HASH,
+    ROUTE_REGISTRY_V6_HASH,
     V4_ROUTE_IDS,
     V5_ENABLED_ROUTE_IDS,
     V5_NATIVE_ROUTE_IDS,
     V5_ROUTE_IDS,
+    V6_ENABLED_ROUTE_IDS,
+    V6_NATIVE_ROUTE_IDS,
+    V6_ROUTE_IDS,
     instruction_bundle_bytes,
     load_route_registry,
     load_route_registry_by_hash,
@@ -45,12 +51,14 @@ FROZEN_RAW_REGISTRY_HASHES = {
     2: "3279ca4de2408dfe56766b2339616d00ebab4071d9a34d2874753d9f029ff55d",
     3: "4020bde117264400e0d9aa2571b5ba73baaaf7cb5939faecc1c39c6f7c952875",
     4: "88285c9f466c0790050f38fd8d336464d1e16f45f4ac88edf11c50f31d732a32",
+    5: "ec49db18aaaa1f6677d0b1b90ca533543bc4cb26764cefb7bf018feb187f50fa",
 }
 FROZEN_CANONICAL_REGISTRY_HASHES = {
     1: "d9c84001420bd63a82418ee3cfe1776895be69936e921aa8c4790a8966aa6913",
     2: "cd6e4147ea639f0c3016e88783afcf090ccd8383b70d6efe314599d3909bfa40",
     3: "a914276d613e970d68f2ccb5799ad7e912c2edd5b47d098cfbb1f109055ad6cf",
     4: "d81276ed9b7482768840ef89980d6cbb81361ca2ff84acee3ab7da7bb67eae7e",
+    5: "91ef2dcf75bcc4bce22241466477a99f9e34cbd8ac537974e1017a2e1fe92195",
 }
 FROZEN_NAVIGATION_V1_RAW_HASH = (
     "970a40842ce298945b67bbdd65f4191d8506565de7363324bb79f504e2cdacbd"
@@ -59,17 +67,21 @@ FROZEN_NAVIGATION_V2_RAW_HASH = (
     "f2d3990cf1c22ab20ec13a047e024b4488fde465a67098da37e915b753fe2048"
 )
 FROZEN_NAVIGATION_V3_RAW_HASH = (
-    "95064b65fa53eadd5e9a77aa039f255df8a08e2c6b05c9769c77c1d7a670f226"
+    "086d9a9dc88466d5274c27d7f9225798686287e0bca438bf0d13a2144642eecd"
+)
+FROZEN_NAVIGATION_V4_RAW_HASH = (
+    "c77a741acddff9ae725d1d23e055ac542f7edb2af01ac5b552624e280b299820"
 )
 
 
 class Phase5FramingRegistryTests(unittest.TestCase):
-    def test_v1_through_v4_registry_and_instruction_bytes_remain_frozen(self) -> None:
+    def test_v1_through_v5_registry_and_instruction_bytes_remain_frozen(self) -> None:
         constants = {
             1: ROUTE_REGISTRY_V1_HASH,
             2: ROUTE_REGISTRY_V2_HASH,
             3: ROUTE_REGISTRY_V3_HASH,
             4: ROUTE_REGISTRY_V4_HASH,
+            5: ROUTE_REGISTRY_V5_HASH,
         }
         for version, expected_raw_hash in FROZEN_RAW_REGISTRY_HASHES.items():
             with self.subTest(registry_version=version):
@@ -103,6 +115,11 @@ class Phase5FramingRegistryTests(unittest.TestCase):
         self.assertEqual(
             sha256_digest(navigation_v3.read_bytes()),
             FROZEN_NAVIGATION_V3_RAW_HASH,
+        )
+        navigation_v4 = REPOSITORY_ROOT / "machine" / "navigation-registry.v4.json"
+        self.assertEqual(
+            sha256_digest(navigation_v4.read_bytes()),
+            FROZEN_NAVIGATION_V4_RAW_HASH,
         )
 
     def test_v5_preserves_v4_except_framing_repair_and_adds_framing_audit(self) -> None:
@@ -224,8 +241,60 @@ class Phase5FramingRegistryTests(unittest.TestCase):
         self.assertIn(b"economic meaning", instruction)
         self.assertIn(b"never record, confirm, or imply an effective G1 decision", instruction)
 
+    def test_v6_advances_only_the_framing_audit_instruction(self) -> None:
+        v5 = load_route_registry_by_hash(ROUTE_REGISTRY_V5_HASH)
+        v6 = load_route_registry_by_hash(ROUTE_REGISTRY_V6_HASH)
+        v5_by_id = {route.route_id: route for route in v5.routes}
+        v6_by_id = {route.route_id: route for route in v6.routes}
+
+        self.assertEqual(V6_ROUTE_IDS, V5_ROUTE_IDS)
+        self.assertEqual(V6_NATIVE_ROUTE_IDS, frozenset({"audit.framing_economics"}))
+        self.assertEqual(V6_ENABLED_ROUTE_IDS, frozenset(V6_ROUTE_IDS))
+        self.assertTrue(all(isinstance(route, RouteSpecV6) for route in v6.routes))
+
+        for route_id in V6_ROUTE_IDS:
+            old = v5_by_id[route_id]
+            active = v6_by_id[route_id]
+            if route_id != "audit.framing_economics":
+                with self.subTest(frozen_route=route_id):
+                    self.assertEqual(
+                        active.model_dump(mode="json"), old.model_dump(mode="json")
+                    )
+                    self.assertEqual(
+                        instruction_bundle_bytes(active), instruction_bundle_bytes(old)
+                    )
+                continue
+
+            old_payload = old.model_dump(mode="json")
+            active_payload = active.model_dump(mode="json")
+            for field in (
+                "instruction_bundle_hash",
+                "instruction_bundle_id",
+                "route_version",
+            ):
+                old_payload.pop(field)
+                active_payload.pop(field)
+            self.assertEqual(active_payload, old_payload)
+            self.assertEqual(active.route_version, 6)
+            self.assertEqual(
+                active.instruction_bundle_id, "audit.framing_economics.v6"
+            )
+            old_instruction = instruction_bundle_bytes(old)
+            active_instruction = instruction_bundle_bytes(active)
+            self.assertNotEqual(active_instruction, old_instruction)
+            self.assertNotIn(b"active-margin payoff check", old_instruction)
+            self.assertIn(b"active-margin payoff check", active_instruction)
+            self.assertIn(b"binary action set", active_instruction)
+            self.assertIn(b"best feasible deviation", active_instruction)
+            self.assertIn(b"continuous choice", active_instruction)
+            self.assertIn(
+                b"upstream source of this link changes the payoff difference",
+                active_instruction,
+            )
+            self.assertIn(b"classify the margin as unresolved", active_instruction)
+
     def test_navigation_contract_admits_first_audit_and_five_input_continuation(self) -> None:
-        route = load_route_registry_by_hash(ROUTE_REGISTRY_V5_HASH).routes[-1]
+        route = load_route_registry_by_hash(ROUTE_REGISTRY_V6_HASH).routes[-1]
         requirements = {
             item.entity_type: (item.min_count, item.max_count)
             for item in route.required_input_entities
@@ -238,19 +307,20 @@ class Phase5FramingRegistryTests(unittest.TestCase):
         self.assertEqual(policy.route_id, route.route_id)
         self.assertEqual(policy.selector_id, "registry_cardinality.v1")
 
-    def test_navigation_v4_is_active_while_v1_through_v3_remain_addressable(self) -> None:
+    def test_navigation_v5_is_active_while_v1_through_v4_remain_addressable(self) -> None:
         active_routes = load_route_registry()
-        self.assertEqual(active_routes.registry_version, 5)
-        self.assertEqual(ROUTE_REGISTRY_HASH, ROUTE_REGISTRY_V5_HASH)
-        self.assertEqual(registry_hash(active_routes), ROUTE_REGISTRY_V5_HASH)
+        self.assertEqual(active_routes.registry_version, 6)
+        self.assertEqual(ROUTE_REGISTRY_HASH, ROUTE_REGISTRY_V6_HASH)
+        self.assertEqual(registry_hash(active_routes), ROUTE_REGISTRY_V6_HASH)
 
         active_navigation = load_navigation_registry()
-        self.assertIsInstance(active_navigation, NavigationRegistryV4)
-        self.assertEqual(NAVIGATION_REGISTRY_HASH, NAVIGATION_REGISTRY_V4_HASH)
-        self.assertEqual(active_navigation.navigation_registry_version, 4)
-        self.assertEqual(active_navigation.route_registry_hash, ROUTE_REGISTRY_V5_HASH)
+        self.assertIsInstance(active_navigation, NavigationRegistryV5)
+        self.assertEqual(NAVIGATION_REGISTRY_HASH, NAVIGATION_REGISTRY_V5_HASH)
+        self.assertEqual(active_navigation.navigation_registry_version, 5)
+        self.assertEqual(active_navigation.route_registry_hash, ROUTE_REGISTRY_V6_HASH)
         policy = active_navigation.routes[-1]
         self.assertEqual(policy.route_id, "audit.framing_economics")
+        self.assertEqual(policy.route_version, 6)
         self.assertEqual(policy.selector_id, "registry_cardinality.v1")
         self.assertEqual(policy.purpose, "scientific_framing_audit")
         self.assertEqual(policy.default_budget_units, 18000)
@@ -298,7 +368,19 @@ class Phase5FramingRegistryTests(unittest.TestCase):
         )
         self.assertEqual(historical_v3_decompose.default_budget_units, 4_000)
 
-        v4_as_v3 = active_navigation.model_dump(mode="json")
+        historical_v4 = load_navigation_registry_by_hash(NAVIGATION_REGISTRY_V4_HASH)
+        self.assertIsInstance(historical_v4, NavigationRegistryV4)
+        self.assertEqual(historical_v4.navigation_registry_version, 4)
+        self.assertEqual(historical_v4.route_registry_hash, ROUTE_REGISTRY_V5_HASH)
+        active_as_v4 = active_navigation.model_dump(mode="json")
+        active_as_v4["navigation_registry_version"] = 4
+        active_as_v4["route_registry_hash"] = ROUTE_REGISTRY_V5_HASH
+        for item in active_as_v4["routes"]:
+            if item["route_id"] == "audit.framing_economics":
+                item["route_version"] = 5
+        self.assertEqual(active_as_v4, historical_v4.model_dump(mode="json"))
+
+        v4_as_v3 = historical_v4.model_dump(mode="json")
         v4_as_v3["navigation_registry_version"] = 3
         for item in v4_as_v3["routes"]:
             if item["route_id"] == "decompose.primitives":

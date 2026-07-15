@@ -1116,8 +1116,31 @@ class RouteRegistryV5(StrictModel):
         return self
 
 
+class RouteSpecV6(RouteSpecV5):
+    """Catalog-bound Phase 5 audit-instruction revision.
+
+    Registry v6 preserves the complete v5 catalog and advances only the
+    framing-economics audit instruction to route version 6.
+    """
+
+    route_version: Literal[2, 3, 4, 5, 6] = 2
+
+
+class RouteRegistryV6(StrictModel):
+    registry_version: Literal[6] = 6
+    aliases: dict[StableId, StableId] = Field(default_factory=dict)
+    routes: Annotated[tuple[RouteSpecV6, ...], Field(min_length=1)]
+
+    @model_validator(mode="after")
+    def _route_ids_are_unique(self) -> "RouteRegistryV6":
+        route_ids = [route.route_id for route in self.routes]
+        if len(set(route_ids)) != len(route_ids):
+            raise ValueError("route registry contains duplicate exact IDs")
+        return self
+
+
 RouteSpecLike: TypeAlias = (
-    RouteSpec | RouteSpecV2 | RouteSpecV3 | RouteSpecV4 | RouteSpecV5
+    RouteSpec | RouteSpecV2 | RouteSpecV3 | RouteSpecV4 | RouteSpecV5 | RouteSpecV6
 )
 RouteRegistryLike: TypeAlias = (
     RouteRegistry
@@ -1125,6 +1148,7 @@ RouteRegistryLike: TypeAlias = (
     | RouteRegistryV3
     | RouteRegistryV4
     | RouteRegistryV5
+    | RouteRegistryV6
 )
 
 
