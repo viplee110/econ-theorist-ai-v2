@@ -27,7 +27,9 @@ from econ_theorist.framing_quality import (
     ArchetypeTension,
     BenchmarkFramingAssessment,
     CausalChainStep,
+    ChoiceConsequenceBinding,
     DisclosedFramingGap,
+    DistinctiveMechanismAssessment,
     EconomicForce,
     EconomistMemo,
     FramingObjectRef,
@@ -35,6 +37,7 @@ from econ_theorist.framing_quality import (
     FramingRepairTargetRef,
     HeldFixedObjectRef,
     IllustrativeMinimalExample,
+    PublicStateCondition,
     SelectionAssurance,
     pack_framing_quality_payload,
     parse_framing_quality_payload,
@@ -66,6 +69,9 @@ from econ_theorist.models import (
 )
 from econ_theorist.policy import (
     ROUTE_REGISTRY_HASH,
+    ROUTE_REGISTRY_V5_HASH,
+    ROUTE_REGISTRY_V6_HASH,
+    ROUTE_REGISTRY_V7_HASH,
     instruction_bundle_bytes,
     route_spec_by_hash,
 )
@@ -277,6 +283,7 @@ class FramingQualityRouteTests(unittest.TestCase):
         purpose: str,
         focus: tuple[str, ...],
         created_at: str,
+        route_registry_hash: str = ROUTE_REGISTRY_V6_HASH,
     ) -> tuple[Snapshot, object]:
         self.route_counter += 1
         before = replay(self.layout)
@@ -292,6 +299,7 @@ class FramingQualityRouteTests(unittest.TestCase):
             route_run_id=f"run.framing.{self.route_counter}",
             context_manifest_id=f"context.framing.{self.route_counter}",
             created_at=created_at,
+            route_registry_hash=route_registry_hash,
         )
         return before, run
 
@@ -1229,6 +1237,75 @@ class FramingQualityRouteTests(unittest.TestCase):
             ),
         )
 
+    @staticmethod
+    def _research_first_bundle(payload: FramingQualityBundle) -> FramingQualityBundle:
+        condition = PublicStateCondition(
+            node_id="node.certification",
+            relation="equals",
+            value="active rule",
+        )
+        bindings = {
+            "node.inspection": ChoiceConsequenceBinding(
+                consequence_node_id="node.quality",
+                transition_kind="switch",
+                causal_edge_ids=("edge.inspection.quality",),
+                public_state_conditions=(condition,),
+                focal_consequence="Inspection changes the seller's quality incentive.",
+                alternative_consequence="No inspection preserves the alternative quality incentive.",
+                feasibility_basis="Both inspection actions are feasible under the same active rule.",
+            ),
+            "node.quality": ChoiceConsequenceBinding(
+                consequence_node_id="node.match",
+                transition_kind="switch",
+                causal_edge_ids=("edge.quality.match",),
+                public_state_conditions=(condition,),
+                focal_consequence="High quality changes realized match quality.",
+                alternative_consequence="Low quality yields the alternative match consequence.",
+                feasibility_basis="Both quality actions are feasible under the same active rule.",
+            ),
+        }
+        steps = []
+        for step in payload.causal_chain:
+            witness = step.active_margin_witness
+            if witness is None:
+                steps.append(step)
+                continue
+            steps.append(
+                step.model_copy(
+                    update={
+                        "active_margin_witness": witness.model_copy(
+                            update={
+                                "consequence_binding": bindings[
+                                    witness.decision_node_id
+                                ]
+                            }
+                        )
+                    }
+                )
+            )
+        assessments = tuple(
+            assessment.model_copy(
+                update={
+                    "distinctive_mechanism": DistinctiveMechanismAssessment(
+                        claim_kind="not_claimed",
+                        mechanism_label="Shared certification mechanism",
+                        basis=(
+                            "This one-benchmark audit does not claim that a mechanism "
+                            "is absent from a contrast."
+                        ),
+                    )
+                }
+            )
+            for assessment in payload.benchmark_assessments
+        )
+        return payload.model_copy(
+            update={
+                "causal_chain": tuple(steps),
+                "benchmark_assessments": assessments,
+                "distinctive_mechanism_contribution_status": "not_claimed",
+            }
+        )
+
     def _hard_relation(
         self,
         relation_id: str,
@@ -1327,6 +1404,7 @@ class FramingQualityRouteTests(unittest.TestCase):
             Callable[[FramingQualityBundle], FramingQualityBundle] | None
         ) = None,
         created_at: str = T3,
+        route_registry_hash: str = ROUTE_REGISTRY_V6_HASH,
     ) -> tuple[EntityVersion, EntityVersion, Snapshot]:
         question, benchmarks, graph, source_dossier = core
         bundle_version = 1 if prior_bundle is None else prior_bundle.version + 1
@@ -1394,6 +1472,7 @@ class FramingQualityRouteTests(unittest.TestCase):
             purpose="scientific_framing_audit",
             focus=focus,
             created_at=created_at,
+            route_registry_hash=route_registry_hash,
         )
         self.snapshot = self._commit_started(
             before,
@@ -1473,6 +1552,47 @@ class FramingQualityRouteTests(unittest.TestCase):
         self.assertEqual(
             gated.current_decisions["decision.g1.after.framing"], 1
         )
+
+    def test_v7_full_route_rejects_legacy_bundle_without_research_bindings(self) -> None:
+        core = self._phase2_prefix()
+        with self.assertRaisesRegex(
+            CandidateValidationError,
+            "choice_consequence_binding_missing",
+        ):
+            self._commit_audit(core, route_registry_hash=ROUTE_REGISTRY_V7_HASH)
+
+    def test_frozen_v5_audit_run_fails_closed_in_current_runtime(self) -> None:
+        core = self._phase2_prefix()
+        with self.assertRaisesRegex(
+            RouteEntryError,
+            "unknown or malformed framing route",
+        ):
+            self._begin(
+                route_id="audit.framing_economics",
+                purpose="scientific_framing_audit",
+                focus=tuple(item.entity_id for item in core),
+                created_at=T3,
+                route_registry_hash=ROUTE_REGISTRY_V5_HASH,
+            )
+
+    def test_v7_full_route_accepts_explicit_shared_mechanism_bundle(self) -> None:
+        core = self._phase2_prefix()
+        bundle, _, after = self._commit_audit(
+            core,
+            bundle_mutator=self._research_first_bundle,
+            route_registry_hash=ROUTE_REGISTRY_V7_HASH,
+        )
+        committed_payload = parse_framing_quality_payload(
+            "FramingQualityBundle", bundle.facets
+        )
+        self.assertIsInstance(committed_payload, FramingQualityBundle)
+        self.assertEqual(
+            committed_payload.distinctive_mechanism_contribution_status,
+            "not_claimed",
+        )
+        self.assertEqual(after.current_entities[bundle.entity_id], 1)
+        context = read_context(self.layout, "run.framing.3")
+        self.assertEqual(context.route_registry_hash, ROUTE_REGISTRY_V7_HASH)
 
     def test_direct_human_decision_transaction_cannot_bypass_g1_preflight(self) -> None:
         core = self._phase2_prefix()

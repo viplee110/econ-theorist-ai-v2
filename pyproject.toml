@@ -29,6 +29,7 @@ where = ["src"]
   "routes/registry.v4.json",
   "routes/registry.v5.json",
   "routes/registry.v6.json",
+  "routes/registry.v7.json",
 ]
 "share/econ-theorist/routes/instructions" = [
   "routes/instructions/frame.question_and_benchmarks.v1.txt",
@@ -70,6 +71,7 @@ where = ["src"]
   "routes/instructions/close.profile_craft_review.v4.txt",
   "routes/instructions/audit.framing_economics.v5.txt",
   "routes/instructions/audit.framing_economics.v6.txt",
+  "routes/instructions/audit.framing_economics.v7.txt",
 ]
 "share/econ-theorist/profiles" = [
   "profiles/catalog.v1.json",
@@ -89,6 +91,7 @@ where = ["src"]
   "machine/navigation-registry.v3.json",
   "machine/navigation-registry.v4.json",
   "machine/navigation-registry.v5.json",
+  "machine/navigation-registry.v6.json",
   "machine/host-manifest.v1.json",
   "machine/compatibility-support.v1.json",
 ]

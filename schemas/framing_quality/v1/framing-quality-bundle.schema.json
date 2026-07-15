@@ -33,6 +33,17 @@
           "title": "Concrete State",
           "type": "string"
         },
+        "consequence_binding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChoiceConsequenceBinding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "decision_maker": {
           "minLength": 1,
           "title": "Decision Maker",
@@ -271,6 +282,17 @@
           "title": "Channel Summary",
           "type": "string"
         },
+        "distinctive_mechanism": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DistinctiveMechanismAssessment"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "held_fixed": {
           "items": {
             "$ref": "#/$defs/HeldFixedObjectRef"
@@ -394,6 +416,70 @@
       "title": "CausalChainStep",
       "type": "object"
     },
+    "ChoiceConsequenceBinding": {
+      "additionalProperties": false,
+      "description": "Bind one payoff comparison to the consequence its action can change.",
+      "properties": {
+        "alternative_consequence": {
+          "minLength": 1,
+          "title": "Alternative Consequence",
+          "type": "string"
+        },
+        "causal_edge_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Causal Edge Ids",
+          "type": "array"
+        },
+        "consequence_node_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Consequence Node Id",
+          "type": "string"
+        },
+        "feasibility_basis": {
+          "minLength": 1,
+          "title": "Feasibility Basis",
+          "type": "string"
+        },
+        "focal_consequence": {
+          "minLength": 1,
+          "title": "Focal Consequence",
+          "type": "string"
+        },
+        "public_state_conditions": {
+          "items": {
+            "$ref": "#/$defs/PublicStateCondition"
+          },
+          "minItems": 1,
+          "title": "Public State Conditions",
+          "type": "array"
+        },
+        "transition_kind": {
+          "enum": [
+            "increase",
+            "decrease",
+            "switch",
+            "reweight"
+          ],
+          "title": "Transition Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "consequence_node_id",
+        "transition_kind",
+        "causal_edge_ids",
+        "public_state_conditions",
+        "focal_consequence",
+        "alternative_consequence",
+        "feasibility_basis"
+      ],
+      "title": "ChoiceConsequenceBinding",
+      "type": "object"
+    },
     "DisclosedFramingGap": {
       "additionalProperties": false,
       "properties": {
@@ -457,6 +543,109 @@
         "resolution_needed"
       ],
       "title": "DisclosedFramingGap",
+      "type": "object"
+    },
+    "DistinctiveMechanismAssessment": {
+      "additionalProperties": false,
+      "description": "Declare whether one benchmark carries a mechanism absent from a contrast.",
+      "properties": {
+        "basis": {
+          "minLength": 1,
+          "title": "Basis",
+          "type": "string"
+        },
+        "claim_kind": {
+          "enum": [
+            "not_claimed",
+            "choice_mediated",
+            "mechanical_transition",
+            "unresolved"
+          ],
+          "title": "Claim Kind",
+          "type": "string"
+        },
+        "consequence_node_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Consequence Node Id"
+        },
+        "contrast_benchmark_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contrast Benchmark Id"
+        },
+        "distinctive_edge_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Distinctive Edge Ids",
+          "type": "array"
+        },
+        "distinctive_node_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Distinctive Node Ids",
+          "type": "array"
+        },
+        "mechanism_label": {
+          "minLength": 1,
+          "title": "Mechanism Label",
+          "type": "string"
+        },
+        "required_public_state_conditions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/PublicStateCondition"
+          },
+          "title": "Required Public State Conditions",
+          "type": "array"
+        },
+        "transition_kind": {
+          "anyOf": [
+            {
+              "enum": [
+                "increase",
+                "decrease",
+                "switch",
+                "reweight"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Transition Kind"
+        }
+      },
+      "required": [
+        "claim_kind",
+        "mechanism_label",
+        "basis"
+      ],
+      "title": "DistinctiveMechanismAssessment",
       "type": "object"
     },
     "EconomicForce": {
@@ -853,6 +1042,48 @@
       "title": "IllustrativeMinimalExample",
       "type": "object"
     },
+    "PublicStateCondition": {
+      "additionalProperties": false,
+      "description": "One typed condition defining the public state relevant to a mechanism.",
+      "properties": {
+        "node_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+          "title": "Node Id",
+          "type": "string"
+        },
+        "relation": {
+          "enum": [
+            "equals",
+            "not_equals",
+            "positive",
+            "zero",
+            "interior",
+            "boundary"
+          ],
+          "title": "Relation",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "node_id",
+        "relation"
+      ],
+      "title": "PublicStateCondition",
+      "type": "object"
+    },
     "SelectionAssurance": {
       "additionalProperties": false,
       "properties": {
@@ -929,6 +1160,23 @@
       },
       "title": "Disclosed Gaps",
       "type": "array"
+    },
+    "distinctive_mechanism_contribution_status": {
+      "anyOf": [
+        {
+          "enum": [
+            "claimed",
+            "not_claimed",
+            "unresolved"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Distinctive Mechanism Contribution Status"
     },
     "economist_memo": {
       "$ref": "#/$defs/EconomistMemo"

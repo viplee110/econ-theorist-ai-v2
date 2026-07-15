@@ -7,6 +7,7 @@ scientific content and does not weaken canonical candidate validation.
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Annotated, Any, Literal
 
 from pydantic import Field, model_serializer, model_validator
@@ -39,6 +40,7 @@ from .models import (
 from .policy import (
     ROUTE_REGISTRY_V5_HASH,
     ROUTE_REGISTRY_V6_HASH,
+    ROUTE_REGISTRY_V7_HASH,
     route_spec_by_hash,
 )
 from .runs import read_run, transaction_bindings
@@ -221,6 +223,9 @@ class CandidateAuthoringContractV1(StrictModel):
     packet_compiler_version: Literal[1]
     engine_version: NonEmptyString
     engine_semantics_hash: Digest
+    candidate_draft_semantics: Literal[
+        "runtime_facet_hash_materialization_v1"
+    ] | None = None
     transaction_bindings: CandidateTransactionBindingsV1
     output_locations: CandidateOutputLocationsV1
     transaction_json_schema: dict[str, Any]
@@ -228,20 +233,37 @@ class CandidateAuthoringContractV1(StrictModel):
     output_contract: CandidateRouteOutputContractV1
     authoring_instructions: tuple[NonEmptyString, ...]
 
+    @model_serializer(mode="wrap")
+    def _omit_historical_draft_default(self, handler: Any) -> dict[str, Any]:
+        """Keep pre-materialization contracts byte-for-byte resumable."""
 
-_RELATION_TEMPLATE_AUTHORING_INSTRUCTION = (
+        serialized = handler(self)
+        if self.candidate_draft_semantics is None:
+            serialized.pop("candidate_draft_semantics", None)
+        return serialized
+
+
+_HISTORICAL_RELATION_TEMPLATE_AUTHORING_INSTRUCTION = (
     "Instantiate every output_contract.required_relation_template exactly. Copy exact_input entity_ref values; bind candidate_output endpoints to the exact output of that entity type and ordinal. For runtime_facet_semantic_hash_v1, compute econ_theorist.runtime.freshness.facet_semantic_hash over the complete candidate source EntityVersion and the declared whole facet; do not hash the raw facet JSON alone."
 )
 
 
-_AUTHORING_INSTRUCTIONS = (
+_RELATION_TEMPLATE_AUTHORING_INSTRUCTION = (
+    "Instantiate every output_contract.required_relation_template exactly. Copy exact_input entity_ref values; bind candidate_output endpoints to the exact output of that entity type and ordinal. Only for a template whose upstream_semantic_hash_binding is runtime_facet_semantic_hash_v1, write upstream.semantic_hash as explicit JSON null. The bridge computes and injects the exact hash in memory from the complete candidate source EntityVersion before strict canonical validation, candidate identity, capture, staging, or commit; do not compute, copy, or guess that hash."
+)
+
+
+_AUTHORING_INSTRUCTION_PREFIX = (
     "Use work_packet.instruction_text and work_packet.compiled_context for scientific judgment; this authoring contract supplies mechanics only.",
     "Write one bare Transaction JSON object, not a candidate wrapper, at output_locations.candidate_logical_path; write helper files only below output_locations.shadow_logical_root.",
     "Copy every field in transaction_bindings that also appears in transaction_json_schema exactly into the Transaction (binding_schema is contract metadata), including base_revision and created_at; choose only transaction_id, intent, preconditions, changed_facets, operations, evidence_refs, and authority_basis as the route and schemas require.",
     "For each typed entity, put {schema: payload_schema_id, payload: <schema-valid object>} in owner_facet and set every listed empty_facet to an empty object.",
     "Set every new EntityVersion and RelationVersion project_id, privacy, access_compartments, and created_at exactly to the corresponding transaction_bindings values; never rely on privacy or compartment defaults.",
     "Use only output_contract allowed operation, entity, and relation types; satisfy every output cardinality and the exact scientific exit conditions in work_packet.instruction_text.",
-    _RELATION_TEMPLATE_AUTHORING_INSTRUCTION,
+)
+
+
+_AUTHORING_INSTRUCTION_SUFFIX = (
     "JSON Schema is necessary but not sufficient: obey output_contract.model_invariants exactly and use the bridge's structured candidate diagnostics for any remaining model-level repair.",
     "Include exactly one route.outcome operation bound to transaction_bindings.route_run_id and transaction_bindings.route_id, with the same privacy and access compartments; candidate_refs must enumerate every exact canonical object produced by the Transaction, including any entity, relation, artifact, blocker, or other schema-permitted reference required by the route validator.",
     "Do not fabricate a human decision or approval; obey every work_packet.forbidden_actions entry and stop if the route requires unavailable human authority.",
@@ -249,10 +271,23 @@ _AUTHORING_INSTRUCTIONS = (
 )
 
 
-_HISTORICAL_AUTHORING_INSTRUCTIONS = tuple(
-    instruction
-    for instruction in _AUTHORING_INSTRUCTIONS
-    if instruction != _RELATION_TEMPLATE_AUTHORING_INSTRUCTION
+_AUTHORING_INSTRUCTIONS = (
+    *_AUTHORING_INSTRUCTION_PREFIX,
+    _RELATION_TEMPLATE_AUTHORING_INSTRUCTION,
+    *_AUTHORING_INSTRUCTION_SUFFIX,
+)
+
+
+_PRE_MATERIALIZATION_AUTHORING_INSTRUCTIONS = (
+    *_AUTHORING_INSTRUCTION_PREFIX,
+    _HISTORICAL_RELATION_TEMPLATE_AUTHORING_INSTRUCTION,
+    *_AUTHORING_INSTRUCTION_SUFFIX,
+)
+
+
+_HISTORICAL_AUTHORING_INSTRUCTIONS = (
+    *_AUTHORING_INSTRUCTION_PREFIX,
+    *_AUTHORING_INSTRUCTION_SUFFIX,
 )
 
 
@@ -382,10 +417,36 @@ _HISTORICAL_FRAMING_MODEL_INVARIANTS = tuple(
 )
 
 
+_V7_FRAMING_MODEL_INVARIANTS = (
+    CandidateModelInvariantV1(
+        invariant_id="framing.choice_consequence_binding",
+        model="ActiveMarginWitness",
+        condition="audit.framing_economics route version 7 payoff witness",
+        requirement="consequence_binding must be explicit and must connect the witnessed action comparison to one exact causal consequence through ordered PrimitiveGraph edges under an explicit public-state class",
+        repair_hint="Name the consequence node, transition direction, ordered causal edge IDs, and public-state conditions that make the focal and alternative actions economically distinct.",
+    ),
+    CandidateModelInvariantV1(
+        invariant_id="framing.distinctive_mechanism_spine",
+        model="BenchmarkFramingAssessment",
+        condition="audit.framing_economics route version 7 benchmark row",
+        requirement="distinctive_mechanism must be explicit; an active claim must identify a different contrast benchmark and an exact focal-only node/edge spine, consequence, transition, and public-state class, while an honest same-mechanism comparison must use not_claimed",
+        repair_hint="Do not manufacture benchmark distinctiveness: either bind the exact contrast-specific spine or record not_claimed; use unresolved only with the required causal-attribution disclosure.",
+    ),
+    CandidateModelInvariantV1(
+        invariant_id="framing.distinctive_mechanism_contribution_status",
+        model="FramingQualityBundle",
+        condition="audit.framing_economics route version 7 output",
+        requirement="distinctive_mechanism_contribution_status must be explicit and agree with every benchmark row: claimed needs at least one supported active distinctive mechanism and no unresolved row; not_claimed requires every row to disclaim distinctiveness; unresolved requires an unresolved row and the prescribed downgrade",
+        repair_hint="Choose claimed, not_claimed, or unresolved only after completing every benchmark-level distinctive_mechanism assessment; an honest shared mechanism is not_claimed, not a failed active claim.",
+    ),
+)
+
+
 def _model_invariants_for_route(
     route_id: str,
     *,
     relation_templates_enabled: bool = False,
+    route_version: int | None = None,
 ) -> tuple[CandidateModelInvariantV1, ...]:
     if route_id == "audit.framing_economics":
         framing_invariants = (
@@ -393,7 +454,10 @@ def _model_invariants_for_route(
             if relation_templates_enabled
             else _HISTORICAL_FRAMING_MODEL_INVARIANTS
         )
-        return (*_MODEL_INVARIANTS, *framing_invariants)
+        v7_invariants = (
+            _V7_FRAMING_MODEL_INVARIANTS if route_version == 7 else ()
+        )
+        return (*_MODEL_INVARIANTS, *framing_invariants, *v7_invariants)
     return _MODEL_INVARIANTS
 
 
@@ -459,6 +523,157 @@ def _payload_contract(
     )
 
 
+def _freeze_pre_v7_framing_payload_contract(
+    contract: CandidatePayloadSchemaV1,
+    *,
+    route_version: int,
+) -> CandidatePayloadSchemaV1:
+    """Remove v7-only optional surfaces from exact frozen v5/v6 schemas."""
+
+    if contract.entity_type != "FramingQualityBundle":
+        return contract
+    schema = deepcopy(contract.payload_json_schema)
+    definitions = schema.get("$defs", {})
+    schema.get("properties", {}).pop(
+        "distinctive_mechanism_contribution_status", None
+    )
+    schema["required"] = [
+        name
+        for name in schema.get("required", [])
+        if name != "distinctive_mechanism_contribution_status"
+    ]
+    active_margin = definitions.get("ActiveMarginWitness", {}).get(
+        "properties", {}
+    )
+    active_margin.pop("consequence_binding", None)
+    active_schema = definitions.get("ActiveMarginWitness", {})
+    active_schema["required"] = [
+        name
+        for name in active_schema.get("required", [])
+        if name != "consequence_binding"
+    ]
+    assessment = definitions.get("BenchmarkFramingAssessment", {}).get(
+        "properties", {}
+    )
+    assessment.pop("distinctive_mechanism", None)
+    assessment_schema = definitions.get("BenchmarkFramingAssessment", {})
+    assessment_schema["required"] = [
+        name
+        for name in assessment_schema.get("required", [])
+        if name != "distinctive_mechanism"
+    ]
+    for name in (
+        "ChoiceConsequenceBinding",
+        "DistinctiveMechanismAssessment",
+        "PublicStateCondition",
+    ):
+        definitions.pop(name, None)
+    if route_version == 5:
+        causal_schema = definitions.get("CausalChainStep", {})
+        causal_schema.get("properties", {}).pop("active_margin_witness", None)
+        causal_schema["required"] = [
+            name
+            for name in causal_schema.get("required", [])
+            if name != "active_margin_witness"
+        ]
+        definitions.pop("ActiveMarginWitness", None)
+    return contract.model_copy(update={"payload_json_schema": schema})
+
+
+def _require_schema_property(
+    object_schema: dict[str, Any],
+    property_name: str,
+    *,
+    model_name: str,
+) -> None:
+    properties = object_schema.get("properties")
+    if not isinstance(properties, dict) or property_name not in properties:
+        raise ValueError(
+            f"v7 candidate schema lacks {model_name}.{property_name}"
+        )
+    required = set(object_schema.get("required", []))
+    required.add(property_name)
+    object_schema["required"] = [
+        name for name in properties if name in required
+    ]
+
+
+def _make_schema_property_non_null(
+    object_schema: dict[str, Any],
+    property_name: str,
+    *,
+    model_name: str,
+) -> None:
+    properties = object_schema.get("properties")
+    if not isinstance(properties, dict):
+        raise ValueError(f"v7 candidate schema lacks {model_name} properties")
+    property_schema = properties.get(property_name)
+    if not isinstance(property_schema, dict):
+        raise ValueError(
+            f"v7 candidate schema lacks {model_name}.{property_name}"
+        )
+    alternatives = property_schema.get("anyOf")
+    if not isinstance(alternatives, list):
+        raise ValueError(
+            f"v7 candidate schema cannot narrow {model_name}.{property_name}"
+        )
+    non_null = [
+        item
+        for item in alternatives
+        if not (isinstance(item, dict) and item.get("type") == "null")
+    ]
+    if len(non_null) != 1 or len(non_null) == len(alternatives):
+        raise ValueError(
+            f"v7 candidate schema has ambiguous {model_name}.{property_name}"
+        )
+    narrowed = deepcopy(non_null[0])
+    for metadata in ("description", "title"):
+        if metadata in property_schema and metadata not in narrowed:
+            narrowed[metadata] = property_schema[metadata]
+    properties[property_name] = narrowed
+
+
+def _project_v7_framing_payload_contract(
+    contract: CandidatePayloadSchemaV1,
+) -> CandidatePayloadSchemaV1:
+    """Make v7's route-required research declarations visible to agents."""
+
+    if contract.entity_type != "FramingQualityBundle":
+        return contract
+    schema = deepcopy(contract.payload_json_schema)
+    definitions = schema.get("$defs")
+    if not isinstance(definitions, dict):
+        raise ValueError("v7 framing candidate schema lacks model definitions")
+    _require_schema_property(
+        schema,
+        "distinctive_mechanism_contribution_status",
+        model_name="FramingQualityBundle",
+    )
+    _make_schema_property_non_null(
+        schema,
+        "distinctive_mechanism_contribution_status",
+        model_name="FramingQualityBundle",
+    )
+    for model_name, property_name in (
+        ("BenchmarkFramingAssessment", "distinctive_mechanism"),
+        ("ActiveMarginWitness", "consequence_binding"),
+    ):
+        object_schema = definitions.get(model_name)
+        if not isinstance(object_schema, dict):
+            raise ValueError(f"v7 candidate schema lacks {model_name}")
+        _require_schema_property(
+            object_schema,
+            property_name,
+            model_name=model_name,
+        )
+        _make_schema_property_non_null(
+            object_schema,
+            property_name,
+            model_name=model_name,
+        )
+    return contract.model_copy(update={"payload_json_schema": schema})
+
+
 _FRAMING_RELATION_INPUTS = (
     ("ResearchQuestion", "framing.audits.research_question"),
     ("BenchmarkSet", "framing.audits.benchmark_set"),
@@ -467,7 +682,8 @@ _FRAMING_RELATION_INPUTS = (
 )
 _FRAMING_ROUTE_ID = "audit.framing_economics"
 _FRAMING_FROZEN_ROUTE_VERSION = 5
-_FRAMING_ROUTE_VERSION = 6
+_FRAMING_V6_ROUTE_VERSION = 6
+_FRAMING_ROUTE_VERSION = 7
 _FRAMING_EXIT_VALIDATOR_ID = "framing_quality_route_exit.v1"
 _FRAMING_RELATION_CARDINALITIES = (
     ("audits", 4, 4),
@@ -525,6 +741,8 @@ def _relation_templates_for_route(
     if packet.route_registry_hash == ROUTE_REGISTRY_V5_HASH:
         expected_version = _FRAMING_FROZEN_ROUTE_VERSION
     elif packet.route_registry_hash == ROUTE_REGISTRY_V6_HASH:
+        expected_version = _FRAMING_V6_ROUTE_VERSION
+    elif packet.route_registry_hash == ROUTE_REGISTRY_V7_HASH:
         expected_version = _FRAMING_ROUTE_VERSION
     else:
         raise ValueError(
@@ -553,7 +771,8 @@ def _relation_templates_for_route(
         for item in route.required_output_relations
     )
     if (
-        route.route_version != _FRAMING_ROUTE_VERSION
+        route.route_version
+        not in {_FRAMING_V6_ROUTE_VERSION, _FRAMING_ROUTE_VERSION}
         or route.exit_validator_id != _FRAMING_EXIT_VALIDATOR_ID
         or relation_cardinalities != _FRAMING_RELATION_CARDINALITIES
     ):
@@ -617,6 +836,33 @@ def _relation_templates_for_route(
             upstream_semantic_hash_binding="runtime_facet_semantic_hash_v1",
         ),
     )
+
+
+def _candidate_transaction_schema(
+    *, runtime_facet_hash_drafts: bool
+) -> dict[str, Any]:
+    """Expose a draft-only null without weakening canonical Transaction."""
+
+    schema = Transaction.model_json_schema(mode="validation")
+    if not runtime_facet_hash_drafts:
+        return schema
+    schema = deepcopy(schema)
+    semantic_hash = schema["$defs"]["SemanticFacetRef"]["properties"][
+        "semantic_hash"
+    ]
+    title = semantic_hash.get("title", "Semantic Hash")
+    digest_schema = {
+        key: value for key, value in semantic_hash.items() if key != "title"
+    }
+    schema["$defs"]["SemanticFacetRef"]["properties"]["semantic_hash"] = {
+        "anyOf": [digest_schema, {"type": "null"}],
+        "description": (
+            "A digest in canonical Transactions. Candidate drafts may use null "
+            "only at the exact runtime_facet_semantic_hash_v1 template location."
+        ),
+        "title": title,
+    }
+    return schema
 
 
 def compile_candidate_authoring_contract(
@@ -716,9 +962,17 @@ def compile_candidate_authoring_contract(
         model_invariants=_model_invariants_for_route(
             route.route_id,
             relation_templates_enabled=bool(relation_templates),
+            route_version=route.route_version,
         ),
         relation_json_schema=RelationVersion.model_json_schema(mode="validation"),
         route_outcome_json_schema=RouteOutcome.model_json_schema(mode="validation"),
+    )
+    # Registry/route v7 is the durable public contract boundary.  It keeps
+    # every v1-v6 contract byte-frozen and ensures an unfinished v7 packet
+    # reconstructs the same draft schema after unrelated engine upgrades.
+    runtime_hash_drafts = bool(relation_templates) and (
+        packet.route_registry_hash == ROUTE_REGISTRY_V7_HASH
+        and route.route_version == _FRAMING_ROUTE_VERSION
     )
     return CandidateAuthoringContractV1(
         work_packet_hash=work_packet_hash,
@@ -726,18 +980,45 @@ def compile_candidate_authoring_contract(
         packet_compiler_version=packet.packet_compiler_version,
         engine_version=packet.engine_version,
         engine_semantics_hash=packet.engine_semantics_hash,
+        candidate_draft_semantics=(
+            "runtime_facet_hash_materialization_v1"
+            if runtime_hash_drafts
+            else None
+        ),
         transaction_bindings=bindings,
         output_locations=output_locations,
-        transaction_json_schema=Transaction.model_json_schema(mode="validation"),
+        transaction_json_schema=_candidate_transaction_schema(
+            runtime_facet_hash_drafts=runtime_hash_drafts
+        ),
         payload_schemas=tuple(
-            _payload_contract(requirement)
+            (
+                _freeze_pre_v7_framing_payload_contract(
+                    _payload_contract(requirement),
+                    route_version=route.route_version,
+                )
+                if route.route_id == _FRAMING_ROUTE_ID
+                and route.route_version
+                in {_FRAMING_FROZEN_ROUTE_VERSION, _FRAMING_V6_ROUTE_VERSION}
+                else (
+                    _project_v7_framing_payload_contract(
+                        _payload_contract(requirement)
+                    )
+                    if route.route_id == _FRAMING_ROUTE_ID
+                    and route.route_version == _FRAMING_ROUTE_VERSION
+                    else _payload_contract(requirement)
+                )
+            )
             for requirement in route.required_output_entities
         ),
         output_contract=output_contract,
         authoring_instructions=(
             _AUTHORING_INSTRUCTIONS
-            if relation_templates
-            else _HISTORICAL_AUTHORING_INSTRUCTIONS
+            if runtime_hash_drafts
+            else (
+                _PRE_MATERIALIZATION_AUTHORING_INSTRUCTIONS
+                if relation_templates
+                else _HISTORICAL_AUTHORING_INSTRUCTIONS
+            )
         ),
     )
 

@@ -21,6 +21,7 @@ from econ_theorist.models import EntityVersion, EntityVersionRef
 from econ_theorist.policy import (
     ROUTE_REGISTRY_V5_HASH,
     ROUTE_REGISTRY_V6_HASH,
+    ROUTE_REGISTRY_V7_HASH,
     instruction_bundle_bytes,
     route_spec_by_hash,
 )
@@ -58,9 +59,14 @@ class V53CandidateContractProjectionTests(unittest.TestCase):
         created_at = framing_fixture.T3
         focus = tuple(item.entity_id for item in core)
         if continuation:
+            # The shared fixture intentionally remains a frozen v6-valid
+            # scientific example.  Commit that predecessor under its exact
+            # historical route, then inspect how active v7 projects the same
+            # optional predecessor without making it an audits source.
             prior_bundle, _, _ = self.fixture._commit_audit(
                 core,
                 proposed_action="continue_diagnostic",
+                route_registry_hash=ROUTE_REGISTRY_V6_HASH,
             )
             created_at = framing_fixture.T4
             focus = (*focus, prior_bundle.entity_id)
@@ -71,6 +77,7 @@ class V53CandidateContractProjectionTests(unittest.TestCase):
                 purpose="scientific_framing_audit",
                 focus=focus,
                 created_at=created_at,
+                route_registry_hash=ROUTE_REGISTRY_V7_HASH,
             )
         else:
             self.fixture.route_counter += 1
@@ -165,6 +172,57 @@ class V53CandidateContractProjectionTests(unittest.TestCase):
 
     def test_audit_contract_projects_five_exact_hard_relation_templates(self) -> None:
         contract, packet, snapshot, core, _ = self._open_audit_contract()
+        self.assertEqual(packet.route_registry_hash, ROUTE_REGISTRY_V7_HASH)
+        self.assertEqual(packet.route_version, 7)
+        self.assertEqual(
+            contract.candidate_draft_semantics,
+            "runtime_facet_hash_materialization_v1",
+        )
+        semantic_hash_schema = contract.transaction_json_schema["$defs"][
+            "SemanticFacetRef"
+        ]["properties"]["semantic_hash"]
+        self.assertIn({"type": "null"}, semantic_hash_schema["anyOf"])
+        self.assertTrue(
+            any(
+                "do not compute, copy, or guess" in instruction
+                for instruction in contract.authoring_instructions
+            )
+        )
+        bundle_schema = next(
+            item.payload_json_schema
+            for item in contract.payload_schemas
+            if item.entity_type == "FramingQualityBundle"
+        )
+        self.assertIn(
+            "distinctive_mechanism_contribution_status",
+            bundle_schema["required"],
+        )
+        self.assertIn(
+            "distinctive_mechanism",
+            bundle_schema["$defs"]["BenchmarkFramingAssessment"]["required"],
+        )
+        self.assertIn(
+            "consequence_binding",
+            bundle_schema["$defs"]["ActiveMarginWitness"]["required"],
+        )
+        self.assertNotIn(
+            "anyOf",
+            bundle_schema["properties"][
+                "distinctive_mechanism_contribution_status"
+            ],
+        )
+        self.assertNotIn(
+            "anyOf",
+            bundle_schema["$defs"]["BenchmarkFramingAssessment"][
+                "properties"
+            ]["distinctive_mechanism"],
+        )
+        self.assertNotIn(
+            "anyOf",
+            bundle_schema["$defs"]["ActiveMarginWitness"]["properties"][
+                "consequence_binding"
+            ],
+        )
         templates = contract.output_contract.required_relation_templates
         self.assertEqual(len(templates), 5)
         self.assertEqual(
@@ -241,6 +299,13 @@ class V53CandidateContractProjectionTests(unittest.TestCase):
         self.assertIn("purely mechanical or technological", active_margin.requirement)
         self.assertIn("cannot support ready_for_g1", active_margin.requirement)
         self.assertTrue(
+            {
+                "framing.choice_consequence_binding",
+                "framing.distinctive_mechanism_spine",
+                "framing.distinctive_mechanism_contribution_status",
+            }.issubset(invariants)
+        )
+        self.assertTrue(
             any(
                 "required_relation_template" in instruction
                 for instruction in contract.authoring_instructions
@@ -291,7 +356,9 @@ class V53CandidateContractProjectionTests(unittest.TestCase):
     def test_candidate_output_hash_recipe_matches_canonical_governs_validation(
         self,
     ) -> None:
-        contract, packet, snapshot, core, _ = self._open_audit_contract()
+        contract, packet, snapshot, core, _ = self._open_audit_contract(
+            route_registry_hash=ROUTE_REGISTRY_V6_HASH
+        )
         run = read_run(self.fixture.layout, packet.route_run_id)
         created_at = run.created_at
         question, benchmarks, graph, source_dossier = core
@@ -369,12 +436,12 @@ class V53CandidateContractProjectionTests(unittest.TestCase):
                 tampered_hash,
             )
 
-    def test_projector_requires_exact_v6_semantics_and_generic_routes_are_empty(
+    def test_projector_requires_exact_v7_semantics_and_generic_routes_are_empty(
         self,
     ) -> None:
         _, packet, snapshot, _, _ = self._open_audit_contract()
         route = route_spec_by_hash(packet.route_id, packet.route_registry_hash)
-        self.assertEqual(route.route_version, 6)
+        self.assertEqual(route.route_version, 7)
         self.assertEqual(
             len(_relation_templates_for_route(route, packet, snapshot)),
             5,
@@ -421,7 +488,7 @@ class V53CandidateContractProjectionTests(unittest.TestCase):
             )
         replay_call.assert_not_called()
 
-    def test_frozen_v5_packet_resumes_with_historical_empty_templates(self) -> None:
+    def test_frozen_v5_packet_projects_historical_templates_and_schema(self) -> None:
         contract, packet, snapshot, _, _ = self._open_audit_contract(
             route_registry_hash=ROUTE_REGISTRY_V5_HASH
         )
@@ -443,6 +510,24 @@ class V53CandidateContractProjectionTests(unittest.TestCase):
         }
         self.assertNotIn("framing.force_conflict_geometry", invariant_ids)
         self.assertNotIn("framing.active_margin_witness", invariant_ids)
+        bundle_schema = next(
+            item.payload_json_schema
+            for item in contract.payload_schemas
+            if item.entity_type == "FramingQualityBundle"
+        )
+        self.assertNotIn(
+            "distinctive_mechanism_contribution_status",
+            bundle_schema["properties"],
+        )
+        self.assertNotIn(
+            "distinctive_mechanism",
+            bundle_schema["$defs"]["BenchmarkFramingAssessment"]["properties"],
+        )
+        self.assertNotIn("ActiveMarginWitness", bundle_schema["$defs"])
+        self.assertNotIn(
+            "active_margin_witness",
+            bundle_schema["$defs"]["CausalChainStep"]["properties"],
+        )
 
         route = route_spec_by_hash(packet.route_id, packet.route_registry_hash)
         self.assertEqual(
@@ -450,18 +535,64 @@ class V53CandidateContractProjectionTests(unittest.TestCase):
             (),
         )
         packet_hash = sha256_digest(canonical_json_bytes(packet))
-        resumed = compile_candidate_authoring_contract(
+        repeated = compile_candidate_authoring_contract(
             self.fixture.layout,
             packet,
             packet_hash,
         )
-        self.assertEqual(resumed, contract)
+        self.assertEqual(repeated, contract)
 
         changed_v5 = route.model_copy(
             update={"instruction_bundle_id": "audit.framing_economics.changed"}
         )
         with self.assertRaisesRegex(ValueError, "exact frozen or active"):
             _relation_templates_for_route(changed_v5, packet, snapshot)
+
+    def test_frozen_v6_packet_retains_the_same_five_exact_templates(self) -> None:
+        contract, packet, snapshot, _, _ = self._open_audit_contract(
+            route_registry_hash=ROUTE_REGISTRY_V6_HASH
+        )
+        self.assertEqual(packet.route_registry_hash, ROUTE_REGISTRY_V6_HASH)
+        self.assertEqual(packet.route_version, 6)
+        self.assertEqual(
+            tuple(
+                item.relation_type
+                for item in contract.output_contract.required_relation_templates
+            ),
+            ("audits", "audits", "audits", "audits", "governs"),
+        )
+        route = route_spec_by_hash(packet.route_id, packet.route_registry_hash)
+        self.assertEqual(
+            _relation_templates_for_route(route, packet, snapshot),
+            contract.output_contract.required_relation_templates,
+        )
+        bundle_schema = next(
+            item.payload_json_schema
+            for item in contract.payload_schemas
+            if item.entity_type == "FramingQualityBundle"
+        )
+        self.assertNotIn(
+            "distinctive_mechanism_contribution_status",
+            bundle_schema["properties"],
+        )
+        self.assertNotIn(
+            "distinctive_mechanism",
+            bundle_schema["$defs"]["BenchmarkFramingAssessment"]["properties"],
+        )
+        self.assertNotIn(
+            "consequence_binding",
+            bundle_schema["$defs"]["ActiveMarginWitness"]["properties"],
+        )
+        invariant_ids = {
+            item.invariant_id for item in contract.output_contract.model_invariants
+        }
+        self.assertFalse(
+            {
+                "framing.choice_consequence_binding",
+                "framing.distinctive_mechanism_spine",
+                "framing.distinctive_mechanism_contribution_status",
+            }.intersection(invariant_ids)
+        )
 
     def test_archived_v5_public_response_parses_and_reserializes_exactly(
         self,
@@ -501,7 +632,7 @@ class V53CandidateContractProjectionTests(unittest.TestCase):
     ) -> None:
         _, packet, snapshot, _, _ = self._open_audit_contract()
         route = route_spec_by_hash(packet.route_id, packet.route_registry_hash)
-        self.assertEqual(packet.route_registry_hash, ROUTE_REGISTRY_V6_HASH)
+        self.assertEqual(packet.route_registry_hash, ROUTE_REGISTRY_V7_HASH)
 
         changed_instruction = route.model_copy(
             update={"instruction_bundle_id": "audit.framing_economics.future"}
@@ -509,8 +640,8 @@ class V53CandidateContractProjectionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "exact frozen or active"):
             _relation_templates_for_route(changed_instruction, packet, snapshot)
 
-        future_route = route.model_copy(update={"route_version": 7})
-        future_packet = packet.model_copy(update={"route_version": 7})
+        future_route = route.model_copy(update={"route_version": 8})
+        future_packet = packet.model_copy(update={"route_version": 8})
         with self.assertRaisesRegex(ValueError, "exact frozen or active"):
             _relation_templates_for_route(future_route, future_packet, snapshot)
 

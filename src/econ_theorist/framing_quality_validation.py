@@ -50,10 +50,11 @@ FRAMING_REPAIR_ROUTE_ID = "repair.dependency"
 FRAMING_REPAIR_ENTRY_VALIDATOR_ID = "framing_repair_route_entry.v1"
 FRAMING_REPAIR_EXIT_VALIDATOR_ID = "framing_repair_route_exit.v1"
 FRAMING_REQUIREMENT_ID = "g1.framing_quality"
+FRAMING_ROUTE_VERSIONS = frozenset((6, 7))
 
 
 class FramingQualityValidationError(ValueError):
-    """A v5 framing-quality object or route transaction is inadmissible."""
+    """A framing-quality object or route transaction is inadmissible."""
 
 
 class FramingQualityRouteEntryReport(StrictModel):
@@ -236,11 +237,11 @@ def _validate_entry_refs(
 ) -> FramingQualityRouteEntryReport:
     if (
         route_spec.route_id != FRAMING_ROUTE_ID
-        or route_spec.route_version != 6
+        or route_spec.route_version not in FRAMING_ROUTE_VERSIONS
         or route_spec.availability != "enabled"
         or route_spec.entry_validator_id != FRAMING_ENTRY_VALIDATOR_ID
     ):
-        raise FramingQualityValidationError("unknown or malformed v6 framing route")
+        raise FramingQualityValidationError("unknown or malformed framing route")
     if len({_entity_key(item) for item in references}) != len(references):
         raise FramingQualityValidationError("framing route input repeats an exact ref")
 
@@ -629,12 +630,216 @@ def _step_is_on_force_path(
     )
 
 
+_PUBLIC_STATE_NODE_KINDS = frozenset(
+    {
+        "constraint",
+        "equilibrium_object",
+        "information",
+        "institution",
+        "interaction",
+        "timing",
+    }
+)
+
+
+def _state_condition_key(
+    condition: fq.PublicStateCondition,
+) -> tuple[str, str, str | None]:
+    return condition.node_id, condition.relation, condition.value
+
+
+def _validate_choice_consequence_binding(
+    *,
+    step: fq.CausalChainStep,
+    witness: fq.ActiveMarginWitness,
+    node_by_id: Mapping[str, t.PrimitiveNode],
+    edge_by_id: Mapping[str, t.PrimitiveEdge],
+    adjacency: Mapping[str, frozenset[str]],
+) -> None:
+    binding = witness.consequence_binding
+    if binding is None:
+        return
+    edges = tuple(edge_by_id.get(edge_id) for edge_id in binding.causal_edge_ids)
+    if any(edge is None for edge in edges):
+        raise FramingQualityValidationError(
+            "choice_consequence_binding: causal edge references an unknown "
+            "PrimitiveGraph edge"
+        )
+    exact_edges = tuple(edge for edge in edges if edge is not None)
+    if (
+        exact_edges[0].source_node_id != witness.decision_node_id
+        or exact_edges[-1].target_node_id != binding.consequence_node_id
+        or any(
+            left.target_node_id != right.source_node_id
+            for left, right in zip(exact_edges, exact_edges[1:])
+        )
+    ):
+        raise FramingQualityValidationError(
+            "choice_consequence_binding: edges must form one exact ordered path "
+            "from the witnessed decision to the claimed consequence"
+        )
+    if not (
+        _reachable(adjacency, step.target_node_id, binding.consequence_node_id)
+        or _reachable(adjacency, binding.consequence_node_id, step.target_node_id)
+    ):
+        raise FramingQualityValidationError(
+            "choice_consequence_binding: the claimed consequence is not on the "
+            "witnessed causal spine"
+        )
+    for condition in binding.public_state_conditions:
+        node = node_by_id.get(condition.node_id)
+        if node is None or node.kind not in _PUBLIC_STATE_NODE_KINDS:
+            raise FramingQualityValidationError(
+                "choice_consequence_binding: every public-state condition must bind "
+                "an exact state, information, institution, or transition node"
+            )
+
+
+def _validate_distinctive_mechanism(
+    *,
+    assessment: fq.BenchmarkFramingAssessment,
+    assessments_by_id: Mapping[str, fq.BenchmarkFramingAssessment],
+    node_by_id: Mapping[str, t.PrimitiveNode],
+    edge_by_id: Mapping[str, t.PrimitiveEdge],
+    witnessed_steps: tuple[
+        tuple[fq.CausalChainStep, fq.ActiveMarginWitness], ...
+    ],
+) -> None:
+    claim = assessment.distinctive_mechanism
+    if claim is None or claim.claim_kind in {"not_claimed", "unresolved"}:
+        return
+    contrast_id = claim.contrast_benchmark_id
+    assert contrast_id is not None
+    contrast = assessments_by_id.get(contrast_id)
+    if contrast is None or contrast is assessment:
+        raise FramingQualityValidationError(
+            "distinctive_mechanism: the contrast must be a different audited "
+            "benchmark"
+        )
+    focal_path = assessment.channel_path
+    contrast_path = contrast.channel_path
+    if focal_path == contrast_path:
+        raise FramingQualityValidationError(
+            "distinctive_mechanism_same_spine: focal and contrast benchmarks cannot "
+            "reuse the same path for a claimed distinctive mechanism"
+        )
+    focal_positions = {node_id: index for index, node_id in enumerate(focal_path)}
+    focal_pairs = set(zip(focal_path, focal_path[1:]))
+    contrast_pairs = set(zip(contrast_path, contrast_path[1:]))
+    if any(node_id not in focal_positions for node_id in claim.distinctive_node_ids):
+        raise FramingQualityValidationError(
+            "distinctive_mechanism_spine: every distinctive node must appear on the "
+            "focal benchmark path"
+        )
+    distinctive_edges = tuple(
+        edge_by_id.get(edge_id) for edge_id in claim.distinctive_edge_ids
+    )
+    if any(edge is None for edge in distinctive_edges):
+        raise FramingQualityValidationError(
+            "distinctive_mechanism_spine: a distinctive transition edge is unknown"
+        )
+    exact_edges = tuple(edge for edge in distinctive_edges if edge is not None)
+    if any(
+        (edge.source_node_id, edge.target_node_id) not in focal_pairs
+        for edge in exact_edges
+    ):
+        raise FramingQualityValidationError(
+            "distinctive_mechanism_spine: every distinctive edge must be an exact "
+            "neighbor transition on the focal benchmark path"
+        )
+    consequence_id = claim.consequence_node_id
+    assert consequence_id is not None
+    if consequence_id not in focal_positions:
+        raise FramingQualityValidationError(
+            "distinctive_mechanism_spine: the claimed consequence must appear on "
+            "the focal benchmark path"
+        )
+    last_spine_position = max(
+        *(focal_positions[node_id] for node_id in claim.distinctive_node_ids),
+        *(
+            focal_positions[edge.target_node_id]
+            for edge in exact_edges
+        ),
+    )
+    if focal_positions[consequence_id] < last_spine_position:
+        raise FramingQualityValidationError(
+            "distinctive_mechanism_spine: the claimed consequence cannot precede "
+            "the distinctive node or transition spine"
+        )
+    if any(
+        (node := node_by_id.get(condition.node_id)) is None
+        or node.kind not in _PUBLIC_STATE_NODE_KINDS
+        for condition in claim.required_public_state_conditions
+    ):
+        raise FramingQualityValidationError(
+            "distinctive_mechanism_state: every required public-state condition "
+            "must bind an exact known state, information, institution, or transition "
+            "node; the condition need not be forced into the linear channel path"
+        )
+    distinct_from_contrast = any(
+        node_id not in contrast_path for node_id in claim.distinctive_node_ids
+    ) or any(
+        (edge.source_node_id, edge.target_node_id) not in contrast_pairs
+        for edge in exact_edges
+    )
+    if not distinct_from_contrast:
+        raise FramingQualityValidationError(
+            "distinctive_mechanism_same_spine: the declared distinctive nodes and "
+            "transitions are also present on the contrast path"
+        )
+
+    if claim.claim_kind == "mechanical_transition":
+        mechanical_nodes = {
+            *claim.distinctive_node_ids,
+            *(edge.source_node_id for edge in exact_edges),
+            *(edge.target_node_id for edge in exact_edges),
+        }
+        if any(node_by_id[node_id].kind == "choice" for node_id in mechanical_nodes):
+            raise FramingQualityValidationError(
+                "distinctive_mechanism_mechanical_choice: a mechanical transition "
+                "cannot conceal a choice node in its distinctive spine"
+            )
+        return
+
+    assert claim.claim_kind == "choice_mediated"
+    required_conditions = {
+        _state_condition_key(item)
+        for item in claim.required_public_state_conditions
+    }
+    required_edges = set(claim.distinctive_edge_ids)
+    matching_witness = False
+    for _, witness in witnessed_steps:
+        binding = witness.consequence_binding
+        if binding is None or witness.activity_status != "active":
+            continue
+        if (
+            binding.consequence_node_id != consequence_id
+            or binding.transition_kind != claim.transition_kind
+            or not required_edges.issubset(binding.causal_edge_ids)
+            or required_conditions
+            != {_state_condition_key(item) for item in binding.public_state_conditions}
+            or witness.decision_node_id not in focal_positions
+            or focal_positions[witness.decision_node_id]
+            > focal_positions[consequence_id]
+        ):
+            continue
+        matching_witness = True
+        break
+    if not matching_witness:
+        raise FramingQualityValidationError(
+            "choice_consequence_binding_mismatch: a choice-mediated distinctive "
+            "mechanism requires one active payoff witness bound to its exact "
+            "consequence, transition, and public-state class"
+        )
+
+
 def _validate_bundle_science(
     bundle: fq.FramingQualityBundle,
     *,
     rq: t.ResearchQuestion,
     benchmarks: t.BenchmarkSet,
     graph: t.PrimitiveGraph,
+    require_research_first_bindings: bool = False,
 ) -> None:
     if bundle.tension.result_archetype not in rq.candidate_archetypes:
         raise FramingQualityValidationError(
@@ -650,6 +855,7 @@ def _validate_bundle_science(
         )
 
     node_by_id = {item.node_id: item for item in graph.nodes}
+    edge_by_id = {item.edge_id: item for item in graph.edges}
     node_ids = set(node_by_id)
     direct_edges = {(item.source_node_id, item.target_node_id) for item in graph.edges}
     adjacency: dict[str, set[str]] = {node_id: set() for node_id in node_ids}
@@ -687,6 +893,7 @@ def _validate_bundle_science(
     steps = bundle.causal_chain
     used_force_ids: set[str] = set()
     witnessed_choice_nodes: set[str] = set()
+    witnessed_steps: list[tuple[fq.CausalChainStep, fq.ActiveMarginWitness]] = []
     mechanism_margin_audit = (
         bundle.tension.tension_kind in fq.MECHANISM_MARGIN_TENSION_KINDS
     )
@@ -779,6 +986,20 @@ def _validate_bundle_science(
                     "node must reach the witnessed decision"
                 )
             witnessed_choice_nodes.add(witness.decision_node_id)
+            if require_research_first_bindings and witness.consequence_binding is None:
+                raise FramingQualityValidationError(
+                    "choice_consequence_binding_missing: every v7 payoff witness "
+                    "must bind the action comparison to its claimed causal "
+                    "consequence and public-state class"
+                )
+            _validate_choice_consequence_binding(
+                step=step,
+                witness=witness,
+                node_by_id=node_by_id,
+                edge_by_id=edge_by_id,
+                adjacency=frozen_adjacency,
+            )
+            witnessed_steps.append((step, witness))
         for force_id in step.force_ids:
             force = force_by_id[force_id]
             if not _step_is_on_force_path(frozen_adjacency, force, step):
@@ -826,7 +1047,19 @@ def _validate_bundle_science(
 
     unresolved_blocker = bool(bundle.disclosed_gaps)
     active_response_count = 0
+    assessments_by_id = {
+        item.benchmark_id: item for item in bundle.benchmark_assessments
+    }
     for assessment in bundle.benchmark_assessments:
+        if (
+            require_research_first_bindings
+            and assessment.distinctive_mechanism is None
+        ):
+            raise FramingQualityValidationError(
+                "distinctive_mechanism_declaration_missing: every v7 benchmark row "
+                "must explicitly claim, disclaim, or mark unresolved its mechanism "
+                "relative to a contrast"
+            )
         if assessment.channel_kind == "active_response":
             active_response_count += 1
         path = assessment.channel_path
@@ -929,6 +1162,23 @@ def _validate_bundle_science(
             or assessment.channel_kind == "diagnostic_only"
         )
         unresolved_blocker = unresolved_blocker or risky
+        _validate_distinctive_mechanism(
+            assessment=assessment,
+            assessments_by_id=assessments_by_id,
+            node_by_id=node_by_id,
+            edge_by_id=edge_by_id,
+            witnessed_steps=tuple(witnessed_steps),
+        )
+
+    if (
+        require_research_first_bindings
+        and bundle.distinctive_mechanism_contribution_status is None
+    ):
+        raise FramingQualityValidationError(
+            "distinctive_mechanism_contribution_missing: v7 must explicitly state "
+            "whether benchmark-distinctive mechanism is claimed, not claimed, or "
+            "unresolved"
+        )
 
     if (
         bundle.tension.tension_kind
@@ -944,6 +1194,24 @@ def _validate_bundle_science(
         raise FramingQualityValidationError(
             "unresolved framing risks cannot be promoted to ready_for_g1"
         )
+
+
+def validate_research_first_framing_science(
+    bundle: fq.FramingQualityBundle,
+    *,
+    research_question: t.ResearchQuestion,
+    benchmark_set: t.BenchmarkSet,
+    primitive_graph: t.PrimitiveGraph,
+) -> None:
+    """Validate the v7 research-first scientific bindings without route plumbing."""
+
+    _validate_bundle_science(
+        bundle,
+        rq=research_question,
+        benchmarks=benchmark_set,
+        graph=primitive_graph,
+        require_research_first_bindings=True,
+    )
 
 
 def _validate_hard_relation(
@@ -1091,18 +1359,18 @@ def validate_framing_quality_projection(
 def validate_framing_quality_route_transaction(
     snapshot: Snapshot, transaction: Transaction, route_spec: RouteSpecV5
 ) -> FramingQualityProjectionReport:
-    """Validate one active v6 audit transaction against its exact base."""
+    """Validate one active v6/v7 audit transaction against its exact base."""
 
     if (
         transaction.origin != "route_run"
         or transaction.route_id != FRAMING_ROUTE_ID
         or route_spec.route_id != FRAMING_ROUTE_ID
-        or route_spec.route_version != 6
+        or route_spec.route_version not in FRAMING_ROUTE_VERSIONS
         or route_spec.availability != "enabled"
         or route_spec.exit_validator_id != FRAMING_EXIT_VALIDATOR_ID
     ):
         raise FramingQualityValidationError(
-            "transaction is not bound to the enabled v6 framing route"
+            "transaction is not bound to an enabled framing route"
         )
     if transaction.project_id != snapshot.project_id:
         raise FramingQualityValidationError("framing transaction crosses projects")
@@ -1217,6 +1485,21 @@ def validate_framing_quality_route_transaction(
         else None
     )
     bundle = validate_framing_quality_entity(bundle_entity, prior_bundle_entity)
+    if route_spec.route_version < 7 and (
+        bundle.distinctive_mechanism_contribution_status is not None
+        or any(
+            step.active_margin_witness is not None
+            and step.active_margin_witness.consequence_binding is not None
+            for step in bundle.causal_chain
+        )
+        or any(
+            assessment.distinctive_mechanism is not None
+            for assessment in bundle.benchmark_assessments
+        )
+    ):
+        raise FramingQualityValidationError(
+            "v7 research-first bindings are outside the frozen v6 route semantics"
+        )
     try:
         replacement = validate_theory_entity(replacement_entity)
     except TheoryValidationError as exc:
@@ -1245,7 +1528,13 @@ def validate_framing_quality_route_transaction(
     assert isinstance(benchmarks, t.BenchmarkSet)
     assert isinstance(graph, t.PrimitiveGraph)
     assert isinstance(source_dossier, t.GateDossier)
-    _validate_bundle_science(bundle, rq=rq, benchmarks=benchmarks, graph=graph)
+    _validate_bundle_science(
+        bundle,
+        rq=rq,
+        benchmarks=benchmarks,
+        graph=graph,
+        require_research_first_bindings=route_spec.route_version >= 7,
+    )
 
     bundle_ref = _entity_ref(bundle_entity)
     expected_action = "approve" if bundle.proposed_action == "ready_for_g1" else "revise"
@@ -1579,4 +1868,5 @@ __all__ = [
     "validate_framing_repair_route_transaction",
     "validate_phase5_route_entry",
     "validate_phase5_route_transaction",
+    "validate_research_first_framing_science",
 ]

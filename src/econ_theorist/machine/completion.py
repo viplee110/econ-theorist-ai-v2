@@ -17,6 +17,11 @@ from typing import Any, Literal
 
 from pydantic import Field, ValidationError
 
+from ..candidate_contract import compile_candidate_authoring_contract
+from ..candidate_draft import (
+    CandidateDraftMaterializationError,
+    materialize_runtime_facet_hashes,
+)
 from ..codec import canonical_json_bytes, sha256_digest, transaction_bytes
 from ..models import Digest, RegisterArtifactOp, StrictModel, Transaction
 from ..runs import read_run
@@ -486,7 +491,45 @@ def _has_exact_staged_candidate(
     return sha256_digest(transaction_bytes(transaction)) == candidate_digest
 
 
-def _read_candidate_source(path: str | Path) -> tuple[str, Transaction]:
+def _candidate_validation_error(
+    exc: ValidationError,
+) -> CandidateTransactionValidationError:
+    raw_issues = exc.errors(
+        include_url=False,
+        include_context=False,
+        include_input=False,
+    )
+    issues: list[dict[str, Any]] = []
+    for error in raw_issues[:20]:
+        location: list[str | int] = []
+        for item in error["loc"]:
+            if isinstance(item, int):
+                location.append(item)
+            else:
+                text = str(item)
+                location.append(text if len(text) <= 160 else text[:157] + "...")
+        issue_type = str(error["type"])
+        message = str(error["msg"])
+        issues.append(
+            {
+                "location": location,
+                "type": issue_type if len(issue_type) <= 160 else issue_type[:157] + "...",
+                "message": message if len(message) <= 500 else message[:497] + "...",
+            }
+        )
+    return CandidateTransactionValidationError(
+        issue_count=len(raw_issues),
+        issues=tuple(issues),
+        truncated=len(raw_issues) > len(issues),
+    )
+
+
+def _read_candidate_source(
+    path: str | Path,
+    *,
+    layout: StoreLayout,
+    packet: WorkPacketV1,
+) -> tuple[str, Transaction]:
     try:
         data = Path(path).read_bytes()
     except OSError as exc:
@@ -495,35 +538,40 @@ def _read_candidate_source(path: str | Path) -> tuple[str, Transaction]:
         ) from exc
     try:
         transaction = Transaction.model_validate_json(data, strict=True)
-    except ValidationError as exc:
-        raw_issues = exc.errors(
-            include_url=False,
-            include_context=False,
-            include_input=False,
-        )
-        issues: list[dict[str, Any]] = []
-        for error in raw_issues[:20]:
-            location: list[str | int] = []
-            for item in error["loc"]:
-                if isinstance(item, int):
-                    location.append(item)
-                else:
-                    text = str(item)
-                    location.append(text if len(text) <= 160 else text[:157] + "...")
-            issue_type = str(error["type"])
-            message = str(error["msg"])
-            issues.append(
-                {
-                    "location": location,
-                    "type": issue_type if len(issue_type) <= 160 else issue_type[:157] + "...",
-                    "message": message if len(message) <= 500 else message[:497] + "...",
-                }
+    except ValidationError as initial_error:
+        packet_hash = sha256_digest(canonical_json_bytes(packet))
+        try:
+            contract = compile_candidate_authoring_contract(
+                layout,
+                packet,
+                packet_hash,
             )
-        raise CandidateTransactionValidationError(
-            issue_count=len(raw_issues),
-            issues=tuple(issues),
-            truncated=len(raw_issues) > len(issues),
-        ) from exc
+            materialized = materialize_runtime_facet_hashes(data, contract)
+        except CandidateDraftMaterializationError as exc:
+            raise CandidateTransactionValidationError(
+                issue_count=1,
+                issues=(
+                    {
+                        "location": list(exc.location),
+                        "type": exc.issue_type,
+                        "message": exc.message,
+                    },
+                ),
+                truncated=False,
+            ) from exc
+        except ValueError as exc:
+            raise CompletionError(
+                "candidate draft contract could not be reconstructed"
+            ) from exc
+        if materialized is None:
+            raise _candidate_validation_error(initial_error) from initial_error
+        try:
+            transaction = Transaction.model_validate_json(
+                materialized,
+                strict=True,
+            )
+        except ValidationError as exc:
+            raise _candidate_validation_error(exc) from exc
     body = transaction_bytes(transaction)
     return sha256_digest(body), transaction
 
@@ -541,7 +589,11 @@ def candidate_source_digest(
         transaction_path,
         artifacts=None,
     )
-    digest, _ = _read_candidate_source(safe_path)
+    digest, _ = _read_candidate_source(
+        safe_path,
+        layout=layout,
+        packet=packet,
+    )
     return digest
 
 
@@ -989,7 +1041,9 @@ def complete_candidate(
                     layout, packet, transaction_path, artifacts
                 )
                 candidate_digest, transaction = _read_candidate_source(
-                    safe_candidate_path
+                    safe_candidate_path,
+                    layout=layout,
+                    packet=packet,
                 )
             except CompletionError:
                 # A process can stop after publishing the immutable,

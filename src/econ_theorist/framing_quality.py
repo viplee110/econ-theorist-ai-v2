@@ -24,7 +24,7 @@ from .models import (
     StableId,
     StrictModel,
 )
-from .theory import BenchmarkSet, ResultArchetype
+from .theory import BenchmarkSet, PrimitiveGraph, ResultArchetype
 
 
 TensionKind: TypeAlias = Literal[
@@ -118,6 +118,31 @@ FramingProposedAction: TypeAlias = Literal[
     "revise_framing",
 ]
 MarginActivityStatus: TypeAlias = Literal["active", "inactive", "unresolved"]
+PublicStateRelation: TypeAlias = Literal[
+    "equals",
+    "not_equals",
+    "positive",
+    "zero",
+    "interior",
+    "boundary",
+]
+DistinctiveMechanismKind: TypeAlias = Literal[
+    "not_claimed",
+    "choice_mediated",
+    "mechanical_transition",
+    "unresolved",
+]
+DistinctiveMechanismContributionStatus: TypeAlias = Literal[
+    "claimed",
+    "not_claimed",
+    "unresolved",
+]
+ConsequenceTransitionKind: TypeAlias = Literal[
+    "increase",
+    "decrease",
+    "switch",
+    "reweight",
+]
 FramingRepairTargetType: TypeAlias = Literal[
     "ResearchQuestion",
     "BenchmarkSet",
@@ -230,6 +255,60 @@ class EconomicForce(StrictModel):
     target_node_id: StableId
 
 
+class PublicStateCondition(StrictModel):
+    """One typed condition defining the public state relevant to a mechanism."""
+
+    node_id: StableId
+    relation: PublicStateRelation
+    value: NonEmptyString | None = None
+
+    @model_validator(mode="after")
+    def _value_matches_relation(self) -> "PublicStateCondition":
+        value_relation = self.relation in {"equals", "not_equals"}
+        if value_relation != (self.value is not None):
+            raise ValueError(
+                "public_state_condition: equals/not_equals require one value and "
+                "qualitative relations must omit it"
+            )
+        return self
+
+
+class ChoiceConsequenceBinding(StrictModel):
+    """Bind one payoff comparison to the consequence its action can change."""
+
+    consequence_node_id: StableId
+    transition_kind: ConsequenceTransitionKind
+    causal_edge_ids: Annotated[tuple[StableId, ...], Field(min_length=1)]
+    public_state_conditions: Annotated[
+        tuple[PublicStateCondition, ...], Field(min_length=1)
+    ]
+    focal_consequence: NonEmptyString
+    alternative_consequence: NonEmptyString
+    feasibility_basis: NonEmptyString
+
+    @model_validator(mode="after")
+    def _is_nontrivial_and_unique(self) -> "ChoiceConsequenceBinding":
+        _unique(self.causal_edge_ids, "choice-consequence edge IDs")
+        _unique(
+            tuple(item.node_id for item in self.public_state_conditions),
+            "choice-consequence public-state node IDs",
+        )
+        if self.focal_consequence == self.alternative_consequence:
+            raise ValueError(
+                "choice_consequence_binding: focal and alternative consequences "
+                "must differ"
+            )
+        if self.transition_kind == "decrease" and any(
+            item.node_id == self.consequence_node_id and item.relation == "zero"
+            for item in self.public_state_conditions
+        ):
+            raise ValueError(
+                "choice_consequence_binding: a decreasing transition cannot start "
+                "from a zero consequence state"
+            )
+        return self
+
+
 class ActiveMarginWitness(StrictModel):
     """A diagnostic payoff comparison for one choice-dependent mechanism link."""
 
@@ -246,6 +325,7 @@ class ActiveMarginWitness(StrictModel):
     activity_status: MarginActivityStatus
     status_basis: NonEmptyString
     kill_condition: NonEmptyString
+    consequence_binding: ChoiceConsequenceBinding | None = None
 
     @model_validator(mode="after")
     def _compares_distinct_actions(self) -> "ActiveMarginWitness":
@@ -348,6 +428,77 @@ class SelectionAssurance(StrictModel):
     implication_for_attribution: NonEmptyString
 
 
+class DistinctiveMechanismAssessment(StrictModel):
+    """Declare whether one benchmark carries a mechanism absent from a contrast."""
+
+    claim_kind: DistinctiveMechanismKind
+    mechanism_label: NonEmptyString
+    contrast_benchmark_id: StableId | None = None
+    distinctive_node_ids: tuple[StableId, ...] = ()
+    distinctive_edge_ids: tuple[StableId, ...] = ()
+    consequence_node_id: StableId | None = None
+    transition_kind: ConsequenceTransitionKind | None = None
+    required_public_state_conditions: tuple[PublicStateCondition, ...] = ()
+    basis: NonEmptyString
+
+    @model_validator(mode="after")
+    def _claim_shape_is_exact(self) -> "DistinctiveMechanismAssessment":
+        _unique(self.distinctive_node_ids, "distinctive mechanism node IDs")
+        _unique(self.distinctive_edge_ids, "distinctive mechanism edge IDs")
+        _unique(
+            tuple(item.node_id for item in self.required_public_state_conditions),
+            "distinctive mechanism public-state node IDs",
+        )
+        details_present = bool(
+            self.contrast_benchmark_id
+            or self.distinctive_node_ids
+            or self.distinctive_edge_ids
+            or self.consequence_node_id
+            or self.transition_kind
+            or self.required_public_state_conditions
+        )
+        if self.claim_kind == "not_claimed" and details_present:
+            raise ValueError(
+                "distinctive_mechanism: not_claimed must not fabricate a contrast "
+                "spine or public-state condition"
+            )
+        if self.claim_kind == "unresolved":
+            if self.contrast_benchmark_id is None:
+                raise ValueError(
+                    "distinctive_mechanism: unresolved requires the exact contrast "
+                    "benchmark"
+                )
+            if self.distinctive_node_ids or self.distinctive_edge_ids:
+                raise ValueError(
+                    "distinctive_mechanism: unresolved must not present an unverified "
+                    "spine as exact"
+                )
+        if self.claim_kind in {"choice_mediated", "mechanical_transition"}:
+            if (
+                self.contrast_benchmark_id is None
+                or not self.distinctive_node_ids
+                or not self.distinctive_edge_ids
+                or self.consequence_node_id is None
+                or self.transition_kind is None
+                or not self.required_public_state_conditions
+            ):
+                raise ValueError(
+                    "distinctive_mechanism: an active distinctive claim requires one "
+                    "exact contrast, node spine, transition edge, consequence, and "
+                    "public-state class"
+                )
+            if self.transition_kind == "decrease" and any(
+                item.node_id == self.consequence_node_id
+                and item.relation == "zero"
+                for item in self.required_public_state_conditions
+            ):
+                raise ValueError(
+                    "distinctive_mechanism: a decreasing transition cannot start "
+                    "from a zero consequence state"
+                )
+        return self
+
+
 class BenchmarkFramingAssessment(StrictModel):
     """One semantic ledger row bound to a nested benchmark ID."""
 
@@ -366,6 +517,7 @@ class BenchmarkFramingAssessment(StrictModel):
     selection_assurance: SelectionAssurance
     attribution_strength: AttributionStrength
     attribution_basis: NonEmptyString
+    distinctive_mechanism: DistinctiveMechanismAssessment | None = None
 
     @model_validator(mode="after")
     def _semantic_ledger_is_coherent(self) -> "BenchmarkFramingAssessment":
@@ -480,6 +632,9 @@ class FramingQualityBundle(FramingQualityPayload):
     benchmark_assessments: Annotated[
         tuple[BenchmarkFramingAssessment, ...], Field(min_length=1)
     ]
+    distinctive_mechanism_contribution_status: (
+        DistinctiveMechanismContributionStatus | None
+    ) = None
     disclosed_gaps: tuple[DisclosedFramingGap, ...]
     proposed_action: FramingProposedAction
     action_rationale: NonEmptyString
@@ -665,6 +820,66 @@ class FramingQualityBundle(FramingQualityPayload):
                     "every benchmark with unresolved attribution risk requires "
                     "an explicitly linked disclosed gap"
                 )
+            distinctive = assessment.distinctive_mechanism
+            if distinctive is None:
+                continue
+            contrast_id = distinctive.contrast_benchmark_id
+            if contrast_id is not None and (
+                contrast_id == assessment.benchmark_id
+                or contrast_id not in known_benchmark_ids
+            ):
+                raise ValueError(
+                    "distinctive_mechanism: contrast must be a different audited "
+                    "benchmark"
+                )
+            if distinctive.claim_kind == "unresolved":
+                covered = any(
+                    gap.category == "causal_attribution"
+                    and assessment.benchmark_id in gap.affected_benchmark_ids
+                    for gap in self.disclosed_gaps
+                )
+                if self.proposed_action != "revise_framing" or not covered:
+                    raise ValueError(
+                        "distinctive_mechanism_unresolved: revise_framing and a "
+                        "benchmark-linked causal-attribution gap are required"
+                    )
+        contribution_status = self.distinctive_mechanism_contribution_status
+        if contribution_status is not None:
+            declared_claims = tuple(
+                assessment.distinctive_mechanism
+                for assessment in self.benchmark_assessments
+            )
+            has_active_claim = any(
+                claim is not None
+                and claim.claim_kind
+                in {"choice_mediated", "mechanical_transition"}
+                for claim in declared_claims
+            )
+            has_unresolved_claim = any(
+                claim is not None and claim.claim_kind == "unresolved"
+                for claim in declared_claims
+            )
+            all_disclaimed = all(
+                claim is not None and claim.claim_kind == "not_claimed"
+                for claim in declared_claims
+            )
+            if contribution_status == "claimed" and (
+                not has_active_claim or has_unresolved_claim
+            ):
+                raise ValueError(
+                    "distinctive_mechanism_contribution: claimed requires at least "
+                    "one active benchmark-distinctive mechanism and no unresolved row"
+                )
+            if contribution_status == "not_claimed" and not all_disclaimed:
+                raise ValueError(
+                    "distinctive_mechanism_contribution: not_claimed requires every "
+                    "benchmark row to disclaim a distinctive-mechanism contribution"
+                )
+            if contribution_status == "unresolved" and not has_unresolved_claim:
+                raise ValueError(
+                    "distinctive_mechanism_contribution: unresolved requires at "
+                    "least one unresolved benchmark-distinctive mechanism"
+                )
         if self.proposed_action == "ready_for_g1" and self.disclosed_gaps:
             raise ValueError(
                 "unresolved framing gaps cannot be promoted to ready_for_g1"
@@ -794,10 +1009,6 @@ def _markdown_items(values: tuple[str, ...]) -> str:
     return "<br>".join(_markdown_text(value) for value in values)
 
 
-def _markdown_objects(values: tuple[FramingObjectRef, ...]) -> str:
-    return "<br>".join(_markdown_text(value.label) for value in values)
-
-
 def _display_token(value: str) -> str:
     return value.replace("_", " ")
 
@@ -811,12 +1022,19 @@ def _display_action(value: FramingProposedAction) -> str:
 
 
 def render_framing_quality_memo(
-    bundle: FramingQualityBundle, benchmark_set: BenchmarkSet
+    bundle: FramingQualityBundle,
+    benchmark_set: BenchmarkSet,
+    primitive_graph: PrimitiveGraph | None = None,
 ) -> str:
-    """Render a compact one-page memo without canonical IDs or storage jargon."""
+    """Render a compact economist-facing memo without storage jargon."""
 
     if bundle.research_question_ref != benchmark_set.question_ref:
         raise ValueError("bundle and benchmark set must bind the same research question")
+    if primitive_graph is not None and (
+        primitive_graph.question_ref != bundle.research_question_ref
+        or primitive_graph.benchmark_set_ref != bundle.benchmark_set_ref
+    ):
+        raise ValueError("bundle and primitive graph must bind the same framing scope")
 
     benchmark_ids = tuple(item.benchmark_id for item in benchmark_set.benchmarks)
     assessment_ids = tuple(
@@ -834,6 +1052,54 @@ def render_framing_quality_memo(
     assessments = {
         item.benchmark_id: item for item in bundle.benchmark_assessments
     }
+    benchmark_labels = {
+        item.benchmark_id: item.label for item in benchmark_set.benchmarks
+    }
+    node_labels = (
+        {item.node_id: item.label for item in primitive_graph.nodes}
+        if primitive_graph is not None
+        else {}
+    )
+    edge_by_id = (
+        {item.edge_id: item for item in primitive_graph.edges}
+        if primitive_graph is not None
+        else {}
+    )
+
+    def node_label(node_id: str) -> str:
+        return node_labels.get(
+            node_id, _display_token(node_id.removeprefix("node."))
+        )
+
+    def framing_objects(values: tuple[FramingObjectRef, ...]) -> str:
+        return "<br>".join(
+            _markdown_text(
+                node_label(item.primitive_node_id)
+                if item.primitive_node_id is not None
+                else item.label
+            )
+            for item in values
+        )
+
+    def edge_path(edge_ids: tuple[str, ...]) -> str:
+        exact_edges = tuple(edge_by_id.get(edge_id) for edge_id in edge_ids)
+        if exact_edges and all(edge is not None for edge in exact_edges):
+            edges = tuple(edge for edge in exact_edges if edge is not None)
+            nodes = (edges[0].source_node_id, *(edge.target_node_id for edge in edges))
+            return " -> ".join(_markdown_text(node_label(node_id)) for node_id in nodes)
+        return " -> ".join(
+            _markdown_text(_display_token(edge_id.removeprefix("edge.")))
+            for edge_id in edge_ids
+        )
+
+    def public_state(conditions: tuple[PublicStateCondition, ...]) -> str:
+        return "; ".join(
+            _markdown_text(
+                f"{node_label(item.node_id)} {_display_token(item.relation)}"
+                + (f" {item.value}" if item.value is not None else "")
+            )
+            for item in conditions
+        )
     force_heading = (
         "Competing economic forces"
         if bundle.tension.tension_kind
@@ -892,6 +1158,18 @@ def render_framing_quality_memo(
                 f"{_markdown_text(witness.status_basis)} "
                 f"Kill this link if {_markdown_text(witness.kill_condition)}"
             )
+            binding = witness.consequence_binding
+            if binding is not None:
+                lines.append(
+                    "   - **Consequence check.** "
+                    f"Path: {edge_path(binding.causal_edge_ids)}. "
+                    f"At {public_state(binding.public_state_conditions)}, "
+                    f"the consequence follows transition "
+                    f"{_display_token(binding.transition_kind)} at "
+                    f"{_markdown_text(node_label(binding.consequence_node_id))}: "
+                    f"{_markdown_text(binding.focal_consequence)} By contrast, "
+                    f"{_markdown_text(binding.alternative_consequence)}"
+                )
 
     lines.extend(
         [
@@ -912,11 +1190,11 @@ def render_framing_quality_memo(
             + " | ".join(
                 (
                     _markdown_text(benchmark.label),
-                    _markdown_objects(assessment.changed),
-                    _markdown_objects(assessment.held_fixed),
-                    _markdown_objects(assessment.reoptimizing),
-                    _markdown_objects(assessment.still_endogenous),
-                    _markdown_objects(assessment.targets),
+                    framing_objects(assessment.changed),
+                    framing_objects(assessment.held_fixed),
+                    framing_objects(assessment.reoptimizing),
+                    framing_objects(assessment.still_endogenous),
+                    framing_objects(assessment.targets),
                     _markdown_text(assessment.channel_summary),
                     _markdown_text(
                         f"pointwise policy "
@@ -937,6 +1215,60 @@ def render_framing_quality_memo(
             )
             + " |"
         )
+
+    declared_distinctions = tuple(
+        (
+            benchmark_labels[assessment.benchmark_id],
+            assessment.distinctive_mechanism,
+        )
+        for assessment in bundle.benchmark_assessments
+        if assessment.distinctive_mechanism is not None
+    )
+    if (
+        bundle.distinctive_mechanism_contribution_status is not None
+        or declared_distinctions
+    ):
+        status = bundle.distinctive_mechanism_contribution_status or "unresolved"
+        status_message = {
+            "claimed": "The paper claims a mechanism present in a focal benchmark and absent from an exact contrast.",
+            "not_claimed": "The paper does not use mechanism absence across benchmarks as a contribution.",
+            "unresolved": "Whether a benchmark-distinctive mechanism exists remains unresolved.",
+        }[status]
+        lines.extend(["", "## Mechanism distinction", "", status_message])
+        for benchmark_label, claim in declared_distinctions:
+            assert claim is not None
+            if claim.claim_kind == "not_claimed":
+                lines.append(
+                    f"- **{_markdown_text(benchmark_label)}: not claimed.** "
+                    f"{_markdown_text(claim.basis)}"
+                )
+                continue
+            contrast_label = benchmark_labels.get(
+                claim.contrast_benchmark_id or "", "unresolved contrast"
+            )
+            if claim.claim_kind == "unresolved":
+                lines.append(
+                    f"- **{_markdown_text(benchmark_label)} versus "
+                    f"{_markdown_text(contrast_label)}: unresolved.** "
+                    f"{_markdown_text(claim.basis)}"
+                )
+                continue
+            spine_nodes = ", ".join(
+                _markdown_text(node_label(node_id))
+                for node_id in claim.distinctive_node_ids
+            )
+            lines.append(
+                f"- **{_markdown_text(benchmark_label)} versus "
+                f"{_markdown_text(contrast_label)} "
+                f"({_display_token(claim.claim_kind)}).** "
+                f"{_markdown_text(claim.mechanism_label)}. "
+                f"Spine: {spine_nodes}; transitions: "
+                f"{edge_path(claim.distinctive_edge_ids)}; consequence: "
+                f"{_markdown_text(node_label(claim.consequence_node_id or 'unresolved'))} "
+                f"{_display_token(claim.transition_kind or 'unresolved')}; state: "
+                f"{public_state(claim.required_public_state_conditions)}. "
+                f"{_markdown_text(claim.basis)}"
+            )
 
     example = bundle.minimal_example
     lines.extend(
@@ -989,7 +1321,12 @@ __all__ = [
     "BenchmarkFramingAssessment",
     "CausalChainStep",
     "ChannelKind",
+    "ChoiceConsequenceBinding",
+    "ConsequenceTransitionKind",
     "DisclosedFramingGap",
+    "DistinctiveMechanismAssessment",
+    "DistinctiveMechanismContributionStatus",
+    "DistinctiveMechanismKind",
     "EconomicForce",
     "EconomistMemo",
     "FramingObjectRef",
@@ -1000,6 +1337,8 @@ __all__ = [
     "IllustrativeMinimalExample",
     "MECHANISM_MARGIN_TENSION_KINDS",
     "MarginActivityStatus",
+    "PublicStateCondition",
+    "PublicStateRelation",
     "SelectionAssurance",
     "framing_quality_payload_entity_type",
     "framing_quality_schema_id",
