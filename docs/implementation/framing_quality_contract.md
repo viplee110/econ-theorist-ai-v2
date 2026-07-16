@@ -63,9 +63,18 @@ Registry v1--v5 files, instruction bundles, payload meanings, exported schemas,
 selectors, and frozen fixtures remain byte-for-byte unchanged. Framing-quality
 records live in the independent `framing_quality/v1` payload namespace.
 
+Registry v8 preserves every v1--v7 route and instruction binding and advances
+only `audit.framing_economics` to `framing_quality_route_exit.v2`. Its narrow
+diagnostic exception permits all payoff witnesses to be absent only for a fully
+downgraded `revise_framing` bundle: it must disclose a causal-attribution or
+reoptimization gap with an exact current upstream repair target, make no
+active-response, clean-attribution, aggregate-fixed, or distinctive-mechanism
+claim, and cannot support `ready_for_g1`. It forbids fabricated payoff
+evidence; any supplied witness remains subject to every ordinary strict check.
+
 Historical chains replay under the registry hash to which they were bound.
-The current CLI and machine facade use route registry v6 and navigation
-registry v5 for new work. The current G1 user-action preflight accepts only a
+The current CLI and machine facade use route registry v8 and navigation
+registry v7 for new work. The current G1 user-action preflight accepts only a
 current replacement dossier that includes a fresh `FramingQualityBundle`; this
 current-action rule does not rewrite historical Phase 2 transactions.
 

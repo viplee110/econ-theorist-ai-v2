@@ -21,6 +21,7 @@ from ..policy import (
     ROUTE_REGISTRY_V5_HASH,
     ROUTE_REGISTRY_V6_HASH,
     ROUTE_REGISTRY_V7_HASH,
+    ROUTE_REGISTRY_V8_HASH,
     load_route_registry_by_hash,
 )
 
@@ -43,7 +44,10 @@ NAVIGATION_REGISTRY_V5_HASH = (
 NAVIGATION_REGISTRY_V6_HASH = (
     "94520d9626e702fde479be0184bbc5baa3cc25dce9c8f65e1d935064923f826f"
 )
-NAVIGATION_REGISTRY_HASH = NAVIGATION_REGISTRY_V6_HASH
+NAVIGATION_REGISTRY_V7_HASH = (
+    "ea133669cd85c073b6352744f2d1b5413dfe33d738752ad17769637acfd9e510"
+)
+NAVIGATION_REGISTRY_HASH = NAVIGATION_REGISTRY_V7_HASH
 HOST_MANIFEST_V1_HASH = (
     "f9e254ddd20f01d765f9d056d18610796bb33ba07aaa2d971fe87b44dc0bd57a"
 )
@@ -127,6 +131,14 @@ class NavigationRegistryV6(StrictModel):
     routes: tuple[NavigationRoutePolicyV3, ...]
 
 
+class NavigationRegistryV7(StrictModel):
+    navigation_registry_schema: Literal[1]
+    navigation_registry_version: Literal[7]
+    route_registry_hash: Digest
+    max_candidate_sets: Annotated[int, Field(ge=1)]
+    routes: tuple[NavigationRoutePolicyV3, ...]
+
+
 NavigationRegistryLike: TypeAlias = (
     NavigationRegistryV1
     | NavigationRegistryV2
@@ -134,6 +146,7 @@ NavigationRegistryLike: TypeAlias = (
     | NavigationRegistryV4
     | NavigationRegistryV5
     | NavigationRegistryV6
+    | NavigationRegistryV7
 )
 
 
@@ -204,6 +217,11 @@ def _load_navigation_registry_resource(
                 canonical_json_bytes(raw), strict=True
             )
             expected_route_registry_hash = ROUTE_REGISTRY_V7_HASH
+        elif version == 7:
+            registry = NavigationRegistryV7.model_validate_json(
+                canonical_json_bytes(raw), strict=True
+            )
+            expected_route_registry_hash = ROUTE_REGISTRY_V8_HASH
         else:
             raise ValueError(f"unsupported navigation registry version: {version!r}")
     except ValueError as exc:
@@ -266,21 +284,37 @@ def _load_navigation_registry_resource(
                 "navigation registry v6 may advance only the framing audit "
                 "and route-registry binding"
             )
+    if isinstance(registry, NavigationRegistryV7):
+        frozen_v6 = _load_navigation_registry_resource(
+            "navigation-registry.v6.json", NAVIGATION_REGISTRY_V6_HASH
+        )
+        current = registry.model_dump(mode="json")
+        frozen = frozen_v6.model_dump(mode="json")
+        current["navigation_registry_version"] = 6
+        current["route_registry_hash"] = frozen["route_registry_hash"]
+        for item in current["routes"]:
+            if item["route_id"] == "audit.framing_economics":
+                item["route_version"] = 7
+        if current != frozen:
+            raise RegistryError(
+                "navigation registry v7 may advance only the framing audit "
+                "and route-registry binding"
+            )
     return registry
 
 
 @lru_cache(maxsize=1)
-def load_navigation_registry() -> NavigationRegistryV6:
-    """Load the active v6 navigation policy bound to route registry v7."""
+def load_navigation_registry() -> NavigationRegistryV7:
+    """Load the active v7 navigation policy bound to route registry v8."""
 
     registry = _load_navigation_registry_resource(
-        "navigation-registry.v6.json", NAVIGATION_REGISTRY_V6_HASH
+        "navigation-registry.v7.json", NAVIGATION_REGISTRY_V7_HASH
     )
-    assert isinstance(registry, NavigationRegistryV6)
+    assert isinstance(registry, NavigationRegistryV7)
     return registry
 
 
-@lru_cache(maxsize=6)
+@lru_cache(maxsize=7)
 def load_navigation_registry_by_hash(
     navigation_registry_hash: str,
 ) -> NavigationRegistryLike:
@@ -293,6 +327,7 @@ def load_navigation_registry_by_hash(
         NAVIGATION_REGISTRY_V4_HASH: "navigation-registry.v4.json",
         NAVIGATION_REGISTRY_V5_HASH: "navigation-registry.v5.json",
         NAVIGATION_REGISTRY_V6_HASH: "navigation-registry.v6.json",
+        NAVIGATION_REGISTRY_V7_HASH: "navigation-registry.v7.json",
     }
     try:
         filename = resources[navigation_registry_hash]
@@ -325,6 +360,7 @@ def machine_resource_path(filename: str) -> Path:
         "navigation-registry.v4.json": NAVIGATION_REGISTRY_V4_HASH,
         "navigation-registry.v5.json": NAVIGATION_REGISTRY_V5_HASH,
         "navigation-registry.v6.json": NAVIGATION_REGISTRY_V6_HASH,
+        "navigation-registry.v7.json": NAVIGATION_REGISTRY_V7_HASH,
         "host-manifest.v1.json": HOST_MANIFEST_V1_HASH,
         "compatibility-support.v1.json": COMPATIBILITY_SUPPORT_V1_HASH,
     }.get(filename)
@@ -344,6 +380,7 @@ __all__ = [
     "NAVIGATION_REGISTRY_V4_HASH",
     "NAVIGATION_REGISTRY_V5_HASH",
     "NAVIGATION_REGISTRY_V6_HASH",
+    "NAVIGATION_REGISTRY_V7_HASH",
     "NavigationRegistryLike",
     "NavigationRegistryV1",
     "NavigationRegistryV2",
@@ -351,6 +388,7 @@ __all__ = [
     "NavigationRegistryV4",
     "NavigationRegistryV5",
     "NavigationRegistryV6",
+    "NavigationRegistryV7",
     "NavigationRoutePolicyV1",
     "NavigationRoutePolicyV3",
     "load_compatibility_support",

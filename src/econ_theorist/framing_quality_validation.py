@@ -46,11 +46,12 @@ from .theory_validation import (
 FRAMING_ROUTE_ID = "audit.framing_economics"
 FRAMING_ENTRY_VALIDATOR_ID = "framing_quality_route_entry.v1"
 FRAMING_EXIT_VALIDATOR_ID = "framing_quality_route_exit.v1"
+FRAMING_NEGATIVE_EXIT_VALIDATOR_ID = "framing_quality_route_exit.v2"
 FRAMING_REPAIR_ROUTE_ID = "repair.dependency"
 FRAMING_REPAIR_ENTRY_VALIDATOR_ID = "framing_repair_route_entry.v1"
 FRAMING_REPAIR_EXIT_VALIDATOR_ID = "framing_repair_route_exit.v1"
 FRAMING_REQUIREMENT_ID = "g1.framing_quality"
-FRAMING_ROUTE_VERSIONS = frozenset((6, 7))
+FRAMING_ROUTE_VERSIONS = frozenset((6, 7, 8))
 
 
 class FramingQualityValidationError(ValueError):
@@ -840,6 +841,7 @@ def _validate_bundle_science(
     benchmarks: t.BenchmarkSet,
     graph: t.PrimitiveGraph,
     require_research_first_bindings: bool = False,
+    allow_unwitnessed_negative_revision: bool = False,
 ) -> None:
     if bundle.tension.result_archetype not in rq.candidate_archetypes:
         raise FramingQualityValidationError(
@@ -897,6 +899,39 @@ def _validate_bundle_science(
     mechanism_margin_audit = (
         bundle.tension.tension_kind in fq.MECHANISM_MARGIN_TENSION_KINDS
     )
+    negative_revision_requested = (
+        allow_unwitnessed_negative_revision
+        and bundle.proposed_action == "revise_framing"
+        and all(step.active_margin_witness is None for step in steps)
+    )
+    negative_revision = (
+        negative_revision_requested
+        and mechanism_margin_audit
+        and any(
+            gap.category in {"causal_attribution", "reoptimization"}
+            and gap.repair_target_refs
+            for gap in bundle.disclosed_gaps
+        )
+        and all(
+            assessment.channel_kind != "active_response"
+            and assessment.attribution_strength in {"weak", "unresolved"}
+            and not assessment.aggregate_invariance.claims_aggregate_fixed
+            and assessment.selection_assurance.status
+            in {"selector_only", "not_applicable", "unresolved"}
+            and assessment.distinctive_mechanism is not None
+            and assessment.distinctive_mechanism.claim_kind
+            in {"not_claimed", "unresolved"}
+            for assessment in bundle.benchmark_assessments
+        )
+        and bundle.distinctive_mechanism_contribution_status
+        in {"not_claimed", "unresolved"}
+    )
+    if negative_revision_requested and not negative_revision:
+        raise FramingQualityValidationError(
+            "unwitnessed_negative_revision_invalid: v8 permits an absent payoff "
+            "witness only for a fully downgraded revise_framing diagnosis with "
+            "an exact causal-attribution or reoptimization repair target"
+        )
     for step in steps:
         if {step.source_node_id, step.target_node_id}.difference(node_ids):
             raise FramingQualityValidationError(
@@ -930,6 +965,7 @@ def _validate_bundle_science(
             mechanism_margin_audit
             and newly_reached_choice_nodes
             and witness is None
+            and not negative_revision
         ):
             raise FramingQualityValidationError(
                 "active_margin_witness_missing: every choice-dependent mechanism "
@@ -1026,7 +1062,7 @@ def _validate_bundle_science(
         if node_by_id[force.margin_node_id].kind == "choice"
         and force.margin_node_id not in witnessed_choice_nodes
     )
-    if unwitnessed_force_margins:
+    if unwitnessed_force_margins and not negative_revision:
         raise FramingQualityValidationError(
             "active_margin_witness_missing: every operative choice margin used "
             "by an economic force must be payoff-witnessed; missing="
@@ -1184,6 +1220,7 @@ def _validate_bundle_science(
         bundle.tension.tension_kind
         in {"causal_channel", "force_conflict", "sign_or_threshold_reversal"}
         and active_response_count == 0
+        and not negative_revision
     ):
         raise FramingQualityValidationError(
             "a causal-channel, conflict, or reversal framing requires at least one "
@@ -1341,7 +1378,13 @@ def validate_framing_quality_projection(
             raise FramingQualityValidationError(
                 "FramingQualityBundle source dossier is not G1"
             )
-        _validate_bundle_science(bundle, rq=rq, benchmarks=benchmarks, graph=graph)
+        _validate_bundle_science(
+            bundle,
+            rq=rq,
+            benchmarks=benchmarks,
+            graph=graph,
+            allow_unwitnessed_negative_revision=True,
+        )
         reference = _entity_ref(entity)
         bundle_refs.append(reference)
         if _is_current_and_fresh(snapshot, entity):
@@ -1367,7 +1410,12 @@ def validate_framing_quality_route_transaction(
         or route_spec.route_id != FRAMING_ROUTE_ID
         or route_spec.route_version not in FRAMING_ROUTE_VERSIONS
         or route_spec.availability != "enabled"
-        or route_spec.exit_validator_id != FRAMING_EXIT_VALIDATOR_ID
+        or route_spec.exit_validator_id
+        != (
+            FRAMING_NEGATIVE_EXIT_VALIDATOR_ID
+            if route_spec.route_version == 8
+            else FRAMING_EXIT_VALIDATOR_ID
+        )
     ):
         raise FramingQualityValidationError(
             "transaction is not bound to an enabled framing route"
@@ -1534,6 +1582,7 @@ def validate_framing_quality_route_transaction(
         benchmarks=benchmarks,
         graph=graph,
         require_research_first_bindings=route_spec.route_version >= 7,
+        allow_unwitnessed_negative_revision=route_spec.route_version == 8,
     )
 
     bundle_ref = _entity_ref(bundle_entity)
@@ -1850,6 +1899,7 @@ def validate_phase5_route_transaction(
 __all__ = [
     "FRAMING_ENTRY_VALIDATOR_ID",
     "FRAMING_EXIT_VALIDATOR_ID",
+    "FRAMING_NEGATIVE_EXIT_VALIDATOR_ID",
     "FRAMING_REQUIREMENT_ID",
     "FRAMING_REPAIR_ENTRY_VALIDATOR_ID",
     "FRAMING_REPAIR_EXIT_VALIDATOR_ID",

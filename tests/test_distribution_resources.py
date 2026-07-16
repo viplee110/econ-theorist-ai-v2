@@ -128,11 +128,19 @@ class DistributionResourceTests(unittest.TestCase):
             data_files["share/econ-theorist/routes"],
         )
         self.assertIn(
+            "routes/registry.v8.json",
+            data_files["share/econ-theorist/routes"],
+        )
+        self.assertIn(
             "routes/instructions/audit.framing_economics.v7.txt",
             data_files["share/econ-theorist/routes/instructions"],
         )
         self.assertIn(
             "machine/navigation-registry.v6.json",
+            data_files["share/econ-theorist/machine"],
+        )
+        self.assertIn(
+            "machine/navigation-registry.v7.json",
             data_files["share/econ-theorist/machine"],
         )
 

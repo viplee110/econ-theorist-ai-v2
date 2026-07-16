@@ -72,6 +72,7 @@ from econ_theorist.policy import (
     ROUTE_REGISTRY_V5_HASH,
     ROUTE_REGISTRY_V6_HASH,
     ROUTE_REGISTRY_V7_HASH,
+    ROUTE_REGISTRY_V8_HASH,
     instruction_bundle_bytes,
     route_spec_by_hash,
 )
@@ -1306,6 +1307,73 @@ class FramingQualityRouteTests(unittest.TestCase):
             }
         )
 
+    @staticmethod
+    def _unwitnessed_negative_revision(
+        payload: FramingQualityBundle,
+    ) -> FramingQualityBundle:
+        assessments = tuple(
+            assessment.model_copy(
+                update={
+                    "channel_kind": "diagnostic_only",
+                    "channel_summary": "The path is retained only as a diagnostic boundary.",
+                    "aggregate_invariance": assessment.aggregate_invariance.model_copy(
+                        update={
+                            "weighting_distribution_status": "unresolved",
+                            "claims_aggregate_fixed": False,
+                            "basis": "The upstream weighting transition remains unresolved.",
+                            "implication_for_attribution": "No aggregate invariance is claimed.",
+                        }
+                    ),
+                    "selection_assurance": assessment.selection_assurance.model_copy(
+                        update={
+                            "status": "unresolved",
+                            "selection_rule": "No selection convention is asserted.",
+                            "basis": "The upstream response graph does not identify selection.",
+                            "implication_for_attribution": "Attribution remains unresolved.",
+                        }
+                    ),
+                    "attribution_strength": "unresolved",
+                    "attribution_basis": "No legal payoff witness connects the upstream graph to a choice.",
+                    "distinctive_mechanism": DistinctiveMechanismAssessment(
+                        claim_kind="not_claimed",
+                        mechanism_label="No distinctive mechanism is claimed.",
+                        basis="The audit is an upstream diagnostic only.",
+                    ),
+                }
+            )
+            for assessment in payload.benchmark_assessments
+        )
+        return payload.model_copy(
+            update={
+                "causal_chain": tuple(
+                    step.model_copy(update={"active_margin_witness": None})
+                    for step in payload.causal_chain
+                ),
+                "benchmark_assessments": assessments,
+                "distinctive_mechanism_contribution_status": "not_claimed",
+                "disclosed_gaps": (
+                    DisclosedFramingGap(
+                        gap_id="gap.unwitnessed.margin",
+                        category="causal_attribution",
+                        description="The current graph has no connected payoff basis for its choice margin.",
+                        affected_benchmark_ids=tuple(
+                            item.benchmark_id for item in assessments
+                        ),
+                        repair_target_refs=(
+                            FramingRepairTargetRef(
+                                entity_type="PrimitiveGraph",
+                                entity_ref=payload.primitive_graph_ref,
+                            ),
+                        ),
+                        consequence="The proposed active causal channel cannot be claimed.",
+                        resolution_needed="Repair the exact PrimitiveGraph payoff path and rerun the audit.",
+                    ),
+                ),
+                "proposed_action": "revise_framing",
+                "action_rationale": "The diagnosis records an exact upstream repair target without inventing a payoff witness.",
+            }
+        )
+
     def _hard_relation(
         self,
         relation_id: str,
@@ -1439,7 +1507,7 @@ class FramingQualityRouteTests(unittest.TestCase):
             source_dossier,
             bundle,
             entity_id=f"dossier.g1.certification.audit.{bundle_version}",
-            proposed_action=proposed_action,
+            proposed_action=bundle_payload.proposed_action,
             created_at=created_at,
         )
         sources = (question, benchmarks, graph, source_dossier)
@@ -1593,6 +1661,38 @@ class FramingQualityRouteTests(unittest.TestCase):
         self.assertEqual(after.current_entities[bundle.entity_id], 1)
         context = read_context(self.layout, "run.framing.3")
         self.assertEqual(context.route_registry_hash, ROUTE_REGISTRY_V7_HASH)
+
+    def test_v8_unwitnessed_negative_revision_commits_but_cannot_approve_g1(
+        self,
+    ) -> None:
+        core = self._phase2_prefix()
+        question, _, _, _ = core
+        bundle, replacement, after = self._commit_audit(
+            core,
+            proposed_action="ready_for_g1",
+            bundle_mutator=lambda payload: self._unwitnessed_negative_revision(
+                self._research_first_bundle(payload)
+            ),
+            route_registry_hash=ROUTE_REGISTRY_V8_HASH,
+        )
+        committed = parse_framing_quality_payload(
+            "FramingQualityBundle", bundle.facets
+        )
+        self.assertEqual(committed.proposed_action, "revise_framing")
+        self.assertTrue(
+            all(step.active_margin_witness is None for step in committed.causal_chain)
+        )
+        self.assertEqual(after.current_entities[bundle.entity_id], 1)
+        with self.assertRaisesRegex(DecisionInputError, "ready_for_g1"):
+            commit_decision(
+                self.layout,
+                self._g1_decision(
+                    question,
+                    replacement,
+                    decision_id="decision.g1.unwitnessed.rejected",
+                    decided_at=T4,
+                ),
+            )
 
     def test_direct_human_decision_transaction_cannot_bypass_g1_preflight(self) -> None:
         core = self._phase2_prefix()

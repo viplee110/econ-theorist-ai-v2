@@ -30,6 +30,7 @@ from econ_theorist.policy import (
     ROUTE_REGISTRY_V1_HASH,
     ROUTE_REGISTRY_V2_HASH,
     ROUTE_REGISTRY_V7_HASH,
+    ROUTE_REGISTRY_V8_HASH,
 )
 from econ_theorist.project import init_project
 from econ_theorist.runs import (
@@ -254,7 +255,7 @@ class Phase2RuntimeIntegrationTests(unittest.TestCase):
         run = self._begin()
         self.assertEqual(
             read_context(self.layout, run.route_run_id).route_registry_hash,
-            ROUTE_REGISTRY_V7_HASH,
+            ROUTE_REGISTRY_V8_HASH,
         )
         transaction = self._transaction(
             run, self._question(typed=False), include_outcome=True

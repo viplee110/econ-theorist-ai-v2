@@ -41,6 +41,7 @@ from .policy import (
     ROUTE_REGISTRY_V5_HASH,
     ROUTE_REGISTRY_V6_HASH,
     ROUTE_REGISTRY_V7_HASH,
+    ROUTE_REGISTRY_V8_HASH,
     route_spec_by_hash,
 )
 from .runs import read_run, transaction_bindings
@@ -474,6 +475,16 @@ _V7_FRAMING_MODEL_INVARIANTS = (
     ),
 )
 
+_V8_FRAMING_MODEL_INVARIANTS = (
+    CandidateModelInvariantV1(
+        invariant_id="framing.unwitnessed_negative_revision",
+        model="FramingQualityBundle",
+        condition="audit.framing_economics route version 8 has no active-margin payoff witness",
+        requirement="use revise_framing only; disclose a causal-attribution or reoptimization gap with an exact current upstream repair target; leave every witness absent, downgrade every benchmark away from active_response and clean attribution, make no aggregate-fixed or distinctive-mechanism claim, and never use this diagnosis for ready_for_g1",
+        repair_hint="Do not fabricate a payoff comparison. Repair the named upstream object, then rerun the audit with a connected concrete payoff witness if the mechanism is to be claimed active.",
+    ),
+)
+
 
 def _model_invariants_for_route(
     route_id: str,
@@ -488,9 +499,17 @@ def _model_invariants_for_route(
             else _HISTORICAL_FRAMING_MODEL_INVARIANTS
         )
         v7_invariants = (
-            _V7_FRAMING_MODEL_INVARIANTS if route_version == 7 else ()
+            _V7_FRAMING_MODEL_INVARIANTS if route_version in {7, 8} else ()
         )
-        return (*_MODEL_INVARIANTS, *framing_invariants, *v7_invariants)
+        v8_invariants = (
+            _V8_FRAMING_MODEL_INVARIANTS if route_version == 8 else ()
+        )
+        return (
+            *_MODEL_INVARIANTS,
+            *framing_invariants,
+            *v7_invariants,
+            *v8_invariants,
+        )
     return _MODEL_INVARIANTS
 
 
@@ -717,7 +736,9 @@ _FRAMING_ROUTE_ID = "audit.framing_economics"
 _FRAMING_FROZEN_ROUTE_VERSION = 5
 _FRAMING_V6_ROUTE_VERSION = 6
 _FRAMING_ROUTE_VERSION = 7
+_FRAMING_V8_ROUTE_VERSION = 8
 _FRAMING_EXIT_VALIDATOR_ID = "framing_quality_route_exit.v1"
+_FRAMING_V8_EXIT_VALIDATOR_ID = "framing_quality_route_exit.v2"
 _FRAMING_RELATION_CARDINALITIES = (
     ("audits", 4, 4),
     ("governs", 1, 1),
@@ -777,6 +798,8 @@ def _relation_templates_for_route(
         expected_version = _FRAMING_V6_ROUTE_VERSION
     elif packet.route_registry_hash == ROUTE_REGISTRY_V7_HASH:
         expected_version = _FRAMING_ROUTE_VERSION
+    elif packet.route_registry_hash == ROUTE_REGISTRY_V8_HASH:
+        expected_version = _FRAMING_V8_ROUTE_VERSION
     else:
         raise ValueError(
             "framing relation templates reject an unknown route registry"
@@ -805,8 +828,17 @@ def _relation_templates_for_route(
     )
     if (
         route.route_version
-        not in {_FRAMING_V6_ROUTE_VERSION, _FRAMING_ROUTE_VERSION}
-        or route.exit_validator_id != _FRAMING_EXIT_VALIDATOR_ID
+        not in {
+            _FRAMING_V6_ROUTE_VERSION,
+            _FRAMING_ROUTE_VERSION,
+            _FRAMING_V8_ROUTE_VERSION,
+        }
+        or route.exit_validator_id
+        != (
+            _FRAMING_V8_EXIT_VALIDATOR_ID
+            if route.route_version == _FRAMING_V8_ROUTE_VERSION
+            else _FRAMING_EXIT_VALIDATOR_ID
+        )
         or relation_cardinalities != _FRAMING_RELATION_CARDINALITIES
     ):
         raise ValueError(
@@ -1024,12 +1056,17 @@ def compile_candidate_authoring_contract(
         relation_json_schema=RelationVersion.model_json_schema(mode="validation"),
         route_outcome_json_schema=RouteOutcome.model_json_schema(mode="validation"),
     )
-    # Registry/route v7 is the durable public contract boundary.  It keeps
-    # every v1-v6 contract byte-frozen and ensures an unfinished v7 packet
-    # reconstructs the same draft schema after unrelated engine upgrades.
+    # Registry/route v7-v8 are durable public contract boundaries. They keep
+    # every v1-v6 contract byte-frozen while preserving their own exact drafts.
     runtime_hash_drafts = bool(relation_templates) and (
-        packet.route_registry_hash == ROUTE_REGISTRY_V7_HASH
-        and route.route_version == _FRAMING_ROUTE_VERSION
+        (
+            packet.route_registry_hash == ROUTE_REGISTRY_V7_HASH
+            and route.route_version == _FRAMING_ROUTE_VERSION
+        )
+        or (
+            packet.route_registry_hash == ROUTE_REGISTRY_V8_HASH
+            and route.route_version == _FRAMING_V8_ROUTE_VERSION
+        )
     )
     authoring_instructions = (
         _AUTHORING_INSTRUCTIONS
@@ -1075,7 +1112,8 @@ def compile_candidate_authoring_contract(
                         _payload_contract(requirement)
                     )
                     if route.route_id == _FRAMING_ROUTE_ID
-                    and route.route_version == _FRAMING_ROUTE_VERSION
+                    and route.route_version
+                    in {_FRAMING_ROUTE_VERSION, _FRAMING_V8_ROUTE_VERSION}
                     else _payload_contract(requirement)
                 )
             )

@@ -15,16 +15,18 @@ from econ_theorist.machine.resources import (
     NAVIGATION_REGISTRY_V4_HASH,
     NAVIGATION_REGISTRY_V5_HASH,
     NAVIGATION_REGISTRY_V6_HASH,
+    NAVIGATION_REGISTRY_V7_HASH,
     NavigationRegistryV1,
     NavigationRegistryV2,
     NavigationRegistryV3,
     NavigationRegistryV4,
     NavigationRegistryV5,
     NavigationRegistryV6,
+    NavigationRegistryV7,
     load_navigation_registry,
     load_navigation_registry_by_hash,
 )
-from econ_theorist.models import RouteSpecV5, RouteSpecV6, RouteSpecV7
+from econ_theorist.models import RouteSpecV5, RouteSpecV6, RouteSpecV7, RouteSpecV8
 from econ_theorist.policy import (
     KERNEL_HASH,
     ROUTE_REGISTRY_HASH,
@@ -35,6 +37,7 @@ from econ_theorist.policy import (
     ROUTE_REGISTRY_V5_HASH,
     ROUTE_REGISTRY_V6_HASH,
     ROUTE_REGISTRY_V7_HASH,
+    ROUTE_REGISTRY_V8_HASH,
     V4_ROUTE_IDS,
     V5_ENABLED_ROUTE_IDS,
     V5_NATIVE_ROUTE_IDS,
@@ -45,6 +48,9 @@ from econ_theorist.policy import (
     V7_ENABLED_ROUTE_IDS,
     V7_NATIVE_ROUTE_IDS,
     V7_ROUTE_IDS,
+    V8_ENABLED_ROUTE_IDS,
+    V8_NATIVE_ROUTE_IDS,
+    V8_ROUTE_IDS,
     instruction_bundle_bytes,
     load_route_registry,
     load_route_registry_by_hash,
@@ -359,7 +365,7 @@ class Phase5FramingRegistryTests(unittest.TestCase):
             self.assertIn(b"distinctive mechanism", instruction)
 
     def test_navigation_contract_admits_first_audit_and_five_input_continuation(self) -> None:
-        route = load_route_registry_by_hash(ROUTE_REGISTRY_V7_HASH).routes[-1]
+        route = load_route_registry_by_hash(ROUTE_REGISTRY_V8_HASH).routes[-1]
         requirements = {
             item.entity_type: (item.min_count, item.max_count)
             for item in route.required_input_entities
@@ -372,20 +378,20 @@ class Phase5FramingRegistryTests(unittest.TestCase):
         self.assertEqual(policy.route_id, route.route_id)
         self.assertEqual(policy.selector_id, "registry_cardinality.v1")
 
-    def test_navigation_v6_is_active_while_v1_through_v5_remain_addressable(self) -> None:
+    def test_navigation_v7_is_active_while_historical_versions_remain_addressable(self) -> None:
         active_routes = load_route_registry()
-        self.assertEqual(active_routes.registry_version, 7)
-        self.assertEqual(ROUTE_REGISTRY_HASH, ROUTE_REGISTRY_V7_HASH)
-        self.assertEqual(registry_hash(active_routes), ROUTE_REGISTRY_V7_HASH)
+        self.assertEqual(active_routes.registry_version, 8)
+        self.assertEqual(ROUTE_REGISTRY_HASH, ROUTE_REGISTRY_V8_HASH)
+        self.assertEqual(registry_hash(active_routes), ROUTE_REGISTRY_V8_HASH)
 
         active_navigation = load_navigation_registry()
-        self.assertIsInstance(active_navigation, NavigationRegistryV6)
-        self.assertEqual(NAVIGATION_REGISTRY_HASH, NAVIGATION_REGISTRY_V6_HASH)
-        self.assertEqual(active_navigation.navigation_registry_version, 6)
-        self.assertEqual(active_navigation.route_registry_hash, ROUTE_REGISTRY_V7_HASH)
+        self.assertIsInstance(active_navigation, NavigationRegistryV7)
+        self.assertEqual(NAVIGATION_REGISTRY_HASH, NAVIGATION_REGISTRY_V7_HASH)
+        self.assertEqual(active_navigation.navigation_registry_version, 7)
+        self.assertEqual(active_navigation.route_registry_hash, ROUTE_REGISTRY_V8_HASH)
         policy = active_navigation.routes[-1]
         self.assertEqual(policy.route_id, "audit.framing_economics")
-        self.assertEqual(policy.route_version, 7)
+        self.assertEqual(policy.route_version, 8)
         self.assertEqual(policy.selector_id, "registry_cardinality.v1")
         self.assertEqual(policy.purpose, "scientific_framing_audit")
         self.assertEqual(policy.default_budget_units, 18000)

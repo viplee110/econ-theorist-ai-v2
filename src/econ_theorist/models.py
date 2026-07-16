@@ -1162,6 +1162,29 @@ class RouteRegistryV7(StrictModel):
         return self
 
 
+class RouteSpecV8(RouteSpecV7):
+    """Negative-diagnosis framing-audit revision.
+
+    Registry v8 preserves the complete v7 catalog and advances only the
+    framing-economics audit instruction to route version 8.
+    """
+
+    route_version: Literal[2, 3, 4, 5, 6, 7, 8] = 2
+
+
+class RouteRegistryV8(StrictModel):
+    registry_version: Literal[8] = 8
+    aliases: dict[StableId, StableId] = Field(default_factory=dict)
+    routes: Annotated[tuple[RouteSpecV8, ...], Field(min_length=1)]
+
+    @model_validator(mode="after")
+    def _route_ids_are_unique(self) -> "RouteRegistryV8":
+        route_ids = [route.route_id for route in self.routes]
+        if len(set(route_ids)) != len(route_ids):
+            raise ValueError("route registry contains duplicate exact IDs")
+        return self
+
+
 RouteSpecLike: TypeAlias = (
     RouteSpec
     | RouteSpecV2
@@ -1170,6 +1193,7 @@ RouteSpecLike: TypeAlias = (
     | RouteSpecV5
     | RouteSpecV6
     | RouteSpecV7
+    | RouteSpecV8
 )
 RouteRegistryLike: TypeAlias = (
     RouteRegistry
@@ -1179,6 +1203,7 @@ RouteRegistryLike: TypeAlias = (
     | RouteRegistryV5
     | RouteRegistryV6
     | RouteRegistryV7
+    | RouteRegistryV8
 )
 
 
