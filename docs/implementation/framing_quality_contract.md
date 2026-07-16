@@ -1,6 +1,6 @@
 # Framing-quality preflight contract
 
-Status: additive v6 active-margin revision candidate; focused and routine
+Status: additive v8 negative-diagnosis revision candidate; focused and routine
 non-long deterministic verification passed, fresh real-Codex rerun pending
 
 This contract owns the first pilot-driven scientific strengthening after the
@@ -161,10 +161,14 @@ is robust to equilibrium selection.
 
 ## 5. Noncompensatory automatic checks
 
-The v6 exit validator checks exact bindings, complete benchmark coverage,
+The v6 core exit checks retain exact bindings, complete benchmark coverage,
 primitive-node closure, causal-chain closure, channel reachability, and the
-consistency of the proposed attribution. It must emit stable diagnostic codes
-for at least these three blockers:
+consistency of the proposed attribution. V8 retains those checks and admits an
+unwitnessed route exit only for the fully downgraded `revise_framing` case
+described in section 2: no active-response or distinctive-mechanism claim, no
+aggregate-fixed claim, weak or unresolved attribution, an exact upstream
+repair target, and no possible G1 readiness. It must emit stable diagnostic
+codes for at least these blockers:
 
 - `aggregate_invariance_unsupported`: a pointwise or state-contingent policy is
   fixed but an aggregate is claimed fixed while its weighting distribution or
@@ -264,16 +268,16 @@ The implementation slice is not accepted until it demonstrates:
 The rerun is exploratory evidence. Confirmatory v1/v2 quality, editing-time,
 and human-effort claims remain owned by Phase 6.
 
-The earlier v5 deterministic checkpoint does not establish acceptance of this
-v6 active-margin revision. Against the final current pins, 59 focused framing,
-registry, model, and distribution tests passed. Route registry v6 is pinned at
-`532329cad6ce302f9f390f1d726fceee94560114c7fb9b3f6d5e2968486bcdde`
-and navigation registry v5 at
-`50b3943aa43aa989e33a27bef48eb6de66e41cf8048ff856fa2183397caa9a4c`.
-The final current tree passed 560 routine non-long tests with six declared
-platform/optional skips, a final 28-test affected cross-slice suite, all seven current
-schema/resource exporter checks, Python compilation, and diff checks. The
-three hour-scale historical gold chains were not rerun because this additive
-change preserves their frozen resources. The fresh Codex rerun remains open,
-so this checkpoint is not evidence that readability, paper quality, or human
-effort has improved.
+The earlier v5/v6 deterministic checkpoints do not establish acceptance of
+this v8 negative-diagnosis revision. Against the final current pins, 69 focused
+framing, registry, model, and distribution tests passed. Route registry v8 is
+pinned at `5d2c2efdef205ee1ff188249dcb05cb5a4430d36ef754a93bde402a092aa40c1`
+and navigation registry v7 at
+`ea133669cd85c073b6352744f2d1b5413dfe33d738752ad17769637acfd9e510`.
+The final current tree passed 584 routine non-long tests with six declared
+platform/optional skips, Python compilation, and diff checks. The seven
+current schema/resource exporters and installed-wheel `doctor` check are
+re-run as part of the v8 pilot freeze. The three hour-scale historical gold
+chains were not rerun because this additive change preserves their frozen
+resources. The fresh Codex rerun remains open, so this checkpoint is not
+evidence that readability, paper quality, or human effort has improved.

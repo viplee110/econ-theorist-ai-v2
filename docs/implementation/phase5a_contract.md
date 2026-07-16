@@ -1347,8 +1347,8 @@ hidden, or sealed Codex execution; first-ever installation from an empty
 project; Claude Code or Cursor parity; a complete paper route; comparative
 v1/v2 superiority; lower human effort; publication readiness; or the complete
 local research-ready gate. The deterministic acceptance predicate for the
-additive v5 work specified in
+additive v8 work specified in
 [`framing_quality_contract.md`](framing_quality_contract.md) now passes. Its
-immediate scientific follow-up is to rerun the same public pilot through v5,
-inspect the economics and editing burden, and only then begin an exploratory
-v1/v2 revision pilot.
+immediate scientific follow-up is to freeze an exact v8 wheel and rerun the
+same public pilot in a clean blind-test root, inspect the economics and editing
+burden, and only then begin an exploratory v1/v2 revision pilot.

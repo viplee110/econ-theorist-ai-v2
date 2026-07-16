@@ -17,19 +17,21 @@ establish positive private execution, clean first-use activation, complete
 paper generation, lower human effort, or research quality. Public-distribution
 and hostile-environment hardening remain a later release profile.
 
-The current tree contains a deterministically accepted additive registry-v5
+The current tree contains a deterministically accepted additive registry-v8
 implementation candidate for `audit.framing_economics` and framing-triggered
-exact repair. Its normative owner is
+exact repair. V8 preserves the strict positive active-margin and G1 gates while
+allowing only a fully downgraded, exact-targeted `revise_framing` diagnosis to
+commit when the upstream graph makes an honest payoff witness unavailable. Its normative owner is
 `docs/implementation/framing_quality_contract.md`. It is not accepted evidence
 of improved readability, lower intervention, or research quality until a
 fresh real-Codex rerun passes and its economics are inspected.
 
-The next executable scientific work is pilot-driven: rerun the same public
-Codex pilot through the accepted v5 framing projection, benchmark-semantic
-audit, and mechanism-robustness checks; inspect the economics and editing
-burden; then run an exploratory v1/v2 revision comparison. Do not expand
-generic security infrastructure unless a concrete local-use failure requires
-it.
+The next executable scientific work is pilot-driven: freeze the exact v8
+wheel and a clean non-cloud blind-test root, then rerun the same public Codex
+pilot through the v8 negative-diagnosis path, benchmark-semantic audit, and
+mechanism-robustness checks. Inspect the economics and editing burden before
+an exploratory v1/v2 revision comparison. Do not expand generic security
+infrastructure unless a concrete local-use failure requires it.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or
@@ -134,7 +136,7 @@ or operating system.
 - `docs/architecture/implementation_plan.md`: phase order and exit criteria.
 - `docs/implementation/phase5a_contract.md`: host/bootstrap, natural-language
   onboarding, machine navigation, and cross-host acceptance semantics.
-- `docs/implementation/framing_quality_contract.md`: additive v5
+- `docs/implementation/framing_quality_contract.md`: additive v8
   economist-facing framing audit and pre-G1 scientific checks.
 
 Do not define a second competing workflow in a README, prompt, example, or generated dashboard. Link to the owning specification.
