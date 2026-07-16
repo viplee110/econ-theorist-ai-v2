@@ -12,10 +12,12 @@ in a new Codex conversation. Read it before changing code or rerunning pilots.
 - Research-code checkpoint before this handoff: `cfcf2b8`
   (`Bind v2 packets to research inputs`); use the active remote branch tip as
   the authoritative handoff commit.
-- Local repository under the shared Dropbox tree:
-  `Search on Graphs/tmp/econ-theorist-ai-v2-architecture`
-- Full V5.5 research run under the shared Dropbox tree:
-  `Search on Graphs/.etai-v5_4d2-economy-tier-20260716-c8c539e`
+- Recommended local checkout, outside Dropbox:
+  `C:/Users/<user>/Projects/econ-theorist-ai-v2`
+- The original full V5.5 operational run was created under the `Search on
+  Graphs` tree, but it is not required on a new computer. Its exact candidates,
+  WorkPacket, terminal record, and independent audit are committed in the
+  compact evidence directory below.
 - Compact V5.5 evidence:
   `review_outputs/phase5a2_v5_5_economy_tier_audit/`
 - Detailed diagnosis preceding V5.5:
@@ -133,23 +135,21 @@ After this defect is closed, resume the broader roadmap:
 
 ## New-computer procedure
 
-1. On the old computer, wait until Dropbox reports fully synced and close all
-   Codex tasks, terminals, editors, and Python processes using this tree.
-2. On the new computer, wait until Dropbox reports fully synced before opening
-   the repository. Never let both computers write this Git worktree or the same
-   `.econ-theorist` project concurrently.
-3. Treat GitHub, not Dropbox's copy of `.git`, as the code authority. In the
-   repository run:
+1. Do not copy or synchronize the v2 source checkout, `.git`, `.venv`, wheels,
+   build caches, or test workspaces through Dropbox. GitHub is the sole code and
+   compact-evidence authority.
+2. Create a normal local projects directory outside Dropbox and clone the
+   active branch:
 
    ```powershell
-   git fetch origin
-   git switch agent/research-first-audit-repair
-   git pull --ff-only origin agent/research-first-audit-repair
+   New-Item -ItemType Directory -Force "$env:USERPROFILE\Projects"
+   Set-Location "$env:USERPROFILE\Projects"
+   git clone --branch agent/research-first-audit-repair --single-branch https://github.com/viplee110/econ-theorist-ai-v2.git
+   Set-Location econ-theorist-ai-v2
    git status --short
    ```
 
-4. Recreate the Python environment on the new computer; do not rely on the
-   Dropbox-synchronised `.venv`:
+3. Recreate the Python environment locally:
 
    ```powershell
    py -3 -m venv .venv
@@ -159,12 +159,10 @@ After this defect is closed, resume the broader roadmap:
 
    `doctor` should report `"required_ok": true`.
 
-5. Verify that the hidden directory
-   `Search on Graphs/.etai-v5_4d2-economy-tier-20260716-c8c539e/.econ-theorist`
-   exists. It contains the full canonical and operational run state. Do not
-   initialize that project again and do not delete its recorded failed run.
-6. Open the repository root in Codex. Start a new high-intelligence task with
-   the prompt below.
+4. Open the newly cloned `econ-theorist-ai-v2` repository root in Codex. The
+   committed compact evidence is sufficient to reproduce the validator defect;
+   the old full `.econ-theorist` operational directory is not required.
+5. Start a new high-intelligence task with the prompt below.
 
 ## Prompt for the first task on the new computer
 

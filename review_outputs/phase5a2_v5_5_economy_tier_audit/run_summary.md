@@ -2,14 +2,14 @@
 
 Date: 2026-07-16
 
-## Exact project
+## Exact project provenance
 
-The full Dropbox-synchronised research project is:
-
-`C:\Dropbox\Shufe\Research\Project\Search on Graphs\.etai-v5_4d2-economy-tier-20260716-c8c539e`
-
-The files in this directory are compact copies of the evidence needed to
-continue development without depending on Codex conversation history.
+The full operational project was originally created at
+`C:\Dropbox\Shufe\Research\Project\Search on Graphs\.etai-v5_4d2-economy-tier-20260716-c8c539e`.
+That path is historical provenance, not a continuation dependency. The files
+in this directory are compact copies of all evidence needed to reproduce the
+validator defect and continue development from a fresh GitHub checkout without
+Dropbox or Codex conversation history.
 
 ## Decompose result
 
