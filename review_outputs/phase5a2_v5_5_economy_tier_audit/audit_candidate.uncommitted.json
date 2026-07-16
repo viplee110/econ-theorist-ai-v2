@@ -1,0 +1,379 @@
+{
+  "transaction_schema": 1,
+  "transaction_id": "txn_audit_consumable_certificate_framing_v1",
+  "origin": "route_run",
+  "project_id": "prj_8cfea08c84b646229ec2369b0cc868b3d3d84e78e47e24b8",
+  "base_revision": "90a35ee9c6af65467e6d6209723597c502b1eb9b0f77fe7fe08a0226c3aefcd5",
+  "parent_transaction_hash": "90a35ee9c6af65467e6d6209723597c502b1eb9b0f77fe7fe08a0226c3aefcd5",
+  "route_id": "audit.framing_economics",
+  "route_run_id": "run_op_af8c18585b55048abd4f4c78154ec6526bdd209fb5b64d58",
+  "route_run_hash": "d13775f47a9cffb0846c69a5a57cd5df3ba4594a635d3e87eb4acca3199348eb",
+  "actor": {"actor_id": "scientific_agent", "kind": "agent"},
+  "intent": "Audit the consumable-certificate framing, disclose inactive or unresolved causal links, and propose upstream revision without confirming G1.",
+  "created_at": "2026-07-16T08:33:44.732561Z",
+  "privacy": "public",
+  "access_compartments": ["project_research"],
+  "compiled_context_hash": "6c070388f7dabef5f6810bd1b4f4713f8a744fb959001aaa6afb993a76c8bf58",
+  "context_manifest_hash": "22ccfd044ec58de83bc84dc4d0e5964b9211086ed519fe20a82c7ed7634862fd",
+  "preconditions": [
+    {"entity": {"entity_id": "rq_consumable_certificate_stock", "version": 1}},
+    {"entity": {"entity_id": "bs_consumable_certificate_benchmarks", "version": 1}},
+    {"entity": {"entity_id": "pg_consumable_certificate_primitives", "version": 1}},
+    {"entity": {"entity_id": "gd_g1_consumable_certificate_scope", "version": 1}}
+  ],
+  "changed_facets": [],
+  "evidence_refs": [
+    {"entity_id": "rq_consumable_certificate_stock", "version": 1},
+    {"entity_id": "bs_consumable_certificate_benchmarks", "version": 1},
+    {"entity_id": "pg_consumable_certificate_primitives", "version": 1},
+    {"entity_id": "gd_g1_consumable_certificate_scope", "version": 1}
+  ],
+  "authority_basis": [],
+  "operations": [
+    {
+      "op": "entity.create",
+      "entity": {
+        "entity_id": "fqb_consumable_certificate_econ_audit_v1",
+        "entity_type": "FramingQualityBundle",
+        "version": 1,
+        "project_id": "prj_8cfea08c84b646229ec2369b0cc868b3d3d84e78e47e24b8",
+        "scope_ref": "rq_consumable_certificate_stock",
+        "title": "Economic audit of consumable certificate framing",
+        "summary": "The stock and composition puzzle is retellable, but certification semantics, active payoff margins, transition law, benchmark implementation, and selection remain unresolved.",
+        "status": {"lifecycle": "proposed"},
+        "privacy": "public",
+        "access_compartments": ["project_research"],
+        "created_at": "2026-07-16T08:33:44.732561Z",
+        "facets": {
+          "economic_interpretation": {
+            "schema": "econ_theorist.framing_quality/FramingQualityBundle/v1",
+            "payload": {
+              "schema_version": 1,
+              "research_question_ref": {"entity_id": "rq_consumable_certificate_stock", "version": 1},
+              "benchmark_set_ref": {"entity_id": "bs_consumable_certificate_benchmarks", "version": 1},
+              "primitive_graph_ref": {"entity_id": "pg_consumable_certificate_primitives", "version": 1},
+              "source_g1_dossier_ref": {"entity_id": "gd_g1_consumable_certificate_scope", "version": 1},
+              "tension": {
+                "result_archetype": "concept_representation_foundation",
+                "tension_kind": "conceptual_distinction_or_representation",
+                "conventional_prediction": "A lower certification cost should make certification privately cheaper and may contemporaneously reduce reliance on inspection.",
+                "countervailing_logic": null,
+                "economic_puzzle": "The proposed stock channel could make a contemporaneous cheaper-certification incentive differ from the dynamic information environment, but the candidate does not yet define a closed game in which that distinction is operative.",
+                "resolution_target": "Determine whether a well-defined transition and active seller margin make consumption and uncertified composition necessary for any change in inspection, allocation, or buyer surplus as k varies."
+              },
+              "forces": [
+                {
+                  "force_id": "force_cheaper_certification",
+                  "label": "Visible-certificate direct-purchase force",
+                  "role": "baseline_force",
+                  "operative_margin": "A buyer compares direct purchase from a valid visible certificate with paying c to inspect an uncertified seller.",
+                  "direction": "lowers_target",
+                  "economic_logic": "A valid certificate supplies a high-success direct option and can reduce the buyer's value of inspection in the same public state.",
+                  "active_when": "At least one valid certificate is visible, c>0, and direct purchase from that seller is feasible.",
+                  "source_node_id": "n_certificate_stock",
+                  "margin_node_id": "n_uncertified_posterior",
+                  "target_node_id": "n_trade_exit"
+                },
+                {
+                  "force_id": "force_consumable_stock_composition",
+                  "label": "Consumption and uncertified-composition force",
+                  "role": "countervailing_force",
+                  "operative_margin": "Trade-triggered depletion changes the public stock and may change the posterior for an uncertified seller.",
+                  "direction": "raises_target",
+                  "economic_logic": "The stock can affect which seller is uncertified and therefore the informational return to inspection; the payoff relevance of upstream certification remains unresolved.",
+                  "active_when": "No valid certificate is visible, inspection is feasible, and the uncertified posterior is interior.",
+                  "source_node_id": "n_certificate_stock",
+                  "margin_node_id": "n_uncertified_posterior",
+                  "target_node_id": "n_trade_exit"
+                }
+              ],
+              "causal_chain": [
+                {
+                  "step_number": 1,
+                  "force_ids": ["force_cheaper_certification", "force_consumable_stock_composition"],
+                  "cause": "The public certificate stock changes the posterior faced by a buyer considering an uncertified seller.",
+                  "endogenous_response": "The buyer compares inspection with direct purchase and exit in the resulting public state.",
+                  "consequence": "The buyer's inspection choice may change.",
+                  "source_node_id": "n_certificate_stock",
+                  "target_node_id": "n_uncertified_posterior",
+                  "active_margin_witness": null
+                },
+                {
+                  "step_number": 2,
+                  "force_ids": ["force_cheaper_certification", "force_consumable_stock_composition"],
+                  "cause": "The uncertified-pool posterior changes the payoff to paying c for inspection.",
+                  "endogenous_response": "Inspection is chosen when its continuation-inclusive payoff weakly exceeds the best direct-purchase or exit alternative.",
+                  "consequence": "Inspection changes the buyer's trade or exit action.",
+                  "source_node_id": "n_uncertified_posterior",
+                  "target_node_id": "n_inspection_choice",
+                  "active_margin_witness": null
+                },
+                {
+                  "step_number": 3,
+                  "force_ids": ["force_cheaper_certification", "force_consumable_stock_composition"],
+                  "cause": "The inspection decision determines whether the buyer trades conditionally on observed capacity or follows the direct-purchase alternative.",
+                  "endogenous_response": "The buyer's trade or exit action changes, with no direction asserted for allocation or surplus.",
+                  "consequence": "The realized buyer action and service outcome may differ.",
+                  "source_node_id": "n_inspection_choice",
+                  "target_node_id": "n_trade_exit",
+                  "active_margin_witness": null
+                }
+              ],
+              "minimal_example": {
+                "title": "Certificate-visible state versus zero-certificate state",
+                "role": "illustrative_only",
+                "setup": "There are two sellers and one buyer. In state z=10 seller 1 has a valid truthful certificate; in state z=00 neither seller has one. Buying is free, successful service gives value one, and inspection costs c>0.",
+                "moving_primitive": "The experiment varies k and therefore potentially the frequency of z=00, subject to a completed certification and transition law.",
+                "held_fixed": ["buyer value normalized to one", "inspection cost c", "seller margin", "capacity law", "discounting", "buyer information at each public state"],
+                "endogenous_responses": ["seller certification", "certificate-stock occupancy", "uncertified posterior", "inspection only in states where it is not dominated"],
+                "predicted_pattern": "In z=10, direct purchase of the certified seller yields one, while inspecting an uncertified seller and then choosing optimally costs c and cannot exceed one before that cost. Thus inspection is inactive there; no sign for the effect of k is asserted.",
+                "economic_intuition": "Any aggregate search response can therefore come from the frequency of zero-certificate states and from the conditional response inside those states, not from inspection competing with a valid certificate in the same state.",
+                "limitation": "The example does not establish equilibrium existence, stationary weights, welfare, or non-monotonicity.",
+                "cannot_establish": ["the sign of any comparative static", "a closed certificate-validity interpretation", "selection robustness", "aggregate buyer surplus" ]
+              },
+              "economist_memo": {
+                "headline": "Consumable certificates may alter the state distribution, but the current framing has not yet established an active closed-loop mechanism.",
+                "opening_question": "Can lowering k change inspection, allocation, or buyer surplus through certificates that are visible until trade and then consumed?",
+                "benchmark_message": "The intended contrasts remove consumption, freeze uncertified composition, or freeze inspection, but their common state/action interpretation and equilibrium status are not yet secured.",
+                "tension_message": "The mechanical cheaper-certification force points toward more certification, while depletion could change later uncertified states; the direction is unresolved.",
+                "mechanism_message": "The current primitive graph supplies a verbal stock-to-composition path, but it omits a closed transition law and an established payoff-active certification margin.",
+                "result_preview": "The audit predicts a revision requirement and records a dominance boundary: valid visible certificates make inspection unnecessary when c>0 under the literal ledger.",
+                "contribution_message": "No novelty, proof, validation, welfare, or mechanism-distinctiveness claim is made.",
+                "scope_condition": "Any future claim requires explicit certificate semantics, public-state transitions, Bayes updating, complete actions and payoffs, and a stated equilibrium/selection convention.",
+                "reader_takeaway": "The economically defensible interim claim is a proposed state-distribution question, not yet a demonstrated feedback result."
+              },
+              "benchmark_assessments": [
+                {
+                  "benchmark_id": "bm_focal_consumable_stock",
+                  "changed": [
+                    {"object_id": "n_certificate_cost", "label": "certificate cost k", "semantic_level": "primitive", "primitive_node_id": "n_certificate_cost"},
+                    {"object_id": "n_certificate_stock", "label": "trade-consumed certificate stock", "semantic_level": "transition_kernel", "primitive_node_id": "n_certificate_stock"}
+                  ],
+                  "held_fixed": [
+                    {"object_id": "n_payoffs", "label": "service value, seller margin, and discounting", "semantic_level": "payoff_ledger", "fixing_level": "primitive", "primitive_node_id": "n_payoffs"},
+                    {"object_id": "n_capacity", "label": "capacity information", "semantic_level": "conditional_distribution", "fixing_level": "primitive", "primitive_node_id": "n_capacity"}
+                  ],
+                  "reoptimizing": [
+                    {"object_id": "n_truthful_certificate", "label": "seller certification", "semantic_level": "choice", "primitive_node_id": "n_truthful_certificate"},
+                    {"object_id": "n_inspection_choice", "label": "buyer inspection", "semantic_level": "choice", "primitive_node_id": "n_inspection_choice"}
+                  ],
+                  "still_endogenous": [
+                    {"object_id": "n_certificate_stock", "label": "certificate-stock transition", "semantic_level": "transition_kernel", "primitive_node_id": "n_certificate_stock"},
+                    {"object_id": "n_uncertified_posterior", "label": "uncertified posterior", "semantic_level": "conditional_distribution", "primitive_node_id": "n_uncertified_posterior"}
+                  ],
+                  "targets": [
+                    {"object_id": "n_outcomes", "label": "inspection, allocation, and buyer surplus", "semantic_level": "outcome", "primitive_node_id": "n_outcomes"}
+                  ],
+                  "channel_kind": "diagnostic_only",
+                  "channel_path": ["n_certificate_cost", "n_truthful_certificate", "n_certificate_stock", "n_uncertified_posterior"],
+                  "channel_summary": "The focal path is proposed but not active-identified because the seller payoff margin and transition law are unresolved.",
+                  "aggregate_invariance": {"aggregate_object": "inspection, allocation, and buyer surplus", "pointwise_policy_fixed": false, "weighting_distribution_status": "endogenous", "claims_aggregate_fixed": false, "basis": "No aggregate invariance is claimed; the stock is itself a proposed state variable.", "implication_for_attribution": "Aggregate attribution is unavailable until the weighting distribution and transition law are specified."},
+                  "selection_assurance": {"status": "unresolved", "selection_rule": "No equilibrium concept or selector is specified upstream.", "basis": "The candidate labels a dynamic Bayesian equilibrium candidate but does not define selection.", "implication_for_attribution": "Any mechanism attribution must remain qualified or unresolved."},
+                  "attribution_strength": "unresolved",
+                  "attribution_basis": "The focal channel is a hypothesis, not a demonstrated active mechanism.",
+                  "distinctive_mechanism": {"claim_kind": "unresolved", "mechanism_label": "consumable stock and uncertified-pool composition", "basis": "The contrast is intended to remove depletion, but certificate semantics and an active margin are not established.", "contrast_benchmark_id": "bm_no_certificate_consumption", "distinctive_node_ids": [], "distinctive_edge_ids": [], "consequence_node_id": null, "transition_kind": null, "required_public_state_conditions": []}
+                },
+                {
+                  "benchmark_id": "bm_no_certificate_consumption",
+                  "changed": [{"object_id": "n_certificate_stock", "label": "certificate persistence after trade", "semantic_level": "transition_kernel", "primitive_node_id": "n_certificate_stock"}],
+                  "held_fixed": [{"object_id": "n_certificate_cost", "label": "certificate cost k", "semantic_level": "primitive", "fixing_level": "primitive", "primitive_node_id": "n_certificate_cost"}, {"object_id": "n_inspection_choice", "label": "buyer action set", "semantic_level": "choice", "fixing_level": "primitive", "primitive_node_id": "n_inspection_choice"}],
+                  "reoptimizing": [{"object_id": "n_truthful_certificate", "label": "seller certification", "semantic_level": "choice", "primitive_node_id": "n_truthful_certificate"}],
+                  "still_endogenous": [{"object_id": "n_uncertified_posterior", "label": "uncertified posterior", "semantic_level": "conditional_distribution", "primitive_node_id": "n_uncertified_posterior"}],
+                  "targets": [{"object_id": "n_outcomes", "label": "inspection and allocation", "semantic_level": "outcome", "primitive_node_id": "n_outcomes"}],
+                  "channel_kind": "boundary_or_mapping",
+                  "channel_path": ["n_truthful_certificate", "n_certificate_stock", "n_uncertified_posterior", "n_inspection_choice"],
+                  "channel_summary": "This is a transition contrast, but it is not yet a valid mechanism control because persistent certificate validity is undefined.",
+                  "aggregate_invariance": {"aggregate_object": "inspection and allocation", "pointwise_policy_fixed": false, "weighting_distribution_status": "endogenous", "claims_aggregate_fixed": false, "basis": "No aggregate invariance is claimed.", "implication_for_attribution": "The benchmark cannot support aggregate attribution before the transition is closed."},
+                  "selection_assurance": {"status": "unresolved", "selection_rule": "No selector specified.", "basis": "The same selection convention is not yet defined across the two transition laws.", "implication_for_attribution": "Attribution remains unresolved."},
+                  "attribution_strength": "unresolved",
+                  "attribution_basis": "The changed transition is intended to isolate depletion, but semantics may also change.",
+                  "distinctive_mechanism": {"claim_kind": "unresolved", "mechanism_label": "non-consumption contrast", "basis": "The contrast may alter certificate meaning, not only depletion.", "contrast_benchmark_id": "bm_focal_consumable_stock", "distinctive_node_ids": [], "distinctive_edge_ids": [], "consequence_node_id": null, "transition_kind": null, "required_public_state_conditions": []}
+                },
+                {
+                  "benchmark_id": "bm_fixed_uncertified_composition",
+                  "changed": [{"object_id": "n_uncertified_posterior", "label": "imposed k-invariant uncertified posterior", "semantic_level": "conditional_distribution", "primitive_node_id": "n_uncertified_posterior"}],
+                  "held_fixed": [{"object_id": "n_certificate_cost", "label": "certificate cost k", "semantic_level": "primitive", "fixing_level": "primitive", "primitive_node_id": "n_certificate_cost"}, {"object_id": "n_inspection_choice", "label": "buyer feasible actions", "semantic_level": "choice", "fixing_level": "primitive", "primitive_node_id": "n_inspection_choice"}],
+                  "reoptimizing": [{"object_id": "n_truthful_certificate", "label": "seller certification", "semantic_level": "choice", "primitive_node_id": "n_truthful_certificate"}],
+                  "still_endogenous": [{"object_id": "n_certificate_stock", "label": "certificate stock", "semantic_level": "transition_kernel", "primitive_node_id": "n_certificate_stock"}],
+                  "targets": [{"object_id": "n_inspection_choice", "label": "inspection", "semantic_level": "behavioral_response", "primitive_node_id": "n_inspection_choice"}],
+                  "channel_kind": "diagnostic_only",
+                  "channel_path": ["n_uncertified_posterior", "n_inspection_choice", "n_trade_exit"],
+                  "channel_summary": "This is a diagnostic frozen-posterior comparison, not yet a Bayes-consistent equilibrium benchmark.",
+                  "aggregate_invariance": {"aggregate_object": "inspection", "pointwise_policy_fixed": false, "weighting_distribution_status": "endogenous", "claims_aggregate_fixed": false, "basis": "Freezing a posterior does not freeze state weights or policies.", "implication_for_attribution": "No aggregate composition claim is supported."},
+                  "selection_assurance": {"status": "selector_only", "selection_rule": "The imposed posterior is an exogenous convention rather than an equilibrium selector.", "basis": "The benchmark does not specify how the fixed posterior is generated from observed histories.", "implication_for_attribution": "Attribution must be downgraded to diagnostic-only."},
+                  "attribution_strength": "weak",
+                  "attribution_basis": "The benchmark changes an informational object directly and may not preserve the same Bayesian game.",
+                  "distinctive_mechanism": {"claim_kind": "not_claimed", "mechanism_label": "fixed composition diagnostic", "basis": "No distinctive mechanism contribution is claimed from an imposed posterior.", "contrast_benchmark_id": null, "distinctive_node_ids": [], "distinctive_edge_ids": [], "consequence_node_id": null, "transition_kind": null, "required_public_state_conditions": []}
+                },
+                {
+                  "benchmark_id": "bm_exogenous_inspection",
+                  "changed": [{"object_id": "n_inspection_choice", "label": "inspection rule fixed exogenously", "semantic_level": "choice", "primitive_node_id": "n_inspection_choice"}],
+                  "held_fixed": [{"object_id": "n_certificate_cost", "label": "certificate cost k", "semantic_level": "primitive", "fixing_level": "primitive", "primitive_node_id": "n_certificate_cost"}],
+                  "reoptimizing": [{"object_id": "n_truthful_certificate", "label": "seller certification", "semantic_level": "choice", "primitive_node_id": "n_truthful_certificate"}],
+                  "still_endogenous": [{"object_id": "n_certificate_stock", "label": "certificate stock", "semantic_level": "transition_kernel", "primitive_node_id": "n_certificate_stock"}],
+                  "targets": [{"object_id": "n_outcomes", "label": "allocation and buyer surplus", "semantic_level": "outcome", "primitive_node_id": "n_outcomes"}],
+                  "channel_kind": "diagnostic_only",
+                  "channel_path": ["n_inspection_choice", "n_trade_exit"],
+                  "channel_summary": "This freezes a buyer policy and therefore is a policy counterfactual, not an equilibrium benchmark with the same optimization problem.",
+                  "aggregate_invariance": {"aggregate_object": "allocation and buyer surplus", "pointwise_policy_fixed": true, "weighting_distribution_status": "endogenous", "claims_aggregate_fixed": false, "basis": "The inspection policy may be pointwise fixed while stock-dependent weighting remains endogenous.", "implication_for_attribution": "No aggregate invariance follows from the frozen rule."},
+                  "selection_assurance": {"status": "selector_only", "selection_rule": "Inspection is imposed by an exogenous rule.", "basis": "A fixed rule is not equilibrium selection robustness.", "implication_for_attribution": "The comparison can diagnose the inspection margin only, not establish an equilibrium result."},
+                  "attribution_strength": "weak",
+                  "attribution_basis": "The benchmark changes strategic optimization by imposing a policy.",
+                  "distinctive_mechanism": {"claim_kind": "not_claimed", "mechanism_label": "fixed-inspection diagnostic", "basis": "No distinctive mechanism contribution is claimed from an imposed buyer rule.", "contrast_benchmark_id": null, "distinctive_node_ids": [], "distinctive_edge_ids": [], "consequence_node_id": null, "transition_kind": null, "required_public_state_conditions": []}
+                }
+              ],
+              "distinctive_mechanism_contribution_status": "unresolved",
+              "disclosed_gaps": [
+                {"gap_id": "gap_certificate_semantics", "category": "scope", "description": "A certificate persists until trade while capacity is described as current and privately observed; the certified object is not defined across periods.", "consequence": "The stock state and non-consumption contrast may not describe the same information object.", "resolution_needed": "Choose locked-unit certification or current-period certification and rewrite the transition and benchmarks.", "affected_benchmark_ids": ["bm_focal_consumable_stock", "bm_no_certificate_consumption"], "repair_target_refs": [{"entity_type": "PrimitiveGraph", "entity_ref": {"entity_id": "pg_consumable_certificate_primitives", "version": 1}}]},
+                {"gap_id": "gap_state_transition_payoffs", "category": "reoptimization", "description": "The public state, seller certification action, buyer post-inspection actions, failure payoff, payment convention, and continuation-inclusive payoffs are not closed.", "consequence": "No active best response, stationary distribution, or equilibrium correspondence can be assessed.", "resolution_needed": "Add a state/action/payoff table and an exact transition kernel before claiming an active link.", "affected_benchmark_ids": ["bm_focal_consumable_stock", "bm_no_certificate_consumption", "bm_fixed_uncertified_composition", "bm_exogenous_inspection"], "repair_target_refs": [{"entity_type": "PrimitiveGraph", "entity_ref": {"entity_id": "pg_consumable_certificate_primitives", "version": 1}}]},
+                {"gap_id": "gap_certificate_visible_dominance", "category": "causal_attribution", "description": "With a valid certificate, free direct purchase and buyer value one, inspection costs c and cannot improve on the certified seller.", "consequence": "Inspection is inactive in certificate-visible states for c>0, so the claimed inspection-to-depletion feedback is not established.", "resolution_needed": "Record the dominance boundary and either restrict search to zero-certificate states or add a substantive price, mismatch, rationing, or certificate-validity friction.", "affected_benchmark_ids": ["bm_focal_consumable_stock", "bm_no_certificate_consumption", "bm_exogenous_inspection"], "repair_target_refs": [{"entity_type": "ResearchQuestion", "entity_ref": {"entity_id": "rq_consumable_certificate_stock", "version": 1}}, {"entity_type": "PrimitiveGraph", "entity_ref": {"entity_id": "pg_consumable_certificate_primitives", "version": 1}}]},
+                {"gap_id": "gap_benchmark_implementation", "category": "benchmark_semantics", "description": "The fixed-posterior and exogenous-inspection rows alter beliefs or optimization without specifying a common equilibrium state/action interpretation; no mechanical k-only placebo is listed.", "consequence": "Benchmark differences cannot be attributed uniquely to stock depletion, composition, endogenous inspection, or cheaper certification.", "resolution_needed": "Use common states/actions and change one transition, belief kernel, policy constraint, or accounting term at a time; add an explicit k-only placebo.", "affected_benchmark_ids": ["bm_no_certificate_consumption", "bm_fixed_uncertified_composition", "bm_exogenous_inspection"], "repair_target_refs": [{"entity_type": "BenchmarkSet", "entity_ref": {"entity_id": "bs_consumable_certificate_benchmarks", "version": 1}}]},
+                {"gap_id": "gap_selection_and_aggregate", "category": "aggregate_endogeneity", "description": "No equilibrium selector, ergodicity condition, invariant weighting convention, or selection robustness is specified.", "consequence": "Pointwise policy statements cannot be promoted to aggregate inspection, allocation, or surplus claims.", "resolution_needed": "Specify a selector or state that only conditional diagnostics will be reported; define aggregate weights after the transition is closed.", "affected_benchmark_ids": ["bm_focal_consumable_stock", "bm_no_certificate_consumption", "bm_fixed_uncertified_composition", "bm_exogenous_inspection"], "repair_target_refs": [{"entity_type": "ResearchQuestion", "entity_ref": {"entity_id": "rq_consumable_certificate_stock", "version": 1}}]}
+              ],
+              "proposed_action": "revise_framing",
+              "action_rationale": "The puzzle is economically intelligible and the intended benchmark contrasts are visible, but the active certification margin, certificate semantics, transition law, dominance boundary, benchmark implementation, and aggregate/selection basis remain unresolved. The audit therefore proposes upstream revision and records no human G1 action."
+            }
+          },
+          "formal": {}, "literature_novelty": {}, "terminology_presentation": {}, "authority": {}
+        }
+      }
+    },
+    {
+      "op": "entity.create",
+      "entity": {
+        "entity_id": "gd_g1_consumable_certificate_audited_v1",
+        "entity_type": "GateDossier",
+        "version": 1,
+        "project_id": "prj_8cfea08c84b646229ec2369b0cc868b3d3d84e78e47e24b8",
+        "scope_ref": "rq_consumable_certificate_stock",
+        "title": "Audited proposal for G1 revision",
+        "summary": "The strengthened dossier records economic gaps and proposes revision; it does not confirm G1.",
+        "status": {"lifecycle": "proposed"},
+        "privacy": "public",
+        "access_compartments": ["project_research"],
+        "created_at": "2026-07-16T08:33:44.732561Z",
+        "facets": {
+          "authority": {
+            "schema": "econ_theorist.theory/GateDossier/v1",
+            "payload": {
+              "schema_version": 1,
+              "gate_kind": "G1_question_benchmark",
+              "research_question_ref": {"entity_id": "rq_consumable_certificate_stock", "version": 1},
+              "ordered_object_refs": [
+                {"entity_id": "rq_consumable_certificate_stock", "version": 1},
+                {"entity_id": "bs_consumable_certificate_benchmarks", "version": 1},
+                {"entity_id": "pg_consumable_certificate_primitives", "version": 1},
+                {"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1}
+              ],
+              "requirements": [
+                {"requirement_id": "req_economic_puzzle_retelled", "description": "The puzzle, opposing force, illustrative dominance boundary, and proposed state-distribution channel are retellable without a sign, novelty, proof, validation, or welfare claim.", "recorded_condition": "evidence_supplied", "evidence_refs": [{"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1}]},
+                {"requirement_id": "req_active_margin_disclosed", "description": "The seller certification payoff witness is unresolved because the upstream action node, continuation law, and complete payoff ledger are absent; no inactive link is relabeled as a later scope choice.", "recorded_condition": "gap_disclosed", "evidence_refs": [{"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1}]},
+                {"requirement_id": "req_inspection_dominance_disclosed", "description": "For c>0 and a valid visible certificate, inspection is disclosed as dominated under the literal value and cost ledger; any remaining search channel must be state-occupancy or require a new friction.", "recorded_condition": "risk_disclosed", "evidence_refs": [{"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1}]},
+                {"requirement_id": "req_benchmark_ledger_audited", "description": "All four benchmark IDs are audited exactly once, with changes, fixed objects, reoptimization, endogenous objects, channel paths, aggregate status, and selection status.", "recorded_condition": "evidence_supplied", "evidence_refs": [{"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1}]},
+                {"requirement_id": "req_revision_before_g1", "description": "Certificate semantics, transition law, payoff closure, benchmark implementation, and aggregate/selection basis remain unresolved and block readiness; no human G1 action is recorded or implied.", "recorded_condition": "gap_disclosed", "evidence_refs": [{"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1}]}
+              ],
+              "proposed_action": "revise",
+              "rationale": "The audit supports a precise revision agenda but not G1 readiness. It records no human confirmation, promotion, or scope decision.",
+              "prepared_at": "2026-07-16T08:33:44.732561Z"
+            }
+          },
+          "formal": {}, "economic_interpretation": {}, "literature_novelty": {}, "terminology_presentation": {}
+        }
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_audits_question_framing_econ_v1",
+        "relation_type": "audits",
+        "version": 1,
+        "project_id": "prj_8cfea08c84b646229ec2369b0cc868b3d3d84e78e47e24b8",
+        "source": {"entity_id": "rq_consumable_certificate_stock", "version": 1},
+        "target": {"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1},
+        "dependency_mode": "hard",
+        "upstream": {"entity_id": "rq_consumable_certificate_stock", "version": 1, "facet": "economic_interpretation", "field_path": null, "semantic_hash": "b39fc012358b52be7cae310b8fe0dbcd55e3cd17cbe3996b66b1d5ef153b0a8b"},
+        "downstream": {"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1, "facet": "economic_interpretation", "field_path": null},
+        "privacy": "public", "access_compartments": ["project_research"], "created_at": "2026-07-16T08:33:44.732561Z"
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_audits_benchmarks_framing_econ_v1",
+        "relation_type": "audits",
+        "version": 1,
+        "project_id": "prj_8cfea08c84b646229ec2369b0cc868b3d3d84e78e47e24b8",
+        "source": {"entity_id": "bs_consumable_certificate_benchmarks", "version": 1},
+        "target": {"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1},
+        "dependency_mode": "hard",
+        "upstream": {"entity_id": "bs_consumable_certificate_benchmarks", "version": 1, "facet": "economic_interpretation", "field_path": null, "semantic_hash": "90a4be4e3f3dba8eff72daefd3d2cd406742db1795651b83f1a5c93dd92067f9"},
+        "downstream": {"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1, "facet": "economic_interpretation", "field_path": null},
+        "privacy": "public", "access_compartments": ["project_research"], "created_at": "2026-07-16T08:33:44.732561Z"
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_audits_primitive_graph_framing_econ_v1",
+        "relation_type": "audits",
+        "version": 1,
+        "project_id": "prj_8cfea08c84b646229ec2369b0cc868b3d3d84e78e47e24b8",
+        "source": {"entity_id": "pg_consumable_certificate_primitives", "version": 1},
+        "target": {"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1},
+        "dependency_mode": "hard",
+        "upstream": {"entity_id": "pg_consumable_certificate_primitives", "version": 1, "facet": "economic_interpretation", "field_path": null, "semantic_hash": "4aab1eb59b2f5880d51f057751f9885c6b5b307b98b1ee691fc7ee5c76c8ced8"},
+        "downstream": {"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1, "facet": "economic_interpretation", "field_path": null},
+        "privacy": "public", "access_compartments": ["project_research"], "created_at": "2026-07-16T08:33:44.732561Z"
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_audits_source_g1_framing_econ_v1",
+        "relation_type": "audits",
+        "version": 1,
+        "project_id": "prj_8cfea08c84b646229ec2369b0cc868b3d3d84e78e47e24b8",
+        "source": {"entity_id": "gd_g1_consumable_certificate_scope", "version": 1},
+        "target": {"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1},
+        "dependency_mode": "hard",
+        "upstream": {"entity_id": "gd_g1_consumable_certificate_scope", "version": 1, "facet": "authority", "field_path": null, "semantic_hash": "13b26e9d3662c315a300a0c7b49049b285e09986742e33d3982fabf29d923847"},
+        "downstream": {"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1, "facet": "economic_interpretation", "field_path": null},
+        "privacy": "public", "access_compartments": ["project_research"], "created_at": "2026-07-16T08:33:44.732561Z"
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_governs_replacement_g1_framing_econ_v1",
+        "relation_type": "governs",
+        "version": 1,
+        "project_id": "prj_8cfea08c84b646229ec2369b0cc868b3d3d84e78e47e24b8",
+        "source": {"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1},
+        "target": {"entity_id": "gd_g1_consumable_certificate_audited_v1", "version": 1},
+        "dependency_mode": "hard",
+        "upstream": {"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1, "facet": "economic_interpretation", "field_path": null, "semantic_hash": null},
+        "downstream": {"entity_id": "gd_g1_consumable_certificate_audited_v1", "version": 1, "facet": "authority", "field_path": null},
+        "privacy": "public", "access_compartments": ["project_research"], "created_at": "2026-07-16T08:33:44.732561Z"
+      }
+    },
+    {
+      "op": "route.outcome",
+      "outcome": {
+        "route_run_id": "run_op_af8c18585b55048abd4f4c78154ec6526bdd209fb5b64d58",
+        "route_id": "audit.framing_economics",
+        "outcome": "completed_with_candidate",
+        "rationale": "The audit creates a new FramingQualityBundle and strengthened replacement G1 dossier, records the unresolved certification margin, certificate semantics, dominance boundary, transition and benchmark defects, and proposes revision without recording or implying a human G1 decision.",
+        "candidate_refs": [
+          {"entity_id": "fqb_consumable_certificate_econ_audit_v1", "version": 1},
+          {"entity_id": "gd_g1_consumable_certificate_audited_v1", "version": 1},
+          {"relation_id": "rel_audits_question_framing_econ_v1", "version": 1},
+          {"relation_id": "rel_audits_benchmarks_framing_econ_v1", "version": 1},
+          {"relation_id": "rel_audits_primitive_graph_framing_econ_v1", "version": 1},
+          {"relation_id": "rel_audits_source_g1_framing_econ_v1", "version": 1},
+          {"relation_id": "rel_governs_replacement_g1_framing_econ_v1", "version": 1}
+        ],
+        "privacy": "public", "access_compartments": ["project_research"]
+      }
+    }
+  ]
+}

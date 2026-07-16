@@ -1,0 +1,170 @@
+{
+  "transaction_schema": 1,
+  "transaction_id": "txn_decompose_consumable_certificate_primitives_v1",
+  "origin": "route_run",
+  "project_id": "prj_8cfea08c84b646229ec2369b0cc868b3d3d84e78e47e24b8",
+  "base_revision": "b1debfed9b4eca68dc3b963586e74920e4caf995b61b63d90b49e9e2428c3147",
+  "parent_transaction_hash": "b1debfed9b4eca68dc3b963586e74920e4caf995b61b63d90b49e9e2428c3147",
+  "route_id": "decompose.primitives",
+  "route_run_id": "run_op_022ec3249664a8c635ac02d05e2b332095e28205828dc370",
+  "route_run_hash": "787018c35abcb9a1058ba9e8e002c01f2b07107f31130727531747fc1e40760b",
+  "actor": {"actor_id": "scientific_agent", "kind": "agent"},
+  "intent": "Propose a primitive decomposition and a non-confirming G1 dossier for the framed consumable-certificate question.",
+  "created_at": "2026-07-15T18:19:54.658720Z",
+  "privacy": "public",
+  "access_compartments": ["project_research"],
+  "compiled_context_hash": "5beda454f11f50302703bc005c80d5fd3d50eec112002b8cdf2fbad49a505100",
+  "context_manifest_hash": "012e2638ea467357a3874cfc829ccb89345b9bb4335ccc7689be5540431d9d1f",
+  "preconditions": [
+    {
+      "entity": {"entity_id": "rq_consumable_certificate_stock", "version": 1}
+    },
+    {
+      "entity": {"entity_id": "bs_consumable_certificate_benchmarks", "version": 1}
+    }
+  ],
+  "changed_facets": [],
+  "evidence_refs": [
+    {
+      "entity_id": "rq_consumable_certificate_stock",
+      "version": 1
+    },
+    {
+      "entity_id": "bs_consumable_certificate_benchmarks",
+      "version": 1
+    }
+  ],
+  "authority_basis": [],
+  "operations": [
+    {
+      "op": "entity.create",
+      "entity": {
+        "entity_id": "pg_consumable_certificate_primitives",
+        "entity_type": "PrimitiveGraph",
+        "version": 1,
+        "project_id": "prj_8cfea08c84b646229ec2369b0cc868b3d3d84e78e47e24b8",
+        "scope_ref": "rq_consumable_certificate_stock",
+        "title": "Primitives of the consumable certificate environment",
+        "summary": "A proposed decomposition of the information, timing, choice, and dynamic feedback primitives in the framed question.",
+        "status": {"lifecycle": "proposed"},
+        "privacy": "public",
+        "access_compartments": ["project_research"],
+        "created_at": "2026-07-15T18:19:54.658720Z",
+        "facets": {
+          "economic_interpretation": {
+            "schema": "econ_theorist.theory/PrimitiveGraph/v1",
+            "payload": {
+              "schema_version": 1,
+              "question_ref": {"entity_id": "rq_consumable_certificate_stock", "version": 1},
+              "benchmark_set_ref": {"entity_id": "bs_consumable_certificate_benchmarks", "version": 1},
+              "nodes": [
+                {"node_id": "n_sellers", "kind": "actor", "label": "Two long-lived sellers", "economic_meaning": "Sellers internalize discounted future margins and hold private current capacity information.", "status": "primitive", "primitive_sufficient_conditions": ["Common to all listed benchmarks."]},
+                {"node_id": "n_buyers", "kind": "actor", "label": "Short-lived buyer sequence", "economic_meaning": "Each buyer makes a one-period information-acquisition and trade decision.", "status": "primitive", "primitive_sufficient_conditions": ["Common to all listed benchmarks."]},
+                {"node_id": "n_capacity", "kind": "information", "label": "Private high or low capacity", "economic_meaning": "A seller privately knows whether current service capacity is high or low before certification and buyer choice.", "status": "primitive", "primitive_sufficient_conditions": ["Common to all listed benchmarks."]},
+                {"node_id": "n_certificate_cost", "kind": "perturbation", "label": "Certificate cost k", "economic_meaning": "The proposed comparative-static perturbation changes the cost faced by an eligible high-capacity seller for a truthful certificate.", "status": "primitive", "primitive_sufficient_conditions": ["k varies while the stated capacity distribution, c, buyer value, margin, and discounting are held fixed."]},
+                {"node_id": "n_truthful_certificate", "kind": "institution", "label": "Truthful certificate eligibility", "economic_meaning": "Only a high-capacity seller can purchase the public certificate, so certification can sort current capacity.", "status": "primitive", "primitive_sufficient_conditions": ["Common to all listed benchmarks except where certificate persistence changes."]},
+                {"node_id": "n_certificate_stock", "kind": "timing", "label": "Trade-consumed certificate stock", "economic_meaning": "Certificate visibility is a state variable because a sale removes the certificate and changes future public information.", "status": "primitive", "primitive_sufficient_conditions": ["Differs from bm_no_certificate_consumption, where a sale does not remove visibility."]},
+                {"node_id": "n_uncertified_posterior", "kind": "information", "label": "Uncertified-pool composition", "economic_meaning": "The posterior probability that an uncertified seller is high determines the informational return to inspection and may respond to certification and depletion.", "status": "primitive", "primitive_sufficient_conditions": ["Differs from bm_fixed_uncertified_composition, where this posterior is imposed and k-invariant."]},
+                {"node_id": "n_inspection_choice", "kind": "choice", "label": "Endogenous buyer inspection", "economic_meaning": "The buyer may pay c to inspect one uncertified seller rather than buy without inspecting or exit.", "status": "primitive", "primitive_sufficient_conditions": ["Differs from bm_exogenous_inspection, where the inspection rule is fixed and does not respond to k or the posterior."]},
+                {"node_id": "n_trade_exit", "kind": "choice", "label": "Trade, uninspected purchase, or exit", "economic_meaning": "Buyer action determines service realization, seller margin, certificate consumption, and the realized buyer payoff.", "status": "primitive", "primitive_sufficient_conditions": ["Common action set apart from the imposed inspection rule in bm_exogenous_inspection."]},
+                {"node_id": "n_payoffs", "kind": "preference_technology", "label": "Service value and seller margin", "economic_meaning": "A successful service gives buyer value one and a successful trade gives the seller a margin; sellers discount future profits.", "status": "primitive", "primitive_sufficient_conditions": ["Normalizations held common across all listed benchmarks."]},
+                {"node_id": "n_equilibrium", "kind": "equilibrium_object", "label": "Dynamic Bayesian equilibrium candidate", "economic_meaning": "Strategies and beliefs must jointly determine certification, inspection, trade, and the certificate-stock transition.", "status": "unresolved_scope_cost", "primitive_sufficient_conditions": ["The exact equilibrium concept and selection are not yet specified."]},
+                {"node_id": "n_outcomes", "kind": "outcome", "label": "Inspection, allocation, and buyer surplus", "economic_meaning": "These are the outcomes whose mapping from k is proposed for study, without a claimed direction.", "status": "derived", "primitive_sufficient_conditions": ["No non-monotonicity or welfare result is asserted."]}
+              ],
+              "edges": [
+                {"edge_id": "e_capacity_certificate", "source_node_id": "n_capacity", "target_node_id": "n_truthful_certificate", "economic_meaning": "Private capacity determines certificate eligibility."},
+                {"edge_id": "e_cost_certificate", "source_node_id": "n_certificate_cost", "target_node_id": "n_truthful_certificate", "economic_meaning": "k changes the private cost of the truthful certification action."},
+                {"edge_id": "e_certificate_stock", "source_node_id": "n_truthful_certificate", "target_node_id": "n_certificate_stock", "economic_meaning": "Issued certificates form the publicly visible stock."},
+                {"edge_id": "e_trade_depletion", "source_node_id": "n_trade_exit", "target_node_id": "n_certificate_stock", "economic_meaning": "A trade depletes a visible certificate in the focal environment."},
+                {"edge_id": "e_stock_posterior", "source_node_id": "n_certificate_stock", "target_node_id": "n_uncertified_posterior", "economic_meaning": "The stock and its depletion can change which sellers remain uncertified."},
+                {"edge_id": "e_posterior_inspection", "source_node_id": "n_uncertified_posterior", "target_node_id": "n_inspection_choice", "economic_meaning": "The uncertain seller composition changes the return to paying c for inspection."},
+                {"edge_id": "e_inspection_trade", "source_node_id": "n_inspection_choice", "target_node_id": "n_trade_exit", "economic_meaning": "Inspection is one route into the buyer's trade or exit choice."},
+                {"edge_id": "e_equilibrium_outcomes", "source_node_id": "n_equilibrium", "target_node_id": "n_outcomes", "economic_meaning": "The proposed equilibrium maps the primitives into the focal outcomes."}
+              ]
+            }
+          },
+          "formal": {}, "literature_novelty": {}, "terminology_presentation": {}, "authority": {}
+        }
+      }
+    },
+    {
+      "op": "entity.create",
+      "entity": {
+        "entity_id": "gd_g1_consumable_certificate_scope",
+        "entity_type": "GateDossier",
+        "version": 1,
+        "project_id": "prj_8cfea08c84b646229ec2369b0cc868b3d3d84e78e47e24b8",
+        "scope_ref": "rq_consumable_certificate_stock",
+        "title": "Proposed G1 dossier: consumable certificate question and benchmarks",
+        "summary": "A non-confirming dossier for a later human decision on whether to retain, revise, narrow, or kill the proposed question and benchmark scope.",
+        "status": {"lifecycle": "proposed"},
+        "privacy": "public",
+        "access_compartments": ["project_research"],
+        "created_at": "2026-07-15T18:19:54.658720Z",
+        "facets": {
+          "authority": {
+            "schema": "econ_theorist.theory/GateDossier/v1",
+            "payload": {
+              "schema_version": 1,
+              "gate_kind": "G1_question_benchmark",
+              "research_question_ref": {"entity_id": "rq_consumable_certificate_stock", "version": 1},
+              "ordered_object_refs": [
+                {"entity_id": "rq_consumable_certificate_stock", "version": 1},
+                {"entity_id": "bs_consumable_certificate_benchmarks", "version": 1},
+                {"entity_id": "pg_consumable_certificate_primitives", "version": 1}
+              ],
+              "requirements": [
+                {"requirement_id": "req_falsifiable_question", "description": "The question specifies the k perturbation, the focal outcome mappings, and the unresolved consumable-stock mechanism.", "recorded_condition": "evidence_supplied", "evidence_refs": [{"entity_id": "rq_consumable_certificate_stock", "version": 1}]},
+                {"requirement_id": "req_exact_benchmarks", "description": "The benchmark set separately removes trade-triggered certificate consumption, freezes the uncertified posterior, and makes inspection exogenous.", "recorded_condition": "evidence_supplied", "evidence_refs": [{"entity_id": "bs_consumable_certificate_benchmarks", "version": 1}]},
+                {"requirement_id": "req_scope_risk", "description": "Equilibrium selection, belief updating, and the imposed value used in the fixed-composition benchmark remain unspecified and may require narrowing before analysis.", "recorded_condition": "risk_disclosed"},
+                {"requirement_id": "req_kill_condition", "description": "The framing should be killed if consumption and the induced uncertified posterior are payoff-irrelevant or all candidate patterns survive each channel-removing benchmark unchanged.", "recorded_condition": "gap_disclosed"}
+              ],
+              "proposed_action": "revise",
+              "rationale": "The economic mechanism and separating benchmarks are concrete enough for human review, but the scope retains unresolved equilibrium-selection and benchmark-implementation choices. This dossier proposes no confirmation and records the kill condition and scope risks for the human G1 decision.",
+              "prepared_at": "2026-07-15T18:19:54.658720Z"
+            }
+          },
+          "formal": {}, "economic_interpretation": {}, "literature_novelty": {}, "terminology_presentation": {}
+        }
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_decomposes_consumable_question", "relation_type": "decomposes", "version": 1,
+        "project_id": "prj_8cfea08c84b646229ec2369b0cc868b3d3d84e78e47e24b8",
+        "source": {"entity_id": "rq_consumable_certificate_stock", "version": 1},
+        "target": {"entity_id": "pg_consumable_certificate_primitives", "version": 1},
+        "dependency_mode": "trace_only", "upstream": null, "downstream": null,
+        "privacy": "public", "access_compartments": ["project_research"], "created_at": "2026-07-15T18:19:54.658720Z"
+      }
+    },
+    {
+      "op": "relation.create",
+      "relation": {
+        "relation_id": "rel_governs_g1_consumable_question", "relation_type": "governs", "version": 1,
+        "project_id": "prj_8cfea08c84b646229ec2369b0cc868b3d3d84e78e47e24b8",
+        "source": {"entity_id": "gd_g1_consumable_certificate_scope", "version": 1},
+        "target": {"entity_id": "rq_consumable_certificate_stock", "version": 1},
+        "dependency_mode": "trace_only", "upstream": null, "downstream": null,
+        "privacy": "public", "access_compartments": ["project_research"], "created_at": "2026-07-15T18:19:54.658720Z"
+      }
+    },
+    {
+      "op": "route.outcome",
+      "outcome": {
+        "route_run_id": "run_op_022ec3249664a8c635ac02d05e2b332095e28205828dc370",
+        "route_id": "decompose.primitives",
+        "outcome": "completed_with_candidate",
+        "rationale": "The candidate proposes a primitive graph and a G1 dossier with importance, a kill condition, scope risks, and exact object references. It does not create a human decision or confirm G1.",
+        "candidate_refs": [
+          {"entity_id": "pg_consumable_certificate_primitives", "version": 1},
+          {"entity_id": "gd_g1_consumable_certificate_scope", "version": 1},
+          {"relation_id": "rel_decomposes_consumable_question", "version": 1},
+          {"relation_id": "rel_governs_g1_consumable_question", "version": 1}
+        ],
+        "privacy": "public", "access_compartments": ["project_research"]
+      }
+    }
+  ]
+}
