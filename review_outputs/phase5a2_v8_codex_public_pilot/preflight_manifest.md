@@ -37,7 +37,7 @@ and evaluation key remain outside that root.
 
 | File | Bytes | SHA-256 | Generator-visible |
 |---|---:|---|---|
-| `protocol.md` | 6,051 | `274547b757f54af2ebe19cb54dad57119f93371ca1f51bef94b70380a006fa94` | no |
+| `protocol.md` | 6,104 | `bb58ad5d61b3ef13dfda6477011247849faeb204ec8daad2d28c02367244ccc1` | no |
 | `frozen_evaluation_key.md` | 4,881 | `96c506f89ce8da0a976b51408f774cebb305c32ad8d12413603453c633cfd22f` | no |
 | `generator_case.md` / clean-root `CASE.md` | 2,992 | `0efac3ad9a3832726903a4ebdedd4a5dbbc3f0fd8da36af792d39011b88a8551` | yes |
 | `.agents/skills/econ-theorist-v2/SKILL.md` | 4,938 | `4ee147e92abc591d4d22d1cd80aade47dbf34a9d0351d1ed4026c27f67a7c5a1` | yes |
