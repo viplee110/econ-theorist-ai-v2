@@ -124,6 +124,15 @@ class ChainIntegrityError(ReplayError):
 class CandidateValidationError(EconTheoristError, ValueError):
     """A candidate transaction is structurally inadmissible."""
 
+    def __init__(
+        self,
+        message: str,
+        *,
+        diagnostic_details: dict[str, object] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.diagnostic_details = dict(diagnostic_details or {})
+
 
 class ReferentialIntegrityError(CandidateValidationError):
     """A canonical reference does not resolve to the exact required object."""
@@ -2064,7 +2073,8 @@ def validate_candidate(
                 validate_current_g1_framing_decision(snapshot, decision)
             except FramingQualityValidationError as exc:
                 raise CandidateValidationError(
-                    "live G1 framing preflight rejected the Decision: " + str(exc)
+                    "live G1 framing preflight rejected the Decision: " + str(exc),
+                    diagnostic_details=exc.diagnostic_details,
                 ) from exc
         _assert_project(transaction.project_id, decision.project_id, "Decision")
         validate_decision_authority(decision)
@@ -2494,7 +2504,8 @@ def validate_candidate(
                 )
             except FramingQualityValidationError as exc:
                 raise CandidateValidationError(
-                    f"Phase 5 framing route contract rejected the transaction: {exc}"
+                    f"Phase 5 framing route contract rejected the transaction: {exc}",
+                    diagnostic_details=exc.diagnostic_details,
                 ) from exc
         elif (
             isinstance(bound_route, RouteSpecV4)
@@ -2600,7 +2611,8 @@ def validate_candidate(
             validate_framing_quality_projection(provisional)
         except FramingQualityValidationError as exc:
             raise CandidateValidationError(
-                f"Phase 5 framing-quality projection is inadmissible: {exc}"
+                f"Phase 5 framing-quality projection is inadmissible: {exc}",
+                diagnostic_details=exc.diagnostic_details,
             ) from exc
     derived = derive_entity_statuses(
         entity_versions=provisional.entity_versions,

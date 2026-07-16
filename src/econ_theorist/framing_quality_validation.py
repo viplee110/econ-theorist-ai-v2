@@ -57,6 +57,15 @@ FRAMING_ROUTE_VERSIONS = frozenset((6, 7, 8))
 class FramingQualityValidationError(ValueError):
     """A framing-quality object or route transaction is inadmissible."""
 
+    def __init__(
+        self,
+        message: str,
+        *,
+        diagnostic_details: Mapping[str, object] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.diagnostic_details = dict(diagnostic_details or {})
+
 
 class FramingQualityRouteEntryReport(StrictModel):
     route_id: Literal["audit.framing_economics"] = "audit.framing_economics"
@@ -609,6 +618,8 @@ _FIXING_LEVEL_OVERLAPS: Mapping[str, frozenset[str]] = {
     "aggregate": frozenset(("aggregate",)),
 }
 
+_MAX_STRUCTURED_DIAGNOSTIC_ISSUES = 20
+
 
 def _step_is_on_force_path(
     adjacency: Mapping[str, frozenset[str]],
@@ -932,7 +943,8 @@ def _validate_bundle_science(
             "witness only for a fully downgraded revise_framing diagnosis with "
             "an exact causal-attribution or reoptimization repair target"
         )
-    for step in steps:
+    primitive_path_issues: list[dict[str, object]] = []
+    for step_index, step in enumerate(steps):
         if {step.source_node_id, step.target_node_id}.difference(node_ids):
             raise FramingQualityValidationError(
                 "causal chain references a node outside PrimitiveGraph"
@@ -1036,19 +1048,79 @@ def _validate_bundle_science(
                 adjacency=frozen_adjacency,
             )
             witnessed_steps.append((step, witness))
-        for force_id in step.force_ids:
+        for force_index, force_id in enumerate(step.force_ids):
             force = force_by_id[force_id]
             if not _step_is_on_force_path(frozen_adjacency, force, step):
-                raise FramingQualityValidationError(
-                    "causal_force_binding: a causal-chain step is not an ordered "
-                    "subpath of its cited economic force"
+                primitive_path_issues.append(
+                    {
+                        "location": [
+                            "causal_chain",
+                            step_index,
+                            "force_ids",
+                            force_index,
+                        ],
+                        "type": "causal_step_not_on_force_path",
+                        "step_number": step.step_number,
+                        "step_source_node_id": step.source_node_id,
+                        "step_target_node_id": step.target_node_id,
+                        "force_id": force.force_id,
+                        "force_source_node_id": force.source_node_id,
+                        "force_margin_node_id": force.margin_node_id,
+                        "force_target_node_id": force.target_node_id,
+                    }
                 )
-            used_force_ids.add(force_id)
-    if steps[0].target_node_id != steps[1].source_node_id or (
-        steps[1].target_node_id != steps[2].source_node_id
-    ):
+            else:
+                used_force_ids.add(force_id)
+    for left_index, (left, right) in enumerate(zip(steps, steps[1:])):
+        if left.target_node_id == right.source_node_id:
+            continue
+        primitive_path_issues.append(
+            {
+                "location": ["causal_chain", left_index + 1, "source_node_id"],
+                "type": "causal_chain_not_closed",
+                "left_step_number": left.step_number,
+                "left_target_node_id": left.target_node_id,
+                "right_step_number": right.step_number,
+                "right_source_node_id": right.source_node_id,
+            }
+        )
+    if primitive_path_issues:
+        reported_issues = primitive_path_issues[:_MAX_STRUCTURED_DIAGNOSTIC_ISSUES]
+        summaries: list[str] = []
+        for issue in reported_issues:
+            if issue["type"] == "causal_step_not_on_force_path":
+                summaries.append(
+                    "step "
+                    f"{issue['step_number']} "
+                    f"{issue['step_source_node_id']}->{issue['step_target_node_id']} "
+                    f"is not an ordered subpath of force {issue['force_id']} "
+                    f"{issue['force_source_node_id']}->{issue['force_margin_node_id']}"
+                    f"->{issue['force_target_node_id']}"
+                )
+            else:
+                summaries.append(
+                    "chain gap between steps "
+                    f"{issue['left_step_number']} and {issue['right_step_number']}: "
+                    f"{issue['left_target_node_id']} != "
+                    f"{issue['right_source_node_id']}"
+                )
         raise FramingQualityValidationError(
-            "causal chain is not closed across its three ordered steps"
+            "causal_force_binding: primitive-path contract rejected "
+            f"{len(primitive_path_issues)} issue(s): " + "; ".join(summaries),
+            diagnostic_details={
+                "validation_stage": "canonical_candidate_preflight",
+                "rule_id": "framing.primitive_paths",
+                "repairable": True,
+                "retry_action": "edit_declared_candidate_and_retry_same_request",
+                "repair_hint": (
+                    "Use only exact PrimitiveGraph node IDs and directed paths; "
+                    "bind each step to a force that contains it and close adjacent "
+                    "step endpoints without inventing an absent connection."
+                ),
+                "issue_count": len(primitive_path_issues),
+                "truncated": len(reported_issues) < len(primitive_path_issues),
+                "issues": reported_issues,
+            },
         )
     missing_force_ids = sorted(set(force_by_id).difference(used_force_ids))
     if missing_force_ids:

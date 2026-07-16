@@ -1,7 +1,9 @@
 # Framing-quality preflight contract
 
-Status: additive v8 negative-diagnosis revision candidate; focused and routine
-non-long deterministic verification passed, fresh real-Codex rerun pending
+Status: additive v8 negative-diagnosis revision candidate; pre-pilot scientific
+and post-pilot host-stabilization deterministic verification passed; the first
+fresh real-Codex rerun completed without an audit commit, so a successful
+post-stabilization rerun is pending
 
 This contract owns the first pilot-driven scientific strengthening after the
 Phase 5A.2 public Codex framing run. It addresses a narrow failure: a
@@ -274,12 +276,32 @@ framing, registry, model, and distribution tests passed. Route registry v8 is
 pinned at `5d2c2efdef205ee1ff188249dcb05cb5a4430d36ef754a93bde402a092aa40c1`
 and navigation registry v7 at
 `ea133669cd85c073b6352744f2d1b5413dfe33d738752ad17769637acfd9e510`.
-The final current tree passed 584 routine non-long tests with six declared
+The pre-pilot V8 tree passed 584 routine non-long tests with six declared
 platform/optional skips, Python compilation, and diff checks. The seven
 current schema/resource exporters and an installed-wheel `doctor` check passed
 during the v8 pilot freeze; its exact wheel and input hashes are recorded in
 `../../review_outputs/phase5a2_v8_codex_public_pilot/preflight_manifest.md`.
 The three hour-scale historical gold chains were not rerun because this
-additive change preserves their frozen resources. The fresh Codex rerun remains
-open, so this checkpoint is not evidence that readability, paper quality, or
-human effort has improved.
+additive change preserves their frozen resources. A successful Codex audit
+rerun remains open, so this checkpoint is not evidence that readability, paper
+quality, or human effort has improved.
+
+The frozen first V8 run has now occurred. Engine baseline `45a540b` and wheel
+`dad56a86b8863ca63cf7bae3b37da5bcacabeee66cf99c1ea5ad71f7a9f3854d`
+committed framing at `a1970a85...` and decomposition at `8a7e73a...`. Audit run
+`run_op_29e4aa557e4823cded54a6c32ef447aaef93376147ad78cb` produced an honest
+unwitnessed `revise_framing` candidate but did not pass the exact primitive-path
+contract after its two declared repairs. No FramingQualityBundle, replacement
+GateDossier, or G1 decision entered the canonical head. Its final
+`failed_terminal` receipt left the head unchanged and the RouteRun resumable.
+See the exact [run report](../../review_outputs/phase5a2_v8_codex_public_pilot/run_report.md).
+
+That run attempted but did not demonstrate the V8 negative-diagnosis exit. It
+also exposed a leading candidate-source parse failure, incomplete path-error
+diagnostics, a hidden finish-warning grammar, and mutable evidence-source
+paths. The bounded post-pilot stabilization candidate addresses those host
+surfaces without changing this contract's scientific conditions. Those fixes
+were not exercised by the original run. The post-pilot source candidate passed
+594 routine non-long tests with six declared skips, all seven exporters, and
+required `doctor` checks; a new committed wheel and successful new blind run
+remain required.

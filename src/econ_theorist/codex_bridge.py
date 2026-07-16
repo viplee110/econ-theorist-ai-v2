@@ -44,6 +44,7 @@ from .machine.models import (
     MachineResponseV1,
     NavigationCandidateV1,
     NonEmpty,
+    ReceiptToken,
     RunInputBriefV1,
     WorkPacketV1,
 )
@@ -183,7 +184,7 @@ class CodexFinishRequestV1(StrictModel):
         "cancelled",
         "unknown_possible_effect",
     ]
-    warnings: tuple[NonEmpty, ...] = ()
+    warnings: tuple[ReceiptToken, ...] = ()
 
 
 CodexBridgeRequest: TypeAlias = Annotated[

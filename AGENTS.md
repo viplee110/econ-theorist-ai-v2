@@ -23,15 +23,19 @@ exact repair. V8 preserves the strict positive active-margin and G1 gates while
 allowing only a fully downgraded, exact-targeted `revise_framing` diagnosis to
 commit when the upstream graph makes an honest payoff witness unavailable. Its normative owner is
 `docs/implementation/framing_quality_contract.md`. It is not accepted evidence
-of improved readability, lower intervention, or research quality until a
-fresh real-Codex rerun passes and its economics are inspected.
+of improved readability, lower intervention, or research quality. The first
+fresh V8 public blind run committed framing and decomposition but exhausted its
+two repairs without an audit commit; no G1 decision occurred. A successful
+post-stabilization rerun and independent economics inspection remain open.
 
-The next executable scientific work is pilot-driven: freeze the exact v8
-wheel and a clean non-cloud blind-test root, then rerun the same public Codex
-pilot through the v8 negative-diagnosis path, benchmark-semantic audit, and
-mechanism-robustness checks. Inspect the economics and editing burden before
-an exploratory v1/v2 revision comparison. Do not expand generic security
-infrastructure unless a concrete local-use failure requires it.
+The bounded post-pilot stabilization passed its 594-test routine non-long gate,
+all seven exporters, and required `doctor` checks without changing V8
+scientific acceptance. Its real-model evidence remains open. The next
+executable work is to bind the committed treatment to a new wheel and clean
+non-cloud root, rerun the same blind pilot, and run one held-out framing case.
+Inspect a canonically committed same-case audit's economics and editing burden
+before an exploratory v1/v2 revision comparison. Do not expand generic
+security infrastructure unless a concrete local-use failure requires it.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or

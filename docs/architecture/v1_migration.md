@@ -88,7 +88,7 @@ status. It is retained to show what was actually executable at that point.
 | `V1-TOOLCHAIN` | `implemented_partial` | portable `doctor` reports required and optional capabilities and explains soft degradation | adapter-specific version probes and exact verification-run provenance remain to be added with those adapters |
 | `V1-LEGAL` | `parity_verified` | Apache-2.0 `LICENSE`, `NOTICE`, and `CITATION.cff` remain present | update release metadata when a public version is cut |
 
-### 2.2 Current implementation status after the Phase 1--4 acceptances and the v5 framing slice
+### 2.2 Current status after the Phase 1--4 and framing-strengthening slices
 
 The table below updates the migration ledger without retroactively changing
 the Phase 1 evidence above. `migrated` means that the named capability now has
@@ -98,8 +98,8 @@ paper; those comparative claims remain Phase 6 outcomes.
 
 | Capability | Current status | Executable v2 evidence | Honest remaining boundary |
 |---|---|---|---|
-| `V1-HUMAN-GATES`, `V1-PROVISIONAL-AUTO` | `migrated` | typed G1--G5 dossiers and Decisions, L1/L2/L3 authority, invalidation, live human-action preflights, and immutable historical replay | human judgment quality is not automated; the v5 framing preflight is diagnostic rather than G1 authority |
-| `V1-ECON-LOGIC`, `V1-PRIMITIVE-HUNTER`, `V1-MICRO-EXAMPLE`, `V1-MODEL-TOURNAMENT`, `V1-HEURISTIC-DERIVATION` | `migrated_strengthened` | exact question/benchmark/primitive graphs, separate mechanism and implementation tournaments, prediction freeze, archetype-sensitive examples, formalization maps, and the v5 framing-quality bundle | the first public Codex pilot exposed weak benchmark semantics; the strengthened route still needs a fresh real-model rerun before any readability or effort claim |
+| `V1-HUMAN-GATES`, `V1-PROVISIONAL-AUTO` | `migrated` | typed G1--G5 dossiers and Decisions, L1/L2/L3 authority, invalidation, live human-action preflights, and immutable historical replay | human judgment quality is not automated; the framing preflight is diagnostic rather than G1 authority |
+| `V1-ECON-LOGIC`, `V1-PRIMITIVE-HUNTER`, `V1-MICRO-EXAMPLE`, `V1-MODEL-TOURNAMENT`, `V1-HEURISTIC-DERIVATION` | `migrated_strengthened` | exact question/benchmark/primitive graphs, separate mechanism and implementation tournaments, prediction freeze, archetype-sensitive examples, formalization maps, and the versioned framing-quality bundle | the first V8 rerun reached but did not commit the strengthened audit; a successful post-stabilization rerun and independent inspection remain required before any readability or effort claim |
 | `V1-ABSORPTION`, `V1-CONTRIBUTION-LOCK`, `V1-GENERALITY`, `V1-PRE-PAPER-NOTE` | `migrated` | closest-theory mapping, absorption assessment, result portfolio, G4 investment gate, assumption/generality audit, and validated argument package | literature coverage and scientific taste remain bounded by supplied evidence and human review |
 | `V1-CLAIM-EXTRACTION`, `V1-ASSUMPTION-LEDGER`, `V1-REDERIVATION`, `V1-SYMBOLIC-NUMERIC`, `V1-PROOF-AUDIT`, `V1-COUNTEREXAMPLE-HARNESS` | `migrated_strengthened` | exact claim graph and proof obligations, typed assumption maps, blind re-derivation, executable predicate receipts, counterexample/downgrade controls, and assurance closure | finite computation is never promoted to proof; semantic equivalence between a natural-language obligation and executable predicate still requires bounded audit |
 | `V1-RESULT-HYGIENE`, `V1-MANUSCRIPT-ARCH`, `V1-WORKING-PREVIEW`, `V1-REVIEW-REVISION` | `migrated` | Paper IR, result contracts, reader paths, typed prose spans, one canonical writer, independent reviews, revision briefs, and submission projection without wording changes | accepted evidence covers one result-block repair loop, not autonomous complete-paper quality |

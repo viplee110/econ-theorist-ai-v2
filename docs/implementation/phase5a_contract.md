@@ -3,8 +3,9 @@
 Status: Phase 5A.0 design accepted on `main` by `2192956`; active deployment
 scope revised on 2026-07-13 to trusted local research use; the Phase 5A.1 local
 machine facade and one Phase 5A.2 public Codex functional slice are complete in
-the current tree. The full host-native research-ready gate remains open and no
-public-release claim is made
+the current tree. A later V8 public diagnostic committed framing and primitive
+decomposition but not its framing-quality audit. The full host-native
+research-ready gate remains open and no public-release claim is made
 
 Phase 5A.1 implementation branch (historical): `agent/phase5a-machine-facade`
 
@@ -1349,6 +1350,39 @@ v1/v2 superiority; lower human effort; publication readiness; or the complete
 local research-ready gate. The deterministic acceptance predicate for the
 additive v8 work specified in
 [`framing_quality_contract.md`](framing_quality_contract.md) now passes. Its
-immediate scientific follow-up is to freeze an exact v8 wheel and rerun the
-same public pilot in a clean blind-test root, inspect the economics and editing
-burden, and only then begin an exploratory v1/v2 revision pilot.
+first frozen public rerun and its post-pilot status are recorded separately in
+section 20; the earlier slice and hashes above remain historical evidence.
+
+## 20. V8 public negative-diagnosis pilot and post-pilot stabilization
+
+The later evidence is recorded in
+[`../../review_outputs/phase5a2_v8_codex_public_pilot`](../../review_outputs/phase5a2_v8_codex_public_pilot/).
+It separates four conclusions:
+
+- **machine path:** `frame.question_and_benchmarks` and
+  `decompose.primitives` canonically committed; `audit.framing_economics` did
+  not commit after the initial candidate and two declared repairs;
+- **candidate economics:** the audit honestly proposed `revise_framing` and did
+  not fabricate a payoff witness, but its final force binding and two adjacent
+  chain joins violated the exact PrimitiveGraph path contract;
+- **disposition and authority:** `failed_terminal` is a durable operational
+  host receipt, not a canonical scientific disposition. No FramingQualityBundle,
+  replacement GateDossier, or human G1 Decision was committed;
+- **quality and effort:** the noncanonical candidate can support later blind
+  adjudication, but this run establishes neither research quality, readability,
+  nor reduced human editing burden.
+
+One repair opportunity was consumed by a leading JSON parse failure reported
+by the agent as a UTF-8 BOM, and the final domain diagnostic returned a generic
+message with empty details rather than all three path defects. The first finish
+request also revealed an undiscoverable opaque-warning grammar, and the pilot
+capture did not freeze overwritten request/candidate sources.
+
+The post-pilot host-stabilization candidate normalizes one leading UTF-8 BOM at
+the noncanonical source boundary, aggregates exact path diagnostics, exposes
+the existing finish-token grammar in the Codex schema, and adds immutable
+request/candidate capture. It changes no route registry, instruction, schema,
+scientific acceptance condition, or human gate. The failed pilot did not
+exercise these later fixes. The post-pilot source candidate passed its
+deterministic gate; a new commit and wheel freeze plus a new blind task remain
+required before any model-success claim.

@@ -13,6 +13,7 @@ from econ_theorist.machine.dispatcher import (
     MachineDispatcher,
     TrustedHostCompletionObservation,
     TrustedHostDeliverySession,
+    error_response,
 )
 from econ_theorist.machine.egress import _events
 from econ_theorist.machine.models import (
@@ -27,6 +28,7 @@ from econ_theorist.models import Actor
 from econ_theorist.compatibility import probe_project_root
 from econ_theorist.runtime.faults import FAULT_MODE_ENV, FAULT_POINT_ENV
 from econ_theorist.runtime.layout import StoreLayout
+from econ_theorist.runtime.replay import CandidateValidationError
 from econ_theorist.machine.operational import ProjectOperationalLayout
 
 
@@ -123,6 +125,66 @@ class Phase5AMachineDispatcherTests(unittest.TestCase):
             canonical_json_bytes(response), strict=True
         )
         self.assertEqual(reparsed, response)
+
+    def test_candidate_validation_details_survive_machine_error_projection(
+        self,
+    ) -> None:
+        request = self._request("project.inspect")
+        details = {
+            "validation_stage": "canonical_candidate_preflight",
+            "rule_id": "framing.primitive_paths",
+            "repairable": True,
+            "retry_action": "edit_declared_candidate_and_retry_same_request",
+            "repair_hint": "Close the exact path without inventing a connection.",
+            "issue_count": 1,
+            "truncated": False,
+            "issues": [
+                {
+                    "location": ["causal_chain", 0, "force_ids", 0],
+                    "type": "causal_step_not_on_force_path",
+                    "step_number": 1,
+                    "step_source_node_id": "node.source",
+                    "step_target_node_id": "node.target",
+                    "force_id": "force.one",
+                    "force_source_node_id": "node.force_source",
+                    "force_margin_node_id": "node.force_margin",
+                    "force_target_node_id": "node.force_target",
+                }
+            ],
+        }
+
+        response = error_response(
+            request,
+            CandidateValidationError(
+                "causal_force_binding: one exact path issue",
+                diagnostic_details=details,
+            ),
+        )
+
+        self.assertEqual(response.outcome, "error")
+        self.assertEqual(response.diagnostics[0].code, "CandidateValidationError")
+        self.assertEqual(response.diagnostics[0].details, details)
+        self.assertNotIn("traceback", response.model_dump_json().lower())
+
+    def test_untrusted_or_unbounded_exception_details_are_not_projected(
+        self,
+    ) -> None:
+        request = self._request("project.inspect")
+        arbitrary = RuntimeError("bounded public message")
+        arbitrary.diagnostic_details = {"secret_path": str(self.root)}  # type: ignore[attr-defined]
+
+        unrelated = error_response(request, arbitrary)
+        malformed = error_response(
+            request,
+            CandidateValidationError(
+                "candidate rejected",
+                diagnostic_details={"unexpected": object()},
+            ),
+        )
+
+        self.assertEqual(unrelated.diagnostics[0].details, {})
+        self.assertEqual(malformed.diagnostics[0].details, {})
+        self.assertNotIn(str(self.root), unrelated.model_dump_json())
 
     def test_cli_stdout_is_exactly_one_machine_response(self) -> None:
         environment = os.environ.copy()

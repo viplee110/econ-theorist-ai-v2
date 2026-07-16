@@ -10,7 +10,12 @@ import unittest
 from unittest.mock import patch
 
 from econ_theorist.codec import canonical_json_bytes
-from econ_theorist.codex_bridge import CodexSessionV1, CodexStartRequestV1
+from econ_theorist.codex_bridge import (
+    CodexBridge,
+    CodexCompleteRequestV1,
+    CodexSessionV1,
+    CodexStartRequestV1,
+)
 from scripts.capture_codex_invocation import _capture_exit_code, capture_invocation
 
 
@@ -50,7 +55,12 @@ class CodexInvocationCaptureTests(unittest.TestCase):
         self.request.write_bytes(data)
         return data
 
-    def _invoke(self, command: list[str]) -> tuple[int, dict]:
+    def _invoke(
+        self,
+        command: list[str],
+        *,
+        candidate_source: Path | None = None,
+    ) -> tuple[int, dict]:
         return capture_invocation(
             command,
             request_path=self.request,
@@ -59,6 +69,48 @@ class CodexInvocationCaptureTests(unittest.TestCase):
             stdout_path=self.stdout,
             stderr_path=self.stderr,
             metadata_path=self.metadata,
+            candidate_source_path=candidate_source,
+        )
+
+    def _prepare_complete_capture(
+        self,
+    ) -> tuple[CodexCompleteRequestV1, Path]:
+        bridge = CodexBridge(
+            trusted_clock=lambda: NOW,
+            preproject_operational_home=self.root.parent / "preproject-operations",
+        )
+        ready = bridge.invoke(self._request(self.root))
+        self.assertEqual(ready.outcome, "ready", ready)
+        assert ready.route_run_id is not None
+        assert ready.work_packet_hash is not None
+        assert ready.delivery_envelope_hash is not None
+        assert ready.candidate_logical_path is not None
+        complete = CodexCompleteRequestV1(
+            project_root=str(self.root),
+            route_run_id=ready.route_run_id,
+            work_packet_hash=ready.work_packet_hash,
+            delivery_envelope_hash=ready.delivery_envelope_hash,
+        )
+        self.request.write_bytes(canonical_json_bytes(complete))
+        candidate = self.root / ready.candidate_logical_path
+        candidate.parent.mkdir(parents=True, exist_ok=True)
+        return complete, candidate
+
+    @staticmethod
+    def _completion_child(route_run_id: str, candidate_digest: str) -> str:
+        return (
+            "import hashlib,json,sys; data=sys.stdin.buffer.read(); "
+            "value={'bridge_response_schema':"
+            "'econ-theorist/codex-bridge-response/v1','bridge_version':1,"
+            "'operation':'complete','request_digest':hashlib.sha256(data).hexdigest(),"
+            "'outcome':'staged','mutated':True,'completion':{"
+            "'completion_result_schema':"
+            "'econ-theorist/candidate-completion-result/v1','status':'staged',"
+            f"'route_run_id':{route_run_id!r},"
+            f"'candidate_digest':{candidate_digest!r},"
+            "'transaction_digest':None,'head_before':'0'*64,'head_after':'0'*64,"
+            "'host_receipt_hash':'1'*64}}; "
+            "sys.stdout.write(json.dumps(value,separators=(',',':'))+'\\n')"
         )
 
     def test_large_raw_response_and_portable_state_are_captured_directly(
@@ -86,6 +138,10 @@ class CodexInvocationCaptureTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertTrue(metadata["response_valid"])
+        self.assertEqual(
+            metadata["capture_schema"],
+            "econ-theorist/codex-invocation-capture/v2",
+        )
         self.assertTrue(metadata["stdout_json_object_valid"])
         self.assertTrue(metadata["bridge_response_valid"])
         self.assertGreater(metadata["stdout_bytes"], 256 * 1024)
@@ -124,6 +180,13 @@ class CodexInvocationCaptureTests(unittest.TestCase):
         persisted = json.loads(self.metadata.read_bytes())
         self.assertEqual(persisted["stdout_sha256"], metadata["stdout_sha256"])
         self.assertEqual(persisted["request_transport"], "stdin")
+        self.assertEqual(
+            Path(metadata["captured_request_path"]).read_bytes(),
+            self.request.read_bytes(),
+        )
+        self.assertEqual(
+            metadata["captured_request_sha256"], metadata["request_sha256"]
+        )
 
     def test_pre_read_request_bytes_remain_bound_when_source_changes(self) -> None:
         original = self.request.read_bytes()
@@ -151,6 +214,133 @@ class CodexInvocationCaptureTests(unittest.TestCase):
         self.assertEqual(metadata["request_sha256"], expected)
         self.assertTrue(metadata["source_request_changed_after_read"])
         self.assertEqual(self.request.read_bytes(), b"changed-after-read")
+        self.assertEqual(
+            Path(metadata["captured_request_path"]).read_bytes(), original
+        )
+
+    def test_complete_capture_freezes_pre_invocation_candidate_bytes(self) -> None:
+        _, candidate = self._prepare_complete_capture()
+        original = b"\xef\xbb\xbf{\"candidate\":\"before\"}\n"
+        candidate.write_bytes(original)
+
+        with self.assertRaisesRegex(ValueError, "candidate_source_path is required"):
+            self._invoke([sys.executable, "-c", "raise SystemExit(99)"])
+
+        child = (
+            "import hashlib,json,sys; data=sys.stdin.buffer.read(); "
+            "value={'bridge_response_schema':'econ-theorist/codex-bridge-response/v1',"
+            "'bridge_version':1,'operation':'complete',"
+            "'request_digest':hashlib.sha256(data).hexdigest(),"
+            "'outcome':'blocked','mutated':False}; "
+            "sys.stdout.write(json.dumps(value,separators=(',',':'))+'\\n')"
+        )
+        exit_code, metadata = self._invoke(
+            [sys.executable, "-c", child],
+            candidate_source=candidate,
+        )
+
+        self.assertEqual(exit_code, 0)
+        self.assertTrue(metadata["response_valid"])
+        self.assertEqual(
+            metadata["candidate_sha256"], hashlib.sha256(original).hexdigest()
+        )
+        self.assertEqual(
+            Path(metadata["captured_candidate_path"]).read_bytes(), original
+        )
+        self.assertFalse(metadata["source_candidate_changed_after_read"])
+        self.assertIsNotNone(metadata["candidate_preflight_validation_error"])
+        self.assertEqual(candidate.read_bytes(), original)
+
+    def test_complete_capture_rejects_wrong_or_changed_candidate_source(
+        self,
+    ) -> None:
+        _, candidate = self._prepare_complete_capture()
+        original = b'{"candidate":"before"}\n'
+        candidate.write_bytes(original)
+        wrong = self.root / ".econ-theorist" / "staging" / "wrong.json"
+        wrong.write_bytes(original)
+
+        with self.assertRaisesRegex(ValueError, "differs from the complete request"):
+            self._invoke(
+                [sys.executable, "-c", "raise SystemExit(99)"],
+                candidate_source=wrong,
+            )
+
+        child = (
+            "import hashlib,json,pathlib,sys; data=sys.stdin.buffer.read(); "
+            "pathlib.Path(sys.argv[1]).write_bytes(b'candidate-after'); "
+            "value={'bridge_response_schema':'econ-theorist/codex-bridge-response/v1',"
+            "'bridge_version':1,'operation':'complete',"
+            "'request_digest':hashlib.sha256(data).hexdigest(),"
+            "'outcome':'blocked','mutated':False}; "
+            "sys.stdout.write(json.dumps(value,separators=(',',':'))+'\\n')"
+        )
+        exit_code, metadata = self._invoke(
+            [sys.executable, "-c", child, str(candidate)],
+            candidate_source=candidate,
+        )
+
+        self.assertEqual(exit_code, 0)
+        self.assertTrue(metadata["bridge_schema_valid"])
+        self.assertFalse(metadata["response_valid"])
+        self.assertTrue(metadata["source_candidate_changed_after_read"])
+        self.assertIn("candidate source changed", metadata["response_binding_error"])
+        self.assertEqual(
+            Path(metadata["captured_candidate_path"]).read_bytes(), original
+        )
+        self.assertEqual(_capture_exit_code(exit_code, False), 3)
+
+    def test_complete_capture_binds_completion_candidate_digest(self) -> None:
+        complete, candidate = self._prepare_complete_capture()
+        candidate.write_bytes(b'{"candidate":"before"}\n')
+        expected = "a" * 64
+
+        with patch(
+            "scripts.capture_codex_invocation.candidate_source_digest",
+            return_value=expected,
+        ):
+            exit_code, metadata = self._invoke(
+                [
+                    sys.executable,
+                    "-c",
+                    self._completion_child(complete.route_run_id, expected),
+                ],
+                candidate_source=candidate,
+            )
+
+        self.assertEqual(exit_code, 0)
+        self.assertTrue(metadata["response_valid"])
+        self.assertTrue(metadata["candidate_digest_matches_response"])
+        self.assertEqual(metadata["candidate_canonical_digest_before"], expected)
+
+    def test_complete_capture_rejects_completion_candidate_digest_mismatch(
+        self,
+    ) -> None:
+        complete, candidate = self._prepare_complete_capture()
+        candidate.write_bytes(b'{"candidate":"before"}\n')
+        expected = "a" * 64
+
+        with patch(
+            "scripts.capture_codex_invocation.candidate_source_digest",
+            return_value=expected,
+        ):
+            exit_code, metadata = self._invoke(
+                [
+                    sys.executable,
+                    "-c",
+                    self._completion_child(complete.route_run_id, "b" * 64),
+                ],
+                candidate_source=candidate,
+            )
+
+        self.assertEqual(exit_code, 0)
+        self.assertTrue(metadata["bridge_schema_valid"])
+        self.assertFalse(metadata["response_valid"])
+        self.assertFalse(metadata["candidate_digest_matches_response"])
+        self.assertIn(
+            "candidate digest differs",
+            metadata["response_binding_error"],
+        )
 
     def test_json_object_is_not_mistaken_for_a_bridge_response(self) -> None:
         child = "import sys; sys.stdout.write('{}\\n')"

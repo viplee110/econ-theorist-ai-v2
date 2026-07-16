@@ -16,7 +16,7 @@ theory — without pretending any workflow can promise publication.
   <a href="#-from-an-idea-to-a-defensible-argument-in-five-moves"><img alt="Focus: Economic Theory" src="https://img.shields.io/badge/Focus-Economic%20Theory-7C3AED"></a>
   <a href="#-what-exists-today"><img alt="Status: Research Preview" src="https://img.shields.io/badge/Status-Research%20Preview-F59E0B"></a>
   <a href="routes/registry.v8.json"><img alt="35 enabled routes" src="https://img.shields.io/badge/Routes-35%20enabled-0F766E"></a>
-  <a href="#-evidence-and-verification"><img alt="584-test regression with 6 skips" src="https://img.shields.io/badge/Regression-584%20tests%20%7C%206%20skips-16A34A"></a>
+  <a href="#-evidence-and-verification"><img alt="594-test regression with 6 skips" src="https://img.shields.io/badge/Regression-594%20tests%20%7C%206%20skips-16A34A"></a>
   <a href="https://www.python.org/"><img alt="Python 3.11+" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white"></a>
   <a href="LICENSE"><img alt="Apache 2.0 license" src="https://img.shields.io/badge/License-Apache%202.0-3B82F6"></a>
 </p>
@@ -167,10 +167,11 @@ there. You do not need to learn route names, schemas, or state commands.
 > [!CAUTION]
 > The current Codex bridge is **public-only**. Use only public or deliberately
 > synthetic research content. This preview has demonstrated one natural-language
-> handoff into a route-valid canonical commit; a fresh real-model run through
-> the V8 framing audit and a complete paper run remain unproved. Clean first-use
-> activation in an arbitrary paper directory, positive private execution, and
-> Claude Code/Cursor parity also remain pending.
+> handoff into a route-valid canonical commit. A later V8 blind run committed
+> framing and decomposition but exhausted its repair budget without an audit
+> commit; a successful post-stabilization audit and a complete paper run remain
+> unproved. Clean first-use activation in an arbitrary paper directory, positive
+> private execution, and Claude Code/Cursor parity also remain pending.
 
 ### Before you start
 
@@ -352,13 +353,18 @@ getting closer.**
 - ✅ Dependency-driven invalidation and bounded repair/revision routes
 - ✅ Paper IR and manuscript-unit routes with formal-fidelity, economic-reader,
   cold-reader, and profile/craft review
+- ✅ V8 pre-G1 framing-quality audit passing its deterministic acceptance suite
+
+### Recorded public pilot evidence
+
 - ✅ One recorded public Codex handoff from a natural-language question to a
   canonical, route-valid `frame.question_and_benchmarks` commit
-- ✅ V8 pre-G1 framing-quality audit passing its deterministic acceptance suite
+- ✅ One later public blind run with canonical framing and primitive-decomposition
+  commits, an honestly negative audit candidate, and no fabricated G1 decision
 
 ### Still being tested or built
 
-- 🧪 Fresh real-model V8 pilot and held-out V1/V2 comparison
+- 🧪 Successful post-stabilization V8 audit rerun and held-out V1/V2 comparison
 - 🧪 Comparative readability, token, wall-time, and active-human-effort gains
 - 🚧 Clean first-use installation and positive private execution
 - 🚧 Claude Code and Cursor host parity
@@ -425,13 +431,25 @@ econ-theorist-ai-v2/
 
 ## 🧪 Evidence and verification
 
-The V8 deterministic checkpoint ran **584 routine non-long tests** with six
+The pre-pilot V8 deterministic checkpoint ran **584 routine non-long tests** with six
 platform/optional skips. The focused framing suite passed **69 tests**, and the
 Windows operational-journal regression passed **25 tests**. Python compilation
 and diff checks also passed. The seven schema/resource exporters and an
-installed-wheel `doctor` check passed for the V8 pilot freeze. A fresh
-real-Codex pilot remains pending, so these checks do not by themselves
-establish better papers or lower human editing effort.
+installed-wheel `doctor` check passed for the V8 pilot freeze. The first blind
+run later committed framing and decomposition but not the audit. One leading
+JSON/encoding failure and an incomplete domain diagnostic reduced repair
+usability, while the final candidate also contained three real primitive-path
+errors and was correctly rejected. The post-pilot stabilization was not
+exercised by that run, so neither checkpoint establishes better papers or lower
+human editing effort.
+See the [V8 run report](review_outputs/phase5a2_v8_codex_public_pilot/run_report.md).
+
+The bounded post-pilot host-stabilization checkpoint then passed **594 routine
+non-long tests** with the same six declared skips, including **65 affected-route
+tests**. All seven exporters and the required `doctor` checks passed. This
+proves deterministic compatibility of the source candidate, not real-model
+success; the [stabilization gate](review_outputs/phase5a2_v8_codex_public_pilot/stabilization_gate.md)
+keeps the next blind-run and economics evidence separate.
 
 <details>
 <summary><strong>Show verification commands</strong></summary>

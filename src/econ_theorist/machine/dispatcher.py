@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import Field, ValidationError
 
@@ -19,7 +19,7 @@ from ..compatibility import probe_project_root
 from ..ids import utc_now
 from ..models import Actor, Decision, PrivacyLabel, StrictModel
 from ..runtime.layout import StoreLayout
-from ..runtime.replay import replay
+from ..runtime.replay import CandidateValidationError, replay
 from .authority import (
     HmacTrustedHumanChannel,
     confirm_decision_with_receipt,
@@ -72,6 +72,70 @@ from .run_service import open_or_resume_run
 
 class MachineDispatchError(RuntimeError):
     """A request cannot be executed through the public machine surface."""
+
+
+_BoundedDiagnosticText = Annotated[
+    str,
+    Field(min_length=1, max_length=256),
+]
+_DiagnosticLocation = Annotated[
+    list[_BoundedDiagnosticText | int],
+    Field(min_length=1, max_length=8),
+]
+
+
+class _ForcePathIssueDiagnostic(StrictModel):
+    location: _DiagnosticLocation
+    type: Literal["causal_step_not_on_force_path"]
+    step_number: Annotated[int, Field(ge=1, le=1000)]
+    step_source_node_id: _BoundedDiagnosticText
+    step_target_node_id: _BoundedDiagnosticText
+    force_id: _BoundedDiagnosticText
+    force_source_node_id: _BoundedDiagnosticText
+    force_margin_node_id: _BoundedDiagnosticText
+    force_target_node_id: _BoundedDiagnosticText
+
+
+class _ChainGapIssueDiagnostic(StrictModel):
+    location: _DiagnosticLocation
+    type: Literal["causal_chain_not_closed"]
+    left_step_number: Annotated[int, Field(ge=1, le=1000)]
+    left_target_node_id: _BoundedDiagnosticText
+    right_step_number: Annotated[int, Field(ge=1, le=1000)]
+    right_source_node_id: _BoundedDiagnosticText
+
+
+class _PrimitivePathDiagnostic(StrictModel):
+    validation_stage: Literal["canonical_candidate_preflight"]
+    rule_id: Literal["framing.primitive_paths"]
+    repairable: Literal[True]
+    retry_action: Literal["edit_declared_candidate_and_retry_same_request"]
+    repair_hint: Annotated[str, Field(min_length=1, max_length=1000)]
+    issue_count: Annotated[int, Field(ge=1, le=10000)]
+    truncated: bool
+    issues: Annotated[
+        list[_ForcePathIssueDiagnostic | _ChainGapIssueDiagnostic],
+        Field(min_length=1, max_length=20),
+    ]
+
+
+def _safe_candidate_diagnostic_details(exc: Exception) -> dict[str, Any]:
+    """Project only the one bounded scientific repair schema we expose."""
+
+    if not isinstance(exc, CandidateValidationError):
+        return {}
+    try:
+        details = _PrimitivePathDiagnostic.model_validate(
+            exc.diagnostic_details,
+            strict=True,
+        )
+    except ValidationError:
+        return {}
+    if details.issue_count < len(details.issues) or details.truncated != (
+        details.issue_count > len(details.issues)
+    ):
+        return {}
+    return details.model_dump(mode="json")
 
 
 class _NavigationParameters(StrictModel):
@@ -361,6 +425,7 @@ def error_response(
         message = "invalid operation parameters (" + "; ".join(failures) + ")"
     else:
         message = (str(exc) or code)[:2000]
+    details = _safe_candidate_diagnostic_details(exc)
     return _response(
         request,
         outcome=outcome,
@@ -370,6 +435,7 @@ def error_response(
                 code=code,
                 severity="error",
                 message=message,
+                details=details,
             ),
         ),
     )

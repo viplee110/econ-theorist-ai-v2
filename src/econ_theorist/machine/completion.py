@@ -48,6 +48,7 @@ from .models import (
     EgressPlanV1,
     HostOperationReceiptV1,
     OperationKey,
+    RECEIPT_TOKEN_PATTERN,
     WorkPacketV1,
 )
 from .operational import (
@@ -67,9 +68,10 @@ HostTerminalStatus = Literal[
     "unknown_possible_egress",
 ]
 
-_SAFE_RECEIPT_TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:+/@-]{0,127}")
+_SAFE_RECEIPT_TOKEN = re.compile(RECEIPT_TOKEN_PATTERN)
 _OPERATION_KEY = re.compile(r"[A-Za-z][A-Za-z0-9._:-]{0,127}")
 _DIGEST = re.compile(r"[0-9a-f]{64}")
+_UTF8_BOM = b"\xef\xbb\xbf"
 _REASONING_CLASSES = {
     "not_exposed",
     "summary_only",
@@ -536,6 +538,13 @@ def _read_candidate_source(
         raise CompletionError(
             "candidate transaction is unavailable at the declared WorkPacket path"
         ) from exc
+    # Candidate source is a noncanonical host-authored interchange file.  A
+    # single UTF-8 BOM is common in Windows editors and PowerShell writers;
+    # normalize it only at this boundary before the strict Transaction parse.
+    # Canonical captured/staged/object-store bytes remain BOM-free and are
+    # still derived exclusively from the validated Transaction model.
+    if data.startswith(_UTF8_BOM):
+        data = data[len(_UTF8_BOM) :]
     try:
         transaction = Transaction.model_validate_json(data, strict=True)
     except ValidationError as initial_error:

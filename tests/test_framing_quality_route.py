@@ -1694,6 +1694,64 @@ class FramingQualityRouteTests(unittest.TestCase):
                 ),
             )
 
+    def test_v8_negative_revision_keeps_force_paths_strict_and_reports_all_gaps(
+        self,
+    ) -> None:
+        core = self._phase2_prefix()
+
+        def misbound_and_unclosed(
+            payload: FramingQualityBundle,
+        ) -> FramingQualityBundle:
+            negative = self._unwitnessed_negative_revision(
+                self._research_first_bundle(payload)
+            )
+            targeting = negative.forces[0].model_copy(
+                update={
+                    "source_node_id": "node.inspection",
+                    "margin_node_id": "node.inspection",
+                }
+            )
+            first = negative.causal_chain[0].model_copy(
+                update={"target_node_id": "node.quality"}
+            )
+            return negative.model_copy(
+                update={
+                    "forces": (targeting, negative.forces[1]),
+                    "causal_chain": (first, *negative.causal_chain[1:]),
+                }
+            )
+
+        with self.assertRaisesRegex(
+            CandidateValidationError, "causal_force_binding"
+        ) as caught:
+            self._commit_audit(
+                core,
+                proposed_action="ready_for_g1",
+                bundle_mutator=misbound_and_unclosed,
+                route_registry_hash=ROUTE_REGISTRY_V8_HASH,
+            )
+
+        details = caught.exception.diagnostic_details
+        self.assertEqual(details["rule_id"], "framing.primitive_paths")
+        self.assertTrue(details["repairable"])
+        self.assertEqual(details["issue_count"], 2)
+        self.assertFalse(details["truncated"])
+        issues = details["issues"]
+        self.assertEqual(
+            [item["type"] for item in issues],
+            [
+                "causal_step_not_on_force_path",
+                "causal_chain_not_closed",
+            ],
+        )
+        self.assertEqual(issues[0]["step_number"], 1)
+        self.assertEqual(issues[0]["force_id"], "force.targeting")
+        self.assertEqual(
+            issues[0]["location"], ["causal_chain", 0, "force_ids", 0]
+        )
+        self.assertEqual(issues[1]["left_target_node_id"], "node.quality")
+        self.assertEqual(issues[1]["right_source_node_id"], "node.inspection")
+
     def test_direct_human_decision_transaction_cannot_bypass_g1_preflight(self) -> None:
         core = self._phase2_prefix()
         question, _, _, source_dossier = core

@@ -1,9 +1,10 @@
 # Machine protocol v1
 
 Status: Phase 5A.1 local machine facade implemented and verified; a thin
-public-only Codex projection and one real framing-route pilot are recorded in
-the current tree. The full local research-ready gate remains open, while
-signed/public-distribution hardening is optional 5A.5
+public-only Codex projection, an earlier committed framing slice, and a later
+failed V8 audit diagnostic are recorded in the current tree. The full local
+research-ready gate remains open, while signed/public-distribution hardening is
+optional 5A.5
 
 ## Host-neutral transport and Codex projection
 
@@ -38,23 +39,36 @@ unsupported privacy. A ready response includes the exact WorkPacket plus a
 mechanical candidate-authoring contract: transaction bindings, output
 cardinalities, JSON Schemas, and typed cross-field model invariants. An invalid
 candidate returns bounded structured repair diagnostics rather than exposing a
-traceback or accepting direct canonical edits. A finish response reuses the
+traceback or accepting direct canonical edits. A post-pilot interoperability
+fix permits one leading UTF-8 BOM only at the noncanonical host candidate-source
+boundary; strict canonical Transaction bytes, capture identity, staging, and
+ObjectStore content remain BOM-free. Primitive-path rejection remains strict,
+but its diagnostic now returns all bounded force-binding and adjacent-chain
+closure issues with candidate-relative locations. A finish response reuses the
 host-neutral `host.finish` receipt. The Codex projection uses it only for an
 otherwise-unrecorded real termination after delivery: exhausted declared
 retries, explicit user cancellation, or an abnormal host/model abort. Ordinary
 human waits, clarifications, handoffs, and intentional pauses are not finishes.
 A recorded finish does not rewrite the immutable `RouteRun` or prevent a later
-exact resume.
+exact resume. In particular, `failed_terminal` records an operational
+host-session receipt; it does not advance the canonical head or become a
+canonical route disposition.
 
 The repository's pilot capture helper is evaluation tooling, not another
-machine or Codex interface. It pre-reads and strictly validates one bridge
-request, binds its selected root, sends those exact bytes over standard input,
-and streams raw stdout and stderr directly to local evidence files. It records
-JSON-object validity separately from strict `CodexBridgeResponseV1` validity;
-a successful child process that emits arbitrary JSON still makes the capture
-command fail. Those captures can contain local paths or research content: they
-must be frozen, hashed, secret-scanned, and, where necessary, redacted with an
-explicit manifest before any public archive is created.
+machine or Codex interface. Capture schema v2 pre-reads and strictly validates
+one bridge request, immutably snapshots its exact bytes, binds its selected
+root, sends those same bytes over standard input, and streams raw stdout and
+stderr directly to local evidence files. A source-reading `complete` capture
+also requires `--candidate-source`, proves that it is the exact route-bound
+WorkPacket path, and freezes those pre-invocation raw candidate bytes. A source
+change during invocation invalidates the capture; a completion result is valid
+only when its candidate digest matches the preflight canonical digest. It
+records JSON-object validity separately from strict
+`CodexBridgeResponseV1` validity; a successful child process that emits
+arbitrary JSON still makes the capture command fail. Those captures can contain
+local paths or research content: they must be frozen, hashed, secret-scanned,
+and, where necessary, redacted with an explicit manifest before any public
+archive is created.
 
 The exported schemas are in [`schemas/machine/v1`](../../schemas/machine/v1/).
 The packaged [`host-manifest.v1.json`](../../machine/host-manifest.v1.json)
@@ -109,8 +123,10 @@ Operation-specific payloads are validated strictly: unknown fields, wrong
 scalar types, missing bindings, unsafe paths, or unbounded receipt text fail.
 Tuple fields are JSON arrays. `candidate.complete.action` is one of
 `stage_only`, `commit_staged`, or `stage_and_commit`. Host receipts accept only
-opaque bounded tool/warning codes and one reasoning-exposure class; they never
-accept chain-of-thought.
+opaque bounded tool/warning codes matching
+`^[A-Za-z0-9][A-Za-z0-9._:+/@-]{0,127}$` and one reasoning-exposure class; they
+never accept chain-of-thought. The Codex finish request exposes this existing
+warning grammar in its public schema before any machine operation is reserved.
 
 ## Local research profile and privacy surfaces
 
@@ -175,3 +191,10 @@ activation only in a prepared checkout and only for a public framing route. It
 does not establish cold installation, positive private execution, a signed
 production release, multi-agent execution, host parity, or improved research
 quality.
+
+The later V8 public diagnostic extended real execution through primitive
+decomposition but not through the audit commit. Its final operational
+`failed_terminal` receipt left the canonical head at the decomposition
+transaction. The source-boundary, structured-diagnostic, finish-schema, and
+capture-v2 changes were made after that run and cannot be reported as if the
+original model exercised them.

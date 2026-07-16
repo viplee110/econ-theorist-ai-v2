@@ -13,6 +13,11 @@ NonEmpty: TypeAlias = Annotated[str, StringConstraints(min_length=1)]
 OperationKey: TypeAlias = Annotated[
     str, StringConstraints(pattern=r"^[A-Za-z][A-Za-z0-9._:-]{0,127}$")
 ]
+RECEIPT_TOKEN_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9._:+/@-]{0,127}$"
+ReceiptToken: TypeAlias = Annotated[
+    str,
+    StringConstraints(pattern=RECEIPT_TOKEN_PATTERN),
+]
 
 MachineOperation: TypeAlias = Literal[
     "bootstrap.plan",
@@ -863,4 +868,6 @@ __all__ = [model.__name__ for model in MACHINE_SCHEMA_MODELS] + [
     "MachineOperation",
     "MachineOutcome",
     "OperationKey",
+    "RECEIPT_TOKEN_PATTERN",
+    "ReceiptToken",
 ]

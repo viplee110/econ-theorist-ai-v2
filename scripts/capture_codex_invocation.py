@@ -25,6 +25,13 @@ from econ_theorist.codex_bridge import (
     CodexBridgeResponseV1,
 )
 from econ_theorist.codec import canonical_json_bytes
+from econ_theorist.machine.completion import (
+    CandidateTransactionValidationError,
+    candidate_source_digest,
+)
+from econ_theorist.machine.egress import read_bound_work_packet
+from econ_theorist.machine.operational import ProjectOperationalLayout
+from econ_theorist.runtime.layout import StoreLayout
 
 
 def _utc_now() -> str:
@@ -52,7 +59,7 @@ def _inside(root: Path, path: Path, *, label: str) -> Path:
 
 def _validate_distinct_outputs(paths: tuple[Path, ...]) -> None:
     if len(set(paths)) != len(paths):
-        raise ValueError("stdout, stderr, and metadata paths must be distinct")
+        raise ValueError("capture output paths must be distinct")
     for index, left in enumerate(paths):
         for right in paths[index + 1 :]:
             if left in right.parents or right in left.parents:
@@ -87,6 +94,7 @@ def capture_invocation(
     stdout_path: Path,
     stderr_path: Path,
     metadata_path: Path,
+    candidate_source_path: Path | None = None,
 ) -> tuple[int, dict[str, Any]]:
     """Run one command with isolated state and direct, immutable file capture."""
 
@@ -104,13 +112,114 @@ def capture_invocation(
         declared_root = root / declared_root
     if declared_root.resolve(strict=True) != root:
         raise ValueError("request project_root does not match the selected pilot root")
+    candidate_source: Path | None = None
+    candidate_bytes: bytes | None = None
+    candidate_canonical_digest: str | None = None
+    candidate_preflight_validation_error: str | None = None
+    if parsed_request.operation == "complete":
+        if parsed_request.action == "commit_staged":
+            if candidate_source_path is not None:
+                raise ValueError(
+                    "candidate_source_path is invalid when complete reads staged bytes"
+                )
+        else:
+            if candidate_source_path is None:
+                raise ValueError(
+                    "candidate_source_path is required when a complete request "
+                    "reads host source"
+                )
+            expected_candidate = _inside(
+                root,
+                root
+                / ".econ-theorist"
+                / "staging"
+                / parsed_request.route_run_id
+                / "candidate.json",
+                label="route-bound candidate source",
+            )
+            declared_candidate = (
+                expected_candidate
+                if parsed_request.transaction_path is None
+                else Path(parsed_request.transaction_path).expanduser()
+            )
+            if not declared_candidate.is_absolute():
+                declared_candidate = root / declared_candidate
+            declared_candidate = _inside(
+                root,
+                declared_candidate,
+                label="complete transaction path",
+            )
+            if declared_candidate != expected_candidate:
+                raise ValueError(
+                    "complete transaction_path differs from the route-bound "
+                    "candidate source"
+                )
+            candidate_source = _inside(
+                root,
+                candidate_source_path,
+                label="candidate source",
+            )
+            if candidate_source != expected_candidate:
+                raise ValueError(
+                    "candidate_source_path differs from the complete request's "
+                    "route-bound candidate source"
+                )
+            candidate_bytes = candidate_source.read_bytes()
+            operational = ProjectOperationalLayout.at(StoreLayout.at(root))
+            packet = read_bound_work_packet(
+                operational,
+                parsed_request.route_run_id,
+                parsed_request.work_packet_hash,
+            )
+            try:
+                candidate_canonical_digest = candidate_source_digest(
+                    StoreLayout.at(root), packet, candidate_source
+                )
+            except CandidateTransactionValidationError as exc:
+                candidate_preflight_validation_error = (
+                    "CandidateTransactionValidationError("
+                    f"issue_count={exc.issue_count},truncated={exc.truncated})"
+                )
+            if candidate_source.read_bytes() != candidate_bytes:
+                raise ValueError(
+                    "candidate source changed during pre-invocation binding"
+                )
+    elif candidate_source_path is not None:
+        raise ValueError("candidate_source_path is valid only for complete requests")
 
     isolated = _inside(root, local_app_data, label="state-isolation root")
-    outputs = tuple(
+    primary_outputs = tuple(
         _inside(root, path, label="capture output")
         for path in (stdout_path, stderr_path, metadata_path)
     )
+    request_capture = _inside(
+        root,
+        primary_outputs[2].with_name(
+            f"{primary_outputs[2].stem}-captured-request.json"
+        ),
+        label="captured request output",
+    )
+    candidate_capture = (
+        None
+        if candidate_source_path is None
+        else _inside(
+            root,
+            primary_outputs[2].with_name(
+                f"{primary_outputs[2].stem}-captured-candidate.json"
+            ),
+            label="captured candidate output",
+        )
+    )
+    outputs = (
+        *primary_outputs,
+        request_capture,
+        *((candidate_capture,) if candidate_capture is not None else ()),
+    )
     _validate_distinct_outputs(outputs)
+    if request_capture == request:
+        raise ValueError("captured request output must differ from its source")
+    if candidate_capture is not None and candidate_capture == candidate_source:
+        raise ValueError("captured candidate output must differ from its source")
     if any(
         path == isolated or path in isolated.parents or isolated in path.parents
         for path in outputs
@@ -118,6 +227,11 @@ def capture_invocation(
         raise ValueError("capture outputs cannot overlap the state-isolation root")
     for path in outputs:
         _exclusive_output(path)
+    with request_capture.open("xb") as stream:
+        stream.write(request_bytes)
+    if candidate_capture is not None and candidate_bytes is not None:
+        with candidate_capture.open("xb") as stream:
+            stream.write(candidate_bytes)
 
     # Precreate the exact engine fallbacks for both supported platform families.
     (isolated / "EconTheoristAI" / "operational" / "v1").mkdir(
@@ -137,7 +251,7 @@ def capture_invocation(
     environment["HOME"] = str(isolated_home)
     environment["XDG_STATE_HOME"] = str(isolated_xdg_state)
     started_at = _utc_now()
-    with outputs[0].open("xb") as stdout_stream, outputs[1].open(
+    with primary_outputs[0].open("xb") as stdout_stream, primary_outputs[1].open(
         "xb"
     ) as stderr_stream:
         completed = subprocess.run(
@@ -151,18 +265,28 @@ def capture_invocation(
         )
     ended_at = _utc_now()
 
-    stdout_bytes = outputs[0].read_bytes()
-    stderr_bytes = outputs[1].read_bytes()
+    stdout_bytes = primary_outputs[0].read_bytes()
+    stderr_bytes = primary_outputs[1].read_bytes()
     try:
         source_after = request.read_bytes()
     except OSError:
         source_after = None
+    try:
+        candidate_after = (
+            None if candidate_source is None else candidate_source.read_bytes()
+        )
+    except OSError:
+        candidate_after = None
+    candidate_changed = (
+        None if candidate_bytes is None else candidate_after != candidate_bytes
+    )
     schema_response: CodexBridgeResponseV1 | None = None
     response: CodexBridgeResponseV1 | None = None
     parsed_response: dict[str, Any] | None = None
     json_shape_error: str | None = None
     bridge_validation_error: str | None = None
     response_binding_error: str | None = None
+    candidate_digest_matches_response: bool | None = None
     try:
         if stdout_bytes.count(b"\n") != 1 or not stdout_bytes.endswith(b"\n"):
             raise ValueError("stdout is not exactly one newline-terminated JSON value")
@@ -189,13 +313,38 @@ def capture_invocation(
             binding_errors.append(
                 "response request_digest does not match the canonical request"
             )
+        if candidate_changed:
+            binding_errors.append(
+                "candidate source changed after the pre-invocation capture"
+            )
+        if candidate_source is not None and schema_response.completion is not None:
+            response_candidate_digest = schema_response.completion.candidate_digest
+            if response_candidate_digest is None:
+                candidate_digest_matches_response = False
+                binding_errors.append(
+                    "completion response omits the source candidate digest"
+                )
+            elif candidate_canonical_digest is None:
+                candidate_digest_matches_response = False
+                binding_errors.append(
+                    "completion candidate digest cannot bind to the invalid "
+                    "pre-invocation source"
+                )
+            elif response_candidate_digest != candidate_canonical_digest:
+                candidate_digest_matches_response = False
+                binding_errors.append(
+                    "completion candidate digest differs from the pre-invocation "
+                    "source"
+                )
+            else:
+                candidate_digest_matches_response = True
         if binding_errors:
             response_binding_error = "; ".join(binding_errors)
         else:
             response = schema_response
 
     metadata: dict[str, Any] = {
-        "capture_schema": "econ-theorist/codex-invocation-capture/v1",
+        "capture_schema": "econ-theorist/codex-invocation-capture/v2",
         "started_at": started_at,
         "ended_at": ended_at,
         "command": list(command),
@@ -205,14 +354,42 @@ def capture_invocation(
         "request_bytes": len(request_bytes),
         "request_sha256": _sha256(request_bytes),
         "canonical_request_sha256": canonical_request_sha256,
+        "captured_request_path": str(request_capture),
+        "captured_request_sha256": _sha256(request_capture.read_bytes()),
         "source_request_sha256_after": (
             None if source_after is None else _sha256(source_after)
         ),
         "source_request_changed_after_read": source_after != request_bytes,
-        "stdout_path": str(outputs[0]),
+        "candidate_source_path": (
+            None if candidate_source is None else str(candidate_source)
+        ),
+        "candidate_bytes": (
+            None if candidate_bytes is None else len(candidate_bytes)
+        ),
+        "candidate_sha256": (
+            None if candidate_bytes is None else _sha256(candidate_bytes)
+        ),
+        "candidate_canonical_digest_before": candidate_canonical_digest,
+        "candidate_preflight_validation_error": (
+            candidate_preflight_validation_error
+        ),
+        "captured_candidate_path": (
+            None if candidate_capture is None else str(candidate_capture)
+        ),
+        "captured_candidate_sha256": (
+            None
+            if candidate_capture is None
+            else _sha256(candidate_capture.read_bytes())
+        ),
+        "source_candidate_sha256_after": (
+            None if candidate_after is None else _sha256(candidate_after)
+        ),
+        "source_candidate_changed_after_read": candidate_changed,
+        "candidate_digest_matches_response": candidate_digest_matches_response,
+        "stdout_path": str(primary_outputs[0]),
         "stdout_bytes": len(stdout_bytes),
         "stdout_sha256": _sha256(stdout_bytes),
-        "stderr_path": str(outputs[1]),
+        "stderr_path": str(primary_outputs[1]),
         "stderr_bytes": len(stderr_bytes),
         "stderr_sha256": _sha256(stderr_bytes),
         "localappdata": str(isolated),
@@ -244,7 +421,7 @@ def capture_invocation(
                 "request_digest",
             )
         }
-    with outputs[2].open("xb") as stream:
+    with primary_outputs[2].open("xb") as stream:
         stream.write(
             (json.dumps(metadata, ensure_ascii=False, indent=2) + "\n").encode(
                 "utf-8"
@@ -264,6 +441,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--stdout", required=True, type=Path)
     parser.add_argument("--stderr", required=True, type=Path)
     parser.add_argument("--metadata", required=True, type=Path)
+    parser.add_argument(
+        "--candidate-source",
+        type=Path,
+        help="required pre-invocation raw candidate source for complete requests",
+    )
     return parser
 
 
@@ -277,6 +459,7 @@ def main(argv: list[str] | None = None) -> int:
         stdout_path=args.stdout,
         stderr_path=args.stderr,
         metadata_path=args.metadata,
+        candidate_source_path=args.candidate_source,
     )
     summary = {
         "exit_code": exit_code,

@@ -6,13 +6,15 @@ Status: Architecture v0.1 with accepted Phase 1--4 implementations, the Phase
 current tree contains a deterministically accepted additive registry-v8
 framing-quality implementation candidate. V8 adds only a narrow, non-G1
 negative-diagnosis exit for an upstream graph that cannot honestly support an
-active-margin witness; a fresh real-Codex rerun and the full local
-research-ready gate remain open.
+active-margin witness. The first real-Codex V8 rerun committed framing and
+decomposition but not the audit; successful post-stabilization execution and
+the full local research-ready gate remain open.
 
-Current implementation milestone: pilot-driven scientific strengthening --
-freeze and rerun the same public Codex pilot through the v8 economist-facing
-framing projection, benchmark-semantic audit, and mechanism-robustness checks;
-then run an exploratory v1/v2 quality pilot.
+Current implementation milestone: post-pilot execution -- the bounded host
+stabilization passed deterministic acceptance; freeze its committed wheel,
+rerun the same V8 blind pilot plus one held-out framing case, and inspect a
+canonically committed same-case audit before an exploratory v1/v2 quality
+pilot.
 
 ## 1. Delivery strategy
 
@@ -411,13 +413,24 @@ remain unproved. A separate model-based diagnostic also found material
 benchmark and readability defects, so the next slices are selected by those
 failures rather than by generic infrastructure expansion.
 
+A later frozen V8 blind pilot is recorded in
+`../../review_outputs/phase5a2_v8_codex_public_pilot/`. It canonically committed
+`frame.question_and_benchmarks` and `decompose.primitives`, then exhausted the
+declared repairs on `audit.framing_economics`. Its honest `revise_framing`
+candidate remained noncanonical, no replacement dossier or G1 decision was
+committed, and the final `failed_terminal` value is an operational host receipt
+rather than a canonical route disposition.
+
 The additive v8 implementation candidate is specified in
 `../implementation/framing_quality_contract.md`. It inserts
 `audit.framing_economics` after primitive decomposition and before the human G1
 decision, preserving the frozen v1--v4 route meanings. It must pass its
-deterministic acceptance predicate and a fresh real-Codex v8 rerun before any
+deterministic acceptance predicate and a successful fresh real-Codex v8 rerun before any
 claim about improved readability or lower human intervention. The
-deterministic predicate now passes; the real-model rerun remains open.
+deterministic predicate passed. The first real-model attempt did not commit the
+audit and exposed post-pilot host/diagnostic defects. Those later fixes passed
+their deterministic stabilization gate; a successful fresh same-case rerun
+remains open.
 
 The ordinary researcher-facing interface is natural language. The machine
 layer remains a versioned `etai` protocol, and the terminal path remains

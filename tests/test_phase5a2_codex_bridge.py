@@ -851,6 +851,85 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
             sha256_digest(transaction_bytes(valid)),
         )
 
+    def test_candidate_source_accepts_one_utf8_bom_without_changing_identity(
+        self,
+    ) -> None:
+        ready = self.bridge.invoke(self._start_request())
+        self.assertEqual(ready.outcome, "ready", ready)
+        valid = self._framing_transaction(ready.route_run_id)
+        candidate_path = self.root / ready.candidate_logical_path
+        candidate_path.parent.mkdir(parents=True, exist_ok=True)
+        source = (json.dumps(valid.model_dump(mode="json"), indent=2) + "\n").encode(
+            "utf-8"
+        )
+        candidate_path.write_bytes(b"\xef\xbb\xbf" + source)
+
+        completed = self.bridge.invoke(
+            CodexCompleteRequestV1(
+                project_root=str(self.root),
+                route_run_id=ready.route_run_id,
+                work_packet_hash=ready.work_packet_hash,
+                delivery_envelope_hash=ready.delivery_envelope_hash,
+            )
+        )
+
+        expected = sha256_digest(transaction_bytes(valid))
+        self.assertEqual(completed.outcome, "committed", completed)
+        self.assertEqual(completed.completion.candidate_digest, expected)
+        self.assertEqual(completed.completion.transaction_digest, expected)
+        self.assertEqual(replay(StoreLayout.at(self.root)).head, expected)
+        run_root = (
+            ProjectOperationalLayout.at(StoreLayout.at(self.root)).runs
+            / ready.route_run_id
+        )
+        captured = run_root / "host-candidates" / "sha256" / f"{expected}.json"
+        self.assertEqual(captured.read_bytes(), transaction_bytes(valid))
+
+    def test_candidate_source_rejects_two_utf8_boms(self) -> None:
+        ready = self.bridge.invoke(self._start_request())
+        self.assertEqual(ready.outcome, "ready", ready)
+        valid = self._framing_transaction(ready.route_run_id)
+        candidate_path = self.root / ready.candidate_logical_path
+        candidate_path.parent.mkdir(parents=True, exist_ok=True)
+        source = (json.dumps(valid.model_dump(mode="json"), indent=2) + "\n").encode(
+            "utf-8"
+        )
+        candidate_path.write_bytes(b"\xef\xbb\xbf\xef\xbb\xbf" + source)
+
+        rejected = self.bridge.invoke(
+            CodexCompleteRequestV1(
+                project_root=str(self.root),
+                route_run_id=ready.route_run_id,
+                work_packet_hash=ready.work_packet_hash,
+                delivery_envelope_hash=ready.delivery_envelope_hash,
+            )
+        )
+
+        self.assertEqual(rejected.outcome, "error", rejected)
+        self.assertFalse(rejected.mutated)
+        self.assertEqual(
+            rejected.diagnostics[0].code,
+            "codex_candidate_transaction_invalid",
+        )
+        self.assertEqual(replay(StoreLayout.at(self.root)).head, ready.head)
+
+    def test_finish_warning_contract_exposes_the_opaque_token_constraint(
+        self,
+    ) -> None:
+        self.assertIn(
+            "^[A-Za-z0-9][A-Za-z0-9._:+/@-]{0,127}$",
+            json.dumps(codex_bridge_schema("request")),
+        )
+        with self.assertRaisesRegex(ValueError, "pattern"):
+            CodexFinishRequestV1(
+                project_root=str(self.root),
+                route_run_id="run.warning.contract",
+                work_packet_hash="1" * 64,
+                delivery_envelope_hash="2" * 64,
+                completion_status="failed_terminal",
+                warnings=("free text is not an opaque token",),
+            )
+
     def test_ready_response_has_self_contained_route_bound_authoring_contract(
         self,
     ) -> None:
