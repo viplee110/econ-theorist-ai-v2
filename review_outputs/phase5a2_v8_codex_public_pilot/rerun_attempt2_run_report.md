@@ -115,9 +115,9 @@ or fabricated a G1 decision.
   overconstrained validator, or a mixture. That judgment is deliberately
   assigned to isolated post-generation evaluation.
 
-The next work is not another regression cycle or an immediate V9. First freeze
-a cold-reader retell from the reader-facing memo, then run a separate
-high-intelligence economics adjudication against the unchanged evaluation key.
-Only that adjudication may justify a bounded contract/diagnostic change. The
-held-out ordinary-model framing run remains the other half of the stabilization
-stage.
+The next work is not another regression cycle or an immediate V9. The isolated
+cold-reader retell is now frozen with provisional burden H3. Next run the
+separate high-intelligence economics adjudication against the unchanged
+evaluation key. Only that adjudication may justify a bounded
+contract/diagnostic change. The held-out ordinary-model framing run remains the
+other half of the stabilization stage.

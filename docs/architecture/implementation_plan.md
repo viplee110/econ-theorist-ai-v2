@@ -13,10 +13,11 @@ canonical audit, and the full local research-ready gate remain open.
 
 Current implementation milestone: post-pilot evaluation -- the bounded host
 stabilization passed deterministic acceptance and its same-case ordinary-model
-rerun ended in a genuine diagnosed content failure. Freeze a cold-reader
-retell, adjudicate the economics and validator interaction independently, run
-the held-out framing case, and obtain and inspect a canonically committed
-same-case audit before an exploratory v1/v2 quality pilot.
+rerun ended in a genuine diagnosed content failure. Its isolated cold-reader
+retell is now frozen with provisional burden H3. Adjudicate the economics and
+validator interaction independently, run the held-out framing case, and obtain
+and inspect a canonically committed same-case audit before an exploratory v1/v2
+quality pilot.
 
 ## 1. Delivery strategy
 

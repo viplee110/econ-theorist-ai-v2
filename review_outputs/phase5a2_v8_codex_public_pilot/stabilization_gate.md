@@ -91,7 +91,8 @@ transaction and no G1 decision. Capture binding and integrity checks passed.
 This satisfies the same-case host-stability branch by exposing a genuine,
 bounded model-content failure without transport or encoding interference. It
 does not satisfy the separate scientific requirement for a canonical audit
-commit. Independent cold-reader and economics adjudication are pending, and
-the held-out ordinary-model run remains required. See
+commit. The isolated cold-reader retell is now frozen with provisional burden
+H3; independent economics adjudication is pending, and the held-out
+ordinary-model run remains required. See
 [`rerun_attempt2_run_report.md`](rerun_attempt2_run_report.md) and
 [`rerun_attempt2_postflight_manifest.md`](rerun_attempt2_postflight_manifest.md).

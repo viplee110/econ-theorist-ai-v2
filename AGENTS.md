@@ -35,8 +35,10 @@ host path cleanly, committed framing and primitive decomposition, and exhausted
 two audit repairs on specific candidate diagnostics before recording
 `failed_no_effect`; no audit transaction or G1 decision occurred. This closes
 the same-case host-stability branch as a genuine model-content failure, not the
-V8 scientific gate. The next executable work is to freeze a cold-reader retell,
-run independent high-intelligence economics/validator adjudication, and run one
+V8 scientific gate. A separate frozen cold-reader task assigned provisional
+burden H3 because the memo did not expose the certificate guarantee, buyer
+actions, or operative payoff comparison. The next executable work is the
+independent high-intelligence economics/validator adjudication, followed by one
 held-out ordinary-model framing case. A successful canonical same-case audit
 and economics/editing-burden inspection remain required before an exploratory
 v1/v2 revision comparison. Do not create V9 unless adjudication identifies an

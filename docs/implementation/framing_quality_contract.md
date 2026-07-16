@@ -314,8 +314,11 @@ replacement GateDossier, or G1 decision. This is host-stability evidence and
 diagnosed model-output evidence, not acceptance of the V8 negative-diagnosis
 exit. See the [R2 report](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_run_report.md).
 
-A successful canonical audit rerun, independent economics and reader-burden
-inspection, and the separately frozen held-out run remain open. The R2 failure
-does not by itself justify V9; acceptance semantics should change only if the
-independent adjudication identifies a validator or contract defect rather than
-an ordinary model mapping error.
+The isolated cold-reader retell is now frozen with provisional burden H3: it
+recovered the missing active-margin diagnosis but could not recover the
+certificate guarantee, buyer actions, or operative payoff comparison from the
+memo. Independent high-intelligence economics adjudication, a successful
+canonical audit rerun, and the separately frozen held-out run remain open. The
+R2 failure does not by itself justify V9; acceptance semantics should change
+only if the independent adjudication identifies a validator or contract defect
+rather than an ordinary model mapping error.

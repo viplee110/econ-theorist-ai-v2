@@ -1,7 +1,7 @@
 # V8 post-stabilization rerun attempt 2 postflight manifest
 
-Status: **generator evidence frozen; cold-reader package frozen and unrun;
-economics-evaluator package waits for the reader retell**
+Status: **generator and cold-reader evidence frozen; economics-evaluator
+package frozen and unrun**
 
 ## Treatment and state
 
@@ -97,9 +97,43 @@ and an empty writable `report/` directory. It contains no key, probe, CASE,
 upstream object, candidate, diagnostic, generator report, source, test,
 registry, wheel, `.git`, `.agents`, `.venv`, or operational/host state.
 
-The economics-evaluator package is intentionally not final until the reader
-retell exists and its bytes are frozen. This prevents a task that already has
-the answer key from manufacturing the purported cold-reader evidence.
+## Frozen cold-reader result
+
+The reader control inputs retained their pre-task hashes. The task added only:
+
+- [`rerun_attempt2_cold_reader_retell.md`](rerun_attempt2_cold_reader_retell.md),
+  3,572 bytes;
+- SHA-256:
+  `8f2012aeef7db38db77a87a11de48bc0fb940e85ba52e62960f9b8c2533281ec`.
+
+The reader assigned provisional burden H3. It recovered the proposed stock
+question, the missing active choice/payoff link, and the upstream repair
+direction. It could not recover the certificate's substantive guarantee, the
+buyer's concrete action set, the state transition, or the operative payoff
+comparison without guessing. This is frozen reader evidence, not keyed
+economics adjudication or a human result.
+
+## Economics-evaluator package
+
+Root: `C:\tmp\etai-v8-r2-eval`
+
+- package manifest:
+  [`rerun_attempt2_evaluator_package_manifest.md`](rerun_attempt2_evaluator_package_manifest.md);
+- `MANIFEST.md`: 6,604 bytes, SHA-256
+  `a5c0cbd339fac2765cdffe65d8a087b715754063cd4eaaff054581938ed068b4`;
+- 35 manifest-bound inputs plus the manifest: 36 files, 295,326 bytes;
+- all 36 input files are read-only and `report/` is empty;
+- all 35 manifest rows match bytes and SHA-256;
+- every JSON input parses;
+- no hidden/reparse item, alternate data stream, secret pattern, email,
+  user-profile path, source, test, WorkPacket, registry, wheel, virtual
+  environment, operational state, old evaluation, or generator report is
+  present.
+
+The evaluator may write only
+`report/independent_evaluation_report.md`. Its prompt requires separate M, A,
+O, and R/H conclusions and forbids candidate repair, engine execution, G1
+confirmation, and inference about the deliberately omitted WorkPacket.
 
 ## Claim boundary
 
@@ -107,6 +141,6 @@ This compact repository record does not copy the raw R2 operational store or
 WorkPackets into Git. The exact local evidence remains in the isolated root.
 The record establishes treatment identity, two canonical commits, capture
 integrity, a diagnosed uncommitted audit failure, unchanged human authority,
-and the inputs for independent evaluation. It does not establish A-SUCCESS,
-R-PASS, low human burden, research readiness, a validator defect, or v1/v2
-superiority.
+the frozen H3 reader diagnostic, and the inputs for independent economics
+evaluation. It does not establish A-SUCCESS, R-PASS, research readiness, a
+validator defect, or v1/v2 superiority.
