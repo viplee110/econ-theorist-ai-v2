@@ -166,7 +166,11 @@ def _write_immutable_temp(parent: Path, basename: str, data: bytes) -> Path:
         )
     except (OSError, UnsafeStorePath) as exc:
         raise OperationalError(f"unsafe operational directory: {parent}") from exc
-    fd, raw_path = tempfile.mkstemp(prefix=f".{basename}.tmp-", dir=parent)
+    # The final immutable filename can contain a full content digest. Reusing
+    # it in the temporary prefix can exceed the ordinary Windows path limit
+    # under a user temp root, even though the final publication path fits.
+    # ``mkstemp`` supplies its own unique suffix, so no digest is needed here.
+    fd, raw_path = tempfile.mkstemp(prefix=".tmp-", dir=parent)
     temp_path = Path(raw_path)
     try:
         assert_safe_store_path(
@@ -318,15 +322,20 @@ class PreProjectOperationalLayout:
         binding = sha256_digest(
             str(Path(project_root).expanduser().absolute()).encode("utf-8")
         )
-        return cls(anchor=anchor, root=home / "projects" / binding)
+        legacy_root = home / "projects" / binding
+        # Keep an existing v1 location readable. New pre-project journals use
+        # compact directory names so their immutable event filenames fit under
+        # the ordinary Windows path limit beneath LOCALAPPDATA.
+        root = legacy_root if path_entry_exists(legacy_root) else home / "p" / binding
+        return cls(anchor=anchor, root=root)
 
     @property
     def locks(self) -> Path:
-        return self.root / "locks"
+        return self.root / ("locks" if self.root.parent.name == "projects" else "l")
 
     @property
     def operations(self) -> Path:
-        return self.root / "operations"
+        return self.root / ("operations" if self.root.parent.name == "projects" else "o")
 
     @property
     def initialization_lock(self) -> Path:
@@ -402,14 +411,32 @@ class OperationJournal:
         return cls(anchor=layout.anchor, operations=layout.operations, locks=layout.locks)
 
     def _directory(self, key: str) -> Path:
-        return self.operations / _safe_key(key)
+        safe_key = _safe_key(key)
+        # Earlier local journals used the full operation key as a directory
+        # name. Preserve those records on read, but bound new path length on
+        # Windows where a long key plus immutable event digest can exceed the
+        # ordinary filesystem limit. The reservation still stores and verifies
+        # the complete key, so this opaque directory name is not an authority
+        # or identity substitute.
+        legacy = self.operations / safe_key
+        if path_entry_exists(legacy):
+            return legacy
+        return self.operations / sha256_digest(safe_key.encode("utf-8"))[:24]
 
     def _lock_path(self, key: str) -> Path:
         digest = sha256_digest(_safe_key(key).encode("utf-8"))
         return self.locks / f"operation-{digest}"
 
+    def _events_directory(self, key: str) -> Path:
+        directory = self._directory(key)
+        legacy = directory / "events"
+        # Continue reading the descriptive historical name. New operational
+        # records use the compact name so a pre-project temp root remains
+        # below the ordinary Windows path limit.
+        return legacy if path_entry_exists(legacy) else directory / "e"
+
     def _events(self, key: str) -> tuple[tuple[str, LedgerEventV1], ...]:
-        root = self._directory(key) / "events"
+        root = self._events_directory(key)
         if not path_entry_exists(root):
             return ()
         assert_safe_store_path(
@@ -428,7 +455,11 @@ class OperationJournal:
                 or loaded.operation_key != key
                 or loaded.sequence != sequence
                 or loaded.previous_event_hash != previous
-                or path.name != f"{sequence:08d}-{digest}.json"
+                or path.name
+                not in {
+                    f"{sequence:08d}-{digest}.json",
+                    f"{sequence}-{digest}.json",
+                }
             ):
                 raise IntegrityError("operation event chain is inconsistent")
             result.append((digest, loaded))
@@ -513,7 +544,7 @@ class LockedOperation:
         request_digest: str | None,
         payload_hash: str | None,
     ) -> str:
-        events = self.directory / "events"
+        events = self.journal._events_directory(self.key)
         _ensure_directory_tree(self.journal.anchor, events)
         existing = self.journal._events(self.key)
         previous_hash = existing[-1][0] if existing else None
@@ -530,7 +561,12 @@ class LockedOperation:
         )
         data = canonical_json_bytes(record)
         digest = sha256_digest(data)
-        path = events / f"{record.sequence:08d}-{digest}.json"
+        name = (
+            f"{record.sequence}-{digest}.json"
+            if events.name == "e"
+            else f"{record.sequence:08d}-{digest}.json"
+        )
+        path = events / name
         _write_immutable(self.journal.anchor, path, data)
         return digest
 
