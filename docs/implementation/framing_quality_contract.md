@@ -276,8 +276,10 @@ and navigation registry v7 at
 `ea133669cd85c073b6352744f2d1b5413dfe33d738752ad17769637acfd9e510`.
 The final current tree passed 584 routine non-long tests with six declared
 platform/optional skips, Python compilation, and diff checks. The seven
-current schema/resource exporters and installed-wheel `doctor` check are
-re-run as part of the v8 pilot freeze. The three hour-scale historical gold
-chains were not rerun because this additive change preserves their frozen
-resources. The fresh Codex rerun remains open, so this checkpoint is not
-evidence that readability, paper quality, or human effort has improved.
+current schema/resource exporters and an installed-wheel `doctor` check passed
+during the v8 pilot freeze; its exact wheel and input hashes are recorded in
+`../../review_outputs/phase5a2_v8_codex_public_pilot/preflight_manifest.md`.
+The three hour-scale historical gold chains were not rerun because this
+additive change preserves their frozen resources. The fresh Codex rerun remains
+open, so this checkpoint is not evidence that readability, paper quality, or
+human effort has improved.

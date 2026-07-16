@@ -428,8 +428,8 @@ econ-theorist-ai-v2/
 The V8 deterministic checkpoint ran **584 routine non-long tests** with six
 platform/optional skips. The focused framing suite passed **69 tests**, and the
 Windows operational-journal regression passed **25 tests**. Python compilation
-and diff checks also passed. The seven schema/resource exporters and the
-installed-wheel `doctor` check are being rerun for the V8 pilot freeze. A fresh
+and diff checks also passed. The seven schema/resource exporters and an
+installed-wheel `doctor` check passed for the V8 pilot freeze. A fresh
 real-Codex pilot remains pending, so these checks do not by themselves
 establish better papers or lower human editing effort.
 
