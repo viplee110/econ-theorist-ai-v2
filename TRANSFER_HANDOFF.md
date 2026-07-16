@@ -144,8 +144,9 @@ After this defect is closed, resume the broader roadmap:
    ```powershell
    New-Item -ItemType Directory -Force "$env:USERPROFILE\Projects"
    Set-Location "$env:USERPROFILE\Projects"
-   git clone --branch agent/research-first-audit-repair --single-branch https://github.com/viplee110/econ-theorist-ai-v2.git
+   git -c core.longpaths=true clone --branch agent/research-first-audit-repair --single-branch https://github.com/viplee110/econ-theorist-ai-v2.git
    Set-Location econ-theorist-ai-v2
+   git config core.longpaths true
    git status --short
    ```
 
