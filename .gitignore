@@ -5,6 +5,8 @@ __pycache__/
 .coverage
 build/
 dist/
+.venv/
+venv/
 
 # Runtime stores belong to theory projects, not to the engine repository.
 .econ-theorist/

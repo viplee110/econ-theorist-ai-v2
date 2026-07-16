@@ -1,5 +1,15 @@
 # Econ Theorist AI v2 transfer handoff
 
+> [!WARNING]
+> **Historical handoff only.** The V5.5 diagnosis and repair task below were
+> completed before the V8 pilot and the current post-stabilization treatment
+> commit `4804323`.
+> Do not use this file as the current task controller. Read `AGENTS.md`,
+> `review_outputs/phase5a2_v8_codex_public_pilot/run_report.md`, and
+> `review_outputs/phase5a2_v8_codex_public_pilot/stabilization_gate.md` for the
+> current state. The exact next blind rerun is owned by
+> `review_outputs/phase5a2_v8_codex_public_pilot/rerun_protocol.md`.
+
 Updated: 2026-07-16
 
 This file is the entry point for continuing the project on another computer or
