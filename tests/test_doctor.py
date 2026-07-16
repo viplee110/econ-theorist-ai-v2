@@ -42,6 +42,23 @@ class DoctorTests(unittest.TestCase):
         self.assertFalse(validator["available"])
         self.assertIn("differs", validator["impact"])
 
+    def test_missing_enabled_instruction_fails_required_registry_check(self) -> None:
+        with patch(
+            "econ_theorist.doctor.instruction_bundle_bytes",
+            side_effect=FileNotFoundError("missing installed instruction"),
+        ):
+            report = doctor_report()
+
+        registry = next(
+            check
+            for check in report["checks"]
+            if check["capability"] == "route_registry"
+        )
+        self.assertFalse(report["required_ok"])
+        self.assertFalse(registry["available"])
+        self.assertIn("FileNotFoundError", registry["version"])
+        self.assertEqual(registry["impact"], "runs cannot begin")
+
 
 if __name__ == "__main__":
     unittest.main()

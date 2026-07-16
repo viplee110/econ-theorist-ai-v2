@@ -144,6 +144,27 @@ class DistributionResourceTests(unittest.TestCase):
             data_files["share/econ-theorist/machine"],
         )
 
+    def test_all_route_and_machine_resources_are_data_files(self) -> None:
+        configuration = tomllib.loads(
+            (REPOSITORY_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+        )
+        data_files = configuration["tool"]["setuptools"]["data-files"]
+        namespaces = {
+            ("routes", "registry.v*.json"): "share/econ-theorist/routes",
+            ("routes/instructions", "*"): (
+                "share/econ-theorist/routes/instructions"
+            ),
+            ("machine", "*"): "share/econ-theorist/machine",
+        }
+        for (source_namespace, pattern), installed_namespace in namespaces.items():
+            expected = {
+                path.relative_to(REPOSITORY_ROOT).as_posix()
+                for path in (REPOSITORY_ROOT / source_namespace).glob(pattern)
+                if path.is_file()
+            }
+            self.assertTrue(expected)
+            self.assertEqual(set(data_files[installed_namespace]), expected)
+
 
 if __name__ == "__main__":
     unittest.main()

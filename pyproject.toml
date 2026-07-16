@@ -74,6 +74,7 @@ where = ["src"]
   "routes/instructions/audit.framing_economics.v6.txt",
   "routes/instructions/audit.framing_economics.v7.txt",
   "routes/instructions/audit.framing_economics.v8.txt",
+  "routes/instructions/repair.dependency.v5.txt",
 ]
 "share/econ-theorist/profiles" = [
   "profiles/catalog.v1.json",

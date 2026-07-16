@@ -12,6 +12,7 @@ from typing import Any
 from .policy import (
     PINNED_PYDANTIC_CORE_VERSION,
     PINNED_PYDANTIC_VERSION,
+    instruction_bundle_bytes,
     load_route_registry,
     registry_hash,
 )
@@ -70,11 +71,16 @@ def doctor_report(project_root: str | Path | None = None) -> dict[str, Any]:
 
     try:
         registry = load_route_registry()
+        enabled_routes = tuple(
+            route for route in registry.routes if route.availability == "enabled"
+        )
+        for route in enabled_routes:
+            instruction_bundle_bytes(route)
         registry_ok = True
-        enabled = sum(route.availability == "enabled" for route in registry.routes)
         registry_detail = (
             f"active v{registry.registry_version}; {len(registry.routes)} routes; "
-            f"{enabled} enabled; sha256:{registry_hash(registry)}"
+            f"{len(enabled_routes)} enabled with verified instructions; "
+            f"sha256:{registry_hash(registry)}"
         )
     except Exception as exc:  # report diagnostics; callers decide whether to fail
         registry_ok = False
