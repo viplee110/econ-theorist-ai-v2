@@ -41,6 +41,7 @@ and evaluation key remain outside that root.
 | `frozen_evaluation_key.md` | 4,881 | `96c506f89ce8da0a976b51408f774cebb305c32ad8d12413603453c633cfd22f` | no |
 | `generator_case.md` / clean-root `CASE.md` | 2,992 | `0efac3ad9a3832726903a4ebdedd4a5dbbc3f0fd8da36af792d39011b88a8551` | yes |
 | `.agents/skills/econ-theorist-v2/SKILL.md` | 4,938 | `4ee147e92abc591d4d22d1cd80aade47dbf34a9d0351d1ed4026c27f67a7c5a1` | yes |
+| `.agents/skills/econ-theorist-v2/agents/openai.yaml` | 296 | `d0db034c3c93616cb42390df90343f13a45f81af6cbe48d4b678fc54e0e09c17` | yes |
 | `scripts/capture_codex_invocation.py` | 10,910 | `017d941665d3220c3f50885f08ae4d4af38979f67c8267c0b9cf3c64ce40d519` | yes |
 
 The generator-visible root must otherwise contain only its virtual environment,

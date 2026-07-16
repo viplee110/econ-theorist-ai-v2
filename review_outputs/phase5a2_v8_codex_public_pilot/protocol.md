@@ -40,7 +40,7 @@ Its selected root is a newly created, non-cloud test directory outside this
 source checkout. The generator may see only:
 
 - the installed wheel and its virtual environment;
-- the project skill;
+- the project skill (`SKILL.md` and its `agents/openai.yaml` descriptor);
 - `CASE.md`, copied byte-for-byte from `generator_case.md`;
 - `capture_codex_invocation.py`;
 - an empty `.host-state` parent and an empty `run` directory.
