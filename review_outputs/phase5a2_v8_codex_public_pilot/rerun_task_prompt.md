@@ -1,17 +1,21 @@
 # Prompt for the fresh ordinary-model rerun task
 
 Open a new Codex task with
-`C:\tmp\etai-v8-poststabilization-pilot-20260717-4804323` as its selected
+`C:\tmp\etai-v8-r2` as its selected
 working directory, then paste the text below exactly.
 
 > 这是 Econ Theorist AI v2 的一次公开、单 agent、真实盲测。当前工作目录是
-> `C:\tmp\etai-v8-poststabilization-pilot-20260717-4804323`。我明确授权你仅在
+> `C:\tmp\etai-v8-r2`。我明确授权你仅在
 > 这个目录中初始化并执行 `CASE.md` 所描述的新公开测试项目。
 >
 > 先完整读取 `CASE.md` 和
 > `.agents/skills/econ-theorist-v2/SKILL.md`，严格按已安装 skill 与
 > engine bridge 执行。使用当前普通/中等模型完成生成，不要切换高智力模型，
 > 不要生成或调用任何 subagent。
+>
+> 已安装 launcher 是 `.venv\Scripts\etai.exe`。每次调用 helper 时把这个精确
+> 路径传给 `--etai`；不要创建新的 virtual environment，不要在 `run/` 中重新
+> 安装 wheel。
 >
 > 这是盲测，不是代码开发。不要读取父目录、兄弟目录、源码仓库、Git 历史、
 > tests、fixtures、旧 pilot、旧候选、评价标准、其他对话或网络；不要 clone、

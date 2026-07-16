@@ -9,7 +9,7 @@ candidate, response, or canonical project state**
 - engine treatment commit:
   `4804323a84829247a88ae2f5e315538a331037fd`;
 - clean non-cloud root:
-  `C:\tmp\etai-v8-poststabilization-pilot-20260717-4804323`;
+  `C:\tmp\etai-v8-r2`;
 - Python: 3.12.13;
 - wheel installation: offline, `--no-index --no-deps`, in a fresh
   `--system-site-packages` virtual environment.
@@ -47,9 +47,9 @@ adjudication provenance.
 
 The exact user-visible rerun prompt is also frozen outside the clean root:
 
-- `rerun_task_prompt.md`, 2,442 bytes;
+- `rerun_task_prompt.md`, 2,571 bytes;
 - SHA-256:
-  `d439f79ecc2b227fc73c18293fa09bc0f7271f6616ea913e83cb9d88b968d066`.
+  `3045717d36c212276a40bc276d44772306461ac6c56d08c625872197bd1c6452`.
 
 The prompt supplies only isolation, authorization, capture, and reporting
 constraints. It does not contain the hidden evaluation key or a reference
@@ -72,9 +72,16 @@ candidate.
 - the installed active `repair.dependency.v5` bundle loads directly and is
   1,490 bytes;
 - the read-only installed `etai codex invoke --schema bundle` preflight passed;
+- the longest corresponding first-event path observed in the failed R1 was
+  269 characters; the R2 path-budget projection is 231 characters, leaving 29
+  characters below the host's traditional Windows limit;
 - `latexmk`, `pdflatex`, Lean, and Node are unavailable optional tools;
   WolframScript is available.
 
 No ordinary-model generation or project-bound bridge request has occurred in
 the clean rerun root. Any change to a generator-visible file invalidates this
 manifest and requires a new root or an explicit amendment before generation.
+
+The previous corrected-wheel root ending in `4804323` is preserved separately
+as a pre-WorkPacket host-path failure. It contains no canonical project genesis
+and is not an input to R2.

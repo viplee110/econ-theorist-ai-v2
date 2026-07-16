@@ -30,15 +30,22 @@ v1/v2 comparison.
 - capture-v2 helper SHA-256:
   `590ef3bdb4bb3e7ba80952108a4c98db8893f0bce3684e69372464967906291d`.
 
-The clean root is
-`C:\tmp\etai-v8-poststabilization-pilot-20260717-4804323`. The installed
-wheel, not a source checkout or remembered conversation, is the executable
-treatment.
+The current R2 clean root is `C:\tmp\etai-v8-r2`. The installed wheel, not a
+source checkout or remembered conversation, is the executable treatment.
 
 The earlier preflight root ending in `54b64eb` and wheel digest beginning
 `6e844bc3` were retired before generation after the packaging audit found that
 the active `repair.dependency.v5` instruction was absent from that wheel. No
 project-bound bridge invocation occurred in the retired root.
+
+The first host attempt with the corrected wheel used the longer root ending in
+`4804323`. It stopped before canonical initialization or WorkPacket delivery
+when the isolated `LOCALAPPDATA` made the first operational event path 269
+characters on a Windows host with long paths disabled. Its evidence and exact
+claim boundary are recorded in
+[`rerun_attempt1_operational_failure.md`](rerun_attempt1_operational_failure.md).
+R2 preserves the exact wheel, skill, helper, and scientific CASE bytes while
+reducing the corresponding path to 231 characters.
 
 ## Generator isolation
 
@@ -68,6 +75,10 @@ stdout, stderr, and metadata filenames for every invocation. A source-reading
 `--candidate-source`. A capture error, candidate-source mutation, or response
 digest mismatch is a transport/evidence failure and must not be reported as a
 valid route result.
+
+Use the preinstalled `.venv\Scripts\etai.exe` as the helper's exact `--etai`
+launcher. Do not create another virtual environment or reinstall the wheel in
+`run/`.
 
 At the first human decision boundary, completed protocol stop, or honestly
 exhausted declared repair budget, stop without making a human decision. Write
