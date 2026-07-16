@@ -1,6 +1,6 @@
 # V8 public Codex negative-diagnosis pilot protocol
 
-Status: **frozen before generation; no generator or bridge invocation has occurred**
+Status: **frozen before generation; no generator or project-bound bridge invocation has occurred**
 
 ## Purpose and claim boundary
 

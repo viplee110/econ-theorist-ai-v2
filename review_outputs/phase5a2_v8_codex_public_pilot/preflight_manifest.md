@@ -1,6 +1,6 @@
 # V8 public Codex pilot preflight manifest
 
-Status: **complete before generation; no generator or bridge invocation has occurred**
+Status: **complete before generation; no generator or project-bound bridge invocation has occurred**
 
 ## Scope and provenance
 
@@ -11,10 +11,10 @@ commit `179cd6f`, whose changes are pilot documentation and inputs rather than
 engine implementation. The exact installed wheel, rather than either commit
 label alone, is the executable treatment.
 
-The final clean generator root is deliberately not created from this source
-checkout. It will be a new, non-cloud directory outside the repository and
-will contain only the generator-visible inventory named below. The protocol
-and evaluation key remain outside that root.
+The final clean generator root is
+`C:\tmp\etai-v8-public-pilot-20260716-be4b192`, a new non-cloud directory
+outside the repository. It contains only the generator-visible inventory named
+below. The protocol and evaluation key remain outside that root.
 
 ## Frozen distribution and active resources
 
@@ -37,7 +37,7 @@ and evaluation key remain outside that root.
 
 | File | Bytes | SHA-256 | Generator-visible |
 |---|---:|---|---|
-| `protocol.md` | 6,104 | `bb58ad5d61b3ef13dfda6477011247849faeb204ec8daad2d28c02367244ccc1` | no |
+| `protocol.md` | 6,118 | `52d98843c5102ea00b9c93d81b34bcfaaa98b0c5bdc9fc6eb1dcb5c3d243d2fc` | no |
 | `frozen_evaluation_key.md` | 4,881 | `96c506f89ce8da0a976b51408f774cebb305c32ad8d12413603453c633cfd22f` | no |
 | `generator_case.md` / clean-root `CASE.md` | 2,992 | `0efac3ad9a3832726903a4ebdedd4a5dbbc3f0fd8da36af792d39011b88a8551` | yes |
 | `.agents/skills/econ-theorist-v2/SKILL.md` | 4,938 | `4ee147e92abc591d4d22d1cd80aade47dbf34a9d0351d1ed4026c27f67a7c5a1` | yes |
@@ -64,10 +64,16 @@ evaluation key, or reference candidates.
   the wheel offline with `--no-index --no-deps`; its import path was the wheel
   environment, and its `doctor` also reported `required_ok=true`, active V8,
   and 35/35 routes enabled;
+- the final clean root contains exactly `.agents`, `.host-state`, `.venv`,
+  `distribution`, `run`, `capture_codex_invocation.py`, and `CASE.md`; all five
+  non-venv input hashes match this manifest, its offline wheel installation
+  reports `required_ok=true`, and the read-only `etai codex invoke --schema
+  bundle` compatibility preflight succeeded;
 - `latexmk`, `pdflatex`, Lean, and Node are unavailable optional tools; they
   do not block the local theory core. WolframScript is available.
 
-No real model generation, `etai codex invoke` request, candidate, canonical
-project state, or bridge response exists under this V8 pilot record. Any
-generator-visible input or wheel change requires a new manifest and a new
+No real model generation, project-bound `etai codex invoke` request,
+candidate, canonical project state, or route response exists under this V8
+pilot record. The read-only schema preflight does not open a project or route.
+Any generator-visible input or wheel change requires a new manifest and a new
 blind task.
