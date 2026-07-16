@@ -1,6 +1,7 @@
 # V8 post-pilot host-stabilization gate
 
-Status: **deterministic acceptance passed; real-pilot exit remains open**
+Status: **deterministic acceptance passed; the same-case rerun exposed a
+diagnosed model-content failure, while the held-out run remains open**
 
 This gate prevents the V8 pilot from turning into an unbounded sequence of
 scientific route versions. It changes host interoperability, diagnostics, and
@@ -77,3 +78,20 @@ python capture_codex_invocation.py ... --request REQUEST.json \
 Use an ordinary/medium model for the two generator runs. After each output is
 frozen, use a separate high-intelligence task for independent economics and
 reader-burden adjudication.
+
+## Attempt-2 checkpoint
+
+The corrected-wheel same-case rerun at `C:\tmp\etai-v8-r2` completed under
+engine commit `4804323a84829247a88ae2f5e315538a331037fd` and wheel SHA-256
+`09c620566505acea8e5ab698fff32e56f9197b71d336abbed9c9a419769ce22b`.
+It committed framing and primitive decomposition, then returned three specific
+candidate diagnostics before recording `failed_no_effect` with no audit
+transaction and no G1 decision. Capture binding and integrity checks passed.
+
+This satisfies the same-case host-stability branch by exposing a genuine,
+bounded model-content failure without transport or encoding interference. It
+does not satisfy the separate scientific requirement for a canonical audit
+commit. Independent cold-reader and economics adjudication are pending, and
+the held-out ordinary-model run remains required. See
+[`rerun_attempt2_run_report.md`](rerun_attempt2_run_report.md) and
+[`rerun_attempt2_postflight_manifest.md`](rerun_attempt2_postflight_manifest.md).

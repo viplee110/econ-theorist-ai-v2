@@ -26,16 +26,22 @@ commit when the upstream graph makes an honest payoff witness unavailable. Its n
 of improved readability, lower intervention, or research quality. The first
 fresh V8 public blind run committed framing and decomposition but exhausted its
 two repairs without an audit commit; no G1 decision occurred. A successful
-post-stabilization rerun and independent economics inspection remain open.
+canonical audit rerun and independent economics inspection remain open.
 
 The bounded post-pilot stabilization passed its 594-test routine non-long gate,
 all seven exporters, and required `doctor` checks without changing V8
-scientific acceptance. Its real-model evidence remains open. The next
-executable work is to bind the committed treatment to a new wheel and clean
-non-cloud root, rerun the same blind pilot, and run one held-out framing case.
-Inspect a canonically committed same-case audit's economics and editing burden
-before an exploratory v1/v2 revision comparison. Do not expand generic
-security infrastructure unless a concrete local-use failure requires it.
+scientific acceptance. The corrected-wheel R2 same-case run then traversed the
+host path cleanly, committed framing and primitive decomposition, and exhausted
+two audit repairs on specific candidate diagnostics before recording
+`failed_no_effect`; no audit transaction or G1 decision occurred. This closes
+the same-case host-stability branch as a genuine model-content failure, not the
+V8 scientific gate. The next executable work is to freeze a cold-reader retell,
+run independent high-intelligence economics/validator adjudication, and run one
+held-out ordinary-model framing case. A successful canonical same-case audit
+and economics/editing-burden inspection remain required before an exploratory
+v1/v2 revision comparison. Do not create V9 unless adjudication identifies an
+acceptance-semantics defect, and do not expand generic security infrastructure
+unless a concrete local-use failure requires it.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or

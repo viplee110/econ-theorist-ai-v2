@@ -6,15 +6,17 @@ Status: Architecture v0.1 with accepted Phase 1--4 implementations, the Phase
 current tree contains a deterministically accepted additive registry-v8
 framing-quality implementation candidate. V8 adds only a narrow, non-G1
 negative-diagnosis exit for an upstream graph that cannot honestly support an
-active-margin witness. The first real-Codex V8 rerun committed framing and
-decomposition but not the audit; successful post-stabilization execution and
-the full local research-ready gate remain open.
+active-margin witness. The post-stabilization same-case rerun committed framing
+and decomposition, then exposed a specifically diagnosed model-content failure
+without an audit commit. The held-out host-stability run, a successful
+canonical audit, and the full local research-ready gate remain open.
 
-Current implementation milestone: post-pilot execution -- the bounded host
-stabilization passed deterministic acceptance; freeze its committed wheel,
-rerun the same V8 blind pilot plus one held-out framing case, and inspect a
-canonically committed same-case audit before an exploratory v1/v2 quality
-pilot.
+Current implementation milestone: post-pilot evaluation -- the bounded host
+stabilization passed deterministic acceptance and its same-case ordinary-model
+rerun ended in a genuine diagnosed content failure. Freeze a cold-reader
+retell, adjudicate the economics and validator interaction independently, run
+the held-out framing case, and obtain and inspect a canonically committed
+same-case audit before an exploratory v1/v2 quality pilot.
 
 ## 1. Delivery strategy
 
@@ -429,8 +431,11 @@ deterministic acceptance predicate and a successful fresh real-Codex v8 rerun be
 claim about improved readability or lower human intervention. The
 deterministic predicate passed. The first real-model attempt did not commit the
 audit and exposed post-pilot host/diagnostic defects. Those later fixes passed
-their deterministic stabilization gate; a successful fresh same-case rerun
-remains open.
+their deterministic stabilization gate. The corrected-wheel R2 same-case run
+then traversed the host path cleanly and committed framing and decomposition,
+but its audit exhausted two repairs and recorded `failed_no_effect` without a
+canonical audit transaction. Independent adjudication, a successful canonical
+same-case audit, and the held-out run remain open.
 
 The ordinary researcher-facing interface is natural language. The machine
 layer remains a versioned `etai` protocol, and the terminal path remains

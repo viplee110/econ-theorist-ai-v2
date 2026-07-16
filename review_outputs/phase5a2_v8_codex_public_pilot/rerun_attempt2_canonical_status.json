@@ -1,0 +1,64 @@
+{
+  "schema": "econ-theorist/v8-r2-evaluation-status/v1",
+  "claim_scope": "mechanical_facts_only",
+  "treatment": {
+    "engine_commit": "4804323a84829247a88ae2f5e315538a331037fd",
+    "wheel_filename": "econ_theorist_ai-0.1.0-py3-none-any.whl",
+    "wheel_bytes": 702857,
+    "wheel_sha256": "09c620566505acea8e5ab698fff32e56f9197b71d336abbed9c9a419769ce22b",
+    "route_registry_v8_digest": "5d2c2efdef205ee1ff188249dcb05cb5a4430d36ef754a93bde402a092aa40c1"
+  },
+  "model_observation": {
+    "request_label": "gpt-5",
+    "user_selected_tier": "ordinary_or_medium",
+    "provider_independently_confirmed": false,
+    "backend_model_independently_confirmed": false
+  },
+  "project": {
+    "project_id": "prj_7ae2a39c4b604ca88a593021ce5ad25eb2c52cc43e2ee6aa",
+    "generator_root": "C:\\tmp\\etai-v8-r2",
+    "generator_root_is_out_of_scope_for_evaluator": true
+  },
+  "routes": [
+    {
+      "route_id": "frame.question_and_benchmarks",
+      "route_run_id": "run_op_483cba782e815ef662cfc7a90d6127afa28dde3c5c3ac3c2",
+      "machine_outcome": "committed",
+      "canonical_transaction_digest": "73fb8d5bc47f3c21d17228e76edb8300fbc537224bf896f2ebe01a52f57adf1c"
+    },
+    {
+      "route_id": "decompose.primitives",
+      "route_run_id": "run_op_042c42e559702c4f53e3d5f283496220eb63ef0e31f9715e",
+      "machine_outcome": "committed",
+      "canonical_transaction_digest": "467a15616763fc5859ca7128893b187599a5e813d1dde8b5b5e968c3d2d60535"
+    },
+    {
+      "route_id": "audit.framing_economics",
+      "route_run_id": "run_op_c8b18722063c1f734a48b9fd1503e6dd6d728c7fc81f4556",
+      "machine_outcome": "recorded_failure",
+      "completion_status": "failed_no_effect",
+      "canonical_transaction_digest": null,
+      "final_candidate_canonical_digest": "733319830ae7c3b2cc9336da37faddcbf8bd540615dcd425c176943ca05b5c6a"
+    }
+  ],
+  "canonical_state": {
+    "genesis_transaction_digest": "2f6ae15bbf9c71825ea2b848c884b1139c9c1cca94a63fad9b35d5aa83799c5f",
+    "main_head": "467a15616763fc5859ca7128893b187599a5e813d1dde8b5b5e968c3d2d60535",
+    "transaction_count": 3,
+    "current_entity_count": 5,
+    "effective_decision_count": 0,
+    "registered_artifact_count": 0
+  },
+  "human_authority": {
+    "pending_human_gate_reference": null,
+    "g1_confirmed": false,
+    "g1_fabricated": false
+  },
+  "source_bindings": {
+    "case_sha256": "0efac3ad9a3832726903a4ebdedd4a5dbbc3f0fd8da36af792d39011b88a8551",
+    "frame_captured_candidate_sha256": "cab8722e588377d97449d97a0cabb0dbd13d96910aa45fb7fe2dca30046513f2",
+    "decompose_final_captured_candidate_sha256": "d8352327650c6040bf5487667d87440d372a09620dc5a39897c11a8fb1883e01",
+    "audit_final_captured_candidate_sha256": "405d0c38b658309cb2730deb3f8434558c6ce3629e7a84a31f61d26b0071b979",
+    "finish_response_sha256": "a0fe4cf272a20fdae2d39a548f5269cec2a2922c722c50ebf4ec9b3e115c0f40"
+  }
+}

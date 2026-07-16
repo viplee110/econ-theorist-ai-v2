@@ -1,9 +1,10 @@
 # Framing-quality preflight contract
 
 Status: additive v8 negative-diagnosis revision candidate; pre-pilot scientific
-and post-pilot host-stabilization deterministic verification passed; the first
-fresh real-Codex rerun completed without an audit commit, so a successful
-post-stabilization rerun is pending
+and post-pilot host-stabilization deterministic verification passed; the
+post-stabilization same-case rerun exposed a specifically diagnosed
+model-content failure without an audit commit, so scientific acceptance and
+the held-out host-stability run remain pending
 
 This contract owns the first pilot-driven scientific strengthening after the
 Phase 5A.2 public Codex framing run. It addresses a narrow failure: a
@@ -303,5 +304,18 @@ paths. The bounded post-pilot stabilization candidate addresses those host
 surfaces without changing this contract's scientific conditions. Those fixes
 were not exercised by the original run. The post-pilot source candidate passed
 594 routine non-long tests with six declared skips, all seven exporters, and
-required `doctor` checks; a new committed wheel and successful new blind run
-remain required.
+required `doctor` checks. The corrected committed wheel then ran the same-case
+R2 blind test without transport or encoding interference. It committed framing
+at `73fb8d5b...` and decomposition at `467a1561...`, but the audit exhausted
+two repairs on an unsupported semantic-level literal, a fixed/movable semantic
+conflict, and a channel-endpoint mismatch. Its `failed_no_effect` finish left
+the canonical head unchanged and did not create a FramingQualityBundle,
+replacement GateDossier, or G1 decision. This is host-stability evidence and
+diagnosed model-output evidence, not acceptance of the V8 negative-diagnosis
+exit. See the [R2 report](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_run_report.md).
+
+A successful canonical audit rerun, independent economics and reader-burden
+inspection, and the separately frozen held-out run remain open. The R2 failure
+does not by itself justify V9; acceptance semantics should change only if the
+independent adjudication identifies a validator or contract defect rather than
+an ordinary model mapping error.
