@@ -1158,7 +1158,7 @@ def _validate_bundle_science(
     assessments_by_id = {
         item.benchmark_id: item for item in bundle.benchmark_assessments
     }
-    for assessment in bundle.benchmark_assessments:
+    for assessment_index, assessment in enumerate(bundle.benchmark_assessments):
         if (
             require_research_first_bindings
             and assessment.distinctive_mechanism is None
@@ -1230,29 +1230,178 @@ def _validate_bundle_science(
                 )
             active_nodes.add(item.primitive_node_id)
 
-        movable_objects = (
-            *assessment.changed,
-            *assessment.reoptimizing,
-            *assessment.still_endogenous,
+        movable_groups = (
+            ("changed", assessment.changed),
+            ("reoptimizing", assessment.reoptimizing),
+            ("still_endogenous", assessment.still_endogenous),
         )
-        for held in assessment.held_fixed:
+        for held_index, held in enumerate(assessment.held_fixed):
             if held.primitive_node_id is None:
                 continue
             overlapping_levels = _FIXING_LEVEL_OVERLAPS.get(
                 held.fixing_level, frozenset()
             )
-            if any(
-                item.primitive_node_id == held.primitive_node_id
-                and item.semantic_level in overlapping_levels
-                for item in movable_objects
-            ):
-                raise FramingQualityValidationError(
-                    "fixed_endogenous_conflict: one PrimitiveGraph object is held "
-                    "fixed and movable at the same semantic level"
-                )
+            for movable_group, movable_items in movable_groups:
+                for movable_index, item in enumerate(movable_items):
+                    if not (
+                        item.primitive_node_id == held.primitive_node_id
+                        and item.semantic_level in overlapping_levels
+                    ):
+                        continue
+                    raise FramingQualityValidationError(
+                        "fixed_endogenous_conflict: one PrimitiveGraph object is "
+                        "held fixed and movable at the same semantic level",
+                        diagnostic_details={
+                            "validation_stage": "canonical_candidate_preflight",
+                            "rule_id": "framing.benchmark_fixed_endogenous",
+                            "location_root": (
+                                "FramingQualityBundle.economic_interpretation.payload"
+                            ),
+                            "repairable": True,
+                            "retry_action": (
+                                "edit_declared_candidate_and_retry_same_request"
+                            ),
+                            "repair_hint": (
+                                "Choose the object's actual economic role, then bind "
+                                "this PrimitiveGraph node at one compatible fixing "
+                                "or movability level; do not rename or rebind it "
+                                "merely to bypass the conflict."
+                            ),
+                            "benchmark_id": assessment.benchmark_id,
+                            "primitive_node_id": held.primitive_node_id,
+                            "held_object_id": held.object_id,
+                            "held_semantic_level": held.semantic_level,
+                            "held_fixing_level": held.fixing_level,
+                            "held_primitive_node_location": [
+                                "benchmark_assessments",
+                                assessment_index,
+                                "held_fixed",
+                                held_index,
+                                "primitive_node_id",
+                            ],
+                            "held_fixing_level_location": [
+                                "benchmark_assessments",
+                                assessment_index,
+                                "held_fixed",
+                                held_index,
+                                "fixing_level",
+                            ],
+                            "movable_group": movable_group,
+                            "movable_object_id": item.object_id,
+                            "movable_semantic_level": item.semantic_level,
+                            "movable_primitive_node_location": [
+                                "benchmark_assessments",
+                                assessment_index,
+                                movable_group,
+                                movable_index,
+                                "primitive_node_id",
+                            ],
+                            "movable_semantic_level_location": [
+                                "benchmark_assessments",
+                                assessment_index,
+                                movable_group,
+                                movable_index,
+                                "semantic_level",
+                            ],
+                            "conflicting_semantic_levels": sorted(
+                                overlapping_levels
+                            ),
+                        },
+                    )
         if path[0] not in changed_nodes or path[-1] not in target_nodes:
+            changed_bindings = [
+                {
+                    "object_id": item.object_id,
+                    "primitive_node_id": item.primitive_node_id,
+                    "location": [
+                        "benchmark_assessments",
+                        assessment_index,
+                        "changed",
+                        item_index,
+                        "primitive_node_id",
+                    ],
+                }
+                for item_index, item in enumerate(assessment.changed)
+            ]
+            target_bindings = [
+                {
+                    "object_id": item.object_id,
+                    "primitive_node_id": item.primitive_node_id,
+                    "location": [
+                        "benchmark_assessments",
+                        assessment_index,
+                        "targets",
+                        item_index,
+                        "primitive_node_id",
+                    ],
+                }
+                for item_index, item in enumerate(assessment.targets)
+            ]
+            expected_source_node_ids = sorted(changed_nodes)
+            expected_target_node_ids = sorted(target_nodes)
+            reported_changed_bindings = changed_bindings[
+                :_MAX_STRUCTURED_DIAGNOSTIC_ISSUES
+            ]
+            reported_target_bindings = target_bindings[
+                :_MAX_STRUCTURED_DIAGNOSTIC_ISSUES
+            ]
+            reported_source_node_ids = expected_source_node_ids[
+                :_MAX_STRUCTURED_DIAGNOSTIC_ISSUES
+            ]
+            reported_target_node_ids = expected_target_node_ids[
+                :_MAX_STRUCTURED_DIAGNOSTIC_ISSUES
+            ]
+            diagnostic_truncated = any(
+                (
+                    len(reported_changed_bindings) < len(changed_bindings),
+                    len(reported_target_bindings) < len(target_bindings),
+                    len(reported_source_node_ids) < len(expected_source_node_ids),
+                    len(reported_target_node_ids) < len(expected_target_node_ids),
+                )
+            )
             raise FramingQualityValidationError(
-                "benchmark channel endpoints do not match changed and target objects"
+                "benchmark channel endpoints do not match changed and target objects",
+                diagnostic_details={
+                    "validation_stage": "canonical_candidate_preflight",
+                    "rule_id": "framing.benchmark_channel_endpoints",
+                    "location_root": (
+                        "FramingQualityBundle.economic_interpretation.payload"
+                    ),
+                    "repairable": True,
+                    "retry_action": "edit_declared_candidate_and_retry_same_request",
+                    "repair_hint": (
+                        "First bind every relevant changed or target object that "
+                        "has no primitive_node_id; then set channel_path[0] to a "
+                        "changed node and channel_path[-1] to a target node, using "
+                        "an exact PrimitiveGraph path rather than a truncated proxy."
+                    ),
+                    "benchmark_id": assessment.benchmark_id,
+                    "channel_source_location": [
+                        "benchmark_assessments",
+                        assessment_index,
+                        "channel_path",
+                        0,
+                    ],
+                    "channel_target_location": [
+                        "benchmark_assessments",
+                        assessment_index,
+                        "channel_path",
+                        len(path) - 1,
+                    ],
+                    "actual_source_node_id": path[0],
+                    "actual_target_node_id": path[-1],
+                    "source_matches": path[0] in changed_nodes,
+                    "target_matches": path[-1] in target_nodes,
+                    "changed_binding_count": len(changed_bindings),
+                    "target_binding_count": len(target_bindings),
+                    "expected_source_node_count": len(expected_source_node_ids),
+                    "expected_target_node_count": len(expected_target_node_ids),
+                    "changed_bindings": reported_changed_bindings,
+                    "target_bindings": reported_target_bindings,
+                    "expected_source_node_ids": reported_source_node_ids,
+                    "expected_target_node_ids": reported_target_node_ids,
+                    "truncated": diagnostic_truncated,
+                },
             )
         if (
             assessment.channel_kind == "active_response"

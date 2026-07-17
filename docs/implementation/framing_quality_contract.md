@@ -2,9 +2,11 @@
 
 Status: additive v8 negative-diagnosis revision candidate; pre-pilot scientific
 and post-pilot host-stabilization deterministic verification passed; the
-post-stabilization same-case rerun exposed a specifically diagnosed
-model-content failure without an audit commit, so scientific acceptance and
-the held-out host-stability run remain pending
+post-stabilization same-case rerun exposed a diagnosed content failure without
+an audit commit. Independent adjudication is complete: machine-mixed,
+`A-FAIL` (`0, 1, 1, 2, 2`), `REVISE`, and `R-FAIL`/H4. Scientific acceptance
+remains open, and the held-out run is deferred until the same case is repaired
+upstream and rerun successfully.
 
 This contract owns the first pilot-driven scientific strengthening after the
 Phase 5A.2 public Codex framing run. It addresses a narrow failure: a
@@ -314,11 +316,34 @@ replacement GateDossier, or G1 decision. This is host-stability evidence and
 diagnosed model-output evidence, not acceptance of the V8 negative-diagnosis
 exit. See the [R2 report](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_run_report.md).
 
-The isolated cold-reader retell is now frozen with provisional burden H3: it
-recovered the missing active-margin diagnosis but could not recover the
-certificate guarantee, buyer actions, or operative payoff comparison from the
-memo. Independent high-intelligence economics adjudication, a successful
-canonical audit rerun, and the separately frozen held-out run remain open. The
-R2 failure does not by itself justify V9; acceptance semantics should change
-only if the independent adjudication identifies a validator or contract defect
-rather than an ordinary model mapping error.
+The isolated cold-reader retell remains frozen with its original provisional
+burden H3: it recovered the missing active-margin diagnosis but could not
+recover the certificate guarantee, buyer actions, or operative payoff
+comparison from the memo. The independent keyed adjudication separately
+assigned H4 and `R-FAIL`, because repairing the memo requires an upstream
+state/payoff graph and ledger choice rather than several local rewrites. Its
+economics scores were `0, 1, 1, 2, 2`, hence `A-FAIL`, with disposition
+`REVISE`; machine execution was mixed because framing and decomposition
+committed while the audit did not. See the exact
+[independent evaluation](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_independent_evaluation_report.md),
+30,626 bytes, SHA-256
+`23cd4e7ed76c967f2e14f373ace6331a72748e7db0f18f70f1b9e8879c6a7d50`.
+
+The adjudicator classified model-content/mapping error as primary (confidence
+0.80), diagnostic/authoring-surface ambiguity as secondary (0.70), and found
+only 0.35 confidence that validator overconstraint contributed. It therefore
+does not justify V9, a relaxed endpoint or semantic-ledger predicate,
+`policy_rule` in the semantic-level enum, or an engine-added scientific
+primitive. The only justified engine follow-up is a diagnostic-only surface
+improvement that reports benchmark/object IDs, conflicting values, expected
+endpoints, and exact payload-relative paths for fixed/endogenous and endpoint
+failures. That source change postdates R2 and cannot be treated as part of its
+treatment.
+
+The next scientific action requires human authority: choose a guaranteed-
+service ledger, an information-only ledger, or explicitly authorize a new
+buyer-facing force if positive-stock inspection is essential. Then repair the
+ResearchQuestion, BenchmarkSet, PrimitiveGraph, proposal-only GateDossier, and
+memo consistently and rerun the same case with an ordinary model. A canonical
+audit plus recovery of all five reader probes is required before the held-out
+case; result solving and exploratory v1/v2 comparison remain premature.

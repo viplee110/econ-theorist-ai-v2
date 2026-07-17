@@ -166,6 +166,162 @@ class Phase5AMachineDispatcherTests(unittest.TestCase):
         self.assertEqual(response.diagnostics[0].details, details)
         self.assertNotIn("traceback", response.model_dump_json().lower())
 
+    def test_benchmark_repair_details_survive_machine_error_projection(
+        self,
+    ) -> None:
+        request = self._request("project.inspect")
+        location_root = (
+            "FramingQualityBundle.economic_interpretation.payload"
+        )
+        fixed_details = {
+            "validation_stage": "canonical_candidate_preflight",
+            "rule_id": "framing.benchmark_fixed_endogenous",
+            "location_root": location_root,
+            "repairable": True,
+            "retry_action": "edit_declared_candidate_and_retry_same_request",
+            "repair_hint": "Edit the identified held-fixed or movable entry.",
+            "benchmark_id": "benchmark.fixed_quality",
+            "primitive_node_id": "node.inspection",
+            "held_object_id": "object.fixed.inspection",
+            "held_semantic_level": "choice",
+            "held_fixing_level": "choice",
+            "held_primitive_node_location": [
+                "benchmark_assessments",
+                0,
+                "held_fixed",
+                1,
+                "primitive_node_id",
+            ],
+            "held_fixing_level_location": [
+                "benchmark_assessments",
+                0,
+                "held_fixed",
+                1,
+                "fixing_level",
+            ],
+            "movable_group": "reoptimizing",
+            "movable_object_id": "object.inspection",
+            "movable_semantic_level": "behavioral_response",
+            "movable_primitive_node_location": [
+                "benchmark_assessments",
+                0,
+                "reoptimizing",
+                0,
+                "primitive_node_id",
+            ],
+            "movable_semantic_level_location": [
+                "benchmark_assessments",
+                0,
+                "reoptimizing",
+                0,
+                "semantic_level",
+            ],
+            "conflicting_semantic_levels": ["behavioral_response", "choice"],
+        }
+        endpoint_details = {
+            "validation_stage": "canonical_candidate_preflight",
+            "rule_id": "framing.benchmark_channel_endpoints",
+            "location_root": location_root,
+            "repairable": True,
+            "retry_action": "edit_declared_candidate_and_retry_same_request",
+            "repair_hint": "Bind the channel path to changed and target nodes.",
+            "benchmark_id": "benchmark.fixed_quality",
+            "channel_source_location": [
+                "benchmark_assessments",
+                0,
+                "channel_path",
+                0,
+            ],
+            "channel_target_location": [
+                "benchmark_assessments",
+                0,
+                "channel_path",
+                1,
+            ],
+            "actual_source_node_id": "node.inspection",
+            "actual_target_node_id": "node.quality",
+            "source_matches": False,
+            "target_matches": False,
+            "changed_binding_count": 1,
+            "target_binding_count": 1,
+            "expected_source_node_count": 1,
+            "expected_target_node_count": 1,
+            "changed_bindings": [
+                {
+                    "object_id": "object.certification",
+                    "primitive_node_id": "node.certification",
+                    "location": [
+                        "benchmark_assessments",
+                        0,
+                        "changed",
+                        0,
+                        "primitive_node_id",
+                    ],
+                }
+            ],
+            "target_bindings": [
+                {
+                    "object_id": "object.match",
+                    "primitive_node_id": "node.match",
+                    "location": [
+                        "benchmark_assessments",
+                        0,
+                        "targets",
+                        0,
+                        "primitive_node_id",
+                    ],
+                }
+            ],
+            "expected_source_node_ids": ["node.certification"],
+            "expected_target_node_ids": ["node.match"],
+            "truncated": False,
+        }
+
+        unbound_endpoint_details = {
+            **endpoint_details,
+            "actual_source_node_id": "node.certification",
+            "actual_target_node_id": "node.match",
+            "source_matches": False,
+            "target_matches": True,
+            "expected_source_node_count": 0,
+            "expected_source_node_ids": [],
+            "changed_bindings": [
+                {
+                    **endpoint_details["changed_bindings"][0],
+                    "primitive_node_id": None,
+                }
+            ],
+        }
+
+        for details in (
+            fixed_details,
+            endpoint_details,
+            unbound_endpoint_details,
+        ):
+            with self.subTest(rule_id=details["rule_id"]):
+                response = error_response(
+                    request,
+                    CandidateValidationError(
+                        "benchmark semantic ledger rejected",
+                        diagnostic_details=details,
+                    ),
+                )
+                self.assertEqual(response.diagnostics[0].details, details)
+
+        malformed_endpoint = dict(endpoint_details)
+        malformed_endpoint["expected_source_node_count"] = 0
+        malformed_fixed = dict(fixed_details)
+        malformed_fixed["conflicting_semantic_levels"] = ["choice"]
+        for details in (malformed_endpoint, malformed_fixed):
+            response = error_response(
+                request,
+                CandidateValidationError(
+                    "malformed benchmark details",
+                    diagnostic_details=details,
+                ),
+            )
+            self.assertEqual(response.diagnostics[0].details, {})
+
     def test_untrusted_or_unbounded_exception_details_are_not_projected(
         self,
     ) -> None:

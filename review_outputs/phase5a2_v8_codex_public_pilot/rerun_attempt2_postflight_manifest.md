@@ -1,7 +1,7 @@
 # V8 post-stabilization rerun attempt 2 postflight manifest
 
-Status: **generator and cold-reader evidence frozen; economics-evaluator
-package frozen and unrun**
+Status: **generator, cold-reader, and independent-evaluator evidence frozen;
+evaluation closed as machine-mixed, A-FAIL, REVISE, and R-FAIL/H4**
 
 ## Treatment and state
 
@@ -122,7 +122,7 @@ Root: `C:\tmp\etai-v8-r2-eval`
 - `MANIFEST.md`: 6,604 bytes, SHA-256
   `a5c0cbd339fac2765cdffe65d8a087b715754063cd4eaaff054581938ed068b4`;
 - 35 manifest-bound inputs plus the manifest: 36 files, 295,326 bytes;
-- all 36 input files are read-only and `report/` is empty;
+- at package freeze all 36 input files were read-only and `report/` was empty;
 - all 35 manifest rows match bytes and SHA-256;
 - every JSON input parses;
 - no hidden/reparse item, alternate data stream, secret pattern, email,
@@ -135,12 +135,35 @@ The evaluator may write only
 O, and R/H conclusions and forbids candidate repair, engine execution, G1
 confirmation, and inference about the deliberately omitted WorkPacket.
 
+## Frozen independent evaluation result
+
+The input `MANIFEST.md` remained 6,604 bytes with SHA-256
+`a5c0cbd339fac2765cdffe65d8a087b715754063cd4eaaff054581938ed068b4`.
+All 35 manifest-bound inputs matched exactly. The evaluator added only the
+report copied here as
+[`rerun_attempt2_independent_evaluation_report.md`](rerun_attempt2_independent_evaluation_report.md):
+
+- 30,626 bytes;
+- SHA-256
+  `23cd4e7ed76c967f2e14f373ace6331a72748e7db0f18f70f1b9e8879c6a7d50`;
+- machine result: mixed, with two upstream commits and no audit transaction;
+- economics: `A-FAIL`, scores `0, 1, 1, 2, 2`;
+- disposition: `REVISE`;
+- reader result: `R-FAIL`/H4, separate from the raw reader's provisional H3;
+- no human G1 decision.
+
+The actual provider/backend model identity remains independently
+unconfirmable. The report preserves the package's deliberate exclusion of the
+WorkPacket, source, tests, registry, wheel, operational state, and prior
+evaluation.
+
 ## Claim boundary
 
 This compact repository record does not copy the raw R2 operational store or
 WorkPackets into Git. The exact local evidence remains in the isolated root.
 The record establishes treatment identity, two canonical commits, capture
 integrity, a diagnosed uncommitted audit failure, unchanged human authority,
-the frozen H3 reader diagnostic, and the inputs for independent economics
-evaluation. It does not establish A-SUCCESS, R-PASS, research readiness, a
-validator defect, or v1/v2 superiority.
+the frozen raw H3 reader diagnostic, and the keyed `A-FAIL`/`REVISE`/
+`R-FAIL`/H4 adjudication. It supports only a diagnostic-surface follow-up. It
+does not establish a machine-pass audit, research readiness, a validator
+defect, a human G1 decision, or v1/v2 superiority.

@@ -115,9 +115,30 @@ or fabricated a G1 decision.
   overconstrained validator, or a mixture. That judgment is deliberately
   assigned to isolated post-generation evaluation.
 
-The next work is not another regression cycle or an immediate V9. The isolated
-cold-reader retell is now frozen with provisional burden H3. Next run the
-separate high-intelligence economics adjudication against the unchanged
-evaluation key. Only that adjudication may justify a bounded
-contract/diagnostic change. The held-out ordinary-model framing run remains the
-other half of the stabilization stage.
+At run closure, the next work was not another regression cycle or an immediate
+V9. The isolated cold-reader retell was frozen with provisional burden H3, and
+the separate high-intelligence economics adjudication against the unchanged
+evaluation key remained pending.
+
+## Post-generation adjudication
+
+The later independent evaluation passed integrity checks against all 35
+manifest-bound inputs. It classified machine execution as mixed, economics as
+`A-FAIL` with scores `0, 1, 1, 2, 2`, disposition as `REVISE`, and reader
+recovery/burden as `R-FAIL`/H4. No G1 decision occurred. The exact report is
+[`rerun_attempt2_independent_evaluation_report.md`](rerun_attempt2_independent_evaluation_report.md),
+30,626 bytes, SHA-256
+`23cd4e7ed76c967f2e14f373ace6331a72748e7db0f18f70f1b9e8879c6a7d50`.
+
+The primary cause was model-content/mapping error (confidence 0.80), with
+diagnostic/authoring ambiguity secondary (0.70); validator overconstraint was
+not established (0.35 confidence that it contributed). The current
+guaranteed-service branch implies visible-certificate inspection dominance,
+while positive-stock trade and the state transition remain unsupported.
+
+The next action is a human choice among the guaranteed-service ledger, an
+information-only ledger, or an explicitly authorized buyer-facing force,
+followed by upstream repair and another same-case ordinary-model run. The
+held-out case comes only after a canonical audit and reader recovery. A later
+path-aware diagnostic patch is a separate source change, not part of the R2
+treatment, and does not relax V8.

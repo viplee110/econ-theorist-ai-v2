@@ -119,23 +119,178 @@ class _PrimitivePathDiagnostic(StrictModel):
     ]
 
 
+class _FixedEndogenousDiagnostic(StrictModel):
+    validation_stage: Literal["canonical_candidate_preflight"]
+    rule_id: Literal["framing.benchmark_fixed_endogenous"]
+    location_root: Literal[
+        "FramingQualityBundle.economic_interpretation.payload"
+    ]
+    repairable: Literal[True]
+    retry_action: Literal["edit_declared_candidate_and_retry_same_request"]
+    repair_hint: Annotated[str, Field(min_length=1, max_length=1000)]
+    benchmark_id: _BoundedDiagnosticText
+    primitive_node_id: _BoundedDiagnosticText
+    held_object_id: _BoundedDiagnosticText
+    held_semantic_level: _BoundedDiagnosticText
+    held_fixing_level: _BoundedDiagnosticText
+    held_primitive_node_location: _DiagnosticLocation
+    held_fixing_level_location: _DiagnosticLocation
+    movable_group: Literal["changed", "reoptimizing", "still_endogenous"]
+    movable_object_id: _BoundedDiagnosticText
+    movable_semantic_level: _BoundedDiagnosticText
+    movable_primitive_node_location: _DiagnosticLocation
+    movable_semantic_level_location: _DiagnosticLocation
+    conflicting_semantic_levels: Annotated[
+        list[_BoundedDiagnosticText],
+        Field(min_length=1, max_length=20),
+    ]
+
+
+class _SemanticObjectBindingDiagnostic(StrictModel):
+    object_id: _BoundedDiagnosticText
+    primitive_node_id: _BoundedDiagnosticText | None
+    location: _DiagnosticLocation
+
+
+class _ChannelEndpointDiagnostic(StrictModel):
+    validation_stage: Literal["canonical_candidate_preflight"]
+    rule_id: Literal["framing.benchmark_channel_endpoints"]
+    location_root: Literal[
+        "FramingQualityBundle.economic_interpretation.payload"
+    ]
+    repairable: Literal[True]
+    retry_action: Literal["edit_declared_candidate_and_retry_same_request"]
+    repair_hint: Annotated[str, Field(min_length=1, max_length=1000)]
+    benchmark_id: _BoundedDiagnosticText
+    channel_source_location: _DiagnosticLocation
+    channel_target_location: _DiagnosticLocation
+    actual_source_node_id: _BoundedDiagnosticText
+    actual_target_node_id: _BoundedDiagnosticText
+    source_matches: bool
+    target_matches: bool
+    changed_binding_count: Annotated[int, Field(ge=0, le=10000)]
+    target_binding_count: Annotated[int, Field(ge=0, le=10000)]
+    expected_source_node_count: Annotated[int, Field(ge=0, le=10000)]
+    expected_target_node_count: Annotated[int, Field(ge=0, le=10000)]
+    changed_bindings: Annotated[
+        list[_SemanticObjectBindingDiagnostic],
+        Field(max_length=20),
+    ]
+    target_bindings: Annotated[
+        list[_SemanticObjectBindingDiagnostic],
+        Field(max_length=20),
+    ]
+    expected_source_node_ids: Annotated[
+        list[_BoundedDiagnosticText],
+        Field(max_length=20),
+    ]
+    expected_target_node_ids: Annotated[
+        list[_BoundedDiagnosticText],
+        Field(max_length=20),
+    ]
+    truncated: bool
+
+
 def _safe_candidate_diagnostic_details(exc: Exception) -> dict[str, Any]:
-    """Project only the one bounded scientific repair schema we expose."""
+    """Project only bounded scientific repair schemas we explicitly expose."""
 
     if not isinstance(exc, CandidateValidationError):
         return {}
-    try:
-        details = _PrimitivePathDiagnostic.model_validate(
-            exc.diagnostic_details,
-            strict=True,
-        )
-    except ValidationError:
-        return {}
-    if details.issue_count < len(details.issues) or details.truncated != (
-        details.issue_count > len(details.issues)
+    for diagnostic_model in (
+        _PrimitivePathDiagnostic,
+        _FixedEndogenousDiagnostic,
+        _ChannelEndpointDiagnostic,
     ):
-        return {}
-    return details.model_dump(mode="json")
+        try:
+            details = diagnostic_model.model_validate(
+                exc.diagnostic_details,
+                strict=True,
+            )
+        except ValidationError:
+            continue
+        if isinstance(details, _PrimitivePathDiagnostic):
+            if details.issue_count < len(details.issues) or details.truncated != (
+                details.issue_count > len(details.issues)
+            ):
+                continue
+        if isinstance(details, _FixedEndogenousDiagnostic):
+            if (
+                details.movable_semantic_level
+                not in details.conflicting_semantic_levels
+            ):
+                continue
+        if isinstance(details, _ChannelEndpointDiagnostic):
+            count_pairs = (
+                (details.changed_binding_count, len(details.changed_bindings)),
+                (details.target_binding_count, len(details.target_bindings)),
+                (
+                    details.expected_source_node_count,
+                    len(details.expected_source_node_ids),
+                ),
+                (
+                    details.expected_target_node_count,
+                    len(details.expected_target_node_ids),
+                ),
+            )
+            if any(total < reported for total, reported in count_pairs):
+                continue
+            if (
+                details.expected_source_node_count
+                > details.changed_binding_count
+                or details.expected_target_node_count
+                > details.target_binding_count
+            ):
+                continue
+            if details.truncated != any(
+                total > reported for total, reported in count_pairs
+            ):
+                continue
+            if len(set(details.expected_source_node_ids)) != len(
+                details.expected_source_node_ids
+            ) or len(set(details.expected_target_node_ids)) != len(
+                details.expected_target_node_ids
+            ):
+                continue
+            if (
+                details.changed_binding_count == len(details.changed_bindings)
+                and details.expected_source_node_count
+                == len(details.expected_source_node_ids)
+                and {
+                    item.primitive_node_id
+                    for item in details.changed_bindings
+                    if item.primitive_node_id is not None
+                }
+                != set(details.expected_source_node_ids)
+            ):
+                continue
+            if (
+                details.target_binding_count == len(details.target_bindings)
+                and details.expected_target_node_count
+                == len(details.expected_target_node_ids)
+                and {
+                    item.primitive_node_id
+                    for item in details.target_bindings
+                    if item.primitive_node_id is not None
+                }
+                != set(details.expected_target_node_ids)
+            ):
+                continue
+            if details.expected_source_node_count == len(
+                details.expected_source_node_ids
+            ) and details.source_matches != (
+                details.actual_source_node_id in details.expected_source_node_ids
+            ):
+                continue
+            if details.expected_target_node_count == len(
+                details.expected_target_node_ids
+            ) and details.target_matches != (
+                details.actual_target_node_id in details.expected_target_node_ids
+            ):
+                continue
+            if details.source_matches and details.target_matches:
+                continue
+        return details.model_dump(mode="json")
+    return {}
 
 
 class _NavigationParameters(StrictModel):

@@ -4,8 +4,11 @@ Status: Phase 5A.0 design accepted on `main` by `2192956`; active deployment
 scope revised on 2026-07-13 to trusted local research use; the Phase 5A.1 local
 machine facade and one Phase 5A.2 public Codex functional slice are complete in
 the current tree. A later V8 public diagnostic committed framing and primitive
-decomposition but not its framing-quality audit. The full host-native
-research-ready gate remains open and no public-release claim is made
+decomposition but not its framing-quality audit. The corrected-wheel R2
+same-case run repeated those two commits without host interference, then
+closed its audit as `failed_no_effect`. Independent adjudication returned
+machine-mixed, `A-FAIL`, `REVISE`, and `R-FAIL`/H4. The full host-native
+research-ready gate remains open and no public-release claim is made.
 
 Phase 5A.1 implementation branch (historical): `agent/phase5a-machine-facade`
 
@@ -1384,5 +1387,21 @@ the existing finish-token grammar in the Codex schema, and adds immutable
 request/candidate capture. It changes no route registry, instruction, schema,
 scientific acceptance condition, or human gate. The failed pilot did not
 exercise these later fixes. The post-pilot source candidate passed its
-deterministic gate; a new commit and wheel freeze plus a new blind task remain
-required before any model-success claim.
+deterministic gate.
+
+The corrected-wheel R2 same-case task then traversed the stabilized host path,
+committed framing and primitive decomposition, and exhausted two audit repairs
+before recording operational `failed_no_effect`; no audit transaction or G1
+decision occurred. Independent keyed evaluation classified the primary cause
+as model-content/mapping error, diagnostic/authoring ambiguity as secondary,
+and did not establish validator overconstraint. Its final disposition was
+machine-mixed, `A-FAIL` (`0, 1, 1, 2, 2`), `REVISE`, and `R-FAIL`/H4. The
+post-evaluation fixed/endogenous and endpoint diagnostic improvement is a
+separate, semantics-preserving source change and was not exercised by R2.
+
+The next scientific step is a human-authorized certificate-ledger choice,
+upstream same-case repair, another ordinary-model same-case run to a canonical
+audit, and reader inspection. The held-out run remains required but is
+deferred until that sequence succeeds. See the
+[R2 report](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_run_report.md)
+and [independent evaluation](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_independent_evaluation_report.md).

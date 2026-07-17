@@ -2092,8 +2092,145 @@ class FramingQualityRouteTests(unittest.TestCase):
 
         with self.assertRaisesRegex(
             CandidateValidationError, "fixed_endogenous_conflict"
-        ):
+        ) as caught:
             self._commit_audit(fixed_core, bundle_mutator=alias_choice)
+
+        details = caught.exception.diagnostic_details
+        self.assertEqual(
+            details["rule_id"], "framing.benchmark_fixed_endogenous"
+        )
+        self.assertEqual(details["benchmark_id"], "benchmark.fixed_quality")
+        self.assertEqual(details["primitive_node_id"], "node.inspection")
+        self.assertEqual(
+            details["held_primitive_node_location"],
+            [
+                "benchmark_assessments",
+                0,
+                "held_fixed",
+                1,
+                "primitive_node_id",
+            ],
+        )
+        self.assertEqual(details["movable_group"], "reoptimizing")
+        self.assertEqual(
+            details["movable_primitive_node_location"],
+            [
+                "benchmark_assessments",
+                0,
+                "reoptimizing",
+                0,
+                "primitive_node_id",
+            ],
+        )
+        self.assertIn(
+            details["movable_semantic_level"],
+            details["conflicting_semantic_levels"],
+        )
+
+    def test_channel_endpoint_mismatch_reports_exact_benchmark_paths(self) -> None:
+        core = self._phase2_prefix()
+
+        def truncate_target_endpoint(
+            bundle: FramingQualityBundle,
+        ) -> FramingQualityBundle:
+            assessment = bundle.benchmark_assessments[0]
+            return bundle.model_copy(
+                update={
+                    "benchmark_assessments": (
+                        assessment.model_copy(
+                            update={
+                                "channel_path": (
+                                    "node.certification",
+                                    "node.inspection",
+                                    "node.quality",
+                                )
+                            }
+                        ),
+                    )
+                }
+            )
+
+        with self.assertRaisesRegex(
+            CandidateValidationError, "channel endpoints"
+        ) as caught:
+            self._commit_audit(core, bundle_mutator=truncate_target_endpoint)
+
+        details = caught.exception.diagnostic_details
+        self.assertEqual(
+            details["rule_id"], "framing.benchmark_channel_endpoints"
+        )
+        self.assertEqual(details["benchmark_id"], "benchmark.fixed_quality")
+        self.assertTrue(details["source_matches"])
+        self.assertFalse(details["target_matches"])
+        self.assertEqual(details["actual_source_node_id"], "node.certification")
+        self.assertEqual(details["actual_target_node_id"], "node.quality")
+        self.assertEqual(
+            details["expected_source_node_ids"], ["node.certification"]
+        )
+        self.assertEqual(details["expected_target_node_ids"], ["node.match"])
+        self.assertEqual(
+            details["channel_source_location"],
+            ["benchmark_assessments", 0, "channel_path", 0],
+        )
+        self.assertEqual(
+            details["channel_target_location"],
+            ["benchmark_assessments", 0, "channel_path", 2],
+        )
+        self.assertEqual(
+            details["changed_bindings"][0]["location"],
+            ["benchmark_assessments", 0, "changed", 0, "primitive_node_id"],
+        )
+        self.assertEqual(
+            details["target_bindings"][0]["location"],
+            ["benchmark_assessments", 0, "targets", 0, "primitive_node_id"],
+        )
+        self.assertFalse(details["truncated"])
+
+    def test_channel_endpoint_diagnostic_preserves_unbound_object_path(self) -> None:
+        core = self._phase2_prefix()
+
+        def unbind_changed_object(
+            bundle: FramingQualityBundle,
+        ) -> FramingQualityBundle:
+            assessment = bundle.benchmark_assessments[0]
+            changed = assessment.changed[0].model_copy(
+                update={"primitive_node_id": None}
+            )
+            return bundle.model_copy(
+                update={
+                    "benchmark_assessments": (
+                        assessment.model_copy(update={"changed": (changed,)}),
+                    )
+                }
+            )
+
+        with self.assertRaisesRegex(
+            CandidateValidationError, "channel endpoints"
+        ) as caught:
+            self._commit_audit(core, bundle_mutator=unbind_changed_object)
+
+        details = caught.exception.diagnostic_details
+        self.assertFalse(details["source_matches"])
+        self.assertTrue(details["target_matches"])
+        self.assertEqual(details["expected_source_node_ids"], [])
+        self.assertEqual(details["expected_source_node_count"], 0)
+        self.assertEqual(
+            details["changed_bindings"],
+            [
+                {
+                    "object_id": "object.certification",
+                    "primitive_node_id": None,
+                    "location": [
+                        "benchmark_assessments",
+                        0,
+                        "changed",
+                        0,
+                        "primitive_node_id",
+                    ],
+                }
+            ],
+        )
+        self.assertFalse(details["truncated"])
 
     def test_force_chain_rejects_unused_zero_and_path_detached_forces(self) -> None:
         def unused_counterforce(bundle: FramingQualityBundle) -> FramingQualityBundle:

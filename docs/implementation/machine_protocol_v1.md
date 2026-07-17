@@ -1,10 +1,12 @@
 # Machine protocol v1
 
 Status: Phase 5A.1 local machine facade implemented and verified; a thin
-public-only Codex projection, an earlier committed framing slice, and a later
-failed V8 audit diagnostic are recorded in the current tree. The full local
-research-ready gate remains open, while signed/public-distribution hardening is
-optional 5A.5
+public-only Codex projection, an earlier committed framing slice, the first V8
+pilot, and a corrected-wheel R2 same-case run are recorded in the current
+tree. R2 committed framing and decomposition but not the audit. Independent
+adjudication classified the result as machine-mixed, `A-FAIL`, `REVISE`, and
+`R-FAIL`/H4. The full local research-ready gate remains open, while
+signed/public-distribution hardening is optional 5A.5.
 
 ## Host-neutral transport and Codex projection
 
@@ -44,8 +46,21 @@ fix permits one leading UTF-8 BOM only at the noncanonical host candidate-source
 boundary; strict canonical Transaction bytes, capture identity, staging, and
 ObjectStore content remain BOM-free. Primitive-path rejection remains strict,
 but its diagnostic now returns all bounded force-binding and adjacent-chain
-closure issues with candidate-relative locations. A finish response reuses the
-host-neutral `host.finish` receipt. The Codex projection uses it only for an
+closure issues with candidate-relative locations. A post-evaluation,
+diagnostic-only follow-up also allowlists two bounded candidate-preflight
+details shapes. `framing.benchmark_fixed_endogenous` identifies the benchmark,
+primitive node, held and movable objects, conflicting semantic levels, and
+their exact payload-relative locations. It covers the route-level
+PrimitiveGraph-node conflict exercised in R2; the earlier model-level duplicate
+object-id rejection remains outside this diagnostic-only slice.
+`framing.benchmark_channel_endpoints` identifies the actual endpoints,
+expected node sets, object bindings (including unbound objects), and exact
+payload-relative locations. Both use
+`location_root=FramingQualityBundle.economic_interpretation.payload`; the
+dispatcher validates their finite shapes and otherwise fails closed to empty
+details. These diagnostics do not relax a validator predicate, extend an enum,
+or change scientific acceptance. A finish response reuses the host-neutral
+`host.finish` receipt. The Codex projection uses it only for an
 otherwise-unrecorded real termination after delivery: exhausted declared
 retries, explicit user cancellation, or an abnormal host/model abort. Ordinary
 human waits, clarifications, handoffs, and intentional pauses are not finishes.
@@ -198,3 +213,12 @@ decomposition but not through the audit commit. Its final operational
 transaction. The source-boundary, structured-diagnostic, finish-schema, and
 capture-v2 changes were made after that run and cannot be reported as if the
 original model exercised them.
+
+The corrected-wheel R2 same-case run later traversed the stabilized host path,
+committed framing and decomposition, and exhausted two audit repairs before an
+operational `failed_no_effect`; no audit transaction or G1 decision occurred.
+Independent evaluation found a primary model-content/mapping error, secondary
+diagnostic/authoring ambiguity, and no established validator false positive.
+The path-aware fixed/endogenous and endpoint details above were implemented
+after that evaluation and were not exercised by the R2 model. See the
+[R2 independent evaluation](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_independent_evaluation_report.md).

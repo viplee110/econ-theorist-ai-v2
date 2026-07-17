@@ -1,7 +1,8 @@
 # V8 post-pilot host-stabilization gate
 
-Status: **deterministic acceptance passed; the same-case rerun exposed a
-diagnosed model-content failure, while the held-out run remains open**
+Status: **deterministic acceptance passed; the same-case rerun and independent
+adjudication closed as machine-mixed, A-FAIL, REVISE, and R-FAIL/H4; the
+held-out run remains open but is deferred until same-case scientific repair**
 
 This gate prevents the V8 pilot from turning into an unbounded sequence of
 scientific route versions. It changes host interoperability, diagnostics, and
@@ -91,8 +92,30 @@ transaction and no G1 decision. Capture binding and integrity checks passed.
 This satisfies the same-case host-stability branch by exposing a genuine,
 bounded model-content failure without transport or encoding interference. It
 does not satisfy the separate scientific requirement for a canonical audit
-commit. The isolated cold-reader retell is now frozen with provisional burden
-H3; independent economics adjudication is pending, and the held-out
-ordinary-model run remains required. See
+commit. The isolated cold-reader retell remains frozen with provisional burden
+H3. See
 [`rerun_attempt2_run_report.md`](rerun_attempt2_run_report.md) and
 [`rerun_attempt2_postflight_manifest.md`](rerun_attempt2_postflight_manifest.md).
+
+## Post-evaluation disposition
+
+The frozen independent adjudication passed its 35/35 input-integrity checks
+and returned machine-mixed, `A-FAIL` with scores `0, 1, 1, 2, 2`, `REVISE`,
+and `R-FAIL`/H4. It classified model-content/mapping as the primary cause,
+diagnostic/authoring ambiguity as secondary, and did not establish validator
+overconstraint. No human G1 decision occurred. See the exact
+[`rerun_attempt2_independent_evaluation_report.md`](rerun_attempt2_independent_evaluation_report.md).
+
+The original two-run stop rule remains the frozen protocol, but the held-out
+half is deferred: running it now would mix a known same-case economic defect
+with authoring/validator evidence. First obtain the human certificate-ledger
+choice, repair the upstream same-case objects, and demonstrate a canonical
+audit plus reader recovery; then run the still-required held-out case.
+
+The frozen evidence justified only a post-evaluation diagnostic surface change
+for fixed/endogenous conflicts and channel endpoints. That change reports
+bounded payload-relative paths beneath an explicit location root, leaves V8
+acceptance untouched, and was not exercised by the R2 model. Its source tree
+passed all seven exporter
+checks and the 599-test routine non-long gate with six declared skips; the
+three hour-scale historical gold chains remained excluded by policy.

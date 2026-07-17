@@ -8,16 +8,19 @@ framing-quality implementation candidate. V8 adds only a narrow, non-G1
 negative-diagnosis exit for an upstream graph that cannot honestly support an
 active-margin witness. The post-stabilization same-case rerun committed framing
 and decomposition, then exposed a specifically diagnosed model-content failure
-without an audit commit. The held-out host-stability run, a successful
-canonical audit, and the full local research-ready gate remain open.
+without an audit commit. Independent adjudication classified it as
+machine-mixed, `A-FAIL`, `REVISE`, and `R-FAIL`/H4; it did not establish a
+validator defect. The held-out host-stability run, a successful canonical
+audit, and the full local research-ready gate remain open.
 
 Current implementation milestone: post-pilot evaluation -- the bounded host
 stabilization passed deterministic acceptance and its same-case ordinary-model
-rerun ended in a genuine diagnosed content failure. Its isolated cold-reader
-retell is now frozen with provisional burden H3. Adjudicate the economics and
-validator interaction independently, run the held-out framing case, and obtain
-and inspect a canonically committed same-case audit before an exploratory v1/v2
-quality pilot.
+rerun ended in a genuine diagnosed content failure. The raw cold-reader result
+remains provisional H3, while independent keyed adjudication assigned
+`R-FAIL`/H4 and found a primary economic mapping error. Obtain human authority
+for the operative certificate ledger, repair the same-case upstream objects,
+rerun it to a canonical audit, and inspect reader recovery. Only then run the
+held-out framing case before an exploratory v1/v2 quality pilot.
 
 ## 1. Delivery strategy
 
@@ -435,8 +438,14 @@ audit and exposed post-pilot host/diagnostic defects. Those later fixes passed
 their deterministic stabilization gate. The corrected-wheel R2 same-case run
 then traversed the host path cleanly and committed framing and decomposition,
 but its audit exhausted two repairs and recorded `failed_no_effect` without a
-canonical audit transaction. Independent adjudication, a successful canonical
-same-case audit, and the held-out run remain open.
+canonical audit transaction. Independent adjudication subsequently returned
+machine-mixed, `A-FAIL` (`0, 1, 1, 2, 2`), `REVISE`, and `R-FAIL`/H4. It found
+a primary model-content/mapping error and secondary diagnostic ambiguity, not
+an established acceptance-semantics defect. A post-evaluation diagnostic-only
+patch adds exact paths for fixed/endogenous and endpoint failures without
+changing V8. The next sequence is a human-authorized upstream ledger repair,
+same-case canonical rerun, reader inspection, and only then the still-required
+held-out run.
 
 The ordinary researcher-facing interface is natural language. The machine
 layer remains a versioned `etai` protocol, and the terminal path remains
