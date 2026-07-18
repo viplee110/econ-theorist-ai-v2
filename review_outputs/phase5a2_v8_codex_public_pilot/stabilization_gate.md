@@ -108,9 +108,10 @@ overconstraint. No human G1 decision occurred. See the exact
 
 The original two-run stop rule remains the frozen protocol, but the held-out
 half is deferred: running it now would mix a known same-case economic defect
-with authoring/validator evidence. First obtain the human certificate-ledger
-choice, repair the upstream same-case objects, and demonstrate a canonical
-audit plus reader recovery; then run the still-required held-out case.
+with authoring/validator evidence. The researcher selected the
+guaranteed-service ledger on 2026-07-18. Its clean R3 package is frozen but
+unrun; R3 must demonstrate a canonical audit plus reader recovery before the
+still-required held-out case.
 
 The frozen evidence justified only a post-evaluation diagnostic surface change
 for fixed/endogenous conflicts and channel endpoints. That change reports
@@ -119,3 +120,7 @@ acceptance untouched, and was not exercised by the R2 model. Its source tree
 passed all seven exporter
 checks and the 599-test routine non-long gate with six declared skips; the
 three hour-scale historical gold chains remained excluded by policy.
+
+See the [R3 branch decision](rerun_attempt3_route1_branch_decision.md),
+[protocol](rerun_attempt3_route1_protocol.md), and
+[preflight manifest](rerun_attempt3_route1_preflight_manifest.md).

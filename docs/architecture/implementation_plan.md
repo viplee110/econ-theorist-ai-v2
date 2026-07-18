@@ -11,16 +11,19 @@ and decomposition, then exposed a specifically diagnosed model-content failure
 without an audit commit. Independent adjudication classified it as
 machine-mixed, `A-FAIL`, `REVISE`, and `R-FAIL`/H4; it did not establish a
 validator defect. The held-out host-stability run, a successful canonical
-audit, and the full local research-ready gate remain open.
+audit, and the full local research-ready gate remain open. The researcher has
+selected the guaranteed-service branch and a clean, unrun R3 same-case
+revision package is now frozen.
 
 Current implementation milestone: post-pilot evaluation -- the bounded host
 stabilization passed deterministic acceptance and its same-case ordinary-model
 rerun ended in a genuine diagnosed content failure. The raw cold-reader result
 remains provisional H3, while independent keyed adjudication assigned
-`R-FAIL`/H4 and found a primary economic mapping error. Obtain human authority
-for the operative certificate ledger, repair the same-case upstream objects,
-rerun it to a canonical audit, and inspect reader recovery. Only then run the
-held-out framing case before an exploratory v1/v2 quality pilot.
+`R-FAIL`/H4 and found a primary economic mapping error. The researcher selected
+the guaranteed-service ledger, which kills positive-stock inspection absent a
+new force. Run the frozen R3 package with an ordinary model, inspect its
+canonical audit and reader recovery, and only then run the held-out framing
+case before an exploratory v1/v2 quality pilot.
 
 ## 1. Delivery strategy
 
@@ -443,9 +446,9 @@ machine-mixed, `A-FAIL` (`0, 1, 1, 2, 2`), `REVISE`, and `R-FAIL`/H4. It found
 a primary model-content/mapping error and secondary diagnostic ambiguity, not
 an established acceptance-semantics defect. A post-evaluation diagnostic-only
 patch adds exact paths for fixed/endogenous and endpoint failures without
-changing V8. The next sequence is a human-authorized upstream ledger repair,
-same-case canonical rerun, reader inspection, and only then the still-required
-held-out run.
+changing V8. The human-authorized guaranteed-service choice and its clean R3
+package are now frozen. The next sequence is the same-case ordinary-model run,
+reader inspection, and only then the still-required held-out run.
 
 The ordinary researcher-facing interface is natural language. The machine
 layer remains a versioned `etai` protocol, and the terminal path remains

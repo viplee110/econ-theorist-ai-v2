@@ -6,7 +6,9 @@ post-stabilization same-case rerun exposed a diagnosed content failure without
 an audit commit. Independent adjudication is complete: machine-mixed,
 `A-FAIL` (`0, 1, 1, 2, 2`), `REVISE`, and `R-FAIL`/H4. Scientific acceptance
 remains open, and the held-out run is deferred until the same case is repaired
-upstream and rerun successfully.
+upstream and rerun successfully. The researcher has now selected the
+guaranteed-service branch for that repair, and the clean R3 ordinary-model
+package is frozen but unrun.
 
 This contract owns the first pilot-driven scientific strengthening after the
 Phase 5A.2 public Codex framing run. It addresses a narrow failure: a
@@ -340,10 +342,12 @@ endpoints, and exact payload-relative paths for fixed/endogenous and endpoint
 failures. That source change postdates R2 and cannot be treated as part of its
 treatment.
 
-The next scientific action requires human authority: choose a guaranteed-
-service ledger, an information-only ledger, or explicitly authorize a new
-buyer-facing force if positive-stock inspection is essential. Then repair the
-ResearchQuestion, BenchmarkSet, PrimitiveGraph, proposal-only GateDossier, and
-memo consistently and rerun the same case with an ordinary model. A canonical
-audit plus recovery of all five reader probes is required before the held-out
-case; result solving and exploratory v1/v2 comparison remain premature.
+The researcher selected the guaranteed-service ledger on 2026-07-18. That
+choice kills the unsupported positive-stock inspection margin and limits R3 to
+an honest zero-certificate-state/reweighting question without a newly invented
+buyer-facing force. The clean ordinary-model package is frozen in the
+[R3 protocol](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_route1_protocol.md).
+R3 must repair the ResearchQuestion, BenchmarkSet, PrimitiveGraph,
+proposal-only GateDossier, and memo consistently. A canonical audit plus
+recovery of all five reader probes remains required before the held-out case;
+result solving and exploratory v1/v2 comparison remain premature.

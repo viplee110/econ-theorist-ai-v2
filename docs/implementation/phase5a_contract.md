@@ -1399,9 +1399,11 @@ machine-mixed, `A-FAIL` (`0, 1, 1, 2, 2`), `REVISE`, and `R-FAIL`/H4. The
 post-evaluation fixed/endogenous and endpoint diagnostic improvement is a
 separate, semantics-preserving source change and was not exercised by R2.
 
-The next scientific step is a human-authorized certificate-ledger choice,
-upstream same-case repair, another ordinary-model same-case run to a canonical
-audit, and reader inspection. The held-out run remains required but is
-deferred until that sequence succeeds. See the
+The researcher selected the guaranteed-service certificate ledger on
+2026-07-18. The resulting clean R3 package freezes the upstream same-case
+reframe without changing the engine or R2 evidence. The next scientific step
+is its ordinary-model run to a canonical audit, followed by reader inspection.
+The held-out run remains required but is deferred until that sequence
+succeeds. See the
 [R2 report](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_run_report.md)
-and [independent evaluation](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_independent_evaluation_report.md).
+and [R3 protocol](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_route1_protocol.md).
