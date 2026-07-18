@@ -1006,7 +1006,12 @@ def _launch_prompt(
 ) -> bytes:
     return f"""# Frozen paired-authoring task launch
 
-This is the `{surface}` arm.  Set the task working directory to exactly:
+This is the `{surface}` arm.  Open the new Codex task with this exact workspace
+root so the frozen runner can read the pair runtime:
+
+`{arm_root.parent}`
+
+Then set the task's shell working directory to exactly:
 
 `{arm_root}`
 
@@ -1641,9 +1646,9 @@ Transaction arm manifest SHA-256: `{arm_manifest_hashes['transaction']}`
 
 Semantic arm manifest SHA-256: `{arm_manifest_hashes['semantic']}`
 
-Only after `PRE_MANIFEST_OK`, create two new Codex tasks using the same
-ordinary/medium model.  Open both before reading either result.  Run them in
-this frozen order:
+Only after `PRE_MANIFEST_OK`, create two new Codex tasks using `{output_root}`
+as the workspace root and the same ordinary/medium model.  Open both before
+reading either result.  Run them in this frozen order:
 
 1. Paste `{launch_paths[order[0]]}` into a new task.
 2. Paste `{launch_paths[order[1]]}` into a second new task.

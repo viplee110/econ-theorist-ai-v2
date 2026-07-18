@@ -32,11 +32,15 @@ and after must be identical.
 ## Isolation and execution
 
 Use the same ordinary/medium model and settings in two new tasks.  Each task is
-restricted to its own arm directory and the single frozen harness command.  It
-may not use network access, subagents, repository source, tests or fixtures,
-earlier pilots, old conversations, the parent/sibling arm, or the evaluator
-key.  The visible model label is recorded; provider/backend identity is not
-invented when it cannot be independently observed.
+opened with the pair directory as its workspace root only so the frozen runner
+can read the shared runtime, then restricted by protocol to its own arm
+directory and the single frozen harness command.  The model may not inspect
+the parent/shared runtime directly or use network access, subagents,
+repository source, tests or fixtures, earlier pilots, old conversations, the
+sibling arm, or the evaluator key.  This is local-use protocol isolation, not
+an attacker-resistant filesystem claim.  The visible model label is recorded;
+provider/backend identity is not invented when it cannot be independently
+observed.
 
 The arm order is fixed from a deterministic seed over the frozen scientific
 and engine bindings, then recorded in and bound by the pre-manifest before
