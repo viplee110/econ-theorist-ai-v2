@@ -1,8 +1,8 @@
 # V8 post-pilot host-stabilization gate
 
-Status: **deterministic acceptance passed; the same-case rerun and independent
-adjudication closed as machine-mixed, A-FAIL, REVISE, and R-FAIL/H4; the
-held-out run remains open but is deferred until same-case scientific repair**
+Status: **deterministic acceptance passed; R2 closed host stabilization; R3
+ended without an audit; locked R3 adjudication selected structural-tax
+reduction; the held-out paired shadow is next**
 
 This gate prevents the V8 pilot from turning into an unbounded sequence of
 scientific route versions. It changes host interoperability, diagnostics, and
@@ -124,3 +124,21 @@ three hour-scale historical gold chains remained excluded by policy.
 See the [R3 branch decision](rerun_attempt3_route1_branch_decision.md),
 [protocol](rerun_attempt3_route1_protocol.md), and
 [preflight manifest](rerun_attempt3_route1_preflight_manifest.md).
+
+## Post-R3 update
+
+R3 subsequently ran under the frozen protocol. It committed the authorized
+upstream revision and decomposition, then exhausted two audit repairs and
+recorded `failed_no_effect`; it did not produce a canonical audit or G1
+decision. The locked two-phase adjudication classified the current failure
+`STRUCTURAL_TAX_PRIMARY` with confidence 0.86 and found no V8
+acceptance-semantics defect.
+
+The prescribed noncanonical semantic-compiler prototype now validates the
+locked negative diagnosis in memory while deriving paths, wrappers, the
+replacement-dossier condition, and all five hard relations. That replay made
+no canonical write and is not retroactive R3 treatment evidence. It changes the
+next experiment, not the frozen earlier protocol: prepare one held-out paired
+shadow comparing free-form Transaction authoring with the compiler surface
+under the same ordinary model and scientific brief. See the
+[adjudication and compiler shadow record](rerun_attempt3_adjudication_and_compiler_shadow.md).

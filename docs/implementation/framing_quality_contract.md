@@ -1,14 +1,14 @@
 # Framing-quality preflight contract
 
 Status: additive v8 negative-diagnosis revision candidate; pre-pilot scientific
-and post-pilot host-stabilization deterministic verification passed; the
-post-stabilization same-case rerun exposed a diagnosed content failure without
-an audit commit. Independent adjudication is complete: machine-mixed,
-`A-FAIL` (`0, 1, 1, 2, 2`), `REVISE`, and `R-FAIL`/H4. Scientific acceptance
-remains open, and the held-out run is deferred until the same case is repaired
-upstream and rerun successfully. The researcher has now selected the
-guaranteed-service branch for that repair, and the clean R3 ordinary-model
-package is frozen but unrun.
+and post-pilot host-stabilization deterministic verification passed. R2 and R3
+both committed framing and decomposition but no audit or G1 decision. The
+locked R3 adjudication classified the current failure
+`STRUCTURAL_TAX_PRIMARY` with confidence 0.86 and found no V8 acceptance defect.
+A noncanonical semantic-compiler prototype validates the locked negative
+diagnosis under unchanged V8 semantics with zero canonical writes. Scientific
+and reader acceptance remain open; the next evidence is a held-out
+ordinary-model paired shadow of the free-form and compiled authoring surfaces.
 
 This contract owns the first pilot-driven scientific strengthening after the
 Phase 5A.2 public Codex framing run. It addresses a narrow failure: a
@@ -343,11 +343,26 @@ failures. That source change postdates R2 and cannot be treated as part of its
 treatment.
 
 The researcher selected the guaranteed-service ledger on 2026-07-18. That
-choice kills the unsupported positive-stock inspection margin and limits R3 to
-an honest zero-certificate-state/reweighting question without a newly invented
-buyer-facing force. The clean ordinary-model package is frozen in the
-[R3 protocol](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_route1_protocol.md).
-R3 must repair the ResearchQuestion, BenchmarkSet, PrimitiveGraph,
-proposal-only GateDossier, and memo consistently. A canonical audit plus
-recovery of all five reader probes remains required before the held-out case;
-result solving and exploratory v1/v2 comparison remain premature.
+choice killed the unsupported positive-stock inspection margin and limited R3
+to an honest zero-certificate-state/reweighting question without a newly
+invented buyer-facing force. The ordinary-model task followed the frozen
+[R3 protocol](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_route1_protocol.md):
+it committed the revised ResearchQuestion/BenchmarkSet and PrimitiveGraph/
+proposal-only GateDossier, then exhausted two audit repairs and recorded
+`failed_no_effect`; no FramingQualityBundle, replacement dossier, or human G1
+decision was committed.
+
+The locked two-phase adjudication then recovered eight of ten economics items
+but found that mechanical authoring dominated the failure. Its final decision
+was `STRUCTURAL_TAX_PRIMARY` (0.86), not an acceptance-semantics defect. A
+noncanonical semantic compiler subsequently reproduced the exact V8 contract,
+corrected only the bounded `behavioral_response`/`equilibrium_object`
+representation choice, derived the replacement-dossier condition and five
+hard relations, and passed the unchanged candidate validator in memory. See
+the exact [adjudication and compiler shadow record](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_adjudication_and_compiler_shadow.md).
+
+This shadow replay is not a canonical audit and not new model-generation
+evidence. The next test is one held-out paired ordinary-model shadow comparing
+the free-form Transaction authoring surface with the semantic compiler under
+the same scientific brief. Result solving, public bridge integration, and an
+exploratory v1/v2 quality comparison remain premature.

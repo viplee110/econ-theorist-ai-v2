@@ -6,24 +6,23 @@ Status: Architecture v0.1 with accepted Phase 1--4 implementations, the Phase
 current tree contains a deterministically accepted additive registry-v8
 framing-quality implementation candidate. V8 adds only a narrow, non-G1
 negative-diagnosis exit for an upstream graph that cannot honestly support an
-active-margin witness. The post-stabilization same-case rerun committed framing
-and decomposition, then exposed a specifically diagnosed model-content failure
-without an audit commit. Independent adjudication classified it as
-machine-mixed, `A-FAIL`, `REVISE`, and `R-FAIL`/H4; it did not establish a
-validator defect. The held-out host-stability run, a successful canonical
-audit, and the full local research-ready gate remain open. The researcher has
-selected the guaranteed-service branch and a clean, unrun R3 same-case
-revision package is now frozen.
+active-margin witness. R2 and the researcher-authorized R3 revision both
+committed framing and decomposition but no audit. Locked R3 adjudication
+classified the current failure `STRUCTURAL_TAX_PRIMARY` (0.86) and found no V8
+validator defect. A noncanonical semantic-compiler prototype now validates the
+locked R3 diagnosis under unchanged V8 semantics; the held-out paired shadow,
+a canonical end-to-end audit, and the full local research-ready gate remain
+open.
 
-Current implementation milestone: post-pilot evaluation -- the bounded host
-stabilization passed deterministic acceptance and its same-case ordinary-model
-rerun ended in a genuine diagnosed content failure. The raw cold-reader result
-remains provisional H3, while independent keyed adjudication assigned
-`R-FAIL`/H4 and found a primary economic mapping error. The researcher selected
-the guaranteed-service ledger, which kills positive-stock inspection absent a
-new force. Run the frozen R3 package with an ordinary model, inspect its
-canonical audit and reader recovery, and only then run the held-out framing
-case before an exploratory v1/v2 quality pilot.
+Current implementation milestone: structural-tax reduction experiment. The
+semantic compiler owns only wrappers, exact bindings, IDs, paths, hard
+relations, hashes, and the replacement dossier; it does not alter canonical
+payloads, V8 scientific validation, or human authority. Freeze one held-out
+framing case and compare the existing free-form Transaction surface with this
+compiled surface using the same ordinary model and scientific brief. Score
+machine validity, repair count, authoring burden, economics, and reader
+recovery separately before bridge integration or an exploratory v1/v2 quality
+pilot.
 
 ## 1. Delivery strategy
 

@@ -1400,10 +1400,19 @@ post-evaluation fixed/endogenous and endpoint diagnostic improvement is a
 separate, semantics-preserving source change and was not exercised by R2.
 
 The researcher selected the guaranteed-service certificate ledger on
-2026-07-18. The resulting clean R3 package freezes the upstream same-case
-reframe without changing the engine or R2 evidence. The next scientific step
-is its ordinary-model run to a canonical audit, followed by reader inspection.
-The held-out run remains required but is deferred until that sequence
-succeeds. See the
-[R2 report](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_run_report.md)
-and [R3 protocol](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_route1_protocol.md).
+2026-07-18. The R3 ordinary-model run then committed the frozen upstream
+reframe and decomposition but exhausted both audit repairs without a canonical
+audit. Locked independent adjudication classified the failure
+`STRUCTURAL_TAX_PRIMARY` (0.86), not a V8 acceptance-semantics defect. A
+noncanonical semantic compiler now reproduces the five exact relation
+templates, derives the replacement dossier, batches channel and semantic-ledger
+structural issues, and validates the locked negative diagnosis under the
+unchanged V8 validator with zero canonical writes.
+
+This prototype is not yet part of the public transport and the prior R3 run did
+not exercise it. The next bounded evidence is a held-out paired ordinary-model
+shadow using the same scientific brief on the free-form Transaction and
+semantic-compiler surfaces. See the
+[R2 report](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_run_report.md),
+[R3 protocol](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_route1_protocol.md),
+and [adjudication/compiler shadow](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_adjudication_and_compiler_shadow.md).

@@ -618,6 +618,19 @@ _FIXING_LEVEL_OVERLAPS: Mapping[str, frozenset[str]] = {
     "aggregate": frozenset(("aggregate",)),
 }
 
+
+def active_semantic_node_kinds(semantic_level: str) -> frozenset[str] | None:
+    """Expose the canonical V8 node-kind lookup to mechanical authoring tools."""
+
+    return _ACTIVE_SEMANTIC_NODE_KINDS.get(semantic_level)
+
+
+def fixing_level_overlaps(fixing_level: str) -> frozenset[str]:
+    """Expose the canonical fixed/movable overlap lookup without duplicating it."""
+
+    return _FIXING_LEVEL_OVERLAPS.get(fixing_level, frozenset())
+
+
 _MAX_STRUCTURED_DIAGNOSTIC_ISSUES = 20
 
 
@@ -2130,6 +2143,8 @@ __all__ = [
     "FramingQualityRouteEntryReport",
     "FramingRepairRouteEntryReport",
     "FramingQualityValidationError",
+    "active_semantic_node_kinds",
+    "fixing_level_overlaps",
     "validate_current_g1_framing_decision",
     "validate_framing_quality_entity",
     "validate_framing_quality_projection",

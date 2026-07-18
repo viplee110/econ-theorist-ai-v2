@@ -30,20 +30,28 @@ canonical audit rerun and independent economics inspection remain open.
 
 The bounded post-pilot stabilization passed its 594-test routine non-long gate,
 all seven exporters, and required `doctor` checks without changing V8
-scientific acceptance. The corrected-wheel R2 same-case run then traversed the
-host path cleanly, committed framing and primitive decomposition, and exhausted
-two audit repairs on specific candidate diagnostics before recording
-`failed_no_effect`; no audit transaction or G1 decision occurred. This closes
-the same-case host-stability branch as a genuine model-content failure, not the
-V8 scientific gate. A separate frozen cold-reader task assigned provisional
-burden H3 because the memo did not expose the certificate guarantee, buyer
-actions, or operative payoff comparison. The next executable work is the
-independent high-intelligence economics/validator adjudication, followed by one
-held-out ordinary-model framing case. A successful canonical same-case audit
-and economics/editing-burden inspection remain required before an exploratory
-v1/v2 revision comparison. Do not create V9 unless adjudication identifies an
-acceptance-semantics defect, and do not expand generic security infrastructure
-unless a concrete local-use failure requires it.
+scientific acceptance. R2 closed the host-stability branch as a genuine
+model-content failure. The researcher-authorized R3 revision then committed
+framing and primitive decomposition but exhausted its two audit repairs and
+recorded `failed_no_effect`; no audit transaction or G1 decision occurred.
+Independent locked adjudication classified the failure
+`STRUCTURAL_TAX_PRIMARY` with confidence 0.86: the negative economics diagnosis
+was substantially successful, while low-level wrapper, relation, path, and
+cross-field authoring dominated the audit repairs. It found no V8 acceptance
+defect. A noncanonical semantic-compiler prototype now batch-preflights those
+mechanics and validates the locked R3 negative diagnosis under the unchanged V8
+validator with zero canonical writes. This is compiler feasibility evidence,
+not a claim that R3 exercised the prototype or achieved research quality.
+
+The next executable work is one frozen held-out ordinary-model paired shadow:
+the same scientific brief through the free-form Transaction surface and the
+semantic-compiler surface, with machine validity, repairs, authoring burden,
+economics, and reader recovery scored separately. Do not rerun same-case
+generation now, create V9, or integrate the prototype into the public bridge
+unless that comparison identifies the justified next boundary. A canonical
+end-to-end audit and economics/editing-burden inspection remain required before
+an exploratory v1/v2 revision comparison. Do not expand generic security
+infrastructure unless a concrete local-use failure requires it.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or
