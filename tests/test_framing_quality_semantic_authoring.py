@@ -8,7 +8,10 @@ import unittest
 from tests import test_framing_quality_route as framing_fixture
 from tests.helpers import REPOSITORY_ROOT  # noqa: F401  # installs src
 
-from econ_theorist.candidate_contract import compile_candidate_authoring_contract
+from econ_theorist.candidate_contract import (
+    candidate_authoring_contract_hash,
+    compile_candidate_authoring_contract,
+)
 from econ_theorist.codec import canonical_json_bytes, sha256_digest
 from econ_theorist.framing_quality import (
     FramingObjectRef,
@@ -19,6 +22,7 @@ from econ_theorist.framing_quality_authoring import (
     BenchmarkChannelIntentV1,
     FramingAuditCompilationError,
     FramingAuditSemanticDraftV1,
+    compile_framing_audit_semantic_authoring_contract,
     compile_framing_audit_semantic_draft,
     preflight_framing_audit_semantic_draft,
 )
@@ -184,6 +188,92 @@ class FramingQualitySemanticAuthoringTests(unittest.TestCase):
             bundle_payload=raw,
             channel_intents=tuple(intents),
         )
+
+    def test_semantic_surface_is_exactly_bound_and_projects_compiler_fields(
+        self,
+    ) -> None:
+        _, contract, _ = self._open_v8_contract()
+        source_payload_schemas = canonical_json_bytes(contract.payload_schemas)
+
+        first = compile_framing_audit_semantic_authoring_contract(contract)
+        second = compile_framing_audit_semantic_authoring_contract(contract)
+
+        self.assertEqual(canonical_json_bytes(first), canonical_json_bytes(second))
+        self.assertEqual(
+            first.candidate_authoring_contract_hash,
+            candidate_authoring_contract_hash(contract),
+        )
+        self.assertEqual(first.work_packet_hash, contract.work_packet_hash)
+        self.assertEqual(
+            first.project_id, contract.transaction_bindings.project_id
+        )
+        self.assertEqual(
+            first.base_revision, contract.transaction_bindings.base_revision
+        )
+        self.assertEqual(
+            first.route_run_id, contract.transaction_bindings.route_run_id
+        )
+        self.assertEqual(first.route_id, "audit.framing_economics")
+        self.assertEqual(first.route_version, 8)
+
+        draft_schema = first.semantic_draft_json_schema
+        bundle_schema = draft_schema["properties"]["bundle_payload"]
+        bound_fields = {
+            "research_question_ref",
+            "benchmark_set_ref",
+            "primitive_graph_ref",
+            "source_g1_dossier_ref",
+        }
+        self.assertTrue(bound_fields.isdisjoint(bundle_schema["properties"]))
+        self.assertTrue(bound_fields.isdisjoint(bundle_schema["required"]))
+        assessment_schema = draft_schema["$defs"][
+            "BenchmarkFramingAssessment"
+        ]
+        self.assertNotIn("channel_path", assessment_schema["properties"])
+        self.assertNotIn("channel_path", assessment_schema["required"])
+        self.assertIn("BenchmarkChannelIntentV1", draft_schema["$defs"])
+        self.assertEqual(
+            draft_schema["properties"]["channel_intents"]["items"]["$ref"],
+            "#/$defs/BenchmarkChannelIntentV1",
+        )
+        self.assertTrue(
+            any("do not author Transaction" in item for item in first.authoring_instructions)
+        )
+        self.assertTrue(
+            any("channel_intents" in item for item in first.authoring_instructions)
+        )
+        self.assertEqual(
+            canonical_json_bytes(contract.payload_schemas),
+            source_payload_schemas,
+        )
+        original_bundle = next(
+            item
+            for item in contract.payload_schemas
+            if item.entity_type == "FramingQualityBundle"
+        ).payload_json_schema
+        self.assertTrue(bound_fields.issubset(original_bundle["properties"]))
+        self.assertIn(
+            "channel_path",
+            original_bundle["$defs"]["BenchmarkFramingAssessment"]["properties"],
+        )
+
+    def test_semantic_surface_rejects_a_non_v8_contract(self) -> None:
+        _, contract, _ = self._open_v8_contract()
+        wrong_output = contract.output_contract.model_copy(
+            update={"route_version": 7}
+        )
+        wrong_contract = contract.model_copy(
+            update={"output_contract": wrong_output}
+        )
+
+        with self.assertRaisesRegex(ValueError, "exact fresh registry-v8"):
+            compile_framing_audit_semantic_authoring_contract(wrong_contract)
+
+    def test_semantic_surface_rejects_a_continuation_contract(self) -> None:
+        _, contract, _ = self._open_v8_contract(continuation=True)
+
+        with self.assertRaisesRegex(ValueError, "exact fresh registry-v8"):
+            compile_framing_audit_semantic_authoring_contract(contract)
 
     def test_compiler_wraps_outputs_and_instantiates_exact_v8_relations(
         self,
@@ -419,6 +509,44 @@ class FramingQualitySemanticAuthoringTests(unittest.TestCase):
         self.assertIn(
             "compiler.channel_path.duplicate_source",
             {issue.rule_id for issue in report.issues},
+        )
+        with self.assertRaises(FramingAuditCompilationError):
+            compile_framing_audit_semantic_draft(snapshot, contract, duplicated)
+        self.assertEqual(replay(self.fixture.layout).head, head_before)
+
+    def test_exact_input_refs_are_rejected_as_a_second_source(self) -> None:
+        snapshot, contract, core = self._open_v8_contract()
+        head_before = replay(self.fixture.layout).head
+        payload = self._negative_payload(core)
+        draft = self._semantic_draft(payload)
+        raw = deepcopy(draft.bundle_payload)
+        complete = payload.model_dump(mode="json", exclude_none=False)
+        compiler_owned = {
+            "research_question_ref",
+            "benchmark_set_ref",
+            "primitive_graph_ref",
+            "source_g1_dossier_ref",
+        }
+        for field_name in compiler_owned:
+            raw[field_name] = complete[field_name]
+        duplicated = FramingAuditSemanticDraftV1(
+            bundle_payload=raw,
+            channel_intents=draft.channel_intents,
+        )
+
+        report = preflight_framing_audit_semantic_draft(
+            snapshot, contract, duplicated
+        )
+        self.assertFalse(report.passed)
+        duplicate_issues = tuple(
+            issue
+            for issue in report.issues
+            if issue.rule_id == "compiler.payload.exact_input_duplicate_source"
+        )
+        self.assertEqual(len(duplicate_issues), 4)
+        self.assertEqual(
+            {str(issue.location[-1]) for issue in duplicate_issues},
+            compiler_owned,
         )
         with self.assertRaises(FramingAuditCompilationError):
             compile_framing_audit_semantic_draft(snapshot, contract, duplicated)

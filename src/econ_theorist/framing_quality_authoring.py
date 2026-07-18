@@ -20,6 +20,7 @@ from .candidate_contract import (
     CandidateAuthoringContractV1,
     CandidateHardRelationTemplateV1,
     CandidateRelationEndpointV1,
+    candidate_authoring_contract_hash,
 )
 from .codec import canonical_json_bytes, ensure_canonical_data
 from .framing_quality import (
@@ -34,6 +35,7 @@ from .framing_quality_validation import (
 from .models import (
     CreateEntityOp,
     CreateRelationOp,
+    Digest,
     EntityVersion,
     EntityVersionRef,
     FacetPathRef,
@@ -76,6 +78,16 @@ _INPUT_REF_FIELDS = {
     "GateDossier": "source_g1_dossier_ref",
 }
 _MAX_PATH_ALTERNATIVES = 3
+_SEMANTIC_AUTHORING_INSTRUCTIONS = (
+    "Return one JSON object matching semantic_draft_json_schema; do not author "
+    "Transaction wrappers, canonical IDs, relations, facet hashes, or a route outcome.",
+    "Author the FramingQualityBundle scientific content, but omit the four exact "
+    "input refs and every benchmark_assessments[*].channel_path; the compiler binds "
+    "the refs and derives paths from channel_intents.",
+    "Provide exactly one channel_intent for each benchmark assessment, naming its "
+    "changed and target objects and only the PrimitiveGraph waypoints needed to "
+    "disambiguate the directed path.",
+)
 
 
 class BenchmarkChannelIntentV1(StrictModel):
@@ -139,6 +151,156 @@ class FramingAuditSemanticDraftV1(StrictModel):
         if len(set(identifiers)) != len(identifiers):
             raise ValueError("channel intents must have unique benchmark IDs")
         return value
+
+
+class FramingAuditSemanticAuthoringSurfaceV1(StrictModel):
+    """Exact, noncanonical model-facing contract for one semantic draft."""
+
+    semantic_surface_schema: Literal[
+        "econ-theorist/framing-audit-semantic-authoring-surface/v1"
+    ] = "econ-theorist/framing-audit-semantic-authoring-surface/v1"
+    candidate_authoring_contract_hash: Digest
+    work_packet_hash: Digest
+    project_id: StableId
+    base_revision: Digest
+    route_run_id: StableId
+    route_id: Literal["audit.framing_economics"] = "audit.framing_economics"
+    route_version: Literal[8] = 8
+    semantic_draft_schema_id: Literal[
+        "econ-theorist/framing-audit-semantic-draft/v1"
+    ] = "econ-theorist/framing-audit-semantic-draft/v1"
+    semantic_draft_json_schema: dict[str, Any]
+    authoring_instructions: tuple[NonEmptyString, ...] = (
+        _SEMANTIC_AUTHORING_INSTRUCTIONS
+    )
+
+
+def _remove_compiler_bound_schema_property(
+    object_schema: dict[str, Any],
+    property_name: str,
+    *,
+    model_name: str,
+) -> None:
+    properties = object_schema.get("properties")
+    required = object_schema.get("required")
+    if not isinstance(properties, dict) or property_name not in properties:
+        raise ValueError(
+            f"semantic surface source schema lacks {model_name}.{property_name}"
+        )
+    if not isinstance(required, list) or property_name not in required:
+        raise ValueError(
+            f"semantic surface source schema does not require "
+            f"{model_name}.{property_name}"
+        )
+    properties.pop(property_name)
+    object_schema["required"] = [
+        name for name in required if name != property_name
+    ]
+
+
+def _project_semantic_draft_json_schema(
+    bundle_payload_schema: Mapping[str, Any],
+) -> dict[str, Any]:
+    projected_bundle = deepcopy(dict(bundle_payload_schema))
+    for field_name in _INPUT_REF_FIELDS.values():
+        _remove_compiler_bound_schema_property(
+            projected_bundle,
+            field_name,
+            model_name="FramingQualityBundle",
+        )
+
+    bundle_definitions = projected_bundle.get("$defs")
+    if not isinstance(bundle_definitions, dict):
+        raise ValueError(
+            "semantic surface source schema lacks FramingQualityBundle definitions"
+        )
+    assessment_schema = bundle_definitions.get("BenchmarkFramingAssessment")
+    if not isinstance(assessment_schema, dict):
+        raise ValueError(
+            "semantic surface source schema lacks BenchmarkFramingAssessment"
+        )
+    _remove_compiler_bound_schema_property(
+        assessment_schema,
+        "channel_path",
+        model_name="BenchmarkFramingAssessment",
+    )
+
+    projected_bundle.pop("$defs")
+    draft_schema = deepcopy(
+        FramingAuditSemanticDraftV1.model_json_schema(mode="validation")
+    )
+    draft_properties = draft_schema.get("properties")
+    if not isinstance(draft_properties, dict) or "bundle_payload" not in draft_properties:
+        raise ValueError("semantic draft schema lacks bundle_payload")
+    draft_properties["bundle_payload"] = projected_bundle
+
+    draft_definitions = draft_schema.setdefault("$defs", {})
+    if not isinstance(draft_definitions, dict):
+        raise ValueError("semantic draft schema definitions are malformed")
+    collisions = {
+        name
+        for name, definition in bundle_definitions.items()
+        if name in draft_definitions and draft_definitions[name] != definition
+    }
+    if collisions:
+        raise ValueError(
+            "semantic surface schema definition collision: "
+            + ", ".join(sorted(collisions))
+        )
+    for name, definition in bundle_definitions.items():
+        draft_definitions.setdefault(name, definition)
+    return draft_schema
+
+
+def compile_framing_audit_semantic_authoring_contract(
+    contract: CandidateAuthoringContractV1,
+) -> FramingAuditSemanticAuthoringSurfaceV1:
+    """Project one exact V8 candidate contract into the smaller draft surface."""
+
+    output = contract.output_contract
+    exact_template_refs = frozenset(
+        item.source.entity_ref
+        for item in output.required_relation_templates
+        if item.source.binding_kind == "exact_input"
+        and item.source.entity_ref is not None
+    )
+    evidence_refs = contract.transaction_bindings.required_entity_evidence_refs
+    if (
+        output.route_id != _FRAMING_ROUTE_ID
+        or output.route_version != _FRAMING_ROUTE_VERSION
+        or output.exit_validator_id != _FRAMING_EXIT_VALIDATOR_ID
+        or contract.packet_compiler_version != 2
+        or contract.candidate_draft_semantics
+        != "runtime_facet_hash_materialization_v1"
+        or tuple(item.template_id for item in output.required_relation_templates)
+        != _EXPECTED_TEMPLATE_IDS
+        or len(evidence_refs) != len(_INPUT_REF_FIELDS)
+        or frozenset(evidence_refs) != exact_template_refs
+    ):
+        raise ValueError(
+            "semantic authoring surface requires the exact fresh registry-v8 "
+            "framing candidate contract"
+        )
+    bundle_contracts = tuple(
+        item
+        for item in contract.payload_schemas
+        if item.entity_type == "FramingQualityBundle"
+    )
+    if len(bundle_contracts) != 1:
+        raise ValueError(
+            "semantic authoring surface requires one FramingQualityBundle payload schema"
+        )
+    bindings = contract.transaction_bindings
+    return FramingAuditSemanticAuthoringSurfaceV1(
+        candidate_authoring_contract_hash=candidate_authoring_contract_hash(contract),
+        work_packet_hash=contract.work_packet_hash,
+        project_id=bindings.project_id,
+        base_revision=bindings.base_revision,
+        route_run_id=bindings.route_run_id,
+        semantic_draft_json_schema=_project_semantic_draft_json_schema(
+            bundle_contracts[0].payload_json_schema
+        ),
+    )
 
 
 class FramingAuditPreflightIssueV1(StrictModel):
@@ -372,18 +534,16 @@ def _bind_exact_inputs(
             "entity_id": entity.entity_id,
             "version": entity.version,
         }
-        supplied = payload.get(field_name)
-        if supplied is None:
-            payload[field_name] = expected
-        elif supplied != expected:
+        if field_name in payload:
             issues.append(
                 _issue(
-                    "compiler.payload.exact_input_mismatch",
+                    "compiler.payload.exact_input_duplicate_source",
                     ("bundle_payload", field_name),
-                    f"{field_name} differs from the engine-bound exact input.",
+                    f"Semantic drafts must omit compiler-owned {field_name}.",
                     options=("Remove the field and let the compiler bind it.",),
                 )
             )
+        payload[field_name] = expected
     return issues
 
 
@@ -1246,7 +1406,9 @@ __all__ = [
     "FramingAuditCompilationError",
     "FramingAuditPreflightIssueV1",
     "FramingAuditPreflightReportV1",
+    "FramingAuditSemanticAuthoringSurfaceV1",
     "FramingAuditSemanticDraftV1",
+    "compile_framing_audit_semantic_authoring_contract",
     "compile_framing_audit_semantic_draft",
     "preflight_framing_audit_semantic_draft",
 ]
