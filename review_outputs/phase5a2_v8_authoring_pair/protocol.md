@@ -52,8 +52,10 @@ only permitted source path from the attempt number and cannot accept an
 arbitrary source file.  Preparation reads the selected wheel once, installs
 only that frozen copy, verifies every installed Python module byte against the
 exact clean checkout, and separately verifies the WorkPacket engine semantics
-and registry hash.  The wheel digest remains an explicit evidence binding,
-not a supply-chain signing claim.
+and registry hash.  It omits the unused pip-generated `etai` console launcher
+from the isolated module-only runtime and records that omission; neither arm
+uses the CLI or bridge.  The wheel digest remains an explicit evidence
+binding, not a supply-chain signing claim.
 
 ## Attempts and stop rule
 

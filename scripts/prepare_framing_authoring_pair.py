@@ -1115,7 +1115,7 @@ def _verify_installed_python_matches_checkout(runtime_site: Path) -> str:
     return sha256_digest(canonical_json_bytes(rows))
 
 
-def _normalize_target_install_record(runtime_site: Path) -> None:
+def _normalize_target_install_record(runtime_site: Path) -> tuple[str, ...]:
     distributions = tuple(runtime_site.glob("econ_theorist_ai-*.dist-info"))
     if len(distributions) != 1:
         raise RuntimeError("target runtime does not contain one engine distribution")
@@ -1126,12 +1126,27 @@ def _normalize_target_install_record(runtime_site: Path) -> None:
     except (OSError, UnicodeError, csv.Error) as exc:
         raise RuntimeError("target-installed engine RECORD is unreadable") from exc
     normalized_rows: list[list[str]] = []
+    omitted_launchers: list[str] = []
     for row in rows:
         if len(row) != 3:
             raise RuntimeError("target-installed engine RECORD row is malformed")
         logical = row[0]
         while logical.startswith("../"):
             logical = logical[3:]
+        normalized_logical = logical.replace("\\", "/")
+        if normalized_logical.casefold() in {
+            "bin/etai",
+            "bin/etai.exe",
+            "scripts/etai.exe",
+        }:
+            launcher = runtime_site / Path(normalized_logical)
+            if not launcher.is_file():
+                raise RuntimeError(
+                    "target-installed console launcher is absent before omission"
+                )
+            launcher.unlink()
+            omitted_launchers.append(normalized_logical)
+            continue
         if logical != row[0] and not (runtime_site / logical).is_file():
             raise RuntimeError(
                 "target-installed wheel data file is absent after RECORD projection"
@@ -1142,6 +1157,11 @@ def _normalize_target_install_record(runtime_site: Path) -> None:
             csv.writer(stream, lineterminator="\n").writerows(normalized_rows)
     except OSError as exc:
         raise RuntimeError("target-installed engine RECORD cannot be projected") from exc
+    for directory_name in ("bin", "Scripts"):
+        directory = runtime_site / directory_name
+        if directory.is_dir() and not any(directory.iterdir()):
+            directory.rmdir()
+    return tuple(sorted(omitted_launchers))
 
 
 def _verify_frozen_runtime(
@@ -1485,7 +1505,7 @@ def _prepare(args: argparse.Namespace) -> None:
             "the exact wheel could not be installed offline: "
             + installation.stderr.strip()[:1000]
         )
-    _normalize_target_install_record(runtime / "site")
+    omitted_console_launchers = _normalize_target_install_record(runtime / "site")
     checkout_python_sha256 = _verify_installed_python_matches_checkout(
         runtime / "site"
     )
@@ -1519,6 +1539,7 @@ def _prepare(args: argparse.Namespace) -> None:
         "wheel_sha256": wheel_sha256,
         "wheel_binding": "frozen_copy_and_checkout_python_match_v1",
         "checkout_python_sha256": checkout_python_sha256,
+        "omitted_console_launchers": list(omitted_console_launchers),
         "files": _manifest_rows(runtime, runtime_paths),
     }
     runtime_manifest_bytes = canonical_json_bytes(runtime_manifest)
@@ -1668,6 +1689,7 @@ later blinded economics/reader adjudication.
         "wheel_sha256": wheel_sha256,
         "wheel_binding": "frozen_copy_and_checkout_python_match_v1",
         "checkout_python_sha256": checkout_python_sha256,
+        "omitted_console_launchers": list(omitted_console_launchers),
         "runtime_manifest_sha256": runtime_manifest_sha256,
         "arm_manifest_sha256": arm_manifest_hashes,
         "oracle_compiled_transaction_sha256": sha256_digest(oracle_bytes),
