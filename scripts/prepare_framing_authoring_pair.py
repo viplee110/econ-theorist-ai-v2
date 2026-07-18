@@ -20,7 +20,6 @@ import sys
 import tempfile
 import platform
 import re
-import shutil
 from typing import Any, Iterable
 
 from econ_theorist.candidate_contract import (
@@ -1385,7 +1384,8 @@ def _prepare(args: argparse.Namespace) -> None:
     wheel_sha256 = sha256_digest(wheel_bytes)
     output_root.mkdir(parents=True)
     private = output_root / "private_evaluator"
-    seed_root = private / "seed_project"
+    seed_workspace = tempfile.TemporaryDirectory(prefix="etai-pair-seed-")
+    seed_root = Path(seed_workspace.name) / "project"
     runtime = output_root / "runtime"
     transaction_root = output_root / "arm-transaction"
     semantic_root = output_root / "arm-semantic"
@@ -1455,7 +1455,7 @@ def _prepare(args: argparse.Namespace) -> None:
         "authoring_contract": contract.model_dump(mode="json", exclude_none=False),
     }
     _write_new(private / "HARNESS_CASE.json", canonical_json_bytes(harness_case))
-    shutil.rmtree(seed_root)
+    seed_workspace.cleanup()
     _copy_new(REVIEW_ROOT / "frozen_evaluation_key.md", private / "FROZEN_EVALUATION_KEY.md")
     _copy_new(REVIEW_ROOT / "protocol.md", output_root / "PAIR_PROTOCOL.md")
     frozen_wheel = runtime / wheel_name
