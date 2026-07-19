@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterable
+from dataclasses import dataclass
 from typing import Any
 
 from .candidate_contract import (
@@ -32,15 +33,76 @@ class CandidateDraftMaterializationError(ValueError):
         location: tuple[str | int, ...],
         issue_type: str,
         message: str,
+        expected: Any | None = None,
+        observed: Any | None = None,
+        mismatch_kind: str | None = None,
     ) -> None:
         super().__init__(message)
         self.location = location
         self.issue_type = issue_type
         self.message = message
+        self.expected = expected
+        self.observed = observed
+        self.mismatch_kind = mismatch_kind
+        self.json_pointer = _json_pointer(location)
 
 
 class _DuplicateJsonKey(ValueError):
     pass
+
+
+_MISSING = object()
+_ABSENT = object()
+_PRESENT = object()
+
+
+@dataclass(frozen=True)
+class _TopologyMismatch:
+    location: tuple[str, ...]
+    kind: str
+    expected: Any
+    observed: Any
+    cost: int = 1
+
+
+def _json_pointer(location: tuple[str | int, ...]) -> str:
+    if not location:
+        return ""
+    return "/" + "/".join(
+        _safe_text(str(item), limit=96).replace("~", "~0").replace("/", "~1")
+        for item in location
+    )
+
+
+def _safe_text(value: str, *, limit: int = 160) -> str:
+    encoded = value.encode("utf-8", errors="backslashreplace")
+    safe = encoded.decode("utf-8")
+    return safe if len(safe) <= limit else safe[: max(0, limit - 3)] + "..."
+
+
+def _diagnostic_value(value: Any) -> Any:
+    if value is _MISSING:
+        return "<missing>"
+    if value is _ABSENT:
+        return "<absent>"
+    if value is _PRESENT:
+        return "<present>"
+    if value is None or type(value) in {bool, int}:
+        return value
+    if isinstance(value, float):
+        return _safe_text(f"{value!r} (float)")
+    if isinstance(value, str):
+        return _safe_text(value)
+    if isinstance(value, dict):
+        return "<object>"
+    if isinstance(value, list):
+        return "<array>"
+    return f"<{type(value).__name__}>"
+
+
+def _diagnostic_text(value: Any) -> str:
+    normalized = _diagnostic_value(value)
+    return json.dumps(normalized, ensure_ascii=False, allow_nan=False)
 
 
 def _object_without_duplicate_keys(
@@ -212,6 +274,161 @@ def _facet_ref_matches(
     )
 
 
+def _mapping_mismatches(
+    raw: Any,
+    *,
+    expected: dict[str, Any],
+    permitted: frozenset[str] | None,
+    required: frozenset[str],
+    location: tuple[str, ...],
+) -> list[_TopologyMismatch]:
+    if not isinstance(raw, dict):
+        return [
+            _TopologyMismatch(
+                location=location,
+                kind="mismatched field",
+                expected=f"{location[-1] if location else 'relation'} object",
+                observed=raw,
+                cost=max(1, len(required)),
+            )
+        ]
+
+    mismatches: list[_TopologyMismatch] = []
+    if permitted is not None:
+        for key in sorted(set(raw) - permitted):
+            mismatches.append(
+                _TopologyMismatch(
+                    location=location + (_safe_text(key, limit=96),),
+                    kind="extra field",
+                    expected=_ABSENT,
+                    observed=_PRESENT,
+                )
+            )
+    for key, expected_value in expected.items():
+        if key not in raw:
+            if key in required:
+                mismatches.append(
+                    _TopologyMismatch(
+                        location=location + (key,),
+                        kind="missing field",
+                        expected=expected_value,
+                        observed=_MISSING,
+                    )
+                )
+            continue
+        if not _strict_scalar_equal(raw[key], expected_value):
+            mismatches.append(
+                _TopologyMismatch(
+                    location=location + (key,),
+                    kind="mismatched field",
+                    expected=expected_value,
+                    observed=raw[key],
+                )
+            )
+    return mismatches
+
+
+def _relation_topology_mismatches(
+    raw: dict[str, Any],
+    *,
+    template: CandidateHardRelationTemplateV1,
+    source_ref: EntityVersionRef,
+    target_ref: EntityVersionRef,
+) -> tuple[_TopologyMismatch, ...]:
+    """Describe the exact matcher-relevant differences without relaxing it."""
+
+    ref_keys = frozenset({"entity_id", "version"})
+    facet_keys = frozenset({"entity_id", "version", "facet"})
+    facet_permitted = facet_keys | {"field_path"}
+    source = {"entity_id": source_ref.entity_id, "version": source_ref.version}
+    target = {"entity_id": target_ref.entity_id, "version": target_ref.version}
+    comparisons = (
+        (
+            (),
+            raw,
+            {
+                "relation_type": template.relation_type,
+                "version": template.version,
+                "supersedes": template.supersedes,
+                "dependency_mode": template.dependency_mode,
+            },
+            None,
+            frozenset({"relation_type", "version", "dependency_mode"}),
+        ),
+        (("source",), raw.get("source"), source, ref_keys, ref_keys),
+        (("target",), raw.get("target"), target, ref_keys, ref_keys),
+        (
+            ("upstream",),
+            raw.get("upstream"),
+            source
+            | {
+                "facet": template.source.facet,
+                "field_path": template.source.field_path,
+            },
+            facet_permitted | {"semantic_hash"},
+            facet_keys,
+        ),
+        (
+            ("downstream",),
+            raw.get("downstream"),
+            target
+            | {
+                "facet": template.target.facet,
+                "field_path": template.target.field_path,
+            },
+            facet_permitted,
+            facet_keys,
+        ),
+    )
+    mismatches: list[_TopologyMismatch] = []
+    for location, raw_value, expected, permitted, required in comparisons:
+        mismatches.extend(
+            _mapping_mismatches(
+                raw_value,
+                expected=expected,
+                permitted=permitted,
+                required=required,
+                location=location,
+            )
+        )
+    return tuple(mismatches)
+
+
+def _nearest_relation_mismatch(
+    relations: list[tuple[int, dict[str, Any]]],
+    *,
+    template: CandidateHardRelationTemplateV1,
+    source_ref: EntityVersionRef,
+    target_ref: EntityVersionRef,
+) -> tuple[int, _TopologyMismatch] | None:
+    candidates: list[tuple[int, tuple[_TopologyMismatch, ...]]] = []
+    for operation_index, relation in relations:
+        mismatches = _relation_topology_mismatches(
+            relation,
+            template=template,
+            source_ref=source_ref,
+            target_ref=target_ref,
+        )
+        if mismatches:
+            candidates.append((operation_index, mismatches))
+    if not candidates:
+        return None
+    ranked = [
+        (
+            (sum(mismatch.cost for mismatch in mismatches), len(mismatches)),
+            operation_index,
+            mismatches,
+        )
+        for operation_index, mismatches in candidates
+    ]
+    best_score = min(item[0] for item in ranked)
+    best = [item for item in ranked if item[0] == best_score]
+    if len(best) != 1 or len(best[0][2]) != 1:
+        return None
+    _, operation_index, mismatches = best[0]
+    return operation_index, mismatches[0]
+
+
 def _relation_topology_matches(
     raw: dict[str, Any],
     *,
@@ -295,6 +512,38 @@ def materialize_runtime_facet_hashes(
             )
         )
         if len(matches) != 1:
+            if not matches:
+                nearest = _nearest_relation_mismatch(
+                    relations,
+                    template=template,
+                    source_ref=source_ref,
+                    target_ref=target_ref,
+                )
+                if nearest is not None:
+                    operation_index, mismatch = nearest
+                    location = (
+                        "operations",
+                        operation_index,
+                        "relation",
+                        *mismatch.location,
+                    )
+                    expected = _diagnostic_value(mismatch.expected)
+                    observed = _diagnostic_value(mismatch.observed)
+                    pointer = _json_pointer(location)
+                    raise CandidateDraftMaterializationError(
+                        location=location,
+                        issue_type="candidate_draft_template_missing",
+                        message=(
+                            f"runtime template {template.template_id!r} must match "
+                            "exactly one relation topology; found 0. Closest "
+                            f"relation differs at {pointer}: {mismatch.kind}; "
+                            f"expected {_diagnostic_text(mismatch.expected)}, "
+                            f"observed {_diagnostic_text(mismatch.observed)}"
+                        ),
+                        expected=expected,
+                        observed=observed,
+                        mismatch_kind=mismatch.kind,
+                    )
             raise CandidateDraftMaterializationError(
                 location=("operations",),
                 issue_type=(

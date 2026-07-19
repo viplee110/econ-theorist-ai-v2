@@ -23,6 +23,7 @@ from econ_theorist.framing_quality_authoring import (
     FramingAuditCompilationError,
     FramingAuditSemanticDraftV1,
     FramingAuditSemanticDraftV2,
+    ForceMarginLocatorV2,
     MarginWitnessIntentV2,
     PublicStateConditionIntentV2,
     compile_framing_audit_semantic_authoring_contract,
@@ -210,15 +211,16 @@ class FramingQualitySemanticAuthoringTests(unittest.TestCase):
             "source_g1_dossier_ref",
         ):
             raw.pop(field_name)
+        for force in raw["forces"]:
+            force.pop("margin_node_id")
         intents = []
         for row in raw["benchmark_assessments"]:
-            path = tuple(row.pop("channel_path"))
+            row.pop("channel_path")
             intents.append(
                 BenchmarkChannelIntentV1(
                     benchmark_id=row["benchmark_id"],
                     changed_object_id=row["changed"][0]["object_id"],
                     target_object_id=row["targets"][0]["object_id"],
-                    ordered_waypoint_node_ids=path[1:-1],
                 )
             )
         margin_intents = []
@@ -232,6 +234,7 @@ class FramingQualitySemanticAuthoringTests(unittest.TestCase):
             margin_intents.append(
                 MarginWitnessIntentV2(
                     step_number=step_number,
+                    margin_position="target",
                     payoff_node_id_disambiguators=(
                         ("node.seller_payoff",) if step_number == 2 else ()
                     ),
@@ -266,6 +269,25 @@ class FramingQualitySemanticAuthoringTests(unittest.TestCase):
             bundle_payload=raw,
             channel_intents=tuple(intents),
             margin_intents=tuple(margin_intents),
+        )
+
+    def _unwitnessed_negative_draft_v2(
+        self,
+        payload: object,
+        *,
+        force_margin_locators: tuple[ForceMarginLocatorV2, ...],
+    ) -> FramingAuditSemanticDraftV2:
+        v1_draft = self._semantic_draft(payload)
+        raw = deepcopy(v1_draft.bundle_payload)
+        for force in raw["forces"]:
+            force.pop("margin_node_id")
+        for step in raw["causal_chain"]:
+            step.pop("active_margin_witness", None)
+        return FramingAuditSemanticDraftV2(
+            bundle_payload=raw,
+            channel_intents=v1_draft.channel_intents,
+            margin_intents=(),
+            force_margin_locators=force_margin_locators,
         )
 
     def test_semantic_surface_is_exactly_bound_and_projects_compiler_fields(
@@ -368,7 +390,31 @@ class FramingQualitySemanticAuthoringTests(unittest.TestCase):
         )
         v2_step_schema = v2.semantic_draft_json_schema["$defs"]["CausalChainStep"]
         self.assertNotIn("active_margin_witness", v2_step_schema["properties"])
+        v2_force_schema = v2.semantic_draft_json_schema["$defs"]["EconomicForce"]
+        self.assertNotIn("margin_node_id", v2_force_schema["properties"])
+        self.assertNotIn("margin_node_id", v2_force_schema["required"])
+        self.assertIn("source_node_id", v2_force_schema["required"])
+        self.assertIn("target_node_id", v2_force_schema["required"])
         self.assertIn("MarginWitnessIntentV2", v2.semantic_draft_json_schema["$defs"])
+        self.assertIn("ForceMarginLocatorV2", v2.semantic_draft_json_schema["$defs"])
+        self.assertIn(
+            "margin_position",
+            v2.semantic_draft_json_schema["$defs"]["MarginWitnessIntentV2"][
+                "required"
+            ],
+        )
+        self.assertIn(
+            "margin_position",
+            v2.semantic_draft_json_schema["$defs"]["ForceMarginLocatorV2"][
+                "required"
+            ],
+        )
+        self.assertTrue(
+            any(
+                "force_margin_locators" in item
+                for item in v2.authoring_instructions
+            )
+        )
         self.assertTrue(
             any("disclosed_gaps" in item for item in v2.authoring_instructions)
         )
@@ -405,9 +451,36 @@ class FramingQualitySemanticAuthoringTests(unittest.TestCase):
             compiled.causal_chain[1].active_margin_witness.decision_node_id,
             "node.quality",
         )
+        self.assertIsNotNone(payload.causal_chain[2].active_margin_witness)
+        self.assertIsNone(compiled.causal_chain[2].active_margin_witness)
         self.assertEqual(
             compiled.causal_chain[0].active_margin_witness.focal_action,
             payload.causal_chain[0].active_margin_witness.focal_action,
+        )
+        self.assertEqual(
+            tuple(
+                (
+                    force.force_id,
+                    force.source_node_id,
+                    force.margin_node_id,
+                    force.target_node_id,
+                )
+                for force in compiled.forces
+            ),
+            (
+                (
+                    "force.targeting",
+                    "node.certification",
+                    "node.inspection",
+                    "node.match",
+                ),
+                (
+                    "force.quality",
+                    "node.certification",
+                    "node.quality",
+                    "node.match",
+                ),
+            ),
         )
         validate_candidate(
             snapshot,
@@ -416,6 +489,135 @@ class FramingQualitySemanticAuthoringTests(unittest.TestCase):
             enforce_live_current_policy=True,
         )
         self.assertEqual(replay(self.fixture.layout).head, head_before)
+
+    def test_v2_wrong_authored_force_margin_has_exact_choice_diagnostic(
+        self,
+    ) -> None:
+        snapshot, contract, core = self._open_v8_contract()
+        payload = self.fixture._research_first_bundle(
+            self.fixture._bundle_payload(*core)
+        )
+        draft = self._semantic_draft_v2(payload)
+        raw = deepcopy(draft.bundle_payload)
+        raw["forces"][1]["margin_node_id"] = "node.seller_payoff"
+        stale_binding = FramingAuditSemanticDraftV2(
+            bundle_payload=raw,
+            channel_intents=draft.channel_intents,
+            margin_intents=draft.margin_intents,
+        )
+
+        report = preflight_framing_audit_semantic_draft_v2(
+            snapshot, contract, stale_binding
+        )
+        issue = next(
+            item
+            for item in report.issues
+            if item.rule_id == "compiler.margin.force_binding"
+        )
+        self.assertEqual(
+            issue.json_pointer,
+            "/bundle_payload/forces/1/margin_node_id",
+        )
+        self.assertEqual(
+            issue.options,
+            ("node.inspection", "node.quality"),
+        )
+        self.assertEqual(issue.expected, "node.quality (kind=choice)")
+        self.assertEqual(
+            issue.observed,
+            "node.seller_payoff (kind=preference_technology)",
+        )
+
+    def test_v2_blocks_a_channel_that_traverses_a_held_fixed_choice(
+        self,
+    ) -> None:
+        snapshot, contract, core = self._open_v8_contract()
+        payload = self.fixture._research_first_bundle(
+            self.fixture._bundle_payload(*core)
+        )
+        draft = self._semantic_draft_v2(payload)
+        raw = deepcopy(draft.bundle_payload)
+        row = raw["benchmark_assessments"][0]
+        fixed_inspection = deepcopy(row["reoptimizing"].pop(0))
+        fixed_inspection["fixing_level"] = "choice"
+        row["held_fixed"].append(fixed_inspection)
+        contradictory = FramingAuditSemanticDraftV2(
+            bundle_payload=raw,
+            channel_intents=draft.channel_intents,
+            margin_intents=draft.margin_intents,
+        )
+
+        report = preflight_framing_audit_semantic_draft_v2(
+            snapshot, contract, contradictory
+        )
+        by_code = {issue.rule_id: issue for issue in report.issues}
+        self.assertIn(
+            "compiler.semantic_ledger.fixed_choice_channel",
+            by_code,
+        )
+        self.assertEqual(
+            by_code[
+                "compiler.semantic_ledger.fixed_choice_channel"
+            ].json_pointer,
+            "/bundle_payload/benchmark_assessments/0/channel_path",
+        )
+
+    def test_v2_does_not_equate_a_fixed_policy_with_another_reoptimizing_object(
+        self,
+    ) -> None:
+        snapshot, contract, core = self._open_v8_contract()
+        payload = self.fixture._research_first_bundle(
+            self.fixture._bundle_payload(*core)
+        )
+        draft = self._semantic_draft_v2(payload)
+        active_row = draft.bundle_payload["benchmark_assessments"][0]
+        self.assertTrue(active_row["reoptimizing"])
+        self.assertIs(
+            active_row["aggregate_invariance"]["pointwise_policy_fixed"],
+            True,
+        )
+
+        report = preflight_framing_audit_semantic_draft_v2(
+            snapshot, contract, draft
+        )
+
+        self.assertTrue(report.passed, report.issues)
+        self.assertNotIn(
+            "compiler.semantic_ledger.reoptimizing_policy_marked_fixed",
+            {issue.rule_id for issue in report.issues},
+        )
+
+    def test_v2_multi_force_intent_does_not_invent_a_force_locator(self) -> None:
+        snapshot, contract, core = self._open_v8_contract()
+        payload = self.fixture._research_first_bundle(
+            self.fixture._bundle_payload(*core)
+        )
+        draft = self._semantic_draft_v2(payload)
+        raw = deepcopy(draft.bundle_payload)
+        raw["causal_chain"][0]["force_ids"] = [
+            "force.targeting",
+            "force.quality",
+        ]
+        ambiguous = FramingAuditSemanticDraftV2(
+            bundle_payload=raw,
+            channel_intents=draft.channel_intents,
+            margin_intents=draft.margin_intents,
+        )
+
+        report = preflight_framing_audit_semantic_draft_v2(
+            snapshot, contract, ambiguous
+        )
+
+        missing = tuple(
+            issue
+            for issue in report.issues
+            if issue.rule_id == "compiler.force.margin_locator_missing"
+        )
+        self.assertEqual(len(missing), 1)
+        self.assertEqual(
+            missing[0].json_pointer,
+            "/bundle_payload/forces/0/margin_node_id",
+        )
 
     def test_v2_rejects_a_hand_authored_full_witness(self) -> None:
         snapshot, contract, core = self._open_v8_contract()
@@ -538,6 +740,13 @@ class FramingQualitySemanticAuthoringTests(unittest.TestCase):
                 for intent in draft.margin_intents
                 if intent.step_number != 1
             ),
+            force_margin_locators=(
+                ForceMarginLocatorV2(
+                    force_id="force.targeting",
+                    step_number=1,
+                    margin_position="target",
+                ),
+            ),
         )
 
         report = preflight_framing_audit_semantic_draft_v2(
@@ -558,14 +767,20 @@ class FramingQualitySemanticAuthoringTests(unittest.TestCase):
         payload = self.fixture._unwitnessed_negative_revision(
             self.fixture._research_first_bundle(self.fixture._bundle_payload(*core))
         )
-        v1_draft = self._semantic_draft(payload)
-        raw = deepcopy(v1_draft.bundle_payload)
-        for step in raw["causal_chain"]:
-            step.pop("active_margin_witness", None)
-        negative_draft = FramingAuditSemanticDraftV2(
-            bundle_payload=raw,
-            channel_intents=v1_draft.channel_intents,
-            margin_intents=(),
+        negative_draft = self._unwitnessed_negative_draft_v2(
+            payload,
+            force_margin_locators=(
+                ForceMarginLocatorV2(
+                    force_id="force.targeting",
+                    step_number=1,
+                    margin_position="target",
+                ),
+                ForceMarginLocatorV2(
+                    force_id="force.quality",
+                    step_number=2,
+                    margin_position="target",
+                ),
+            ),
         )
 
         report = preflight_framing_audit_semantic_draft_v2(
@@ -580,6 +795,92 @@ class FramingQualitySemanticAuthoringTests(unittest.TestCase):
             transaction,
             route_registry_hash=ROUTE_REGISTRY_V8_HASH,
             enforce_live_current_policy=True,
+        )
+
+    def test_v2_explicit_source_margin_is_preserved_and_v8_valid(self) -> None:
+        snapshot, contract, core = self._open_v8_contract()
+        payload = self.fixture._unwitnessed_negative_revision(
+            self.fixture._research_first_bundle(self.fixture._bundle_payload(*core))
+        )
+        draft = self._unwitnessed_negative_draft_v2(
+            payload,
+            force_margin_locators=(
+                ForceMarginLocatorV2(
+                    force_id="force.targeting",
+                    step_number=1,
+                    margin_position="source",
+                ),
+                ForceMarginLocatorV2(
+                    force_id="force.quality",
+                    step_number=2,
+                    margin_position="target",
+                ),
+            ),
+        )
+
+        report = preflight_framing_audit_semantic_draft_v2(
+            snapshot, contract, draft
+        )
+        self.assertTrue(report.passed, report.issues)
+        transaction = compile_framing_audit_semantic_draft_v2(
+            snapshot, contract, draft
+        )
+        bundle_entity = next(
+            operation.entity
+            for operation in transaction.operations
+            if isinstance(operation, CreateEntityOp)
+            and operation.entity.entity_type == "FramingQualityBundle"
+        )
+        compiled = parse_framing_quality_payload(
+            "FramingQualityBundle", bundle_entity.facets
+        )
+        targeting = next(
+            force for force in compiled.forces if force.force_id == "force.targeting"
+        )
+        self.assertEqual(targeting.source_node_id, "node.certification")
+        self.assertEqual(targeting.margin_node_id, "node.certification")
+        self.assertEqual(targeting.target_node_id, "node.match")
+        validate_candidate(
+            snapshot,
+            transaction,
+            route_registry_hash=ROUTE_REGISTRY_V8_HASH,
+            enforce_live_current_policy=True,
+        )
+
+    def test_v2_unique_interior_locator_fails_closed_when_not_exact(self) -> None:
+        snapshot, contract, core = self._open_v8_contract()
+        payload = self.fixture._unwitnessed_negative_revision(
+            self.fixture._research_first_bundle(self.fixture._bundle_payload(*core))
+        )
+        draft = self._unwitnessed_negative_draft_v2(
+            payload,
+            force_margin_locators=(
+                ForceMarginLocatorV2(
+                    force_id="force.targeting",
+                    step_number=1,
+                    margin_position="unique_interior",
+                ),
+                ForceMarginLocatorV2(
+                    force_id="force.quality",
+                    step_number=2,
+                    margin_position="target",
+                ),
+            ),
+        )
+
+        report = preflight_framing_audit_semantic_draft_v2(
+            snapshot, contract, draft
+        )
+
+        issue = next(
+            item
+            for item in report.issues
+            if item.rule_id
+            == "compiler.force.margin_locator_interior_ambiguous"
+        )
+        self.assertEqual(
+            issue.json_pointer,
+            "/bundle_payload/forces/0/margin_node_id",
         )
 
     def test_semantic_surface_rejects_a_continuation_contract(self) -> None:

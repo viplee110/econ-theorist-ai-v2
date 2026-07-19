@@ -1423,10 +1423,13 @@ contributory. Semantic V2 nevertheless reduced final source bytes by 51.22%
 and leaf fields by 53.74%; blinded economics found no established material
 scientific degradation, and its reader recovered more detail.
 
-Public integration remains blocked. The next bounded slice is compiler-owned
-unique graph binding plus exact near-match diagnostics, with ambiguity still
-failing closed, candidate output remaining strict JSON, and every V8 predicate
-unchanged. See the
+Public integration remains blocked. The bounded noncanonical slice now binds
+only an explicitly selected force-margin position, reports Transaction detail
+only for a unique single-field near-match, and atomically isolates one strict
+duplicate-free JSON object. Force source/target and all economic comparisons
+remain model-authored; every V8 predicate is unchanged. Focused source-level
+private-oracle/adversarial checks pass, while packaged-runtime transport/oracle
+verification remains required before a final fresh held-out pair. See the
 [R2 report](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_run_report.md),
 [R3 protocol](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_route1_protocol.md),
 [adjudication/compiler shadow](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_adjudication_and_compiler_shadow.md),

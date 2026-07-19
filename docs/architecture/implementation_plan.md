@@ -16,16 +16,16 @@ structure and improved reader recovery without established material scientific
 degradation. A
 canonical end-to-end audit and the full local research-ready gate remain open.
 
-Current implementation milestone: bounded authoring and diagnostic repair.
-The held-out pair shows that the compiler removes roughly half of the final
-authored structure, but still exposes force, channel, and graph bindings that
-are deterministic from one unique PrimitiveGraph path. Move only those unique
-bindings into the compiler, fail closed on ambiguity, report exact near-match
-pointers and compatible choice nodes, and keep strict JSON plus every V8
-predicate. Improve candidate-artifact isolation without accepting wrapped or
-repaired JSON. Use focused compiler/diagnostic checks before one final fresh
-held-out pair; bridge integration, V9, and an exploratory v1/v2 quality pilot
-remain blocked.
+Current implementation milestone: bounded authoring and diagnostic repair
+implemented. Semantic V2 now compiles only explicitly located force margins
+and deterministic witness mechanics while preserving model-authored force
+source/target; no margin position defaults or topology inference are allowed.
+Transaction detail is limited to a unique single-field near-match. The shadow
+publisher accepts one strict duplicate-free JSON object and uses atomic no-
+replace publication with an immutable completion receipt. Focused source-level
+private-oracle and adversarial checks pass. Run one packaged-runtime transport/
+oracle verification before one final fresh held-out pair; bridge integration,
+V9, and an exploratory v1/v2 quality pilot remain blocked.
 
 ## 1. Delivery strategy
 
@@ -454,9 +454,11 @@ unchanged V8 within three attempts, but Semantic V2 reduced final source bytes
 by 51.22% and leaf fields by 53.74%, preserved the core economics, and improved
 detailed reader recovery. Locked source inspection identified residual
 deterministic graph binding and nonlocal diagnostics as the next boundary,
-without finding a V8 defect. The bounded repair remains noncanonical and must
-pass private-oracle plus adversarial diagnostic checks before one final fresh
-pair. See the
+without finding a V8 defect. The bounded noncanonical repair now requires an
+explicit cited-step margin position, provides only unique single-field
+Transaction near-matches, and has passed focused source-level private-oracle/
+adversarial checks under unchanged V8. Packaged-runtime transport/oracle
+verification remains required before one final fresh pair. See the
 [final pair adjudication](../../review_outputs/phase5a2_v8_authoring_pair_v2/final_adjudication.md).
 
 The ordinary researcher-facing interface is natural language. The machine

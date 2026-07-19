@@ -54,16 +54,21 @@ the Semantic reader achieved full recovery where the Transaction reader was
 partial. Locked source inspection attributes the failures primarily to
 residual structural authoring tax and weak repair diagnostics, with strict
 JSON/file-output discipline contributory; it found no V8 acceptance defect.
-The next executable work is a bounded noncanonical authoring/diagnostic repair:
-move uniquely determined graph bindings into the compiler, expose exact
-near-match pointers and compatible choice nodes, preserve strict JSON and all
-V8 predicates, and run focused tests only. Do not rerun either frozen case,
-start another blind pair, create V9, merge this branch to `main`, or integrate
-the prototype into the public bridge until the private oracle and adversarial
-diagnostic checks pass. A canonical end-to-end audit and economics/editing-
-burden inspection remain required before an exploratory v1/v2 comparison. Do
-not expand generic security infrastructure unless a concrete local-use failure
-requires it.
+The bounded noncanonical authoring/diagnostic candidate is now implemented.
+Semantic V2 removes only the force margin node and exact witness mechanics:
+the model retains force source/target and must explicitly select a cited step
+position, with no default and no topology-based scientific inference.
+Transaction near-match detail is emitted only for one unique single-field
+difference. The shadow transport accepts one strict JSON object, rejects
+duplicate keys, publishes atomically without replacement, and treats the
+receipt as the completion marker. Focused source-level private-oracle and
+adversarial checks pass under unchanged V8. The next executable work is one
+packaged-runtime transport/oracle verification; only after that may one final
+fresh held-out pair begin. Do not rerun either frozen case, create V9, merge
+this branch to `main`, or integrate the prototype into the public bridge. A
+canonical end-to-end audit and economics/editing-burden inspection remain
+required before an exploratory v1/v2 comparison. Do not expand generic
+security infrastructure unless a concrete local-use failure requires it.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or

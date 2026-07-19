@@ -11,9 +11,11 @@ from __future__ import annotations
 import argparse
 import importlib.metadata
 import json
+import os
 from pathlib import Path
 import platform
 import sys
+import tempfile
 from time import perf_counter
 from typing import Any, Literal
 
@@ -162,19 +164,30 @@ def _pydantic_issues(exc: ValidationError, *, layer: str) -> list[dict[str, Any]
 
 
 def _single_issue(
-    *, layer: str, issue_type: str, message: str, location: tuple[str | int, ...] = ()
+    *,
+    layer: str,
+    issue_type: str,
+    message: str,
+    location: tuple[str | int, ...] = (),
+    json_pointer: str | None = None,
+    expected: Any | None = None,
+    observed: Any | None = None,
+    mismatch_kind: str | None = None,
 ) -> dict[str, Any]:
-    return {
+    issue = {
         "layer": layer,
         "type": issue_type,
         "location": list(location),
         "message": message[:1000],
         "options": [],
         "rule_id": issue_type,
-        "json_pointer": None,
-        "expected": None,
-        "observed": None,
+        "json_pointer": json_pointer,
+        "expected": expected,
+        "observed": observed,
     }
+    if mismatch_kind is not None:
+        issue["mismatch_kind"] = mismatch_kind
+    return issue
 
 
 def _compiler_issues(exc: FramingAuditCompilationError) -> list[dict[str, Any]]:
@@ -482,11 +495,76 @@ def _scientific_projection(transaction: Transaction) -> dict[str, Any] | None:
     return raw
 
 
+def _immutable_output_state(path: Path, data: bytes) -> str:
+    """Return absent/exact/different for one prospective immutable output."""
+
+    try:
+        existing = path.read_bytes()
+    except FileNotFoundError:
+        return "absent"
+    except OSError as exc:
+        raise SetupError(f"cannot inspect immutable output: {path}") from exc
+    return "exact" if existing == data else "different"
+
+
+def _fsync_directory(path: Path) -> None:
+    """Durably record the output name where the platform permits it."""
+
+    if os.name == "nt":
+        return
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    descriptor = os.open(path, flags)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
 def _write_new(path: Path, data: bytes) -> None:
-    if path.exists():
-        raise SetupError(f"refusing to overwrite immutable output: {path}")
+    """Atomically create one immutable output, permitting exact recovery replay."""
+
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(data)
+    state = _immutable_output_state(path, data)
+    if state == "exact":
+        return
+    if state == "different":
+        raise SetupError(
+            f"refusing to overwrite immutable output with different bytes: {path}"
+        )
+
+    descriptor, temporary_name = tempfile.mkstemp(
+        dir=path.parent,
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "wb", closefd=True) as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        try:
+            os.link(temporary, path)
+        except OSError as exc:
+            # Windows can report a losing no-overwrite race as generic OSError.
+            state = _immutable_output_state(path, data)
+            if state == "exact":
+                return
+            if state == "different":
+                raise SetupError(
+                    "refusing to overwrite concurrently published output with "
+                    f"different bytes: {path}"
+                ) from exc
+            raise SetupError(f"cannot atomically publish output: {path}") from exc
+        try:
+            _fsync_directory(path.parent)
+        except OSError as exc:
+            raise SetupError(f"cannot durably publish output: {path}") from exc
+    finally:
+        try:
+            temporary.unlink(missing_ok=True)
+        except OSError:
+            pass
 
 
 def _prior_hash(
@@ -521,8 +599,16 @@ def _prior_hash(
     return sha256_digest(data)
 
 
-def _run(args: argparse.Namespace) -> tuple[int, dict[str, Any], dict[str, Any] | None]:
-    started = perf_counter()
+def _bound_setup(
+    args: argparse.Namespace,
+) -> tuple[
+    dict[str, Any],
+    Snapshot,
+    CandidateAuthoringContractV1,
+    str | None,
+]:
+    """Validate the frozen case, arm, and exact prior receipt before publishing."""
+
     raw_case, snapshot, contract = _load_case(args.case)
     expected_arm = raw_case.get("arm_ids", {}).get(args.surface)
     if expected_arm != args.arm_id:
@@ -534,6 +620,12 @@ def _run(args: argparse.Namespace) -> tuple[int, dict[str, Any], dict[str, Any] 
         arm_id=args.arm_id,
         surface=args.surface,
     )
+    return raw_case, snapshot, contract, prior_receipt_hash
+
+
+def _run(args: argparse.Namespace) -> tuple[int, dict[str, Any], dict[str, Any] | None]:
+    started = perf_counter()
+    raw_case, snapshot, contract, prior_receipt_hash = _bound_setup(args)
     source_data = _normalize_source(_read_bytes(args.source))
     source_hash = sha256_digest(source_data)
     source_bytes = len(source_data)
@@ -563,6 +655,10 @@ def _run(args: argparse.Namespace) -> tuple[int, dict[str, Any], dict[str, Any] 
                     issue_type=exc.issue_type,
                     message=exc.message,
                     location=exc.location,
+                    json_pointer=exc.json_pointer,
+                    expected=exc.expected,
+                    observed=exc.observed,
+                    mismatch_kind=exc.mismatch_kind,
                 )
             )
         except ValidationError as exc:
@@ -704,16 +800,26 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--receipt", type=Path, required=True)
     parser.add_argument("--projection", type=Path)
     parser.add_argument("--prior-receipt", type=Path)
+    parser.add_argument("--check-setup-only", action="store_true")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
+        if args.check_setup_only:
+            _bound_setup(args)
+            print("SETUP_OK")
+            return 0
         status, receipt, projection = _run(args)
-        _write_new(args.receipt, canonical_json_bytes(receipt))
         if args.projection is not None and projection is not None:
             _write_new(args.projection, canonical_json_bytes(projection))
+        elif args.projection is not None and args.projection.exists():
+            raise SetupError(
+                "existing scientific projection conflicts with a recomputed "
+                "no-projection result"
+            )
+        _write_new(args.receipt, canonical_json_bytes(receipt))
         print(canonical_json_bytes(receipt).decode("utf-8"))
         return status
     except SetupError as exc:

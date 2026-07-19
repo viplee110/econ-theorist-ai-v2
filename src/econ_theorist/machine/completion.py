@@ -557,15 +557,23 @@ def _read_candidate_source(
             )
             materialized = materialize_runtime_facet_hashes(data, contract)
         except CandidateDraftMaterializationError as exc:
+            issue: dict[str, object] = {
+                "location": list(exc.location),
+                "type": exc.issue_type,
+                "message": exc.message,
+            }
+            if exc.mismatch_kind is not None:
+                issue.update(
+                    {
+                        "json_pointer": exc.json_pointer,
+                        "expected": exc.expected,
+                        "observed": exc.observed,
+                        "mismatch_kind": exc.mismatch_kind,
+                    }
+                )
             raise CandidateTransactionValidationError(
                 issue_count=1,
-                issues=(
-                    {
-                        "location": list(exc.location),
-                        "type": exc.issue_type,
-                        "message": exc.message,
-                    },
-                ),
+                issues=(issue,),
                 truncated=False,
             ) from exc
         except ValueError as exc:

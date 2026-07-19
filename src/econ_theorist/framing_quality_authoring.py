@@ -100,6 +100,10 @@ _SEMANTIC_V2_AUTHORING_INSTRUCTIONS = (
     "input refs, every benchmark_assessments[*].channel_path, and all "
     "causal_chain[*].active_margin_witness values; the compiler binds those "
     "fields only when the declared graph makes them exact and unambiguous.",
+    "Omit every forces[*].margin_node_id; keep the scientifically intended force "
+    "source and target endpoints. The compiler derives the operative margin only "
+    "from an exact cited causal step. Omit channel waypoints when the selected "
+    "ledger endpoints already have one unique directed PrimitiveGraph path.",
     "Provide exactly one channel_intent for each benchmark assessment, naming its "
     "changed and target objects and only the PrimitiveGraph waypoints needed to "
     "disambiguate the directed path.",
@@ -107,11 +111,16 @@ _SEMANTIC_V2_AUTHORING_INSTRUCTIONS = (
     "payoffs, feasibility, inequality, activity judgment, and kill condition are "
     "model-authored; graph node IDs and edge paths are compiler-bound or rejected "
     "as ambiguous.",
+    "A margin_intent locates its force when decision_force_id is explicit or its "
+    "causal step names one force. For every remaining force, provide one "
+    "entry in force_margin_locators using source, target, or unique_interior "
+    "position on a force-cited causal step; never author the graph node ID.",
     "Put an intentional research boundary in economist_memo.scope_condition. "
     "Use disclosed_gaps only for a genuinely unresolved defect with a repair path: "
     "every disclosed gap blocks ready_for_g1.",
 )
 _SEMANTIC_DRAFT_V2_SCHEMA = "econ-theorist/framing-audit-semantic-draft/v2"
+_MARGIN_POSITIONS = Literal["source", "target", "unique_interior"]
 
 
 class BenchmarkChannelIntentV1(StrictModel):
@@ -159,6 +168,7 @@ class MarginWitnessIntentV2(StrictModel):
 
     step_number: Literal[1, 2, 3]
     decision_force_id: StableId | None = None
+    margin_position: _MARGIN_POSITIONS
     payoff_node_id_disambiguators: tuple[StableId, ...] = ()
     consequence_step_number: Literal[1, 2, 3]
     concrete_state: NonEmptyString
@@ -205,6 +215,14 @@ class MarginWitnessIntentV2(StrictModel):
         if self.focal_action == self.alternative_action:
             raise ValueError("margin intent focal and alternative actions must differ")
         return self
+
+
+class ForceMarginLocatorV2(StrictModel):
+    """A semantic step position for a force not located by a payoff intent."""
+
+    force_id: StableId
+    step_number: Literal[1, 2, 3]
+    margin_position: _MARGIN_POSITIONS
 
 
 class FramingAuditSemanticDraftV1(StrictModel):
@@ -258,6 +276,7 @@ class FramingAuditSemanticDraftV2(FramingAuditSemanticDraftV1):
         _SEMANTIC_DRAFT_V2_SCHEMA
     ] = _SEMANTIC_DRAFT_V2_SCHEMA
     margin_intents: tuple[MarginWitnessIntentV2, ...] = ()
+    force_margin_locators: tuple[ForceMarginLocatorV2, ...] = ()
 
     @field_validator("margin_intents")
     @classmethod
@@ -267,6 +286,16 @@ class FramingAuditSemanticDraftV2(FramingAuditSemanticDraftV1):
         step_numbers = tuple(item.step_number for item in value)
         if len(set(step_numbers)) != len(step_numbers):
             raise ValueError("margin intents must name distinct causal steps")
+        return value
+
+    @field_validator("force_margin_locators")
+    @classmethod
+    def _force_margin_locators_are_unique(
+        cls, value: tuple[ForceMarginLocatorV2, ...]
+    ) -> tuple[ForceMarginLocatorV2, ...]:
+        force_ids = tuple(item.force_id for item in value)
+        if len(set(force_ids)) != len(force_ids):
+            raise ValueError("force margin locators must name distinct forces")
         return value
 
 
@@ -355,6 +384,7 @@ def _project_semantic_draft_json_schema(
     *,
     draft_model: type[FramingAuditSemanticDraftV1] = FramingAuditSemanticDraftV1,
     omit_active_margin_witness: bool = False,
+    omit_force_margin_binding: bool = False,
 ) -> dict[str, Any]:
     projected_bundle = deepcopy(dict(bundle_payload_schema))
     for field_name in _INPUT_REF_FIELDS.values():
@@ -389,6 +419,17 @@ def _project_semantic_draft_json_schema(
             causal_step_schema,
             "active_margin_witness",
             model_name="CausalChainStep",
+        )
+    if omit_force_margin_binding:
+        force_schema = bundle_definitions.get("EconomicForce")
+        if not isinstance(force_schema, dict):
+            raise ValueError(
+                "semantic surface source schema lacks EconomicForce definition"
+            )
+        _remove_compiler_bound_schema_property(
+            force_schema,
+            "margin_node_id",
+            model_name="EconomicForce",
         )
 
     projected_bundle.pop("$defs")
@@ -490,6 +531,7 @@ def compile_framing_audit_semantic_authoring_contract_v2(
             bundle_contracts[0].payload_json_schema,
             draft_model=FramingAuditSemanticDraftV2,
             omit_active_margin_witness=True,
+            omit_force_margin_binding=True,
         ),
     )
 
@@ -1005,6 +1047,280 @@ def _node_is_on_step(
     )
 
 
+def _choice_nodes_on_step(
+    graph: PrimitiveGraph,
+    adjacency: Mapping[str, tuple[str, ...]],
+    *,
+    source_node_id: str,
+    target_node_id: str,
+    exclude_source: bool,
+) -> tuple[str, ...]:
+    """Return every graph choice compatible with one declared causal step."""
+
+    return tuple(
+        sorted(
+            node.node_id
+            for node in graph.nodes
+            if node.kind == "choice"
+            and (not exclude_source or node.node_id != source_node_id)
+            and _node_is_on_step(
+                adjacency,
+                source_node_id=source_node_id,
+                target_node_id=target_node_id,
+                node_id=node.node_id,
+            )
+        )
+    )
+
+
+def _graph_node_observation(
+    node_id: object,
+    node_by_id: Mapping[str, Any],
+) -> str:
+    if not isinstance(node_id, str):
+        return _diagnostic_scalar(node_id)
+    node = node_by_id.get(node_id)
+    kind = node.kind if node is not None else "<unknown>"
+    return f"{node_id} (kind={kind})"
+
+
+def _apply_force_margin_bindings(
+    payload: dict[str, Any],
+    graph: PrimitiveGraph,
+    intents: tuple[MarginWitnessIntentV2, ...],
+    locators: tuple[ForceMarginLocatorV2, ...],
+) -> list[FramingAuditPreflightIssueV1]:
+    """Bind a force margin only from one explicit semantic step position."""
+
+    issues: list[FramingAuditPreflightIssueV1] = []
+    forces = _mapping_list(payload.get("forces"))
+    causal_steps = _mapping_list(payload.get("causal_chain"))
+    node_by_id = {node.node_id: node for node in graph.nodes}
+    adjacency = _graph_adjacency(graph)
+    steps_by_number = {
+        step.get("step_number"): (step_index, step)
+        for step_index, step in enumerate(causal_steps)
+        if isinstance(step.get("step_number"), int)
+    }
+    force_ids = {
+        force.get("force_id")
+        for force in forces
+        if isinstance(force.get("force_id"), str)
+    }
+
+    for locator_index, locator in enumerate(locators):
+        if locator.force_id not in force_ids:
+            issues.append(
+                _issue(
+                    "compiler.force.margin_locator_unknown_force",
+                    ("force_margin_locators", locator_index, "force_id"),
+                    "A force margin locator must name one declared force.",
+                    options=tuple(sorted(force_ids)),
+                    observed=locator.force_id,
+                )
+            )
+
+    for force_index, force in enumerate(forces):
+        force_id = force.get("force_id")
+        if not isinstance(force_id, str):
+            continue
+        location = ("bundle_payload", "forces", force_index)
+        authored_margin = force.pop("margin_node_id", _MISSING)
+        cited_step_numbers = tuple(
+            sorted(
+                step_number
+                for step_number, (_, step) in steps_by_number.items()
+                if isinstance(step.get("force_ids"), list)
+                and force_id in step["force_ids"]
+            )
+        )
+        if not cited_step_numbers:
+            issues.append(
+                _issue(
+                    "compiler.force.causal_step_missing",
+                    (*location, "force_id"),
+                    "A declared force must be cited by at least one causal step.",
+                    observed=force_id,
+                )
+            )
+            continue
+
+        locator_candidates: list[
+            tuple[int, Literal["source", "target", "unique_interior"], str]
+        ] = [
+            (locator.step_number, locator.margin_position, "force_margin_locator")
+            for locator in locators
+            if locator.force_id == force_id
+        ]
+        for intent_index, intent in enumerate(intents):
+            step_entry = steps_by_number.get(intent.step_number)
+            if step_entry is None:
+                continue
+            _, step = step_entry
+            step_force_ids = step.get("force_ids")
+            if not isinstance(step_force_ids, list):
+                continue
+            selected_force_id = intent.decision_force_id
+            if selected_force_id is None and len(step_force_ids) == 1:
+                selected_force_id = step_force_ids[0]
+            if selected_force_id != force_id:
+                continue
+            locator_candidates.append(
+                (
+                    intent.step_number,
+                    intent.margin_position,
+                    f"margin_intents/{intent_index}",
+                )
+            )
+
+        exact_locators = sorted(set(locator_candidates))
+        margin_node_id: str | None = None
+        compatible_choice_options: tuple[str, ...] = ()
+        diagnostic_options = tuple(
+            f"step {step_number} {position} ({source})"
+            for step_number, position, source in exact_locators
+        )
+        if len(exact_locators) != 1:
+            issues.append(
+                _issue(
+                    (
+                        "compiler.force.margin_locator_missing"
+                        if not exact_locators
+                        else "compiler.force.margin_locator_ambiguous"
+                    ),
+                    (*location, "margin_node_id"),
+                    "Each V2 force needs one unambiguous semantic step position for its operative margin.",
+                    options=(
+                        diagnostic_options
+                        if diagnostic_options
+                        else tuple(f"Use cited causal step {item}." for item in cited_step_numbers)
+                    ),
+                    observed=_graph_node_observation(authored_margin, node_by_id),
+                )
+            )
+        else:
+            step_number, position, _ = exact_locators[0]
+            step_entry = steps_by_number.get(step_number)
+            if step_entry is None:
+                issues.append(
+                    _issue(
+                        "compiler.force.margin_locator_unknown_step",
+                        (*location, "margin_node_id"),
+                        "The force margin locator names no causal step.",
+                        options=tuple(str(item) for item in cited_step_numbers),
+                        observed=str(step_number),
+                    )
+                )
+            else:
+                _, step = step_entry
+                step_force_ids = step.get("force_ids")
+                if not isinstance(step_force_ids, list) or force_id not in step_force_ids:
+                    issues.append(
+                        _issue(
+                            "compiler.force.margin_locator_uncited_step",
+                            (*location, "margin_node_id"),
+                            "The selected margin step must cite this force.",
+                            options=tuple(str(item) for item in cited_step_numbers),
+                            observed=str(step_number),
+                        )
+                    )
+                else:
+                    step_source = step.get("source_node_id")
+                    step_target = step.get("target_node_id")
+                    if isinstance(step_source, str) and isinstance(step_target, str):
+                        compatible_choice_options = _choice_nodes_on_step(
+                            graph,
+                            adjacency,
+                            source_node_id=step_source,
+                            target_node_id=step_target,
+                            exclude_source=False,
+                        )
+                    if position == "source":
+                        candidate = step_source
+                    elif position == "target":
+                        candidate = step_target
+                    else:
+                        paths = (
+                            _find_simple_paths(adjacency, step_source, step_target)
+                            if isinstance(step_source, str)
+                            and isinstance(step_target, str)
+                            else ()
+                        )
+                        interiors = tuple(
+                            path[1:-1]
+                            for path in paths
+                            if len(path[1:-1]) == 1
+                        )
+                        candidate = (
+                            interiors[0][0]
+                            if len(paths) == 1 and len(interiors) == 1
+                            else None
+                        )
+                        if candidate is None:
+                            issues.append(
+                                _issue(
+                                    "compiler.force.margin_locator_interior_ambiguous",
+                                    (*location, "margin_node_id"),
+                                    "unique_interior requires one directed path with exactly one interior node.",
+                                    options=tuple(" -> ".join(path) for path in paths),
+                                )
+                            )
+                    if isinstance(candidate, str) and candidate in node_by_id:
+                        margin_node_id = candidate
+                        force["margin_node_id"] = candidate
+                    elif candidate is not None:
+                        issues.append(
+                            _issue(
+                                "compiler.force.margin_locator_unknown_node",
+                                (*location, "margin_node_id"),
+                                "The selected causal-step position does not bind a known PrimitiveGraph node.",
+                                observed=_graph_node_observation(candidate, node_by_id),
+                            )
+                        )
+
+        if authored_margin is not _MISSING:
+            if margin_node_id is not None and authored_margin != margin_node_id:
+                issues.append(
+                    _issue(
+                        "compiler.margin.force_binding",
+                        (*location, "margin_node_id"),
+                        "The authored force margin differs from the semantic step position; V2 owns this graph binding.",
+                        options=(
+                            compatible_choice_options
+                            or (
+                                (margin_node_id,)
+                                if margin_node_id is not None
+                                else ()
+                            )
+                        ),
+                        expected=_graph_node_observation(
+                            margin_node_id, node_by_id
+                        ),
+                        observed=_graph_node_observation(
+                            authored_margin, node_by_id
+                        ),
+                    )
+                )
+            else:
+                issues.append(
+                    _issue(
+                        "compiler.force.binding_duplicate_source",
+                        (*location, "margin_node_id"),
+                        "Semantic V2 drafts must omit compiler-owned margin_node_id.",
+                        options=(
+                            f"Remove forces[{force_index}].margin_node_id and let the compiler bind it.",
+                        ),
+                        expected=_graph_node_observation(
+                            force.get("margin_node_id", _MISSING), node_by_id
+                        ),
+                        observed=_graph_node_observation(
+                            authored_margin, node_by_id
+                        ),
+                    )
+                )
+    return issues
+
+
 def _find_simple_edge_paths(
     graph: PrimitiveGraph,
     source_node_id: str,
@@ -1053,6 +1369,8 @@ def _margin_issue(
     message: str,
     *,
     options: tuple[str, ...] = (),
+    expected: str | None = None,
+    observed: str | None = None,
 ) -> None:
     issues.append(
         _issue(
@@ -1060,6 +1378,8 @@ def _margin_issue(
             location,
             message,
             options=options,
+            expected=expected,
+            observed=observed,
         )
     )
 
@@ -1507,6 +1827,160 @@ def _apply_margin_intents(
     return issues
 
 
+def _v2_cross_field_issues(
+    payload: Mapping[str, Any],
+    graph: PrimitiveGraph,
+    intents: tuple[MarginWitnessIntentV2, ...],
+) -> list[FramingAuditPreflightIssueV1]:
+    """Reject locked pair contradictions before unchanged V8 validation."""
+
+    issues: list[FramingAuditPreflightIssueV1] = []
+    node_by_id = {node.node_id: node for node in graph.nodes}
+    rows = _mapping_list(payload.get("benchmark_assessments"))
+    for row_index, row in enumerate(rows):
+        benchmark_id = row.get("benchmark_id")
+        stable_benchmark_id = (
+            benchmark_id if isinstance(benchmark_id, str) else None
+        )
+        path = row.get("channel_path")
+        if not (
+            isinstance(path, list)
+            and path
+            and all(isinstance(node_id, str) for node_id in path)
+        ):
+            continue
+        held_choices = {
+            item.get("primitive_node_id"): item
+            for item in _mapping_list(row.get("held_fixed"))
+            if isinstance(item.get("primitive_node_id"), str)
+            and node_by_id.get(item["primitive_node_id"]) is not None
+            and node_by_id[item["primitive_node_id"]].kind == "choice"
+        }
+        traversed_fixed_choices = tuple(
+            node_id for node_id in path if node_id in held_choices
+        )
+        target_node = node_by_id.get(path[-1])
+        if traversed_fixed_choices and target_node is not None and target_node.kind == "outcome":
+            first_fixed = traversed_fixed_choices[0]
+            first_fixed_index = path.index(first_fixed)
+            boundary = path[first_fixed_index - 1] if first_fixed_index else path[0]
+            held_object_id = held_choices[first_fixed].get("object_id")
+            issues.append(
+                _issue(
+                    "compiler.semantic_ledger.fixed_choice_channel",
+                    (
+                        "bundle_payload",
+                        "benchmark_assessments",
+                        row_index,
+                        "channel_path",
+                    ),
+                    "A fixed comparison cannot carry its channel through a held-fixed choice to an outcome.",
+                    benchmark_id=stable_benchmark_id,
+                    object_id=(
+                        held_object_id
+                        if isinstance(held_object_id, str)
+                        else None
+                    ),
+                    options=(
+                        f"End the fixed comparison at {boundary} before {first_fixed}.",
+                        "Move the choice to reoptimizing only if it honestly responds.",
+                    ),
+                    expected=f"channel terminating before held-fixed choice {first_fixed}",
+                    observed=" -> ".join(path),
+                )
+            )
+
+    force_entries = {
+        force.get("force_id"): (force_index, force)
+        for force_index, force in enumerate(_mapping_list(payload.get("forces")))
+        if isinstance(force.get("force_id"), str)
+    }
+    steps_by_number = {
+        step.get("step_number"): step
+        for step in _mapping_list(payload.get("causal_chain"))
+        if isinstance(step.get("step_number"), int)
+    }
+    adjacency = _graph_adjacency(graph)
+    for intent in intents:
+        step = steps_by_number.get(intent.step_number)
+        if step is None:
+            continue
+        witness = step.get("active_margin_witness")
+        if not isinstance(witness, Mapping):
+            continue
+        decision_node_id = witness.get("decision_node_id")
+        if not isinstance(decision_node_id, str):
+            continue
+        force_ids = step.get("force_ids")
+        if not isinstance(force_ids, list):
+            continue
+        selected_force_ids: tuple[str, ...]
+        if intent.decision_force_id is not None:
+            selected_force_ids = (intent.decision_force_id,)
+        elif len(force_ids) == 1 and isinstance(force_ids[0], str):
+            selected_force_ids = (force_ids[0],)
+        else:
+            selected_force_ids = tuple(
+                force_id
+                for force_id in force_ids
+                if isinstance(force_id, str)
+                and force_entries.get(force_id, (None, {}))[1].get(
+                    "margin_node_id"
+                )
+                == decision_node_id
+            )
+        source_node_id = step.get("source_node_id")
+        target_node_id = step.get("target_node_id")
+        choice_options = (
+            _choice_nodes_on_step(
+                graph,
+                adjacency,
+                source_node_id=source_node_id,
+                target_node_id=target_node_id,
+                exclude_source=False,
+            )
+            if isinstance(source_node_id, str) and isinstance(target_node_id, str)
+            else ()
+        )
+        for force_id in selected_force_ids:
+            force_entry = force_entries.get(force_id)
+            if force_entry is None:
+                continue
+            force_index, force = force_entry
+            margin_node_id = force.get("margin_node_id")
+            margin_node = (
+                node_by_id.get(margin_node_id)
+                if isinstance(margin_node_id, str)
+                else None
+            )
+            if (
+                margin_node is not None
+                and margin_node.kind == "choice"
+                and margin_node_id == decision_node_id
+            ):
+                continue
+            issues.append(
+                _issue(
+                    "compiler.margin.witnessed_force_binding",
+                    (
+                        "bundle_payload",
+                        "forces",
+                        force_index,
+                        "margin_node_id",
+                    ),
+                    "A force selected by a payoff witness must bind that exact choice node.",
+                    options=choice_options,
+                    expected=_graph_node_observation(
+                        decision_node_id, node_by_id
+                    ),
+                    observed=_graph_node_observation(
+                        margin_node_id, node_by_id
+                    ),
+                )
+            )
+    return issues
+
+
 def _collect_semantic_ledger_issues(
     payload: Mapping[str, Any], graph: PrimitiveGraph
 ) -> tuple[list[FramingAuditPreflightIssueV1], tuple[str, ...]]:
@@ -1887,9 +2361,25 @@ def _prepare_semantic_draft(
 
     active_nodes: tuple[str, ...] = ()
     if graph is not None:
+        if isinstance(draft, FramingAuditSemanticDraftV2):
+            issues.extend(
+                _apply_force_margin_bindings(
+                    payload,
+                    graph,
+                    draft.margin_intents,
+                    draft.force_margin_locators,
+                )
+            )
         issues.extend(_apply_channel_intents(payload, graph, draft.channel_intents))
         if isinstance(draft, FramingAuditSemanticDraftV2):
             issues.extend(_apply_margin_intents(payload, graph, draft.margin_intents))
+            issues.extend(
+                _v2_cross_field_issues(
+                    payload,
+                    graph,
+                    draft.margin_intents,
+                )
+            )
         ledger_issues, active_nodes = _collect_semantic_ledger_issues(payload, graph)
         issues.extend(ledger_issues)
 
@@ -2277,6 +2767,7 @@ __all__ = [
     "FramingAuditSemanticAuthoringSurfaceV2",
     "FramingAuditSemanticDraftV1",
     "FramingAuditSemanticDraftV2",
+    "ForceMarginLocatorV2",
     "MarginWitnessIntentV2",
     "PublicStateConditionIntentV2",
     "compile_framing_audit_semantic_authoring_contract",

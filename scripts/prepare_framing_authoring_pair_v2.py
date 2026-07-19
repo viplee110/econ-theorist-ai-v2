@@ -87,6 +87,7 @@ from econ_theorist.theory import (  # noqa: E402
 
 REVIEW_ROOT = REPOSITORY_ROOT / "review_outputs" / "phase5a2_v8_authoring_pair_v2"
 HARNESS_SOURCE = REPOSITORY_ROOT / "scripts" / "run_framing_authoring_shadow.py"
+PUBLISHER_SOURCE = REPOSITORY_ROOT / "scripts" / "publish_json_only_artifact.py"
 
 PAIR_ID = "pair.accident.liability.authoring.v8.v2"
 ARM_IDS = {
@@ -809,21 +810,23 @@ def _semantic_draft(bundle: FramingQualityBundle) -> FramingAuditSemanticDraftV2
         "source_g1_dossier_ref",
     ):
         raw.pop(field_name)
+    for force in raw["forces"]:
+        force.pop("margin_node_id")
     intents: list[BenchmarkChannelIntentV1] = []
     for row in raw["benchmark_assessments"]:
-        path = tuple(row.pop("channel_path"))
+        row.pop("channel_path")
         intents.append(
             BenchmarkChannelIntentV1(
                 benchmark_id=row["benchmark_id"],
                 changed_object_id=row["changed"][0]["object_id"],
                 target_object_id=row["targets"][0]["object_id"],
-                ordered_waypoint_node_ids=path[1:-1],
             )
         )
     for step in raw["causal_chain"]:
         step.pop("active_margin_witness", None)
     margin_intent = MarginWitnessIntentV2(
         step_number=2,
+        margin_position="target",
         consequence_step_number=3,
         concrete_state="Liability equals four and all return, risk, action-set, timing, and objective primitives are fixed.",
         decision_maker="Risk-neutral operator",
@@ -910,6 +913,7 @@ def _runner_script(
     runtime_site = runtime_root / "site"
     runtime_manifest_path = runtime_root / "RUNTIME_MANIFEST.json"
     harness = runtime_root / HARNESS_SOURCE.name
+    publisher = runtime_root / PUBLISHER_SOURCE.name
     return (
         "param(\r\n"
         "  [Parameter(Mandatory=$true)][ValidateSet(1,2,3)][int]$Attempt\r\n"
@@ -936,21 +940,36 @@ def _runner_script(
         f"$workRoot = Join-Path '{arm_root}' 'work'\r\n"
         "$workInfo = Get-Item -LiteralPath $workRoot\r\n"
         "if (($workInfo.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'INVALID_SETUP: work directory cannot be a reparse point' }\r\n"
-        "$source = Join-Path $workRoot \"attempt_$number.json\"\r\n"
-        "if (-not (Test-Path -LiteralPath $source -PathType Leaf)) { throw \"missing exact attempt source: $source\" }\r\n"
-        "$sourceInfo = Get-Item -LiteralPath $source\r\n"
-        "if (($sourceInfo.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'INVALID_SETUP: attempt source cannot be a reparse point' }\r\n"
         f"$receipt = Join-Path '{arm_root}' \"work/attempt_$number.receipt.json\"\r\n"
         f"$projection = Join-Path '{arm_root}' \"work/attempt_$number.scientific_projection.json\"\r\n"
+        "if (Test-Path -LiteralPath $receipt) { throw \"INVALID_SETUP: attempt already has an immutable receipt: $receipt\" }\r\n"
+        "$priorReceipt = $null\r\n"
+        "if ($Attempt -gt 1) {\r\n"
+        "  $previous = ($Attempt - 1).ToString('00')\r\n"
+        f"  $priorReceipt = Join-Path '{arm_root}' \"work/attempt_$previous.receipt.json\"\r\n"
+        "  if (-not (Test-Path -LiteralPath $priorReceipt -PathType Leaf)) { throw \"INVALID_SETUP: missing prior receipt: $priorReceipt\" }\r\n"
+        "}\r\n"
+        "$source = Join-Path $workRoot \"attempt_$number.json\"\r\n"
         "$arguments = @(\r\n"
         f"  '{harness}', '--case', '{case_path}', '--surface', '{surface}',\r\n"
         f"  '--arm-id', '{ARM_IDS[surface]}', '--attempt', $Attempt, '--source', $source,\r\n"
         "  '--receipt', $receipt, '--projection', $projection\r\n"
         ")\r\n"
         "if ($Attempt -gt 1) {\r\n"
-        "  $previous = ($Attempt - 1).ToString('00')\r\n"
-        f"  $arguments += @('--prior-receipt', (Join-Path '{arm_root}' \"work/attempt_$previous.receipt.json\"))\r\n"
+        "  $arguments += @('--prior-receipt', $priorReceipt)\r\n"
         "}\r\n"
+        "$checkArguments = @($arguments + '--check-setup-only')\r\n"
+        f"$null = & '{python_runtime}' @checkArguments\r\n"
+        "if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }\r\n"
+        "$scratch = Join-Path $workRoot \"attempt_$number.scratch.json\"\r\n"
+        "if (-not (Test-Path -LiteralPath $scratch -PathType Leaf)) { throw \"missing exact attempt scratch source: $scratch\" }\r\n"
+        "$scratchInfo = Get-Item -LiteralPath $scratch\r\n"
+        "if (($scratchInfo.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'INVALID_SETUP: attempt scratch source cannot be a reparse point' }\r\n"
+        f"$null = & '{python_runtime}' '{publisher}' --source $scratch --target $source\r\n"
+        "if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }\r\n"
+        "if (-not (Test-Path -LiteralPath $source -PathType Leaf)) { throw \"publisher did not create exact attempt source: $source\" }\r\n"
+        "$sourceInfo = Get-Item -LiteralPath $source\r\n"
+        "if (($sourceInfo.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'INVALID_SETUP: attempt source cannot be a reparse point' }\r\n"
         f"& '{python_runtime}' @arguments\r\n"
         "exit $LASTEXITCODE\r\n"
     ).encode("utf-8")
@@ -972,18 +991,34 @@ This is a noncanonical shadow: do not invoke the bridge, stage or commit a
 candidate, finish a run, or confirm a human gate. Do not request human editing.
 
 Read `CASE.md`, `COMMON_WORK_PACKET.json`,
-`FRAMING_PAYLOAD_CONTRACT.json`, and this arm's `SURFACE.json`. Produce only
-the surface-specific JSON in `work/attempt_01.json`, then run:
+`FRAMING_PAYLOAD_CONTRACT.json`, and this arm's `SURFACE.json`. Draft only the
+surface-specific JSON in the mutable transport buffer
+`work/attempt_01.scratch.json`, then run:
 
 ```powershell
 ./RUN_ATTEMPT.ps1 -Attempt 1
 ```
 
+The runner publishes `work/attempt_01.json` only if the scratch bytes are
+valid UTF-8 and encode one complete top-level JSON object. It may remove one
+UTF-8 BOM but never trims, extracts, reserializes, balances braces, or repairs
+the source. If publication fails, correct the same scratch buffer and rerun
+the same attempt; no formal attempt artifact or receipt exists yet. Record
+every rejected scratch publication, its SHA-256, byte count, and rejection
+reason in the final report as an artifact-hygiene correction, not an engine
+route repair.
+
+The receipt is the completion marker for an attempt. If terminal output is
+lost after that receipt exists, do not rerun the attempt; read and report the
+immutable receipt. If a projection was published but no receipt exists, rerun
+the same scratch bytes so the harness can complete the interrupted publication.
+
 If the immutable receipt rejects it, use only its complete diagnostics to
-revise attempt 2 and then at most attempt 3. Every new artifact after a
-rejection counts as one experimental repair. Stop at the first
-`validator_pass: true` or after attempt 3. Never overwrite an artifact or
-receipt.
+draft `work/attempt_02.scratch.json` and then at most
+`work/attempt_03.scratch.json`. Every successfully published formal artifact
+after a receipt rejection counts as one experimental repair. Stop at the first
+`validator_pass: true` or after attempt 3. Never overwrite a published
+`attempt_XX.json` artifact or receipt.
 
 Write `report/agent_report.md` with the manifest result, requested/visible
 model label, whether the actual backend/provider was independently observable,
@@ -995,7 +1030,8 @@ provider identity.
     if surface == "transaction":
         specific = """## This arm: complete Transaction
 
-Write one complete Transaction JSON exactly under `SURFACE.json`, including
+Write one complete Transaction JSON matching `SURFACE.json` into the scratch
+path named in the common instructions, including
 all wrappers, bindings, output objects, relations, hashes, and route outcome.
 Use explicit JSON null only where the frozen draft-hash contract permits the
 harness to materialize it. Do not call, imitate, or reconstruct the semantic
@@ -1004,11 +1040,16 @@ compiler.
     elif surface == "semantic_v2":
         specific = """## This arm: semantic V2 draft
 
-Write one `FramingAuditSemanticDraftV2` exactly under `SURFACE.json`.
+Write one `FramingAuditSemanticDraftV2` matching `SURFACE.json` into the scratch
+path named in the common instructions.
 `bundle_payload` contains all scientific FramingQualityBundle content but must
 omit the four exact input refs, every assessment's `channel_path`, and every
-`active_margin_witness` key, including null placeholders. Provide exactly one
-`channel_intent` per benchmark and the required scientific `margin_intent`.
+`active_margin_witness` key, including null placeholders. It must also omit
+every force's `margin_node_id` while retaining the scientifically intended
+source and target endpoints. Provide exactly one `channel_intent` per benchmark, omitting waypoints when its
+endpoints select one unique graph path, and provide the required scientific
+`margin_intent`. If a force is not uniquely named by one margin intent, provide
+one entry in `force_margin_locators`; do not ask the compiler to infer it.
 The model still authors actions, payoffs, feasibility, inequality, activity,
 consequences, and kill condition. Do not author Transaction wrappers, exact
 graph bindings owned by the V2 compiler, EntityVersion wrappers, a replacement
@@ -1319,6 +1360,7 @@ def _prepare(args: argparse.Namespace) -> None:
     frozen_wheel = runtime / wheel_name
     legacy._write_new(frozen_wheel, wheel_bytes)
     legacy._copy_new(HARNESS_SOURCE, runtime / HARNESS_SOURCE.name)
+    legacy._copy_new(PUBLISHER_SOURCE, runtime / PUBLISHER_SOURCE.name)
     installation = subprocess.run(
         (
             str(args.python_runtime.resolve()),
@@ -1520,6 +1562,7 @@ blinded economics and cold-reader adjudication.
         Path(f"runtime/{wheel_name}"),
         Path("runtime/RUNTIME_MANIFEST.json"),
         Path(f"runtime/{HARNESS_SOURCE.name}"),
+        Path(f"runtime/{PUBLISHER_SOURCE.name}"),
         Path("arm-transaction/MANIFEST.json"),
         Path("arm-semantic/MANIFEST.json"),
     ]

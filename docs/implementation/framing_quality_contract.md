@@ -10,8 +10,9 @@ diagnosis under unchanged V8 semantics with zero canonical writes. Its held-out
 ordinary-model pair is complete: neither arm reached the scientific validator,
 but the semantic surface substantially reduced structure and improved detailed
 reader recovery without established material scientific degradation. Public
-integration remains blocked; the next work is a bounded authoring/diagnostic
-repair, not V9 or another blind pair.
+integration remains blocked. The bounded authoring/diagnostic candidate is now
+implemented and source-level private-oracle/adversarial checks pass; packaged-
+runtime verification remains next, not V9 or another blind pair.
 
 This contract owns the first pilot-driven scientific strengthening after the
 Phase 5A.2 public Codex framing run. It addresses a narrow failure: a
@@ -385,14 +386,19 @@ the exact fully-downgraded unwitnessed-negative predicate already defined by
 V8. The compiler binds a graph decision, unique payoff basis, consequence
 path, and public-state object only when each binding is deterministic;
 otherwise it fails closed with alternatives rather than inventing a scientific
-link. The held-out pair nevertheless shows that the current entry surface does
-not yet fully own those bindings: the model still authors force source, margin,
-and target nodes; causal node IDs; channel waypoints; force selection; payoff
-disambiguators; public-state object IDs; and payload graph declarations such
-as `distinctive_mechanism.distinctive_edge_ids`. Active-witness consequence
-edge paths remain compiler-owned. An intentional scope limitation remains in
-the memo's scope condition; `disclosed_gaps` remains reserved for an unresolved
-defect and therefore still
+link. The bounded revision also projects away only
+`forces[*].margin_node_id`. Force source and target remain model-authored.
+Every margin intent and residual force locator must explicitly select
+`source`, `target`, or `unique_interior` on one force-cited causal step; there
+is no default. A margin intent locates a force only when it names that force or
+its step names exactly one force, and `unique_interior` succeeds only for one
+path with exactly one interior node. The model still authors causal node IDs,
+any necessary channel waypoints, force selection when a step is not unique,
+payoff disambiguators, public-state object IDs, and payload graph declarations
+such as `distinctive_mechanism.distinctive_edge_ids`. Active-witness
+consequence edge paths remain compiler-owned. An intentional scope limitation
+remains in the memo's scope condition; `disclosed_gaps` remains reserved for an
+unresolved defect and therefore still
 blocks `ready_for_g1`. This revision is not public bridge integration or
 evidence of a fresh model pass.
 
@@ -408,24 +414,28 @@ every common probe, while the Transaction reader could not recover preventive
 payoff 2 or the same detailed claim boundary from its memo alone.
 
 Locked source inspection found residual deterministic graph binding on both
-surfaces. The Transaction receipt concealed one extra downstream
-`semantic_hash` behind a zero-topology message; its near-match diagnostic must
-identify `operations/<index>/relation/downstream/semantic_hash` with exact
-expected and observed fields. The Semantic receipt concealed the observed
-payoff node kind and the unique compatible choice node; a binding failure must
-return the observed node and kind plus all compatible choice-node options on
-the causal step. Deterministic preflight must also reject a fixed row whose
-channel traverses a held-fixed decision to an outcome, an active reoptimizing
-row marked `pointwise_policy_fixed=true`, and a witnessed force whose margin is
-not the exact choice node. Future case briefs and evaluation keys must align
-explicitly on held-fixed primitives such as enforceability.
+surfaces. The implemented Transaction near-match reports
+`operations/<index>/relation/downstream/semantic_hash` with bounded canonical-
+safe expected/observed fields only when one unique candidate differs in one
+field; ties and multi-field differences retain the generic failure. Semantic
+binding diagnostics return the observed node and kind plus every compatible
+choice on the selected causal step. Deterministic preflight rejects a fixed
+row whose channel traverses an exactly bound held-fixed choice to an outcome,
+and rejects a witnessed force whose margin is not the exact decision choice.
+It deliberately does not treat aggregate `pointwise_policy_fixed=true` as a
+generic contradiction merely because a different object reoptimizes: that
+boolean has no object binding, so such a rule would reject valid economics. A
+future blocker requires an explicit policy-object binding. V8 remains the
+unchanged scientific authority. Future case briefs and evaluation keys must
+align explicitly on held-fixed primitives such as enforceability.
 
-The next noncanonical slice may move only uniquely determined force/channel
-bindings into the compiler and add those executable diagnostics. Ambiguity must
-still fail closed, strict JSON remains mandatory, and the host must isolate a
-JSON-only candidate artifact rather than accept wrapped or repaired JSON. Do
-not start another blind pair or public integration until the private oracle and
-focused adversarial diagnostic checks pass. See the exact
+The shadow transport now rejects malformed UTF-8, duplicate JSON keys,
+wrappers, arrays, prefixes, and suffixes; it never trims, extracts,
+reserializes, or repairs model bytes. Same-directory no-replace publication is
+atomic, exact source replay is idempotent, the scientific projection is
+published before its receipt, and a receipt is the completion marker. This is
+still noncanonical. Do not start another blind pair or public integration
+until packaged-runtime transport/oracle verification passes. See the exact
 [preparation record](../../review_outputs/phase5a2_v8_authoring_pair_v2/preparation_record.md),
 [final adjudication](../../review_outputs/phase5a2_v8_authoring_pair_v2/final_adjudication.md),
 and [machine decision](../../review_outputs/phase5a2_v8_authoring_pair_v2/FINAL_DECISION.json).
