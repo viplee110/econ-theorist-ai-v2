@@ -22,9 +22,15 @@ from econ_theorist.framing_quality_authoring import (
     BenchmarkChannelIntentV1,
     FramingAuditCompilationError,
     FramingAuditSemanticDraftV1,
+    FramingAuditSemanticDraftV2,
+    MarginWitnessIntentV2,
+    PublicStateConditionIntentV2,
     compile_framing_audit_semantic_authoring_contract,
+    compile_framing_audit_semantic_authoring_contract_v2,
     compile_framing_audit_semantic_draft,
+    compile_framing_audit_semantic_draft_v2,
     preflight_framing_audit_semantic_draft,
+    preflight_framing_audit_semantic_draft_v2,
 )
 from econ_theorist.machine.models import WorkPacketV1
 from econ_theorist.models import (
@@ -49,7 +55,10 @@ from econ_theorist.runs import (
     transaction_bindings,
 )
 from econ_theorist.runtime.freshness import facet_semantic_hash
-from econ_theorist.runtime.replay import replay, validate_candidate
+from econ_theorist.runtime.replay import (
+    replay,
+    validate_candidate,
+)
 
 
 class FramingQualitySemanticAuthoringTests(unittest.TestCase):
@@ -189,6 +198,76 @@ class FramingQualitySemanticAuthoringTests(unittest.TestCase):
             channel_intents=tuple(intents),
         )
 
+    def _semantic_draft_v2(
+        self,
+        payload: object,
+    ) -> FramingAuditSemanticDraftV2:
+        raw = payload.model_dump(mode="json", exclude_none=False)
+        for field_name in (
+            "research_question_ref",
+            "benchmark_set_ref",
+            "primitive_graph_ref",
+            "source_g1_dossier_ref",
+        ):
+            raw.pop(field_name)
+        intents = []
+        for row in raw["benchmark_assessments"]:
+            path = tuple(row.pop("channel_path"))
+            intents.append(
+                BenchmarkChannelIntentV1(
+                    benchmark_id=row["benchmark_id"],
+                    changed_object_id=row["changed"][0]["object_id"],
+                    target_object_id=row["targets"][0]["object_id"],
+                    ordered_waypoint_node_ids=path[1:-1],
+                )
+            )
+        margin_intents = []
+        for step_number, consequence_step_number in ((1, 2), (2, 3)):
+            step = payload.causal_chain[step_number - 1]
+            witness = step.active_margin_witness
+            assert witness is not None
+            binding = witness.consequence_binding
+            assert binding is not None
+            raw["causal_chain"][step_number - 1].pop("active_margin_witness")
+            margin_intents.append(
+                MarginWitnessIntentV2(
+                    step_number=step_number,
+                    payoff_node_id_disambiguators=(
+                        ("node.seller_payoff",) if step_number == 2 else ()
+                    ),
+                    consequence_step_number=consequence_step_number,
+                    concrete_state=witness.concrete_state,
+                    decision_maker=witness.decision_maker,
+                    focal_action=witness.focal_action,
+                    alternative_action=witness.alternative_action,
+                    focal_payoff=witness.focal_payoff,
+                    alternative_payoff=witness.alternative_payoff,
+                    feasibility_basis=witness.feasibility_basis,
+                    best_response_inequality=witness.best_response_inequality,
+                    activity_status=witness.activity_status,
+                    status_basis=witness.status_basis,
+                    kill_condition=witness.kill_condition,
+                    transition_kind=binding.transition_kind,
+                    focal_consequence=binding.focal_consequence,
+                    alternative_consequence=binding.alternative_consequence,
+                    consequence_feasibility_basis=binding.feasibility_basis,
+                    public_state_conditions=(
+                        PublicStateConditionIntentV2(
+                            benchmark_id="benchmark.fixed_quality",
+                            object_id="object.certification",
+                            relation=binding.public_state_conditions[0].relation,
+                            value=binding.public_state_conditions[0].value,
+                        ),
+                    ),
+                )
+            )
+        raw["causal_chain"][2].pop("active_margin_witness")
+        return FramingAuditSemanticDraftV2(
+            bundle_payload=raw,
+            channel_intents=tuple(intents),
+            margin_intents=tuple(margin_intents),
+        )
+
     def test_semantic_surface_is_exactly_bound_and_projects_compiler_fields(
         self,
     ) -> None:
@@ -268,6 +347,240 @@ class FramingQualitySemanticAuthoringTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "exact fresh registry-v8"):
             compile_framing_audit_semantic_authoring_contract(wrong_contract)
+
+    def test_v2_surface_keeps_v1_compatible_and_omits_witness_structure(self) -> None:
+        _, contract, _ = self._open_v8_contract()
+
+        v1 = compile_framing_audit_semantic_authoring_contract(contract)
+        v2 = compile_framing_audit_semantic_authoring_contract_v2(contract)
+
+        self.assertEqual(
+            v1.semantic_surface_schema,
+            "econ-theorist/framing-audit-semantic-authoring-surface/v1",
+        )
+        self.assertEqual(
+            v2.semantic_surface_schema,
+            "econ-theorist/framing-audit-semantic-authoring-surface/v2",
+        )
+        self.assertEqual(
+            v2.semantic_draft_schema_id,
+            "econ-theorist/framing-audit-semantic-draft/v2",
+        )
+        v2_step_schema = v2.semantic_draft_json_schema["$defs"]["CausalChainStep"]
+        self.assertNotIn("active_margin_witness", v2_step_schema["properties"])
+        self.assertIn("MarginWitnessIntentV2", v2.semantic_draft_json_schema["$defs"])
+        self.assertTrue(
+            any("disclosed_gaps" in item for item in v2.authoring_instructions)
+        )
+
+    def test_v2_compiler_binds_unique_margin_witnesses_without_changing_v8(self) -> None:
+        snapshot, contract, core = self._open_v8_contract()
+        head_before = replay(self.fixture.layout).head
+        payload = self.fixture._research_first_bundle(
+            self.fixture._bundle_payload(*core)
+        )
+        draft = self._semantic_draft_v2(payload)
+
+        report = preflight_framing_audit_semantic_draft_v2(
+            snapshot, contract, draft
+        )
+        self.assertTrue(report.passed, report.issues)
+        transaction = compile_framing_audit_semantic_draft_v2(
+            snapshot, contract, draft
+        )
+        bundle_entity = next(
+            operation.entity
+            for operation in transaction.operations
+            if isinstance(operation, CreateEntityOp)
+            and operation.entity.entity_type == "FramingQualityBundle"
+        )
+        compiled = parse_framing_quality_payload(
+            "FramingQualityBundle", bundle_entity.facets
+        )
+        self.assertEqual(
+            compiled.causal_chain[0].active_margin_witness.decision_node_id,
+            "node.inspection",
+        )
+        self.assertEqual(
+            compiled.causal_chain[1].active_margin_witness.decision_node_id,
+            "node.quality",
+        )
+        self.assertEqual(
+            compiled.causal_chain[0].active_margin_witness.focal_action,
+            payload.causal_chain[0].active_margin_witness.focal_action,
+        )
+        validate_candidate(
+            snapshot,
+            transaction,
+            route_registry_hash=ROUTE_REGISTRY_V8_HASH,
+            enforce_live_current_policy=True,
+        )
+        self.assertEqual(replay(self.fixture.layout).head, head_before)
+
+    def test_v2_rejects_a_hand_authored_full_witness(self) -> None:
+        snapshot, contract, core = self._open_v8_contract()
+        payload = self.fixture._research_first_bundle(
+            self.fixture._bundle_payload(*core)
+        )
+        draft = self._semantic_draft_v2(payload)
+        raw = deepcopy(draft.bundle_payload)
+        raw["causal_chain"][0]["active_margin_witness"] = (
+            payload.causal_chain[0]
+            .active_margin_witness.model_dump(mode="json", exclude_none=False)
+        )
+        duplicated = FramingAuditSemanticDraftV2(
+            bundle_payload=raw,
+            channel_intents=draft.channel_intents,
+            margin_intents=draft.margin_intents,
+        )
+
+        report = preflight_framing_audit_semantic_draft_v2(
+            snapshot, contract, duplicated
+        )
+        self.assertFalse(report.passed)
+        self.assertIn(
+            "compiler.margin.full_witness_forbidden",
+            {issue.rule_id for issue in report.issues},
+        )
+
+    def test_v2_rejects_a_hand_authored_witness_without_an_intent(self) -> None:
+        snapshot, contract, core = self._open_v8_contract()
+        payload = self.fixture._research_first_bundle(
+            self.fixture._bundle_payload(*core)
+        )
+        draft = self._semantic_draft_v2(payload)
+        raw = deepcopy(draft.bundle_payload)
+        raw["causal_chain"][0]["active_margin_witness"] = (
+            payload.causal_chain[0]
+            .active_margin_witness.model_dump(mode="json", exclude_none=False)
+        )
+        bypass_attempt = FramingAuditSemanticDraftV2(
+            bundle_payload=raw,
+            channel_intents=draft.channel_intents,
+            margin_intents=tuple(
+                intent
+                for intent in draft.margin_intents
+                if intent.step_number != 1
+            ),
+        )
+
+        report = preflight_framing_audit_semantic_draft_v2(
+            snapshot, contract, bypass_attempt
+        )
+        self.assertFalse(report.passed)
+        self.assertIn(
+            "compiler.margin.full_witness_forbidden",
+            {issue.rule_id for issue in report.issues},
+        )
+
+    def test_v2_rejects_a_null_witness_placeholder(self) -> None:
+        snapshot, contract, core = self._open_v8_contract()
+        payload = self.fixture._research_first_bundle(
+            self.fixture._bundle_payload(*core)
+        )
+        draft = self._semantic_draft_v2(payload)
+        raw = deepcopy(draft.bundle_payload)
+        raw["causal_chain"][2]["active_margin_witness"] = None
+        placeholder_attempt = FramingAuditSemanticDraftV2(
+            bundle_payload=raw,
+            channel_intents=draft.channel_intents,
+            margin_intents=draft.margin_intents,
+        )
+
+        report = preflight_framing_audit_semantic_draft_v2(
+            snapshot, contract, placeholder_attempt
+        )
+        self.assertFalse(report.passed)
+        self.assertIn(
+            "compiler.margin.full_witness_forbidden",
+            {issue.rule_id for issue in report.issues},
+        )
+
+    def test_v2_entry_rejects_a_v1_draft_at_runtime(self) -> None:
+        snapshot, contract, core = self._open_v8_contract()
+        payload = self.fixture._research_first_bundle(
+            self.fixture._bundle_payload(*core)
+        )
+        v1_draft = self._semantic_draft(payload)
+
+        report = preflight_framing_audit_semantic_draft_v2(
+            snapshot,
+            contract,
+            v1_draft,  # type: ignore[arg-type]
+        )
+        self.assertFalse(report.passed)
+        self.assertEqual(
+            {issue.rule_id for issue in report.issues},
+            {"compiler.v2.draft_type"},
+        )
+        with self.assertRaises(FramingAuditCompilationError) as caught:
+            compile_framing_audit_semantic_draft_v2(
+                snapshot,
+                contract,
+                v1_draft,  # type: ignore[arg-type]
+            )
+        self.assertEqual(
+            {issue.rule_id for issue in caught.exception.issues},
+            {"compiler.v2.draft_type"},
+        )
+
+    def test_v2_preflight_requires_an_intent_for_each_required_margin(self) -> None:
+        snapshot, contract, core = self._open_v8_contract()
+        payload = self.fixture._research_first_bundle(
+            self.fixture._bundle_payload(*core)
+        )
+        draft = self._semantic_draft_v2(payload)
+        missing_intent = FramingAuditSemanticDraftV2(
+            bundle_payload=draft.bundle_payload,
+            channel_intents=draft.channel_intents,
+            margin_intents=tuple(
+                intent
+                for intent in draft.margin_intents
+                if intent.step_number != 1
+            ),
+        )
+
+        report = preflight_framing_audit_semantic_draft_v2(
+            snapshot, contract, missing_intent
+        )
+        self.assertFalse(report.passed)
+        self.assertIn(
+            "compiler.margin.intent_missing",
+            {issue.rule_id for issue in report.issues},
+        )
+        with self.assertRaises(FramingAuditCompilationError):
+            compile_framing_audit_semantic_draft_v2(
+                snapshot, contract, missing_intent
+            )
+
+    def test_v2_preserves_the_exact_unwitnessed_negative_exception(self) -> None:
+        snapshot, contract, core = self._open_v8_contract()
+        payload = self.fixture._unwitnessed_negative_revision(
+            self.fixture._research_first_bundle(self.fixture._bundle_payload(*core))
+        )
+        v1_draft = self._semantic_draft(payload)
+        raw = deepcopy(v1_draft.bundle_payload)
+        for step in raw["causal_chain"]:
+            step.pop("active_margin_witness", None)
+        negative_draft = FramingAuditSemanticDraftV2(
+            bundle_payload=raw,
+            channel_intents=v1_draft.channel_intents,
+            margin_intents=(),
+        )
+
+        report = preflight_framing_audit_semantic_draft_v2(
+            snapshot, contract, negative_draft
+        )
+        self.assertTrue(report.passed, report.issues)
+        transaction = compile_framing_audit_semantic_draft_v2(
+            snapshot, contract, negative_draft
+        )
+        validate_candidate(
+            snapshot,
+            transaction,
+            route_registry_hash=ROUTE_REGISTRY_V8_HASH,
+            enforce_live_current_policy=True,
+        )
 
     def test_semantic_surface_rejects_a_continuation_contract(self) -> None:
         _, contract, _ = self._open_v8_contract(continuation=True)

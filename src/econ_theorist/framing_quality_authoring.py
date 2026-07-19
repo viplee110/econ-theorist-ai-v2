@@ -14,8 +14,9 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Annotated, Any, Literal
 
-from pydantic import Field, ValidationError, field_validator
+from pydantic import Field, ValidationError, field_validator, model_validator
 
+from . import framing_quality as fq
 from .candidate_contract import (
     CandidateAuthoringContractV1,
     CandidateHardRelationTemplateV1,
@@ -24,11 +25,15 @@ from .candidate_contract import (
 )
 from .codec import canonical_json_bytes, ensure_canonical_data
 from .framing_quality import (
+    ActiveMarginWitness,
+    ChoiceConsequenceBinding,
     ENDOGENOUS_ACTIVE_SEMANTIC_LEVELS,
     FramingQualityBundle,
+    PublicStateCondition,
     pack_framing_quality_payload,
 )
 from .framing_quality_validation import (
+    _is_permitted_unwitnessed_negative_revision,
     active_semantic_node_kinds,
     fixing_level_overlaps,
 )
@@ -88,6 +93,25 @@ _SEMANTIC_AUTHORING_INSTRUCTIONS = (
     "changed and target objects and only the PrimitiveGraph waypoints needed to "
     "disambiguate the directed path.",
 )
+_SEMANTIC_V2_AUTHORING_INSTRUCTIONS = (
+    "Return one JSON object matching semantic_draft_json_schema; do not author "
+    "Transaction wrappers, canonical IDs, relations, facet hashes, or a route outcome.",
+    "Author the FramingQualityBundle scientific content, but omit the four exact "
+    "input refs, every benchmark_assessments[*].channel_path, and all "
+    "causal_chain[*].active_margin_witness values; the compiler binds those "
+    "fields only when the declared graph makes them exact and unambiguous.",
+    "Provide exactly one channel_intent for each benchmark assessment, naming its "
+    "changed and target objects and only the PrimitiveGraph waypoints needed to "
+    "disambiguate the directed path.",
+    "Use margin_intents for the economic payoff comparison itself: actions, "
+    "payoffs, feasibility, inequality, activity judgment, and kill condition are "
+    "model-authored; graph node IDs and edge paths are compiler-bound or rejected "
+    "as ambiguous.",
+    "Put an intentional research boundary in economist_memo.scope_condition. "
+    "Use disclosed_gaps only for a genuinely unresolved defect with a repair path: "
+    "every disclosed gap blocks ready_for_g1.",
+)
+_SEMANTIC_DRAFT_V2_SCHEMA = "econ-theorist/framing-audit-semantic-draft/v2"
 
 
 class BenchmarkChannelIntentV1(StrictModel):
@@ -107,6 +131,80 @@ class BenchmarkChannelIntentV1(StrictModel):
         if len(set(value)) != len(value):
             raise ValueError("channel intent waypoints must be unique")
         return value
+
+
+class PublicStateConditionIntentV2(StrictModel):
+    """One model-authored public-state assertion resolved through a ledger object."""
+
+    benchmark_id: StableId
+    object_id: StableId
+    relation: Literal[
+        "equals", "not_equals", "positive", "zero", "interior", "boundary"
+    ]
+    value: NonEmptyString | None = None
+
+    @model_validator(mode="after")
+    def _value_matches_relation(self) -> "PublicStateConditionIntentV2":
+        value_relation = self.relation in {"equals", "not_equals"}
+        if value_relation != (self.value is not None):
+            raise ValueError(
+                "public-state intent: equals/not_equals require one value and "
+                "qualitative relations must omit it"
+            )
+        return self
+
+
+class MarginWitnessIntentV2(StrictModel):
+    """Scientific payoff content whose exact graph bindings are compiler-owned."""
+
+    step_number: Literal[1, 2, 3]
+    decision_force_id: StableId | None = None
+    payoff_node_id_disambiguators: tuple[StableId, ...] = ()
+    consequence_step_number: Literal[1, 2, 3]
+    concrete_state: NonEmptyString
+    decision_maker: NonEmptyString
+    focal_action: NonEmptyString
+    alternative_action: NonEmptyString
+    focal_payoff: NonEmptyString
+    alternative_payoff: NonEmptyString
+    feasibility_basis: NonEmptyString
+    best_response_inequality: NonEmptyString
+    activity_status: Literal["active", "inactive", "unresolved"]
+    status_basis: NonEmptyString
+    kill_condition: NonEmptyString
+    transition_kind: Literal["increase", "decrease", "switch", "reweight"]
+    focal_consequence: NonEmptyString
+    alternative_consequence: NonEmptyString
+    consequence_feasibility_basis: NonEmptyString
+    public_state_conditions: Annotated[
+        tuple[PublicStateConditionIntentV2, ...], Field(min_length=1)
+    ]
+
+    @field_validator("payoff_node_id_disambiguators")
+    @classmethod
+    def _payoff_disambiguators_are_unique(
+        cls, value: tuple[str, ...]
+    ) -> tuple[str, ...]:
+        if len(set(value)) != len(value):
+            raise ValueError("payoff-node disambiguators must be unique")
+        return value
+
+    @field_validator("public_state_conditions")
+    @classmethod
+    def _public_state_objects_are_unique(
+        cls,
+        value: tuple[PublicStateConditionIntentV2, ...],
+    ) -> tuple[PublicStateConditionIntentV2, ...]:
+        keys = tuple((item.benchmark_id, item.object_id) for item in value)
+        if len(set(keys)) != len(keys):
+            raise ValueError("public-state intent objects must be unique")
+        return value
+
+    @model_validator(mode="after")
+    def _compares_distinct_actions(self) -> "MarginWitnessIntentV2":
+        if self.focal_action == self.alternative_action:
+            raise ValueError("margin intent focal and alternative actions must differ")
+        return self
 
 
 class FramingAuditSemanticDraftV1(StrictModel):
@@ -153,6 +251,25 @@ class FramingAuditSemanticDraftV1(StrictModel):
         return value
 
 
+class FramingAuditSemanticDraftV2(FramingAuditSemanticDraftV1):
+    """V2 semantic surface with deterministic active-margin witness binding."""
+
+    semantic_draft_schema: Literal[
+        _SEMANTIC_DRAFT_V2_SCHEMA
+    ] = _SEMANTIC_DRAFT_V2_SCHEMA
+    margin_intents: tuple[MarginWitnessIntentV2, ...] = ()
+
+    @field_validator("margin_intents")
+    @classmethod
+    def _margin_intents_are_unique(
+        cls, value: tuple[MarginWitnessIntentV2, ...]
+    ) -> tuple[MarginWitnessIntentV2, ...]:
+        step_numbers = tuple(item.step_number for item in value)
+        if len(set(step_numbers)) != len(step_numbers):
+            raise ValueError("margin intents must name distinct causal steps")
+        return value
+
+
 class FramingAuditSemanticAuthoringSurfaceV1(StrictModel):
     """Exact, noncanonical model-facing contract for one semantic draft."""
 
@@ -172,6 +289,22 @@ class FramingAuditSemanticAuthoringSurfaceV1(StrictModel):
     semantic_draft_json_schema: dict[str, Any]
     authoring_instructions: tuple[NonEmptyString, ...] = (
         _SEMANTIC_AUTHORING_INSTRUCTIONS
+    )
+
+
+class FramingAuditSemanticAuthoringSurfaceV2(
+    FramingAuditSemanticAuthoringSurfaceV1
+):
+    """V2 projection preserving V1 while removing deterministic witness fields."""
+
+    semantic_surface_schema: Literal[
+        "econ-theorist/framing-audit-semantic-authoring-surface/v2"
+    ] = "econ-theorist/framing-audit-semantic-authoring-surface/v2"
+    semantic_draft_schema_id: Literal[
+        "econ-theorist/framing-audit-semantic-draft/v2"
+    ] = "econ-theorist/framing-audit-semantic-draft/v2"
+    authoring_instructions: tuple[NonEmptyString, ...] = (
+        _SEMANTIC_V2_AUTHORING_INSTRUCTIONS
     )
 
 
@@ -198,8 +331,30 @@ def _remove_compiler_bound_schema_property(
     ]
 
 
+def _remove_compiler_optional_schema_property(
+    object_schema: dict[str, Any],
+    property_name: str,
+    *,
+    model_name: str,
+) -> None:
+    properties = object_schema.get("properties")
+    if not isinstance(properties, dict) or property_name not in properties:
+        raise ValueError(
+            f"semantic surface source schema lacks {model_name}.{property_name}"
+        )
+    properties.pop(property_name)
+    required = object_schema.get("required")
+    if isinstance(required, list):
+        object_schema["required"] = [
+            name for name in required if name != property_name
+        ]
+
+
 def _project_semantic_draft_json_schema(
     bundle_payload_schema: Mapping[str, Any],
+    *,
+    draft_model: type[FramingAuditSemanticDraftV1] = FramingAuditSemanticDraftV1,
+    omit_active_margin_witness: bool = False,
 ) -> dict[str, Any]:
     projected_bundle = deepcopy(dict(bundle_payload_schema))
     for field_name in _INPUT_REF_FIELDS.values():
@@ -224,11 +379,20 @@ def _project_semantic_draft_json_schema(
         "channel_path",
         model_name="BenchmarkFramingAssessment",
     )
+    if omit_active_margin_witness:
+        causal_step_schema = bundle_definitions.get("CausalChainStep")
+        if not isinstance(causal_step_schema, dict):
+            raise ValueError(
+                "semantic surface source schema lacks CausalChainStep definition"
+            )
+        _remove_compiler_optional_schema_property(
+            causal_step_schema,
+            "active_margin_witness",
+            model_name="CausalChainStep",
+        )
 
     projected_bundle.pop("$defs")
-    draft_schema = deepcopy(
-        FramingAuditSemanticDraftV1.model_json_schema(mode="validation")
-    )
+    draft_schema = deepcopy(draft_model.model_json_schema(mode="validation"))
     draft_properties = draft_schema.get("properties")
     if not isinstance(draft_properties, dict) or "bundle_payload" not in draft_properties:
         raise ValueError("semantic draft schema lacks bundle_payload")
@@ -303,6 +467,33 @@ def compile_framing_audit_semantic_authoring_contract(
     )
 
 
+def compile_framing_audit_semantic_authoring_contract_v2(
+    contract: CandidateAuthoringContractV1,
+) -> FramingAuditSemanticAuthoringSurfaceV2:
+    """Project the exact V8 contract into the additive V2 semantic surface."""
+
+    # Reuse the V1 exact-contract checks without changing its bytes or semantics.
+    v1_surface = compile_framing_audit_semantic_authoring_contract(contract)
+    bundle_contracts = tuple(
+        item
+        for item in contract.payload_schemas
+        if item.entity_type == "FramingQualityBundle"
+    )
+    assert len(bundle_contracts) == 1
+    return FramingAuditSemanticAuthoringSurfaceV2(
+        candidate_authoring_contract_hash=v1_surface.candidate_authoring_contract_hash,
+        work_packet_hash=v1_surface.work_packet_hash,
+        project_id=v1_surface.project_id,
+        base_revision=v1_surface.base_revision,
+        route_run_id=v1_surface.route_run_id,
+        semantic_draft_json_schema=_project_semantic_draft_json_schema(
+            bundle_contracts[0].payload_json_schema,
+            draft_model=FramingAuditSemanticDraftV2,
+            omit_active_margin_witness=True,
+        ),
+    )
+
+
 class FramingAuditPreflightIssueV1(StrictModel):
     """One bounded, location-specific compiler issue returned before a retry."""
 
@@ -311,10 +502,13 @@ class FramingAuditPreflightIssueV1(StrictModel):
     ] = "econ-theorist/framing-audit-preflight-issue/v1"
     rule_id: StableId
     location: tuple[str | int, ...]
+    json_pointer: NonEmptyString
     message: NonEmptyString
     benchmark_id: StableId | None = None
     object_id: StableId | None = None
     options: tuple[NonEmptyString, ...] = ()
+    expected: NonEmptyString | None = None
+    observed: NonEmptyString | None = None
 
 
 class FramingAuditPreflightReportV1(StrictModel):
@@ -362,14 +556,23 @@ def _issue(
     benchmark_id: str | None = None,
     object_id: str | None = None,
     options: tuple[str, ...] = (),
+    expected: str | None = None,
+    observed: str | None = None,
 ) -> FramingAuditPreflightIssueV1:
+    pointer = "/" + "/".join(
+        str(item).replace("~", "~0").replace("/", "~1")
+        for item in location
+    )
     return FramingAuditPreflightIssueV1(
         rule_id=rule_id,
         location=location,
+        json_pointer=pointer,
         message=message,
         benchmark_id=benchmark_id,
         object_id=object_id,
         options=options,
+        expected=expected,
+        observed=observed,
     )
 
 
@@ -777,6 +980,533 @@ def _apply_channel_intents(
     return issues
 
 
+def _graph_adjacency(graph: PrimitiveGraph) -> dict[str, tuple[str, ...]]:
+    adjacency_sets: dict[str, set[str]] = {
+        node.node_id: set() for node in graph.nodes
+    }
+    for edge in graph.edges:
+        adjacency_sets[edge.source_node_id].add(edge.target_node_id)
+    return {
+        node_id: tuple(sorted(neighbors))
+        for node_id, neighbors in adjacency_sets.items()
+    }
+
+
+def _node_is_on_step(
+    adjacency: Mapping[str, tuple[str, ...]],
+    *,
+    source_node_id: str,
+    target_node_id: str,
+    node_id: str,
+) -> bool:
+    return bool(
+        _find_simple_paths(adjacency, source_node_id, node_id)
+        and _find_simple_paths(adjacency, node_id, target_node_id)
+    )
+
+
+def _find_simple_edge_paths(
+    graph: PrimitiveGraph,
+    source_node_id: str,
+    target_node_id: str,
+) -> tuple[tuple[str, ...], ...]:
+    """Enumerate a bounded number of distinct directed edge paths.
+
+    Node-only path resolution cannot distinguish two parallel PrimitiveGraph
+    edges.  The V2 compiler must reject that ambiguity rather than choosing one
+    arbitrary causal edge for a payoff witness.
+    """
+
+    if source_node_id == target_node_id:
+        return ()
+    outgoing: dict[str, list[tuple[str, str]]] = {
+        node.node_id: [] for node in graph.nodes
+    }
+    for edge in graph.edges:
+        outgoing[edge.source_node_id].append((edge.edge_id, edge.target_node_id))
+    for edges in outgoing.values():
+        edges.sort()
+    found: list[tuple[str, ...]] = []
+    stack: list[tuple[str, tuple[str, ...], tuple[str, ...]]] = [
+        (source_node_id, (source_node_id,), ())
+    ]
+    while stack and len(found) < _MAX_PATH_ALTERNATIVES:
+        node_id, seen_nodes, edge_ids = stack.pop()
+        for edge_id, next_node_id in reversed(outgoing.get(node_id, [])):
+            if next_node_id in seen_nodes:
+                continue
+            candidate_nodes = (*seen_nodes, next_node_id)
+            candidate_edges = (*edge_ids, edge_id)
+            if next_node_id == target_node_id:
+                found.append(candidate_edges)
+                if len(found) >= _MAX_PATH_ALTERNATIVES:
+                    break
+            else:
+                stack.append((next_node_id, candidate_nodes, candidate_edges))
+    return tuple(found)
+
+
+def _margin_issue(
+    issues: list[FramingAuditPreflightIssueV1],
+    rule_id: str,
+    location: tuple[str | int, ...],
+    message: str,
+    *,
+    options: tuple[str, ...] = (),
+) -> None:
+    issues.append(
+        _issue(
+            rule_id,
+            location,
+            message,
+            options=options,
+        )
+    )
+
+
+def _reject_v2_hand_authored_margin_witnesses(
+    payload: Mapping[str, Any],
+) -> list[FramingAuditPreflightIssueV1]:
+    """Keep every V2 witness binding compiler-owned, including null placeholders.
+
+    V2 receives a free-form bundle payload so the projected JSON schema alone is
+    not an enforcement boundary.  A hand-authored key on a step without a
+    corresponding intent could otherwise bypass the V2 compiler entirely.
+    V1 remains the explicit surface for a fully hand-authored canonical witness.
+    """
+
+    raw_steps = payload.get("causal_chain")
+    if not isinstance(raw_steps, (list, tuple)):
+        return []
+    issues: list[FramingAuditPreflightIssueV1] = []
+    for step_index, step in enumerate(raw_steps):
+        if not isinstance(step, Mapping) or "active_margin_witness" not in step:
+            continue
+        _margin_issue(
+            issues,
+            "compiler.margin.full_witness_forbidden",
+            (
+                "bundle_payload",
+                "causal_chain",
+                step_index,
+                "active_margin_witness",
+            ),
+            "V2 reserves active_margin_witness for deterministic compiler binding.",
+            options=(
+                "Remove active_margin_witness and provide a margin intent.",
+                "Use the V1 semantic surface for a fully hand-authored witness.",
+            ),
+        )
+    return issues
+
+
+def _v2_missing_margin_intent_issues(
+    bundle: FramingQualityBundle,
+    graph: PrimitiveGraph,
+    intents: tuple[MarginWitnessIntentV2, ...],
+) -> list[FramingAuditPreflightIssueV1]:
+    """Require V2 to name every V8-required witness before compilation ends.
+
+    This is not a second economic acceptance test.  It reuses V8's exact
+    fully-downgraded negative-revision predicate and otherwise asks only whether
+    the model supplied an intent for a graph choice that V8 would require to be
+    payoff-witnessed.  The unchanged candidate validator remains the final
+    scientific authority.
+    """
+
+    all_witnesses_absent = all(
+        step.active_margin_witness is None for step in bundle.causal_chain
+    )
+    if (
+        bundle.proposed_action == "revise_framing"
+        and all_witnesses_absent
+        and _is_permitted_unwitnessed_negative_revision(bundle)
+    ):
+        return []
+    if bundle.tension.tension_kind not in fq.MECHANISM_MARGIN_TENSION_KINDS:
+        return []
+
+    intent_steps = {intent.step_number for intent in intents}
+    adjacency = _graph_adjacency(graph)
+    node_by_id = {node.node_id: node for node in graph.nodes}
+    issues: list[FramingAuditPreflightIssueV1] = []
+    witnessed_choice_nodes = {
+        step.active_margin_witness.decision_node_id
+        for step in bundle.causal_chain
+        if step.active_margin_witness is not None
+    }
+    missing_step_choice_nodes: set[str] = set()
+    for step_index, step in enumerate(bundle.causal_chain):
+        choice_nodes_on_step = {
+            node.node_id
+            for node in graph.nodes
+            if node.kind == "choice"
+            and _node_is_on_step(
+                adjacency,
+                source_node_id=step.source_node_id,
+                target_node_id=step.target_node_id,
+                node_id=node.node_id,
+            )
+        }
+        newly_reached_choices = choice_nodes_on_step.difference(
+            {step.source_node_id}
+        )
+        if newly_reached_choices and step.step_number not in intent_steps:
+            missing_step_choice_nodes.update(newly_reached_choices)
+            _margin_issue(
+                issues,
+                "compiler.margin.intent_missing",
+                ("bundle_payload", "causal_chain", step_index),
+                "A choice-dependent causal step needs one V2 margin intent.",
+                options=(
+                    f"Add a margin intent for causal step {step.step_number}.",
+                    "Use the V1 semantic surface for a fully hand-authored witness.",
+                ),
+            )
+
+    for force in bundle.forces:
+        margin_node = node_by_id.get(force.margin_node_id)
+        if (
+            margin_node is None
+            or margin_node.kind != "choice"
+            or force.margin_node_id in witnessed_choice_nodes
+            or force.margin_node_id in missing_step_choice_nodes
+        ):
+            continue
+        _margin_issue(
+            issues,
+            "compiler.margin.intent_missing_force",
+            ("margin_intents",),
+            "An operative choice margin lacks a V2 intent that binds its payoff witness.",
+            options=(
+                f"Add an intent that binds force {force.force_id}.",
+                "Use a fully downgraded V8 negative revision only when its exact predicate holds.",
+            ),
+        )
+    return issues
+
+
+def _apply_margin_intents(
+    payload: dict[str, Any],
+    graph: PrimitiveGraph,
+    intents: tuple[MarginWitnessIntentV2, ...],
+) -> list[FramingAuditPreflightIssueV1]:
+    """Compile scientific margin intents only where graph bindings are exact."""
+
+    issues: list[FramingAuditPreflightIssueV1] = []
+    if not intents:
+        return issues
+    causal_steps = _mapping_list(payload.get("causal_chain"))
+    steps_by_number: dict[int, tuple[int, dict[str, Any]]] = {}
+    for step_index, step in enumerate(causal_steps):
+        step_number = step.get("step_number")
+        if isinstance(step_number, int) and step_number not in steps_by_number:
+            steps_by_number[step_number] = (step_index, step)
+    forces = {
+        force.get("force_id"): force
+        for force in _mapping_list(payload.get("forces"))
+        if isinstance(force.get("force_id"), str)
+    }
+    node_by_id = {node.node_id: node for node in graph.nodes}
+    adjacency = _graph_adjacency(graph)
+    public_state_kinds = {
+        "constraint",
+        "equilibrium_object",
+        "information",
+        "institution",
+        "interaction",
+        "timing",
+    }
+    assessment_rows = _mapping_list(payload.get("benchmark_assessments"))
+
+    for intent_index, intent in enumerate(intents):
+        base_location = ("margin_intents", intent_index)
+        start_count = len(issues)
+        step_entry = steps_by_number.get(intent.step_number)
+        if step_entry is None:
+            _margin_issue(
+                issues,
+                "compiler.margin.step_unknown",
+                (*base_location, "step_number"),
+                "Margin intent does not name a causal-chain step.",
+            )
+            continue
+        step_index, step = step_entry
+        witness_location = (
+            "bundle_payload",
+            "causal_chain",
+            step_index,
+            "active_margin_witness",
+        )
+        source_node_id = step.get("source_node_id")
+        target_node_id = step.get("target_node_id")
+        force_ids = step.get("force_ids")
+        if not (
+            isinstance(source_node_id, str)
+            and isinstance(target_node_id, str)
+            and isinstance(force_ids, list)
+            and all(isinstance(force_id, str) for force_id in force_ids)
+        ):
+            _margin_issue(
+                issues,
+                "compiler.margin.step_shape",
+                witness_location,
+                "The causal step must expose exact source, target, and force IDs.",
+            )
+            continue
+        candidate_force_ids = tuple(force_ids)
+        if intent.decision_force_id is not None:
+            if intent.decision_force_id not in candidate_force_ids:
+                _margin_issue(
+                    issues,
+                    "compiler.margin.decision_force",
+                    (*base_location, "decision_force_id"),
+                    "decision_force_id must be one of this causal step's declared forces.",
+                    options=tuple(sorted(candidate_force_ids)),
+                )
+                continue
+            candidate_force_ids = (intent.decision_force_id,)
+        decision_candidates: list[str] = []
+        for force_id in candidate_force_ids:
+            force = forces.get(force_id)
+            if force is None:
+                _margin_issue(
+                    issues,
+                    "compiler.margin.force_unknown",
+                    (*base_location, "decision_force_id"),
+                    "The causal step names a force absent from the payload.",
+                    options=tuple(sorted(forces)),
+                )
+                continue
+            node_id = force.get("margin_node_id")
+            node = node_by_id.get(node_id) if isinstance(node_id, str) else None
+            if (
+                node is not None
+                and node.kind == "choice"
+                and _node_is_on_step(
+                    adjacency,
+                    source_node_id=source_node_id,
+                    target_node_id=target_node_id,
+                    node_id=node.node_id,
+                )
+            ):
+                decision_candidates.append(node.node_id)
+        decision_candidates = sorted(set(decision_candidates))
+        if len(decision_candidates) != 1:
+            _margin_issue(
+                issues,
+                (
+                    "compiler.margin.decision_missing"
+                    if not decision_candidates
+                    else "compiler.margin.decision_ambiguous"
+                ),
+                (*base_location, "decision_force_id"),
+                "The compiler could not identify one exact choice margin on this step.",
+                options=tuple(decision_candidates),
+            )
+            continue
+        decision_node_id = decision_candidates[0]
+
+        payoff_candidates = tuple(
+            sorted(
+                node.node_id
+                for node in graph.nodes
+                if node.kind == "preference_technology"
+                and _find_simple_paths(adjacency, node.node_id, decision_node_id)
+            )
+        )
+        payoff_node_ids: tuple[str, ...]
+        if intent.payoff_node_id_disambiguators:
+            invalid = tuple(
+                node_id
+                for node_id in intent.payoff_node_id_disambiguators
+                if node_id not in payoff_candidates
+            )
+            if invalid:
+                _margin_issue(
+                    issues,
+                    "compiler.margin.payoff_disambiguator",
+                    (*base_location, "payoff_node_id_disambiguators"),
+                    "Each payoff disambiguator must be an upstream payoff-basis node.",
+                    options=payoff_candidates,
+                )
+                continue
+            payoff_node_ids = intent.payoff_node_id_disambiguators
+        elif len(payoff_candidates) == 1:
+            payoff_node_ids = payoff_candidates
+        else:
+            _margin_issue(
+                issues,
+                (
+                    "compiler.margin.payoff_missing"
+                    if not payoff_candidates
+                    else "compiler.margin.payoff_ambiguous"
+                ),
+                (*base_location, "payoff_node_id_disambiguators"),
+                "The compiler could not identify one exact upstream payoff basis.",
+                options=payoff_candidates,
+            )
+            continue
+
+        consequence_entry = steps_by_number.get(intent.consequence_step_number)
+        if consequence_entry is None:
+            _margin_issue(
+                issues,
+                "compiler.margin.consequence_step_unknown",
+                (*base_location, "consequence_step_number"),
+                "consequence_step_number does not name a causal-chain step.",
+            )
+            continue
+        _, consequence_step = consequence_entry
+        consequence_node_id = consequence_step.get("target_node_id")
+        if not isinstance(consequence_node_id, str):
+            _margin_issue(
+                issues,
+                "compiler.margin.consequence_unbound",
+                (*base_location, "consequence_step_number"),
+                "The selected consequence step has no exact target node.",
+            )
+            continue
+        edge_paths = _find_simple_edge_paths(
+            graph, decision_node_id, consequence_node_id
+        )
+        if len(edge_paths) != 1:
+            _margin_issue(
+                issues,
+                (
+                    "compiler.margin.consequence_unreachable"
+                    if not edge_paths
+                    else "compiler.margin.consequence_ambiguous"
+                ),
+                (*base_location, "consequence_step_number"),
+                "The decision-to-consequence graph path must be exact and unique.",
+                options=tuple(" -> ".join(path) for path in edge_paths),
+            )
+            continue
+        if not (
+            _find_simple_paths(adjacency, target_node_id, consequence_node_id)
+            or _find_simple_paths(adjacency, consequence_node_id, target_node_id)
+        ):
+            _margin_issue(
+                issues,
+                "compiler.margin.consequence_off_spine",
+                (*base_location, "consequence_step_number"),
+                "The selected consequence must remain on the witnessed causal spine.",
+            )
+            continue
+
+        public_conditions: list[PublicStateCondition] = []
+        for condition_index, condition in enumerate(intent.public_state_conditions):
+            condition_location = (
+                *base_location,
+                "public_state_conditions",
+                condition_index,
+            )
+            matching_rows = [
+                row
+                for row in assessment_rows
+                if row.get("benchmark_id") == condition.benchmark_id
+            ]
+            if len(matching_rows) != 1:
+                _margin_issue(
+                    issues,
+                    "compiler.margin.public_state_benchmark",
+                    (*condition_location, "benchmark_id"),
+                    "A public-state intent must name exactly one benchmark assessment.",
+                    options=tuple(
+                        sorted(
+                            str(row["benchmark_id"])
+                            for row in assessment_rows
+                            if isinstance(row.get("benchmark_id"), str)
+                        )
+                    ),
+                )
+                continue
+            matching_objects = [
+                item
+                for group_name in (
+                    "changed",
+                    "held_fixed",
+                    "reoptimizing",
+                    "still_endogenous",
+                    "targets",
+                )
+                for item in _mapping_list(matching_rows[0].get(group_name))
+                if item.get("object_id") == condition.object_id
+            ]
+            if len(matching_objects) != 1:
+                _margin_issue(
+                    issues,
+                    (
+                        "compiler.margin.public_state_object_missing"
+                        if not matching_objects
+                        else "compiler.margin.public_state_object_ambiguous"
+                    ),
+                    (*condition_location, "object_id"),
+                    "A public-state intent must name one uniquely bound ledger object.",
+                )
+                continue
+            state_node_id = matching_objects[0].get("primitive_node_id")
+            state_node = (
+                node_by_id.get(state_node_id)
+                if isinstance(state_node_id, str)
+                else None
+            )
+            if state_node is None or state_node.kind not in public_state_kinds:
+                _margin_issue(
+                    issues,
+                    "compiler.margin.public_state_node",
+                    (*condition_location, "object_id"),
+                    "The selected ledger object must bind a public-state-compatible node.",
+                )
+                continue
+            public_conditions.append(
+                PublicStateCondition(
+                    node_id=state_node.node_id,
+                    relation=condition.relation,
+                    value=condition.value,
+                )
+            )
+        if len({item.node_id for item in public_conditions}) != len(public_conditions):
+            _margin_issue(
+                issues,
+                "compiler.margin.public_state_duplicate_node",
+                (*base_location, "public_state_conditions"),
+                "Public-state conditions must resolve to distinct PrimitiveGraph nodes.",
+            )
+        if len(issues) != start_count:
+            continue
+
+        witness = ActiveMarginWitness(
+            decision_node_id=decision_node_id,
+            payoff_node_ids=payoff_node_ids,
+            concrete_state=intent.concrete_state,
+            decision_maker=intent.decision_maker,
+            focal_action=intent.focal_action,
+            alternative_action=intent.alternative_action,
+            focal_payoff=intent.focal_payoff,
+            alternative_payoff=intent.alternative_payoff,
+            feasibility_basis=intent.feasibility_basis,
+            best_response_inequality=intent.best_response_inequality,
+            activity_status=intent.activity_status,
+            status_basis=intent.status_basis,
+            kill_condition=intent.kill_condition,
+            consequence_binding=ChoiceConsequenceBinding(
+                consequence_node_id=consequence_node_id,
+                transition_kind=intent.transition_kind,
+                causal_edge_ids=edge_paths[0],
+                public_state_conditions=tuple(public_conditions),
+                focal_consequence=intent.focal_consequence,
+                alternative_consequence=intent.alternative_consequence,
+                feasibility_basis=intent.consequence_feasibility_basis,
+            ),
+        )
+        step["active_margin_witness"] = witness.model_dump(
+            mode="json", exclude_none=False
+        )
+    return issues
+
+
 def _collect_semantic_ledger_issues(
     payload: Mapping[str, Any], graph: PrimitiveGraph
 ) -> tuple[list[FramingAuditPreflightIssueV1], tuple[str, ...]]:
@@ -1066,25 +1796,79 @@ def _collect_semantic_ledger_issues(
     return issues, tuple(sorted(active_nodes))
 
 
-def _schema_issues(error: ValidationError) -> list[FramingAuditPreflightIssueV1]:
-    return [
-        _issue(
-            "compiler.payload.schema",
-            ("bundle_payload", *tuple(item["loc"])),
-            str(item["msg"]),
+_MISSING = object()
+
+
+def _payload_value_at_location(value: object, location: tuple[object, ...]) -> object:
+    current = value
+    for item in location:
+        if isinstance(current, Mapping) and isinstance(item, str):
+            current = current.get(item, _MISSING)
+        elif isinstance(current, list) and isinstance(item, int):
+            current = current[item] if 0 <= item < len(current) else _MISSING
+        else:
+            return _MISSING
+        if current is _MISSING:
+            return _MISSING
+    return current
+
+
+def _diagnostic_scalar(value: object) -> str:
+    if value is _MISSING:
+        return "<missing>"
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (int, float)):
+        return str(value)
+    if isinstance(value, str):
+        return value[:512] or "<empty>"
+    if isinstance(value, Mapping):
+        return "JSON object"
+    if isinstance(value, list):
+        return "JSON array"
+    return type(value).__name__
+
+
+def _schema_issues(
+    error: ValidationError,
+    payload: Mapping[str, Any],
+) -> list[FramingAuditPreflightIssueV1]:
+    issues: list[FramingAuditPreflightIssueV1] = []
+    for item in error.errors(include_url=False):
+        raw_location = tuple(item["loc"])
+        context = item.get("ctx")
+        expected = (
+            _diagnostic_scalar(context["expected"])
+            if isinstance(context, Mapping)
+            and isinstance(context.get("expected"), str)
+            else str(item["type"])
         )
-        for item in error.errors(include_url=False)
-    ]
+        issues.append(
+            _issue(
+                "compiler.payload.schema",
+                ("bundle_payload", *raw_location),
+                str(item["msg"]),
+                expected=expected,
+                observed=_diagnostic_scalar(
+                    _payload_value_at_location(payload, raw_location)
+                ),
+            )
+        )
+    return issues
 
 
 def _prepare_semantic_draft(
     snapshot: Snapshot,
     contract: CandidateAuthoringContractV1,
-    draft: FramingAuditSemanticDraftV1,
+    draft: FramingAuditSemanticDraftV1 | FramingAuditSemanticDraftV2,
 ) -> _PreparedDraft:
     inputs_by_type, issues = _contract_inputs(snapshot, contract)
     payload = deepcopy(draft.bundle_payload)
     issues.extend(_bind_exact_inputs(payload, inputs_by_type))
+    if isinstance(draft, FramingAuditSemanticDraftV2):
+        issues.extend(_reject_v2_hand_authored_margin_witnesses(payload))
 
     graph: PrimitiveGraph | None = None
     graph_entity = inputs_by_type.get("PrimitiveGraph")
@@ -1104,6 +1888,8 @@ def _prepare_semantic_draft(
     active_nodes: tuple[str, ...] = ()
     if graph is not None:
         issues.extend(_apply_channel_intents(payload, graph, draft.channel_intents))
+        if isinstance(draft, FramingAuditSemanticDraftV2):
+            issues.extend(_apply_margin_intents(payload, graph, draft.margin_intents))
         ledger_issues, active_nodes = _collect_semantic_ledger_issues(payload, graph)
         issues.extend(ledger_issues)
 
@@ -1113,7 +1899,19 @@ def _prepare_semantic_draft(
             canonical_json_bytes(payload), strict=True
         )
     except ValidationError as error:
-        issues.extend(_schema_issues(error))
+        issues.extend(_schema_issues(error, payload))
+    if (
+        isinstance(draft, FramingAuditSemanticDraftV2)
+        and graph is not None
+        and bundle is not None
+    ):
+        issues.extend(
+            _v2_missing_margin_intent_issues(
+                bundle,
+                graph,
+                draft.margin_intents,
+            )
+        )
 
     exact_issues = _deduplicate_issues(issues)
     report = FramingAuditPreflightReportV1(
@@ -1137,6 +1935,51 @@ def preflight_framing_audit_semantic_draft(
 ) -> FramingAuditPreflightReportV1:
     """Batch the compiler-owned channel and semantic-ledger issues without writes."""
 
+    return _prepare_semantic_draft(snapshot, contract, draft).report
+
+
+def _v2_draft_guard_issues(
+    draft: object,
+) -> tuple[FramingAuditPreflightIssueV1, ...]:
+    """Reject V1 or forged draft instances at the additive V2 entry points."""
+
+    if type(draft) is not FramingAuditSemanticDraftV2:
+        return (
+            _issue(
+                "compiler.v2.draft_type",
+                ("semantic_draft_schema",),
+                "The V2 compiler accepts an exact FramingAuditSemanticDraftV2 only.",
+                expected="FramingAuditSemanticDraftV2",
+                observed=type(draft).__name__,
+            ),
+        )
+    if draft.semantic_draft_schema != _SEMANTIC_DRAFT_V2_SCHEMA:
+        return (
+            _issue(
+                "compiler.v2.draft_schema",
+                ("semantic_draft_schema",),
+                "The V2 compiler requires its exact semantic draft schema.",
+                expected=_SEMANTIC_DRAFT_V2_SCHEMA,
+                observed=draft.semantic_draft_schema,
+            ),
+        )
+    return ()
+
+
+def preflight_framing_audit_semantic_draft_v2(
+    snapshot: Snapshot,
+    contract: CandidateAuthoringContractV1,
+    draft: FramingAuditSemanticDraftV2,
+) -> FramingAuditPreflightReportV1:
+    """Batch V2 graph binding and payload issues without writes or repair use."""
+
+    guard_issues = _v2_draft_guard_issues(draft)
+    if guard_issues:
+        return FramingAuditPreflightReportV1(
+            passed=False,
+            issues=guard_issues,
+        )
+    assert type(draft) is FramingAuditSemanticDraftV2
     return _prepare_semantic_draft(snapshot, contract, draft).report
 
 
@@ -1206,10 +2049,10 @@ def _compile_relation(
     )
 
 
-def compile_framing_audit_semantic_draft(
+def _compile_framing_audit_semantic_draft(
     snapshot: Snapshot,
     contract: CandidateAuthoringContractV1,
-    draft: FramingAuditSemanticDraftV1,
+    draft: FramingAuditSemanticDraftV1 | FramingAuditSemanticDraftV2,
 ) -> Transaction:
     """Compile one fresh-audit semantic draft without accepting the Transaction.
 
@@ -1401,14 +2244,45 @@ def compile_framing_audit_semantic_draft(
     )
 
 
+def compile_framing_audit_semantic_draft(
+    snapshot: Snapshot,
+    contract: CandidateAuthoringContractV1,
+    draft: FramingAuditSemanticDraftV1,
+) -> Transaction:
+    """Compile one V1 semantic draft without accepting the Transaction."""
+
+    return _compile_framing_audit_semantic_draft(snapshot, contract, draft)
+
+
+def compile_framing_audit_semantic_draft_v2(
+    snapshot: Snapshot,
+    contract: CandidateAuthoringContractV1,
+    draft: FramingAuditSemanticDraftV2,
+) -> Transaction:
+    """Compile one V2 semantic draft without accepting the Transaction."""
+
+    guard_issues = _v2_draft_guard_issues(draft)
+    if guard_issues:
+        raise FramingAuditCompilationError(guard_issues)
+    assert type(draft) is FramingAuditSemanticDraftV2
+    return _compile_framing_audit_semantic_draft(snapshot, contract, draft)
+
+
 __all__ = [
     "BenchmarkChannelIntentV1",
     "FramingAuditCompilationError",
     "FramingAuditPreflightIssueV1",
     "FramingAuditPreflightReportV1",
     "FramingAuditSemanticAuthoringSurfaceV1",
+    "FramingAuditSemanticAuthoringSurfaceV2",
     "FramingAuditSemanticDraftV1",
+    "FramingAuditSemanticDraftV2",
+    "MarginWitnessIntentV2",
+    "PublicStateConditionIntentV2",
     "compile_framing_audit_semantic_authoring_contract",
+    "compile_framing_audit_semantic_authoring_contract_v2",
     "compile_framing_audit_semantic_draft",
+    "compile_framing_audit_semantic_draft_v2",
     "preflight_framing_audit_semantic_draft",
+    "preflight_framing_audit_semantic_draft_v2",
 ]

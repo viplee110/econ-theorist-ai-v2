@@ -42,6 +42,11 @@ from econ_theorist.framing_quality import (
     pack_framing_quality_payload,
     parse_framing_quality_payload,
 )
+from econ_theorist.framing_quality_validation import (
+    FramingQualityValidationError,
+    diagnose_framing_quality_entity,
+    validate_framing_quality_entity,
+)
 from econ_theorist.machine.models import DiagnosticV1, WorkPacketV1
 from econ_theorist.machine.navigation import (
     enumerate_navigation_candidates,
@@ -2752,6 +2757,88 @@ class FramingQualityRouteTests(unittest.TestCase):
                 "framing.replacement_dossier",
             }.issubset(invariant_ids)
         )
+
+    def test_entity_preflight_aggregates_schema_and_payload_failures(self) -> None:
+        core = self._phase2_prefix()
+        payload = self._research_first_bundle(self._bundle_payload(*core))
+        entity = self._framing_entity(payload, created_at=T3)
+        raw = entity.model_dump(mode="python")
+        facet = raw["facets"]["economic_interpretation"]
+        facet["schema"] = "econ_theorist.theory/FramingQualityBundle/v1"
+        typed_payload = facet["payload"]
+        typed_payload["minimal_example"]["role"] = "illustrative"
+        typed_payload["benchmark_assessments"][0]["still_endogenous"] = []
+        invalid = EntityVersion.model_validate(raw, strict=True)
+
+        report = diagnose_framing_quality_entity(
+            invalid,
+            location_prefix=("operations", 0, "entity"),
+        )
+        self.assertFalse(report.passed)
+        self.assertGreaterEqual(report.issue_count, 3)
+        schema_issue = next(
+            item
+            for item in report.issues
+            if item.rule_id == "framing.envelope.schema_id"
+        )
+        self.assertEqual(
+            schema_issue.json_pointer,
+            "/operations/0/entity/facets/economic_interpretation/schema",
+        )
+        self.assertEqual(
+            schema_issue.expected,
+            "econ_theorist.framing_quality/FramingQualityBundle/v1",
+        )
+        self.assertEqual(
+            schema_issue.observed,
+            "econ_theorist.theory/FramingQualityBundle/v1",
+        )
+        self.assertTrue(
+            any(item.rule_id == "framing.payload.schema" for item in report.issues)
+        )
+        with self.assertRaisesRegex(
+            FramingQualityValidationError,
+            "not a canonical framing-quality envelope",
+        ) as caught:
+            validate_framing_quality_entity(invalid)
+        self.assertEqual(caught.exception.diagnostic_details, {})
+
+    def test_entity_preflight_uses_closed_validator_taxonomy(self) -> None:
+        core = self._phase2_prefix()
+        payload = self._research_first_bundle(self._bundle_payload(*core))
+
+        mechanical_entity = self._framing_entity(payload, created_at=T3)
+        mechanical_raw = mechanical_entity.model_dump(mode="python")
+        mechanical_payload = mechanical_raw["facets"]["economic_interpretation"][
+            "payload"
+        ]
+        mechanical_payload["causal_chain"][1]["step_number"] = 3
+        mechanical = EntityVersion.model_validate(mechanical_raw, strict=True)
+        mechanical_report = diagnose_framing_quality_entity(mechanical)
+        mechanical_issue = next(
+            item
+            for item in mechanical_report.issues
+            if item.rule_id == "framing.payload.semantic_ledger"
+        )
+        self.assertEqual(mechanical_issue.category, "semantic_ledger")
+        self.assertIn("ordered steps", mechanical_issue.message)
+
+        scientific_entity = self._framing_entity(payload, created_at=T3)
+        scientific_raw = scientific_entity.model_dump(mode="python")
+        aggregate = scientific_raw["facets"]["economic_interpretation"]["payload"][
+            "benchmark_assessments"
+        ][0]["aggregate_invariance"]
+        aggregate["pointwise_policy_fixed"] = False
+        aggregate["claims_aggregate_fixed"] = True
+        scientific = EntityVersion.model_validate(scientific_raw, strict=True)
+        scientific_report = diagnose_framing_quality_entity(scientific)
+        scientific_issue = next(
+            item
+            for item in scientific_report.issues
+            if item.rule_id == "framing.payload.scientific_validator"
+        )
+        self.assertEqual(scientific_issue.category, "scientific_validator")
+        self.assertIn("aggregate_invariance_unsupported", scientific_issue.message)
 
 
 if __name__ == "__main__":

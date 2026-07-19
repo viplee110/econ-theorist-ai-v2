@@ -66,6 +66,34 @@ class FramingAuthoringShadowHarnessTests(unittest.TestCase):
             ),
             (
                 {
+                    "layer": "framing_payload_preflight",
+                    "type": "framing.payload.schema",
+                    "rule_id": "framing.payload.schema",
+                    "message": "x",
+                },
+                "json_or_schema",
+            ),
+            (
+                {
+                    "layer": "framing_payload_preflight",
+                    "type": "framing.envelope.schema_id",
+                    "rule_id": "framing.envelope.schema_id",
+                    "message": "x",
+                },
+                "wrapper_or_binding",
+            ),
+            (
+                {
+                    "layer": "framing_payload_preflight",
+                    "type": "framing.payload.semantic_ledger",
+                    "rule_id": "framing.payload.semantic_ledger",
+                    "diagnostic_category": "semantic_ledger",
+                    "message": "fixed_endogenous_conflict",
+                },
+                "path_or_semantic_ledger",
+            ),
+            (
+                {
                     "layer": "preflight",
                     "type": "compiler.contract.base_mismatch",
                     "rule_id": "compiler.contract.base_mismatch",

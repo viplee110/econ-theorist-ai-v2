@@ -35,6 +35,10 @@ from econ_theorist.framing_quality_authoring import (
     compile_framing_audit_semantic_draft,
     preflight_framing_audit_semantic_draft,
 )
+from econ_theorist.framing_quality_validation import (
+    FramingQualityEntityPreflightReportV1,
+    diagnose_framing_quality_entity,
+)
 from econ_theorist.models import CreateEntityOp, Snapshot, Transaction
 from econ_theorist.policy import ROUTE_REGISTRY_V8_HASH
 from econ_theorist.runtime.replay import (
@@ -146,6 +150,9 @@ def _pydantic_issues(exc: ValidationError, *, layer: str) -> list[dict[str, Any]
                 "message": str(error["msg"])[:1000],
                 "options": [],
                 "rule_id": None,
+                "json_pointer": None,
+                "expected": None,
+                "observed": None,
             }
         )
     return output
@@ -161,6 +168,9 @@ def _single_issue(
         "message": message[:1000],
         "options": [],
         "rule_id": issue_type,
+        "json_pointer": None,
+        "expected": None,
+        "observed": None,
     }
 
 
@@ -173,9 +183,59 @@ def _compiler_issues(exc: FramingAuditCompilationError) -> list[dict[str, Any]]:
             "message": issue.message,
             "options": list(issue.options),
             "rule_id": issue.rule_id,
+            "json_pointer": issue.json_pointer,
+            "expected": issue.expected,
+            "observed": issue.observed,
         }
         for issue in exc.issues
     ]
+
+
+def _framing_entity_preflight_issues(
+    report: FramingQualityEntityPreflightReportV1,
+) -> list[dict[str, Any]]:
+    return [
+        {
+            "layer": "framing_payload_preflight",
+            "type": issue.rule_id,
+            "location": list(issue.location),
+            "message": issue.message,
+            "options": [],
+            "rule_id": issue.rule_id,
+            "json_pointer": issue.json_pointer,
+            "expected": issue.expected,
+            "observed": issue.observed,
+            "diagnostic_category": issue.category,
+        }
+        for issue in report.issues
+    ]
+
+
+def _preflight_transaction_framing_payloads(
+    transaction: Transaction,
+) -> tuple[list[dict[str, Any]], bool]:
+    """Collect all payload diagnostics; block V8 only on structural failures."""
+
+    issues: list[dict[str, Any]] = []
+    blocks_canonical_validation = False
+    for operation_index, operation in enumerate(transaction.operations):
+        if not (
+            isinstance(operation, CreateEntityOp)
+            and operation.entity.entity_type == "FramingQualityBundle"
+        ):
+            continue
+        report = diagnose_framing_quality_entity(
+            operation.entity,
+            location_prefix=("operations", operation_index, "entity"),
+        )
+        if report.issues:
+            issues.extend(_framing_entity_preflight_issues(report))
+        if any(
+            issue.category in {"envelope", "payload_schema", "wrapper_binding"}
+            for issue in report.issues
+        ):
+            blocks_canonical_validation = True
+    return issues, blocks_canonical_validation
 
 
 def _issue_bucket(issue: dict[str, Any]) -> str:
@@ -193,13 +253,26 @@ def _issue_bucket(issue: dict[str, Any]) -> str:
     message = str(issue.get("message", "")).lower()
     location = tuple(str(item).lower() for item in issue.get("location", ()))
     combined = " ".join((rule_id, issue_type, message))
+    diagnostic_category = str(issue.get("diagnostic_category") or "").lower()
 
     if layer == "setup":
         return "setup"
+    if diagnostic_category == "scientific_validator":
+        return "scientific_validator"
+    if diagnostic_category == "semantic_ledger":
+        return "path_or_semantic_ledger"
     if layer in {"json", "semantic_schema"}:
         return "json_or_schema"
     if rule_id == "compiler.payload.schema":
         return "json_or_schema"
+    if rule_id == "framing.payload.schema":
+        return "json_or_schema"
+    if rule_id.startswith("framing.envelope.") or rule_id in {
+        "framing.entity_type",
+        "framing.entity_version",
+        "framing.entity_supersession",
+    }:
+        return "wrapper_or_binding"
     if any(
         marker in combined
         for marker in (
@@ -450,11 +523,18 @@ def _run(args: argparse.Namespace) -> tuple[int, dict[str, Any], dict[str, Any] 
     compile_pass: bool | None = None
     validator_pass = False
     transaction: Transaction | None = None
+    payload_preflight_blocks_canonical_validation = False
 
     if args.surface == "transaction":
         try:
             transaction = _parse_transaction(source_data, contract)
             parse_pass = True
+            (
+                payload_issues,
+                payload_preflight_blocks_canonical_validation,
+            ) = _preflight_transaction_framing_payloads(transaction)
+            preflight_pass = not payload_issues
+            issues.extend(payload_issues)
         except CandidateDraftMaterializationError as exc:
             issues.append(
                 _single_issue(
@@ -489,6 +569,10 @@ def _run(args: argparse.Namespace) -> tuple[int, dict[str, Any], dict[str, Any] 
                         "location": list(issue.location),
                         "message": issue.message,
                         "options": list(issue.options),
+                        "rule_id": issue.rule_id,
+                        "json_pointer": issue.json_pointer,
+                        "expected": issue.expected,
+                        "observed": issue.observed,
                     }
                     for issue in report.issues
                 )
@@ -510,42 +594,46 @@ def _run(args: argparse.Namespace) -> tuple[int, dict[str, Any], dict[str, Any] 
         body = canonical_json_bytes(transaction)
         compiled_digest = sha256_digest(body)
         compiled_bytes = len(body)
-        try:
-            validate_candidate(
-                snapshot,
-                transaction,
-                route_registry_hash=raw_case["route_registry_hash"],
-                enforce_live_current_policy=True,
-            )
-            validator_pass = True
-            projection = _scientific_projection(transaction)
-        except (CandidateValidationError, ChainIntegrityError) as exc:
-            details = getattr(exc, "diagnostic_details", None)
-            options = []
-            if isinstance(details, dict) and details:
-                options = [
-                    canonical_json_bytes(details).decode("utf-8")[:1000]
-                ]
-            issues.append(
-                {
-                    "layer": "validator",
-                    "type": type(exc).__name__,
-                    "location": [],
-                    "message": str(exc)[:1000],
-                    "options": options,
-                    "rule_id": (
-                        str(details["rule_id"])
-                        if isinstance(details, dict)
-                        and isinstance(details.get("rule_id"), str)
-                        else None
-                    ),
-                    "diagnostic_details": (
-                        json.loads(canonical_json_bytes(details))
-                        if isinstance(details, dict) and details
-                        else None
-                    ),
-                }
-            )
+        if not (
+            args.surface == "transaction"
+            and payload_preflight_blocks_canonical_validation
+        ):
+            try:
+                validate_candidate(
+                    snapshot,
+                    transaction,
+                    route_registry_hash=raw_case["route_registry_hash"],
+                    enforce_live_current_policy=True,
+                )
+                validator_pass = True
+                projection = _scientific_projection(transaction)
+            except (CandidateValidationError, ChainIntegrityError) as exc:
+                details = getattr(exc, "diagnostic_details", None)
+                options = []
+                if isinstance(details, dict) and details:
+                    options = [
+                        canonical_json_bytes(details).decode("utf-8")[:1000]
+                    ]
+                issues.append(
+                    {
+                        "layer": "validator",
+                        "type": type(exc).__name__,
+                        "location": [],
+                        "message": str(exc)[:1000],
+                        "options": options,
+                        "rule_id": (
+                            str(details["rule_id"])
+                            if isinstance(details, dict)
+                            and isinstance(details.get("rule_id"), str)
+                            else None
+                        ),
+                        "diagnostic_details": (
+                            json.loads(canonical_json_bytes(details))
+                            if isinstance(details, dict) and details
+                            else None
+                        ),
+                    }
+                )
 
     elapsed_ms = max(0, round((perf_counter() - started) * 1000))
     receipt = {

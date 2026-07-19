@@ -11,7 +11,9 @@ from __future__ import annotations
 
 from collections import deque
 from collections.abc import Iterable, Mapping, Sequence
-from typing import Literal
+from typing import Annotated, Any, Literal
+
+from pydantic import Field, ValidationError
 
 from . import framing_quality as fq
 from . import theory as t
@@ -29,12 +31,13 @@ from .models import (
     RelationVersionRef,
     RouteSpecV5,
     Snapshot,
+    StableId,
     StrictModel,
     SupersedeEntityOp,
     Transaction,
 )
 from .authoring_validation import facet_semantic_hash, facet_semantic_value
-from .codec import object_digest
+from .codec import canonical_json_bytes, object_digest
 from .theory_validation import (
     TheoryValidationError,
     validate_phase2_route_entry,
@@ -52,6 +55,67 @@ FRAMING_REPAIR_ENTRY_VALIDATOR_ID = "framing_repair_route_entry.v1"
 FRAMING_REPAIR_EXIT_VALIDATOR_ID = "framing_repair_route_exit.v1"
 FRAMING_REQUIREMENT_ID = "g1.framing_quality"
 FRAMING_ROUTE_VERSIONS = frozenset((6, 7, 8))
+_MAX_ENTITY_PREFLIGHT_ISSUES = 50
+
+
+_BoundedDiagnosticText = Annotated[str, Field(min_length=1, max_length=512)]
+_DiagnosticLocation = Annotated[
+    tuple[str | int, ...], Field(min_length=1, max_length=32)
+]
+_EntityPreflightCategory = Literal[
+    "envelope",
+    "payload_schema",
+    "wrapper_binding",
+    "semantic_ledger",
+    "scientific_validator",
+]
+class FramingQualityEntityPreflightIssueV1(StrictModel):
+    """One bounded structural diagnostic for a bundle envelope or payload."""
+
+    issue_schema: Literal[
+        "econ-theorist/framing-quality-entity-preflight-issue/v1"
+    ] = "econ-theorist/framing-quality-entity-preflight-issue/v1"
+    rule_id: StableId
+    category: _EntityPreflightCategory
+    location: _DiagnosticLocation
+    json_pointer: _BoundedDiagnosticText
+    message: _BoundedDiagnosticText
+    expected: _BoundedDiagnosticText | None = None
+    observed: _BoundedDiagnosticText | None = None
+
+
+class FramingQualityEntityPreflightReportV1(StrictModel):
+    """Deterministic typed-payload diagnostics for noncanonical authoring."""
+
+    diagnostic_schema: Literal[
+        "econ-theorist/framing-quality-entity-preflight/v1"
+    ] = "econ-theorist/framing-quality-entity-preflight/v1"
+    validation_stage: Literal["noncanonical_authoring_preflight"] = (
+        "noncanonical_authoring_preflight"
+    )
+    rule_id: Literal["framing.entity_preflight"] = "framing.entity_preflight"
+    repairable: Literal[True] = True
+    retry_action: Literal["edit_declared_candidate_and_retry_same_request"] = (
+        "edit_declared_candidate_and_retry_same_request"
+    )
+    repair_hint: _BoundedDiagnosticText = (
+        "Correct the exact envelope or payload fields listed below, then retry "
+        "the same declared candidate."
+    )
+    passed: bool
+    issue_count: int = Field(ge=0, le=100000)
+    truncated: bool
+    issues: Annotated[
+        tuple[FramingQualityEntityPreflightIssueV1, ...], Field(max_length=50)
+    ] = ()
+
+    def model_post_init(self, __context: Any) -> None:
+        if self.passed != (self.issue_count == 0):
+            raise ValueError("entity preflight passed must match issue_count")
+        if self.issue_count < len(self.issues):
+            raise ValueError("entity preflight cannot report more issues than exist")
+        if self.truncated != (self.issue_count > len(self.issues)):
+            raise ValueError("entity preflight truncation flag is inconsistent")
 
 
 class FramingQualityValidationError(ValueError):
@@ -101,6 +165,302 @@ def _entity_ref(value: EntityVersion) -> EntityVersionRef:
 
 def _relation_ref(value: RelationVersion) -> RelationVersionRef:
     return RelationVersionRef(relation_id=value.relation_id, version=value.version)
+
+
+def _json_pointer(location: tuple[str | int, ...]) -> str:
+    """Render a bounded RFC-6901-style pointer without candidate values."""
+
+    return "/" + "/".join(
+        str(item).replace("~", "~0").replace("/", "~1") for item in location
+    )
+
+
+def _bounded_diagnostic_text(value: object) -> str:
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (int, float)):
+        return str(value)
+    if isinstance(value, str):
+        return value[:512] or "<empty>"
+    if isinstance(value, dict):
+        return "JSON object"
+    if isinstance(value, (tuple, list)):
+        return "JSON array"
+    return type(value).__name__[:512]
+
+
+_MISSING = object()
+
+
+def _value_at_location(value: object, location: tuple[object, ...]) -> object:
+    current = value
+    for item in location:
+        if isinstance(current, Mapping) and isinstance(item, str):
+            current = current.get(item, _MISSING)
+        elif isinstance(current, (tuple, list)) and isinstance(item, int):
+            current = current[item] if 0 <= item < len(current) else _MISSING
+        else:
+            return _MISSING
+        if current is _MISSING:
+            return _MISSING
+    return current
+
+
+def _payload_expected_value(error: Mapping[str, object]) -> str | None:
+    context = error.get("ctx")
+    if isinstance(context, Mapping):
+        expected = context.get("expected")
+        if isinstance(expected, str) and expected:
+            return _bounded_diagnostic_text(expected)
+    error_type = error.get("type")
+    if isinstance(error_type, str) and error_type:
+        return error_type
+    return None
+
+
+_MECHANICAL_PAYLOAD_VALIDATOR_MESSAGES = frozenset(
+    {
+        (
+            "public_state_condition: equals/not_equals require one value and "
+            "qualitative relations must omit it"
+        ),
+        "choice_consequence_binding: focal and alternative consequences must differ",
+        "active_margin_witness: focal and alternative actions must differ",
+        "causal_chain must contain ordered steps 1, 2, and 3",
+        "causal_chain references an unknown economic force",
+        "disclosed gap references an unknown benchmark",
+        "framing repair target must name its exact typed bundle input",
+        (
+            "fixed_endogenous_conflict: an object cannot be both held fixed and "
+            "changed, reoptimizing, or still endogenous"
+        ),
+    }
+)
+_MECHANICAL_PAYLOAD_UNIQUE_MESSAGES = frozenset(
+    {
+        "choice-consequence edge IDs must be unique",
+        "choice-consequence public-state node IDs must be unique",
+        "active-margin payoff node IDs must be unique",
+        "causal-step force IDs must be unique",
+        "distinctive mechanism node IDs must be unique",
+        "distinctive mechanism edge IDs must be unique",
+        "distinctive mechanism public-state node IDs must be unique",
+        "changed objects must be unique",
+        "held-fixed objects must be unique",
+        "reoptimizing objects must be unique",
+        "still-endogenous objects must be unique",
+        "target objects must be unique",
+        "channel-path node IDs must be unique",
+        "gap benchmark IDs must be unique",
+        "gap repair targets must be unique",
+        "framing-quality exact input refs must be unique",
+        "economic force IDs must be unique",
+        "benchmark assessment IDs must be unique",
+        "disclosed framing gap IDs must be unique",
+    }
+)
+
+
+def _payload_validation_kind(
+    error: Mapping[str, object],
+) -> tuple[str, _EntityPreflightCategory]:
+    """Classify only known mechanical validators; unknown checks stay scientific.
+
+    Pydantic locations identify where a validator happened to run, not whether
+    its predicate is a mechanical payload error or a V8 scientific gate.  Keep
+    the classification closed: new or unknown value errors cannot silently be
+    counted as structural tax.
+    """
+
+    if error.get("type") != "value_error":
+        return "framing.payload.schema", "payload_schema"
+    message = str(error.get("msg") or "")
+    if message.startswith("Value error, "):
+        message = message.removeprefix("Value error, ")
+    if (
+        message in _MECHANICAL_PAYLOAD_VALIDATOR_MESSAGES
+        or message in _MECHANICAL_PAYLOAD_UNIQUE_MESSAGES
+    ):
+        return "framing.payload.semantic_ledger", "semantic_ledger"
+    return "framing.payload.scientific_validator", "scientific_validator"
+
+
+def _entity_preflight_issue(
+    *,
+    rule_id: str,
+    category: _EntityPreflightCategory,
+    location: tuple[str | int, ...],
+    message: str,
+    expected: object | None = None,
+    observed: object | None = None,
+) -> FramingQualityEntityPreflightIssueV1:
+    return FramingQualityEntityPreflightIssueV1(
+        rule_id=rule_id,
+        category=category,
+        location=location,
+        json_pointer=_json_pointer(location),
+        message=_bounded_diagnostic_text(message),
+        expected=(
+            _bounded_diagnostic_text(expected) if expected is not None else None
+        ),
+        observed=(
+            _bounded_diagnostic_text(observed) if observed is not None else None
+        ),
+    )
+
+
+def diagnose_framing_quality_entity(
+    entity: EntityVersion,
+    *,
+    location_prefix: tuple[str | int, ...] = (),
+) -> FramingQualityEntityPreflightReportV1:
+    """Aggregate typed bundle-envelope and payload errors without route writes.
+
+    The ordinary parser stops at its first malformed envelope field.  Candidate
+    authors instead need every independent envelope and payload issue in one
+    bounded receipt, including a schema mismatch that otherwise hides payload
+    validation.  This helper is diagnostic only: it does not relax or replace
+    the canonical parser or route validator.
+    """
+
+    issues: list[FramingQualityEntityPreflightIssueV1] = []
+    prefix = tuple(location_prefix)
+    if entity.entity_type != "FramingQualityBundle":
+        issues.append(
+            _entity_preflight_issue(
+                rule_id="framing.entity_type",
+                category="wrapper_binding",
+                location=(*prefix, "entity_type"),
+                message="The typed payload preflight accepts FramingQualityBundle only.",
+                expected="FramingQualityBundle",
+                observed=entity.entity_type,
+            )
+        )
+    owner = fq.FRAMING_QUALITY_PAYLOAD_OWNER_FACETS.get(entity.entity_type)
+    model = fq.FRAMING_QUALITY_PAYLOAD_MODELS.get(entity.entity_type)
+    if owner is None or model is None:
+        reported = tuple(issues[:_MAX_ENTITY_PREFLIGHT_ISSUES])
+        return FramingQualityEntityPreflightReportV1(
+            passed=False,
+            issue_count=len(issues),
+            truncated=len(reported) < len(issues),
+            issues=reported,
+        )
+
+    facets = entity.facets.model_dump(mode="python")
+    for facet_name in sorted(facets):
+        if facet_name == owner or facets[facet_name] == {}:
+            continue
+        issues.append(
+            _entity_preflight_issue(
+                rule_id="framing.envelope.owner_facet",
+                category="envelope",
+                location=(*prefix, "facets", facet_name),
+                message=(
+                    "A framing-quality payload must leave every non-owner facet "
+                    "empty."
+                ),
+                expected="empty JSON object",
+                observed=facets[facet_name],
+            )
+        )
+
+    wrapper = facets.get(owner)
+    wrapper_location = (*prefix, "facets", owner)
+    if not isinstance(wrapper, Mapping):
+        issues.append(
+            _entity_preflight_issue(
+                rule_id="framing.envelope.wrapper_type",
+                category="envelope",
+                location=wrapper_location,
+                message="The framing-quality owner facet must be a JSON object.",
+                expected="JSON object",
+                observed=wrapper,
+            )
+        )
+    else:
+        required_keys = {"schema", "payload"}
+        actual_keys = set(wrapper)
+        if actual_keys != required_keys:
+            issues.append(
+                _entity_preflight_issue(
+                    rule_id="framing.envelope.wrapper_keys",
+                    category="envelope",
+                    location=wrapper_location,
+                    message=(
+                        "The framing-quality owner facet must contain exactly "
+                        "schema and payload."
+                    ),
+                    expected="payload, schema",
+                    observed=", ".join(sorted(str(key) for key in actual_keys))
+                    or "<none>",
+                )
+            )
+        expected_schema = fq.framing_quality_schema_id(entity.entity_type)
+        observed_schema = wrapper.get("schema", _MISSING)
+        if observed_schema != expected_schema:
+            issues.append(
+                _entity_preflight_issue(
+                    rule_id="framing.envelope.schema_id",
+                    category="envelope",
+                    location=(*wrapper_location, "schema"),
+                    message=(
+                        "The framing-quality owner facet has the wrong exact "
+                        "schema identifier."
+                    ),
+                    expected=expected_schema,
+                    observed=(
+                        "<missing>" if observed_schema is _MISSING else observed_schema
+                    ),
+                )
+            )
+        payload_data = wrapper.get("payload", _MISSING)
+        if not isinstance(payload_data, dict):
+            issues.append(
+                _entity_preflight_issue(
+                    rule_id="framing.envelope.payload_type",
+                    category="envelope",
+                    location=(*wrapper_location, "payload"),
+                    message="The framing-quality payload must be one JSON object.",
+                    expected="JSON object",
+                    observed=(
+                        "<missing>" if payload_data is _MISSING else payload_data
+                    ),
+                )
+            )
+        else:
+            try:
+                model.model_validate_json(
+                    canonical_json_bytes(payload_data), strict=True
+                )
+            except ValidationError as error:
+                for item in error.errors(include_url=False):
+                    raw_location = tuple(item["loc"])
+                    location = (*wrapper_location, "payload", *raw_location)
+                    observed = _value_at_location(payload_data, raw_location)
+                    rule_id, category = _payload_validation_kind(item)
+                    issues.append(
+                        _entity_preflight_issue(
+                            rule_id=rule_id,
+                            category=category,
+                            location=location,
+                            message=str(item["msg"]),
+                            expected=_payload_expected_value(item),
+                            observed=(
+                                "<missing>" if observed is _MISSING else observed
+                            ),
+                        )
+                    )
+
+    reported = tuple(issues[:_MAX_ENTITY_PREFLIGHT_ISSUES])
+    return FramingQualityEntityPreflightReportV1(
+        passed=not issues,
+        issue_count=len(issues),
+        truncated=len(reported) < len(issues),
+        issues=reported,
+    )
 
 
 def _owner_facet(entity_type: str) -> str | None:
@@ -858,6 +1218,39 @@ def _validate_distinctive_mechanism(
         )
 
 
+def _is_permitted_unwitnessed_negative_revision(
+    bundle: fq.FramingQualityBundle,
+) -> bool:
+    """Return the exact V8 exception predicate without accepting a candidate.
+
+    The noncanonical V2 compiler reuses this narrow predicate solely to know
+    whether omitted margin intents can be an honest fully-downgraded diagnosis.
+    Route acceptance remains owned by ``_validate_bundle_science``.
+    """
+
+    return (
+        bundle.tension.tension_kind in fq.MECHANISM_MARGIN_TENSION_KINDS
+        and any(
+            gap.category in {"causal_attribution", "reoptimization"}
+            and gap.repair_target_refs
+            for gap in bundle.disclosed_gaps
+        )
+        and all(
+            assessment.channel_kind != "active_response"
+            and assessment.attribution_strength in {"weak", "unresolved"}
+            and not assessment.aggregate_invariance.claims_aggregate_fixed
+            and assessment.selection_assurance.status
+            in {"selector_only", "not_applicable", "unresolved"}
+            and assessment.distinctive_mechanism is not None
+            and assessment.distinctive_mechanism.claim_kind
+            in {"not_claimed", "unresolved"}
+            for assessment in bundle.benchmark_assessments
+        )
+        and bundle.distinctive_mechanism_contribution_status
+        in {"not_claimed", "unresolved"}
+    )
+
+
 def _validate_bundle_science(
     bundle: fq.FramingQualityBundle,
     *,
@@ -930,25 +1323,7 @@ def _validate_bundle_science(
     )
     negative_revision = (
         negative_revision_requested
-        and mechanism_margin_audit
-        and any(
-            gap.category in {"causal_attribution", "reoptimization"}
-            and gap.repair_target_refs
-            for gap in bundle.disclosed_gaps
-        )
-        and all(
-            assessment.channel_kind != "active_response"
-            and assessment.attribution_strength in {"weak", "unresolved"}
-            and not assessment.aggregate_invariance.claims_aggregate_fixed
-            and assessment.selection_assurance.status
-            in {"selector_only", "not_applicable", "unresolved"}
-            and assessment.distinctive_mechanism is not None
-            and assessment.distinctive_mechanism.claim_kind
-            in {"not_claimed", "unresolved"}
-            for assessment in bundle.benchmark_assessments
-        )
-        and bundle.distinctive_mechanism_contribution_status
-        in {"not_claimed", "unresolved"}
+        and _is_permitted_unwitnessed_negative_revision(bundle)
     )
     if negative_revision_requested and not negative_revision:
         raise FramingQualityValidationError(
@@ -2139,11 +2514,14 @@ __all__ = [
     "FRAMING_REPAIR_EXIT_VALIDATOR_ID",
     "FRAMING_REPAIR_ROUTE_ID",
     "FRAMING_ROUTE_ID",
+    "FramingQualityEntityPreflightIssueV1",
+    "FramingQualityEntityPreflightReportV1",
     "FramingQualityProjectionReport",
     "FramingQualityRouteEntryReport",
     "FramingRepairRouteEntryReport",
     "FramingQualityValidationError",
     "active_semantic_node_kinds",
+    "diagnose_framing_quality_entity",
     "fixing_level_overlaps",
     "validate_current_g1_framing_decision",
     "validate_framing_quality_entity",

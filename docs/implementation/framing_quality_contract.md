@@ -366,3 +366,22 @@ evidence. The next test is one held-out paired ordinary-model shadow comparing
 the free-form Transaction authoring surface with the semantic compiler under
 the same scientific brief. Result solving, public bridge integration, and an
 exploratory v1/v2 quality comparison remain premature.
+
+The additive semantic-authoring V2 revision is a noncanonical preparation
+surface only. It preserves the V1 surface and every V8 scientific predicate.
+The semantic-authoring and frozen shadow surfaces report a bounded aggregate
+of exact envelope and typed-payload failures, including JSON pointers and
+expected/observed schema values; this reporting is not wired into the public
+bridge. For an active margin, the model still authors the actions, payoff
+comparison, feasibility basis, inequality, activity judgment, and kill
+condition. V2 forbids every hand-authored `active_margin_witness`, including
+one on a step without a margin intent, and rejects a V1 draft at a V2 entry
+point. V2 requires an intent for every V8-required payoff witness, except for
+the exact fully-downgraded unwitnessed-negative predicate already defined by
+V8. The compiler binds a graph decision, unique payoff basis, consequence
+path, and public-state object only when each binding is deterministic;
+otherwise it fails closed with alternatives rather than inventing a scientific
+link. An intentional scope limitation remains in the memo's scope condition;
+`disclosed_gaps` remains reserved for an unresolved defect and therefore still
+blocks `ready_for_g1`. This revision is not public bridge integration or
+evidence of a fresh model pass.
