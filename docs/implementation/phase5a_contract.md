@@ -7,7 +7,9 @@ the current tree. A later V8 public diagnostic committed framing and primitive
 decomposition but not its framing-quality audit. The corrected-wheel R2
 same-case run repeated those two commits without host interference, then
 closed its audit as `failed_no_effect`. Independent adjudication returned
-machine-mixed, `A-FAIL`, `REVISE`, and `R-FAIL`/H4. The full host-native
+machine-mixed, `A-FAIL`, `REVISE`, and `R-FAIL`/H4. A later held-out authoring
+pair found large structural and detailed reader-recovery gains from Semantic
+V2 but no valid candidate in either three-attempt arm. The full host-native
 research-ready gate remains open and no public-release claim is made.
 
 Phase 5A.1 implementation branch (historical): `agent/phase5a-machine-facade`
@@ -1410,9 +1412,23 @@ structural issues, and validates the locked negative diagnosis under the
 unchanged V8 validator with zero canonical writes.
 
 This prototype is not yet part of the public transport and the prior R3 run did
-not exercise it. The next bounded evidence is a held-out paired ordinary-model
-shadow using the same scientific brief on the free-form Transaction and
-semantic-compiler surfaces. See the
+not exercise it. The held-out paired ordinary-model shadow is now complete.
+Neither free-form Transaction nor Semantic V2 reached the unchanged V8
+scientific validator in three attempts, and neither wrote canonical state or
+confirmed a human gate. Transaction stopped on a relation-topology extra field
+whose receipt exposed no near-match; Semantic V2 stopped on an incorrect force
+margin binding whose receipt exposed neither the observed payoff-node kind nor
+the unique compatible choice node. Strict JSON/file-output errors were also
+contributory. Semantic V2 nevertheless reduced final source bytes by 51.22%
+and leaf fields by 53.74%; blinded economics found no established material
+scientific degradation, and its reader recovered more detail.
+
+Public integration remains blocked. The next bounded slice is compiler-owned
+unique graph binding plus exact near-match diagnostics, with ambiguity still
+failing closed, candidate output remaining strict JSON, and every V8 predicate
+unchanged. See the
 [R2 report](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_run_report.md),
 [R3 protocol](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_route1_protocol.md),
-and [adjudication/compiler shadow](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_adjudication_and_compiler_shadow.md).
+[adjudication/compiler shadow](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_adjudication_and_compiler_shadow.md),
+[held-out pair adjudication](../../review_outputs/phase5a2_v8_authoring_pair_v2/final_adjudication.md),
+and [machine decision](../../review_outputs/phase5a2_v8_authoring_pair_v2/FINAL_DECISION.json).

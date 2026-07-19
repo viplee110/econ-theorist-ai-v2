@@ -6,9 +6,12 @@ both committed framing and decomposition but no audit or G1 decision. The
 locked R3 adjudication classified the current failure
 `STRUCTURAL_TAX_PRIMARY` with confidence 0.86 and found no V8 acceptance defect.
 A noncanonical semantic-compiler prototype validates the locked negative
-diagnosis under unchanged V8 semantics with zero canonical writes. Scientific
-and reader acceptance remain open; the next evidence is a held-out
-ordinary-model paired shadow of the free-form and compiled authoring surfaces.
+diagnosis under unchanged V8 semantics with zero canonical writes. Its held-out
+ordinary-model pair is complete: neither arm reached the scientific validator,
+but the semantic surface substantially reduced structure and improved detailed
+reader recovery without established material scientific degradation. Public
+integration remains blocked; the next work is a bounded authoring/diagnostic
+repair, not V9 or another blind pair.
 
 This contract owns the first pilot-driven scientific strengthening after the
 Phase 5A.2 public Codex framing run. It addresses a narrow failure: a
@@ -362,10 +365,11 @@ hard relations, and passed the unchanged candidate validator in memory. See
 the exact [adjudication and compiler shadow record](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_adjudication_and_compiler_shadow.md).
 
 This shadow replay is not a canonical audit and not new model-generation
-evidence. The next test is one held-out paired ordinary-model shadow comparing
-the free-form Transaction authoring surface with the semantic compiler under
-the same scientific brief. Result solving, public bridge integration, and an
-exploratory v1/v2 quality comparison remain premature.
+evidence. The held-out paired ordinary-model shadow comparing the free-form
+Transaction authoring surface with the semantic compiler is now complete. It
+provides a clear directional structural-burden signal but no end-to-end
+feasibility winner because neither arm passed. Result solving, public bridge
+integration, and an exploratory v1/v2 quality comparison remain premature.
 
 The additive semantic-authoring V2 revision is a noncanonical preparation
 surface only. It preserves the V1 surface and every V8 scientific predicate.
@@ -381,17 +385,47 @@ the exact fully-downgraded unwitnessed-negative predicate already defined by
 V8. The compiler binds a graph decision, unique payoff basis, consequence
 path, and public-state object only when each binding is deterministic;
 otherwise it fails closed with alternatives rather than inventing a scientific
-link. An intentional scope limitation remains in the memo's scope condition;
-`disclosed_gaps` remains reserved for an unresolved defect and therefore still
+link. The held-out pair nevertheless shows that the current entry surface does
+not yet fully own those bindings: the model still authors force source, margin,
+and target nodes; causal node IDs; channel waypoints; force selection; payoff
+disambiguators; public-state object IDs; and payload graph declarations such
+as `distinctive_mechanism.distinctive_edge_ids`. Active-witness consequence
+edge paths remain compiler-owned. An intentional scope limitation remains in
+the memo's scope condition; `disclosed_gaps` remains reserved for an unresolved
+defect and therefore still
 blocks `ready_for_g1`. This revision is not public bridge integration or
 evidence of a fresh model pass.
 
-A new accident-liability authoring pair is frozen at engine commit
-`a03d1025ac9c9bcaefcd112de3e8c63694b97c8f`. Its evaluator-side Transaction
-and Semantic V2 oracles both pass unchanged V8 in memory, produce one
-scientific projection, and write no canonical state. The evaluator key is
-hash-bound but absent from the generator workspace. This is preparation
-evidence only: neither ordinary-model arm has run, and no human gate is
-confirmed. The next evidence is the two independent frozen generator tasks,
-then blinded economics and cold-reader adjudication. See the exact
-[preparation record](../../review_outputs/phase5a2_v8_authoring_pair_v2/preparation_record.md).
+The accident-liability authoring pair frozen at engine commit
+`a03d1025ac9c9bcaefcd112de3e8c63694b97c8f` is complete. Neither independent
+ordinary-model arm reached unchanged V8 validity within three attempts; both
+stopped before the scientific validator, wrote no canonical state, and
+confirmed no human gate. Semantic V2 nevertheless reduced final source bytes
+by 51.22% and final leaf fields by 53.74%. Blinded economics assigned both
+candidates `REVISE` with no established material scientific degradation. Both
+met the frozen basic-recovery key; the Semantic reader additionally completed
+every common probe, while the Transaction reader could not recover preventive
+payoff 2 or the same detailed claim boundary from its memo alone.
+
+Locked source inspection found residual deterministic graph binding on both
+surfaces. The Transaction receipt concealed one extra downstream
+`semantic_hash` behind a zero-topology message; its near-match diagnostic must
+identify `operations/<index>/relation/downstream/semantic_hash` with exact
+expected and observed fields. The Semantic receipt concealed the observed
+payoff node kind and the unique compatible choice node; a binding failure must
+return the observed node and kind plus all compatible choice-node options on
+the causal step. Deterministic preflight must also reject a fixed row whose
+channel traverses a held-fixed decision to an outcome, an active reoptimizing
+row marked `pointwise_policy_fixed=true`, and a witnessed force whose margin is
+not the exact choice node. Future case briefs and evaluation keys must align
+explicitly on held-fixed primitives such as enforceability.
+
+The next noncanonical slice may move only uniquely determined force/channel
+bindings into the compiler and add those executable diagnostics. Ambiguity must
+still fail closed, strict JSON remains mandatory, and the host must isolate a
+JSON-only candidate artifact rather than accept wrapped or repaired JSON. Do
+not start another blind pair or public integration until the private oracle and
+focused adversarial diagnostic checks pass. See the exact
+[preparation record](../../review_outputs/phase5a2_v8_authoring_pair_v2/preparation_record.md),
+[final adjudication](../../review_outputs/phase5a2_v8_authoring_pair_v2/final_adjudication.md),
+and [machine decision](../../review_outputs/phase5a2_v8_authoring_pair_v2/FINAL_DECISION.json).

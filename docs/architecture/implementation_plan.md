@@ -10,19 +10,22 @@ active-margin witness. R2 and the researcher-authorized R3 revision both
 committed framing and decomposition but no audit. Locked R3 adjudication
 classified the current failure `STRUCTURAL_TAX_PRIMARY` (0.86) and found no V8
 validator defect. A noncanonical semantic-compiler prototype now validates the
-locked R3 diagnosis under unchanged V8 semantics; the held-out paired shadow,
-a canonical end-to-end audit, and the full local research-ready gate remain
-open.
+locked R3 diagnosis under unchanged V8 semantics. The held-out paired shadow
+is complete: neither arm reached V8, while Semantic V2 substantially reduced
+structure and improved reader recovery without established material scientific
+degradation. A
+canonical end-to-end audit and the full local research-ready gate remain open.
 
-Current implementation milestone: structural-tax reduction experiment. The
-semantic compiler owns only wrappers, exact bindings, IDs, paths, hard
-relations, hashes, and the replacement dossier; it does not alter canonical
-payloads, V8 scientific validation, or human authority. Freeze one held-out
-framing case and compare the existing free-form Transaction surface with this
-compiled surface using the same ordinary model and scientific brief. Score
-machine validity, repair count, authoring burden, economics, and reader
-recovery separately before bridge integration or an exploratory v1/v2 quality
-pilot.
+Current implementation milestone: bounded authoring and diagnostic repair.
+The held-out pair shows that the compiler removes roughly half of the final
+authored structure, but still exposes force, channel, and graph bindings that
+are deterministic from one unique PrimitiveGraph path. Move only those unique
+bindings into the compiler, fail closed on ambiguity, report exact near-match
+pointers and compatible choice nodes, and keep strict JSON plus every V8
+predicate. Improve candidate-artifact isolation without accepting wrapped or
+repaired JSON. Use focused compiler/diagnostic checks before one final fresh
+held-out pair; bridge integration, V9, and an exploratory v1/v2 quality pilot
+remain blocked.
 
 ## 1. Delivery strategy
 
@@ -445,9 +448,16 @@ machine-mixed, `A-FAIL` (`0, 1, 1, 2, 2`), `REVISE`, and `R-FAIL`/H4. It found
 a primary model-content/mapping error and secondary diagnostic ambiguity, not
 an established acceptance-semantics defect. A post-evaluation diagnostic-only
 patch adds exact paths for fixed/endogenous and endpoint failures without
-changing V8. The human-authorized guaranteed-service choice and its clean R3
-package are now frozen. The next sequence is the same-case ordinary-model run,
-reader inspection, and only then the still-required held-out run.
+changing V8. The human-authorized guaranteed-service R3 sequence and the later
+held-out accident-liability pair are now complete. Neither pair arm reached
+unchanged V8 within three attempts, but Semantic V2 reduced final source bytes
+by 51.22% and leaf fields by 53.74%, preserved the core economics, and improved
+detailed reader recovery. Locked source inspection identified residual
+deterministic graph binding and nonlocal diagnostics as the next boundary,
+without finding a V8 defect. The bounded repair remains noncanonical and must
+pass private-oracle plus adversarial diagnostic checks before one final fresh
+pair. See the
+[final pair adjudication](../../review_outputs/phase5a2_v8_authoring_pair_v2/final_adjudication.md).
 
 The ordinary researcher-facing interface is natural language. The machine
 layer remains a versioned `etai` protocol, and the terminal path remains
