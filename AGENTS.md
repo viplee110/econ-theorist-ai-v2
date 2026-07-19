@@ -43,15 +43,20 @@ mechanics and validates the locked R3 negative diagnosis under the unchanged V8
 validator with zero canonical writes. This is compiler feasibility evidence,
 not a claim that R3 exercised the prototype or achieved research quality.
 
-The next executable work is one frozen held-out ordinary-model paired shadow:
-the same scientific brief through the free-form Transaction surface and the
-semantic-compiler surface, with machine validity, repairs, authoring burden,
-economics, and reader recovery scored separately. Do not rerun same-case
-generation now, create V9, or integrate the prototype into the public bridge
-unless that comparison identifies the justified next boundary. A canonical
-end-to-end audit and economics/editing-burden inspection remain required before
-an exploratory v1/v2 revision comparison. Do not expand generic security
-infrastructure unless a concrete local-use failure requires it.
+A fresh accident-liability held-out pair is now frozen against engine commit
+`a03d1025ac9c9bcaefcd112de3e8c63694b97c8f`. Its private Transaction and
+Semantic V2 oracles reach one scientific projection under the unchanged V8
+validator with zero canonical writes; no generator model has run. The next
+executable work is exactly two independent ordinary/medium-model tasks in the
+frozen order, followed only after both outputs stop by blinded
+high-intelligence economics and cold-reader adjudication. Score machine
+validity, repairs, authoring burden, economics, and reader recovery separately.
+Do not rerun the refund case or this liability case outside its frozen arms,
+create V9, or integrate the prototype into the public bridge unless the pair
+identifies the justified next boundary. A canonical end-to-end audit and
+economics/editing-burden inspection remain required before an exploratory
+v1/v2 revision comparison. Do not expand generic security infrastructure
+unless a concrete local-use failure requires it.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or

@@ -385,3 +385,13 @@ link. An intentional scope limitation remains in the memo's scope condition;
 `disclosed_gaps` remains reserved for an unresolved defect and therefore still
 blocks `ready_for_g1`. This revision is not public bridge integration or
 evidence of a fresh model pass.
+
+A new accident-liability authoring pair is frozen at engine commit
+`a03d1025ac9c9bcaefcd112de3e8c63694b97c8f`. Its evaluator-side Transaction
+and Semantic V2 oracles both pass unchanged V8 in memory, produce one
+scientific projection, and write no canonical state. The evaluator key is
+hash-bound but absent from the generator workspace. This is preparation
+evidence only: neither ordinary-model arm has run, and no human gate is
+confirmed. The next evidence is the two independent frozen generator tasks,
+then blinded economics and cold-reader adjudication. See the exact
+[preparation record](../../review_outputs/phase5a2_v8_authoring_pair_v2/preparation_record.md).
