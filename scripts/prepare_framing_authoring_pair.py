@@ -1006,12 +1006,15 @@ def _launch_prompt(
 ) -> bytes:
     return f"""# Frozen paired-authoring task launch
 
-This is the `{surface}` arm.  Open the new Codex task with this exact workspace
+This is the `{surface}` arm.  Operator precondition: before pasting this
+message, the user already created this Codex task with the following workspace
 root so the frozen runner can read the pair runtime:
 
 `{arm_root.parent}`
 
-Then set the task's shell working directory to exactly:
+You are already inside that designated generator task.  Do not create, fork,
+delegate, or hand off another task.  Set this task's shell working directory
+to exactly:
 
 `{arm_root}`
 

@@ -10,10 +10,10 @@ import unittest
 from tests.helpers import REPOSITORY_ROOT  # noqa: F401  # installs src
 
 
-def _load_harness():
-    path = Path(REPOSITORY_ROOT) / "scripts" / "run_framing_authoring_shadow.py"
+def _load_script(name: str, filename: str):
+    path = Path(REPOSITORY_ROOT) / "scripts" / filename
     spec = importlib.util.spec_from_file_location(
-        "test_loaded_framing_authoring_shadow", path
+        name, path
     )
     if spec is None or spec.loader is None:
         raise RuntimeError("cannot load paired-authoring shadow harness")
@@ -23,10 +23,32 @@ def _load_harness():
     return module
 
 
-HARNESS = _load_harness()
+HARNESS = _load_script(
+    "test_loaded_framing_authoring_shadow",
+    "run_framing_authoring_shadow.py",
+)
+PREPARER = _load_script(
+    "test_loaded_prepare_framing_authoring_pair",
+    "prepare_framing_authoring_pair.py",
+)
 
 
 class FramingAuthoringShadowHarnessTests(unittest.TestCase):
+    def test_launch_prompt_treats_task_creation_as_an_operator_precondition(
+        self,
+    ) -> None:
+        prompt = PREPARER._launch_prompt(
+            arm_root=Path("C:/tmp/frozen-pair/arm-semantic"),
+            surface="semantic",
+            arm_manifest_sha256="1" * 64,
+        ).decode("utf-8")
+        normalized = " ".join(prompt.split())
+        self.assertIn("user already created this Codex task", normalized)
+        self.assertIn(
+            "Do not create, fork, delegate, or hand off another task", normalized
+        )
+        self.assertNotIn("Open the new Codex task", prompt)
+
     def test_frozen_taxonomy_separates_structural_and_scientific_failures(self) -> None:
         cases = (
             (
