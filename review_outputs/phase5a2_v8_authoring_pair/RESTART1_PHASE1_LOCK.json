@@ -1,0 +1,28 @@
+{
+  "lock_schema": "econ-theorist/framing-authoring-pair-scientific-lock/v1",
+  "status": "SCIENTIFIC_CONTENT_LOCKED",
+  "locked_at": "2026-07-19T05:18:51Z",
+  "adjudication": {
+    "path": "restart1_phase1_scientific_adjudication.md",
+    "bytes": 4382,
+    "sha256": "ebb5e2b5ebe9df8b0b10ac8aca72c8fae93449386937b13293544819e89b887c"
+  },
+  "inputs": {
+    "case_sha256": "432e28158c7867a9f2e56ce13c028929d57225511b9edfa03f8889c3a9c63bea",
+    "evaluation_key_sha256": "c8f1d3c537536db3b42b543ca49a571f242145624879311c0d7c490e6533da5b",
+    "semantic_final_sha256": "3fdf80fd375de22a3425344981a9468116c864bf672072ec36fb7dcc8aeb2334",
+    "transaction_final_sha256": "d9dc9780a1b26e076fc79c540d668c6a204d7d051b98a990252e69fa0bd01aca"
+  },
+  "scores": {
+    "semantic": [2, 2, 2, 1, 2],
+    "transaction": [2, 2, 2, 1, 2]
+  },
+  "submitted_actions": {
+    "semantic": "REVISE",
+    "transaction": "READY"
+  },
+  "adjudicated_actions": {
+    "semantic": "READY",
+    "transaction": "REVISE"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "decision_schema": "econ-theorist/framing-authoring-pair-final-decision/v1",
+  "pair_id": "pair.refund.authoring.v8",
+  "restart": 1,
+  "outcome": "NO_CLEAR_SURFACE_SIGNAL",
+  "compiler_feasibility_signal": false,
+  "invalid_setup": false,
+  "mixed_science_result": false,
+  "acceptance_semantics_defect": false,
+  "create_v9": false,
+  "canonical_writes": 0,
+  "human_gates": 0,
+  "scientific_scores": {
+    "semantic": 9,
+    "transaction": 9
+  },
+  "reader_burden": {
+    "semantic": "H2",
+    "transaction": "H2"
+  },
+  "directional_structural_reduction": {
+    "total_runner_source_bytes_percent": 45.89,
+    "total_canonicalized_source_bytes_percent": 39.49,
+    "final_source_bytes_percent": 53.42,
+    "final_leaf_fields_percent": 55.69
+  },
+  "phase1_lock_sha256": "c13bfdf4a4f1ee460869a9925615a33d169a4865afcb817b7fa7a12421496327",
+  "cold_reader_evidence_sha256": "e02982165b52e5aca08ca96902473730a2ffd623f7fb9d6d330addfbc61b0163",
+  "final_report": {
+    "path": "restart1_final_adjudication.md",
+    "bytes": 10388,
+    "sha256": "f1def66138fc2c771962516c01e9dc54693d0401daf7439ade370a2c7a5c5337"
+  },
+  "next_slice": "AUTHORING_DIAGNOSTIC_REVISION_ONLY"
+}
