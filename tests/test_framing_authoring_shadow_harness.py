@@ -5,9 +5,23 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 
 from tests.helpers import REPOSITORY_ROOT  # noqa: F401  # installs src
+
+from econ_theorist.framing_quality_authoring import (
+    FramingAuditSemanticDraftV1,
+    FramingAuditSemanticDraftV2,
+    compile_framing_audit_semantic_draft,
+    compile_framing_audit_semantic_draft_v2,
+    preflight_framing_audit_semantic_draft,
+    preflight_framing_audit_semantic_draft_v2,
+)
+from econ_theorist.policy import ROUTE_REGISTRY_V8_HASH
+from econ_theorist.project import init_project
+from econ_theorist.runtime import StoreLayout
+from econ_theorist.runtime.replay import replay, validate_candidate
 
 
 def _load_script(name: str, filename: str):
@@ -31,9 +45,78 @@ PREPARER = _load_script(
     "test_loaded_prepare_framing_authoring_pair",
     "prepare_framing_authoring_pair.py",
 )
+PREPARER_V2 = _load_script(
+    "test_loaded_prepare_framing_authoring_pair_v2",
+    "prepare_framing_authoring_pair_v2.py",
+)
 
 
 class FramingAuthoringShadowHarnessTests(unittest.TestCase):
+    def test_semantic_v2_surface_dispatches_only_to_v2_authoring(self) -> None:
+        self.assertIn("semantic_v2", HARNESS._SURFACES)
+        self.assertEqual(
+            HARNESS._semantic_surface_handlers("semantic"),
+            (
+                FramingAuditSemanticDraftV1,
+                preflight_framing_audit_semantic_draft,
+                compile_framing_audit_semantic_draft,
+            ),
+        )
+        self.assertEqual(
+            HARNESS._semantic_surface_handlers("semantic_v2"),
+            (
+                FramingAuditSemanticDraftV2,
+                preflight_framing_audit_semantic_draft_v2,
+                compile_framing_audit_semantic_draft_v2,
+            ),
+        )
+
+    def test_unknown_semantic_surface_is_rejected(self) -> None:
+        with self.assertRaisesRegex(
+            HARNESS.SetupError, "unknown semantic authoring surface"
+        ):
+            HARNESS._semantic_surface_handlers("semantic-v3")
+
+    def test_new_liability_oracle_passes_v2_and_unchanged_v8(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="etai-liability-pair-test-") as raw:
+            root = Path(raw) / "project"
+            init_project(
+                root,
+                name="Accident-liability oracle test",
+                actor_id=PREPARER_V2.HUMAN_ID,
+                project_id="project.accident.liability.test",
+                created_at=PREPARER_V2.T0,
+                transaction_id="transaction.liability.test.genesis",
+                route_run_id="run.liability.test.genesis",
+            )
+            layout = StoreLayout.at(root)
+            prefix, core = PREPARER_V2._build_prefix(layout)
+            _, contract, snapshot = PREPARER_V2._open_audit(layout, prefix)
+            draft = PREPARER_V2._semantic_draft(
+                PREPARER_V2._oracle_bundle(core)
+            )
+            report = preflight_framing_audit_semantic_draft_v2(
+                snapshot, contract, draft
+            )
+            self.assertTrue(report.passed, report.issues)
+            transaction = compile_framing_audit_semantic_draft_v2(
+                snapshot, contract, draft
+            )
+            validate_candidate(
+                snapshot,
+                transaction,
+                route_registry_hash=ROUTE_REGISTRY_V8_HASH,
+                enforce_live_current_policy=True,
+            )
+            self.assertEqual(replay(layout).head, prefix.head)
+
+    def test_new_semantic_prompt_exposes_v2_without_full_witness(self) -> None:
+        prompt = PREPARER_V2._task_prompt("semantic_v2").decode("utf-8")
+        self.assertIn("FramingAuditSemanticDraftV2", prompt)
+        self.assertIn("margin_intent", prompt)
+        self.assertIn("omit", prompt)
+        self.assertIn("active_margin_witness", prompt)
+
     def test_launch_prompt_treats_task_creation_as_an_operator_precondition(
         self,
     ) -> None:

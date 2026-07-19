@@ -2,7 +2,7 @@
 
 The harness deliberately accepts a frozen Snapshot and candidate authoring
 contract rather than a project root.  It therefore cannot stage, commit, or
-confirm a human gate.  Both authoring surfaces end at the same unchanged V8
+confirm a human gate.  Every authoring surface ends at the same unchanged V8
 ``validate_candidate`` call.
 """
 
@@ -32,8 +32,11 @@ from econ_theorist.framing_quality import (
 from econ_theorist.framing_quality_authoring import (
     FramingAuditCompilationError,
     FramingAuditSemanticDraftV1,
+    FramingAuditSemanticDraftV2,
     compile_framing_audit_semantic_draft,
+    compile_framing_audit_semantic_draft_v2,
     preflight_framing_audit_semantic_draft,
+    preflight_framing_audit_semantic_draft_v2,
 )
 from econ_theorist.framing_quality_validation import (
     FramingQualityEntityPreflightReportV1,
@@ -51,7 +54,7 @@ from econ_theorist.runtime.replay import (
 _UTF8_BOM = b"\xef\xbb\xbf"
 _CASE_SCHEMA = "econ-theorist/framing-authoring-shadow-case/v1"
 _RECEIPT_SCHEMA = "econ-theorist/framing-authoring-shadow-receipt/v1"
-_SURFACES = ("transaction", "semantic")
+_SURFACES = ("transaction", "semantic", "semantic_v2")
 _TAXONOMY_BUCKETS = (
     "json_or_schema",
     "wrapper_or_binding",
@@ -433,6 +436,24 @@ def _parse_transaction(
         return Transaction.model_validate_json(materialized, strict=True)
 
 
+def _semantic_surface_handlers(surface: str) -> tuple[Any, Any, Any]:
+    """Select one additive semantic surface without changing the V1 path."""
+
+    if surface == "semantic":
+        return (
+            FramingAuditSemanticDraftV1,
+            preflight_framing_audit_semantic_draft,
+            compile_framing_audit_semantic_draft,
+        )
+    if surface == "semantic_v2":
+        return (
+            FramingAuditSemanticDraftV2,
+            preflight_framing_audit_semantic_draft_v2,
+            compile_framing_audit_semantic_draft_v2,
+        )
+    raise SetupError(f"unknown semantic authoring surface: {surface}")
+
+
 def _scientific_projection(transaction: Transaction) -> dict[str, Any] | None:
     bundles = [
         operation.entity
@@ -547,18 +568,17 @@ def _run(args: argparse.Namespace) -> tuple[int, dict[str, Any], dict[str, Any] 
         except ValidationError as exc:
             issues.extend(_pydantic_issues(exc, layer="transaction_schema"))
     else:
+        draft_model, preflight_draft, compile_draft = _semantic_surface_handlers(
+            args.surface
+        )
         try:
-            draft = FramingAuditSemanticDraftV1.model_validate_json(
-                source_data, strict=True
-            )
+            draft = draft_model.model_validate_json(source_data, strict=True)
             parse_pass = True
         except ValidationError as exc:
             issues.extend(_pydantic_issues(exc, layer="semantic_schema"))
             draft = None
         if draft is not None:
-            report = preflight_framing_audit_semantic_draft(
-                snapshot, contract, draft
-            )
+            report = preflight_draft(snapshot, contract, draft)
             _assert_preflight_setup_valid(list(report.issues))
             preflight_pass = report.passed
             if not report.passed:
@@ -579,9 +599,7 @@ def _run(args: argparse.Namespace) -> tuple[int, dict[str, Any], dict[str, Any] 
                 compile_pass = False
             else:
                 try:
-                    transaction = compile_framing_audit_semantic_draft(
-                        snapshot, contract, draft
-                    )
+                    transaction = compile_draft(snapshot, contract, draft)
                     compile_pass = True
                 except FramingAuditCompilationError as exc:
                     compile_pass = False
@@ -666,7 +684,7 @@ def _run(args: argparse.Namespace) -> tuple[int, dict[str, Any], dict[str, Any] 
             1
             if args.surface == "transaction" and not validator_pass
             else 1
-            if args.surface == "semantic"
+            if args.surface in {"semantic", "semantic_v2"}
             and transaction is not None
             and not validator_pass
             else 0
