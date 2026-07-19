@@ -1428,10 +1428,16 @@ only an explicitly selected force-margin position, reports Transaction detail
 only for a unique single-field near-match, and atomically isolates one strict
 duplicate-free JSON object. Force source/target and all economic comparisons
 remain model-authored; every V8 predicate is unchanged. Focused source-level
-private-oracle/adversarial checks pass, while packaged-runtime transport/oracle
-verification remains required before a final fresh held-out pair. See the
+private-oracle/adversarial checks pass. Exact-wheel packaged-runtime transport/
+oracle verification also passes: the installed runtime's two private oracles
+pass unchanged V8, produce the same scientific projection, write no canonical
+state, and reject a wrong base closed. This is deterministic self-test
+evidence, not fresh model evidence. The next executable slice is to design and
+freeze one genuinely new held-out case before a final independent two-arm
+pair; the packaged verification root is not that blind workspace. See the
 [R2 report](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_run_report.md),
 [R3 protocol](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_route1_protocol.md),
 [adjudication/compiler shadow](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_adjudication_and_compiler_shadow.md),
 [held-out pair adjudication](../../review_outputs/phase5a2_v8_authoring_pair_v2/final_adjudication.md),
+[packaged-runtime verification](../../review_outputs/phase5a2_v8_authoring_pair_v2/packaged_runtime_verification.md),
 and [machine decision](../../review_outputs/phase5a2_v8_authoring_pair_v2/FINAL_DECISION.json).

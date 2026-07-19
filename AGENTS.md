@@ -62,12 +62,16 @@ Transaction near-match detail is emitted only for one unique single-field
 difference. The shadow transport accepts one strict JSON object, rejects
 duplicate keys, publishes atomically without replacement, and treats the
 receipt as the completion marker. Focused source-level private-oracle and
-adversarial checks pass under unchanged V8. The next executable work is one
-packaged-runtime transport/oracle verification; only after that may one final
-fresh held-out pair begin. Do not rerun either frozen case, create V9, merge
-this branch to `main`, or integrate the prototype into the public bridge. A
-canonical end-to-end audit and economics/editing-burden inspection remain
-required before an exploratory v1/v2 comparison. Do not expand generic
+adversarial checks pass under unchanged V8. Exact-wheel packaged-runtime
+verification also passes: both private oracles validate under unchanged V8,
+produce the same scientific projection, and write no canonical state; wrong-
+base rejection remains closed. This is deterministic self-test evidence, not
+fresh model evidence. The next executable work is to design and freeze one
+genuinely new held-out case, then run one final independent two-arm pair. Do
+not reuse the packaged verification root or rerun either frozen case, create
+V9, merge this branch to `main`, or integrate the prototype into the public
+bridge. A canonical end-to-end audit and economics/editing-burden inspection
+remain required before an exploratory v1/v2 comparison. Do not expand generic
 security infrastructure unless a concrete local-use failure requires it.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or

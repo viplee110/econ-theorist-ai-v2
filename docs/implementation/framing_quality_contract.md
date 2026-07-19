@@ -11,8 +11,9 @@ ordinary-model pair is complete: neither arm reached the scientific validator,
 but the semantic surface substantially reduced structure and improved detailed
 reader recovery without established material scientific degradation. Public
 integration remains blocked. The bounded authoring/diagnostic candidate is now
-implemented and source-level private-oracle/adversarial checks pass; packaged-
-runtime verification remains next, not V9 or another blind pair.
+implemented, source-level private-oracle/adversarial checks pass, and exact-
+wheel packaged-runtime verification passes. The next slice is a genuinely new
+held-out case and one final pair, not V9 or public integration.
 
 This contract owns the first pilot-driven scientific strengthening after the
 Phase 5A.2 public Codex framing run. It addresses a narrow failure: a
@@ -433,9 +434,15 @@ The shadow transport now rejects malformed UTF-8, duplicate JSON keys,
 wrappers, arrays, prefixes, and suffixes; it never trims, extracts,
 reserializes, or repairs model bytes. Same-directory no-replace publication is
 atomic, exact source replay is idempotent, the scientific projection is
-published before its receipt, and a receipt is the completion marker. This is
-still noncanonical. Do not start another blind pair or public integration
-until packaged-runtime transport/oracle verification passes. See the exact
+published before its receipt, and a receipt is the completion marker. Exact-
+wheel packaged-runtime verification now passes: the installed runtime's two
+private oracles pass unchanged V8, produce the same scientific projection,
+write no canonical state, and reject a wrong base closed. This remains
+deterministic self-test evidence, not a model-authored pass or canonical audit.
+The next pair must use a genuinely new held-out case; the packaged verification
+root reuses the adjudicated accident-liability case and is evidence only. See
+the exact [packaged-runtime verification](../../review_outputs/phase5a2_v8_authoring_pair_v2/packaged_runtime_verification.md),
+[machine verification](../../review_outputs/phase5a2_v8_authoring_pair_v2/PACKAGED_RUNTIME_VERIFICATION.json),
 [preparation record](../../review_outputs/phase5a2_v8_authoring_pair_v2/preparation_record.md),
 [final adjudication](../../review_outputs/phase5a2_v8_authoring_pair_v2/final_adjudication.md),
 and [machine decision](../../review_outputs/phase5a2_v8_authoring_pair_v2/FINAL_DECISION.json).

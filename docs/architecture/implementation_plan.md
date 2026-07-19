@@ -23,9 +23,14 @@ source/target; no margin position defaults or topology inference are allowed.
 Transaction detail is limited to a unique single-field near-match. The shadow
 publisher accepts one strict duplicate-free JSON object and uses atomic no-
 replace publication with an immutable completion receipt. Focused source-level
-private-oracle and adversarial checks pass. Run one packaged-runtime transport/
-oracle verification before one final fresh held-out pair; bridge integration,
-V9, and an exploratory v1/v2 quality pilot remain blocked.
+private-oracle and adversarial checks pass. Exact-wheel packaged-runtime
+transport/oracle verification also passes: both surfaces validate under
+unchanged V8, produce an identical scientific projection, and write no
+canonical state; wrong-base rejection remains closed. This is deterministic
+self-test evidence, not fresh model evidence. Design and freeze one genuinely
+new held-out case, then run one final independent two-arm pair; bridge
+integration, V9, and an exploratory v1/v2 quality pilot remain blocked. See
+the exact [packaged-runtime verification](../../review_outputs/phase5a2_v8_authoring_pair_v2/packaged_runtime_verification.md).
 
 ## 1. Delivery strategy
 
@@ -457,9 +462,12 @@ deterministic graph binding and nonlocal diagnostics as the next boundary,
 without finding a V8 defect. The bounded noncanonical repair now requires an
 explicit cited-step margin position, provides only unique single-field
 Transaction near-matches, and has passed focused source-level private-oracle/
-adversarial checks under unchanged V8. Packaged-runtime transport/oracle
-verification remains required before one final fresh pair. See the
-[final pair adjudication](../../review_outputs/phase5a2_v8_authoring_pair_v2/final_adjudication.md).
+adversarial checks under unchanged V8. Exact-wheel packaged-runtime transport/
+oracle verification also passes with byte-identical scientific projections and
+zero canonical writes. The next slice is to design and freeze one genuinely new
+held-out case before one final pair. See the
+[final pair adjudication](../../review_outputs/phase5a2_v8_authoring_pair_v2/final_adjudication.md)
+and [packaged-runtime verification](../../review_outputs/phase5a2_v8_authoring_pair_v2/packaged_runtime_verification.md).
 
 The ordinary researcher-facing interface is natural language. The machine
 layer remains a versioned `etai` protocol, and the terminal path remains

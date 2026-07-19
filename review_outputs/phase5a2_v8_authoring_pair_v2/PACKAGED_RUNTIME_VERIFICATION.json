@@ -1,0 +1,71 @@
+{
+  "verification_schema": "econ-theorist/v8-authoring-repair-packaged-runtime-verification/v1",
+  "status": "PASS",
+  "verification_kind": "deterministic_installed_wheel_transport_and_private_oracle",
+  "verification_root": "C:\\tmp\\etai-v8-authoring-repair-packaged-886487d",
+  "engine_commit": "886487d23fd66ae2e70018c9b3c6ef20e0548434",
+  "pair_id": "pair.accident.liability.authoring.v8.v2",
+  "wheel": {
+    "filename": "econ_theorist_ai-0.1.0-py3-none-any.whl",
+    "bytes": 730343,
+    "sha256": "a28efaa8a12a86c3e5b79de5f639ddd1504305b32977358f6741520835a881a4"
+  },
+  "pre_manifest": {
+    "sha256": "bf6a9e0cd4837e7d9edd29979d4fc48c73c368799f0c157060433bdbcd28406c",
+    "verification": "PRE_MANIFEST_OK",
+    "file_count": 12
+  },
+  "bindings": {
+    "runtime_manifest_sha256": "46e913c59e90448df301f4cf542aa53bbe5457f9a2eff0e7d3485f478705c77e",
+    "checkout_python_sha256": "61822d4c85fa567780560382dda58f7061d8cc962aa1fc6bb78fc5b6ad95be6d",
+    "work_packet_sha256": "6e79e91b2b71da992d250c8918895cd1706d4c8ec062d43820527fac93df8a6c",
+    "authoring_contract_sha256": "920fc07a028a19c80b70f3fc2320d2a6fc37a3932683dd71aa51dbcaae9a2b0d",
+    "semantic_arm_manifest_sha256": "50faa8fdc2c8f4b11662c1d183929d91dce19ce3cfce40f3de6974034630aece",
+    "transaction_arm_manifest_sha256": "91978323a11d17fcfd50eeec9201ced83d9ffea3349a93d26d9afb331859f22a",
+    "evaluation_key_sha256": "3ee1ac219d518ddb2905fe84c590bec65f0d0f3e87ea90dbd2193506a37cedcd",
+    "execution_order": [
+      "arm-semantic",
+      "arm-transaction"
+    ],
+    "snapshot_sha256": "27833c22751cca10cef81e2c4f12f08a47221fbda1580bd9605d1bf510a0cedc",
+    "base_head": "dde1542e2916cce2a2a0c76dfbd14b4ea0b715c451c014727403390b2fe66d68",
+    "route_registry_hash": "5d2c2efdef205ee1ff188249dcb05cb5a4430d36ef754a93bde402a092aa40c1",
+    "engine_semantics_hash": "a22e864c921f21aafb098b29d5c54a3d8afc44169b352e5fa783d468be1ae4c8",
+    "semantic_runtime_surface": "econ-theorist/framing-audit-semantic-draft/v2",
+    "semantic_authoring_surface": "econ-theorist/framing-audit-semantic-authoring-surface/v2"
+  },
+  "oracles": {
+    "semantic_v2": {
+      "validator_pass": true,
+      "canonical_writes": 0,
+      "source_sha256": "38820857fbfceb53a67adb0b905f912c1fe2723d11a2d7c60ab674d2926deef3",
+      "receipt_sha256": "138082143e9a809c333f8417cbd3aa2705dabb4f99c069d127ac7c8bb403f4d1",
+      "projection_sha256": "714b5654f18400cc53d12b67afaae6d1a59d0e4f1b455fc2a62b70b7cef7fa9b"
+    },
+    "transaction": {
+      "validator_pass": true,
+      "canonical_writes": 0,
+      "source_sha256": "7590214dbce4ac5e99e78482648f345d8b6bf5137aaa2ba94eb78b39df738b05",
+      "receipt_sha256": "36fcec2aa77bfb276945714dce63c88cac1a685fea16195b8d9e3bd64fd9a066",
+      "projection_sha256": "714b5654f18400cc53d12b67afaae6d1a59d0e4f1b455fc2a62b70b7cef7fa9b"
+    },
+    "projections_identical": true,
+    "base_mismatch_rejection": {
+      "validator_pass": false,
+      "taxonomy": "wrapper_or_binding",
+      "canonical_writes": 0,
+      "receipt_sha256": "a3c491bdd9acd2aca660109a4edb75bc509ed57409c2d3ed7babf0eca84c8eae"
+    }
+  },
+  "model_generation_performed": false,
+  "blind_task_performed": false,
+  "canonical_writes": 0,
+  "human_gates": 0,
+  "v8_changed": false,
+  "v9_justified": false,
+  "public_bridge_integration": "BLOCKED",
+  "main_merge": "BLOCKED",
+  "prior_temp_evidence_deleted": false,
+  "verification_root_is_next_blind_workspace": false,
+  "next_slice": "DESIGN_FREEZE_AND_RUN_ONE_NEW_HELD_OUT_TWO_ARM_PAIR"
+}
