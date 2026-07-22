@@ -66,13 +66,31 @@ adversarial checks pass under unchanged V8. Exact-wheel packaged-runtime
 verification also passes: both private oracles validate under unchanged V8,
 produce the same scientific projection, and write no canonical state; wrong-
 base rejection remains closed. This is deterministic self-test evidence, not
-fresh model evidence. The next executable work is to design and freeze one
-genuinely new held-out case, then run one final independent two-arm pair. Do
-not reuse the packaged verification root or rerun either frozen case, create
-V9, merge this branch to `main`, or integrate the prototype into the public
-bridge. A canonical end-to-end audit and economics/editing-burden inspection
-remain required before an exploratory v1/v2 comparison. Do not expand generic
-security infrastructure unless a concrete local-use failure requires it.
+fresh model evidence.
+
+The researcher changed the product priority on 2026-07-22. Do not spend the
+next iteration on another protocol-only held-out pair. Preserve any unfinished
+fresh-pair design as noncanonical local work, but do not run or promote it
+unless a concrete researcher-facing failure makes the comparison necessary.
+The current product milestone is the minimal Phase 5B mentor/collaborator/
+research-worker team described in `docs/architecture/implementation_plan.md`,
+followed by one genuine theory-project pilot. That pilot should determine the
+first small scholar-derived `ResearchMove` batch. Do not reuse the packaged
+verification root or rerun either frozen case, create V9, merge this branch to
+`main`, or integrate the prototype into the public bridge. A canonical
+end-to-end audit and economics/editing-burden inspection remain required
+before an exploratory v1/v2 comparison. Do not expand generic security
+infrastructure unless a concrete local-use failure requires it.
+
+The framing-only Phase 5B.0 contract and its noncanonical binding/persistence
+module are now present. They bind one mentor and two collaborator outputs to
+one immutable framing WorkPacket, preserve all advice, and create at most one
+worker handoff; focused tests do not move canonical state. The module does not
+dispatch models or prove direct-user capture, ambiguity/scope classification,
+fallback, or real multi-agent benefit. The immediate executable work is the
+thin trusted-local Codex host projection for those missing controls, followed
+by one real framing pilot. Do not expose the sidecar as a usable team feature
+before that host slice is complete.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or
@@ -171,12 +189,16 @@ or operating system.
 - `docs/architecture/state_runtime.md`: canonical state, transactions, dependencies, routing, and recovery.
 - `docs/architecture/manuscript_compiler.md`: Paper IR and authoring contracts.
 - `docs/architecture/profiles_and_craft.md`: theory-only craft learning and target calibration.
+- `docs/architecture/scientific_discovery_craft.md`: scholar-derived functional
+  research moves, provenance, retrieval, and activation boundaries.
 - `docs/architecture/evaluation.md`: readiness and v1/v2 evaluation.
 - `docs/architecture/scenario_walkthroughs.md`: end-to-end integration tests on paper.
 - `docs/architecture/v1_migration.md`: capability preservation and retirement decisions.
 - `docs/architecture/implementation_plan.md`: phase order and exit criteria.
 - `docs/implementation/phase5a_contract.md`: host/bootstrap, natural-language
   onboarding, machine navigation, and cross-host acceptance semantics.
+- `docs/implementation/phase5b_framing_team_contract.md`: minimal noncanonical
+  mentor/collaborator/research-worker framing-team semantics.
 - `docs/implementation/framing_quality_contract.md`: additive v8
   economist-facing framing audit and pre-G1 scientific checks.
 

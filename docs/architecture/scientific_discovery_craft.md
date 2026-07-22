@@ -1,6 +1,7 @@
 # Scientific Discovery and Research-Craft Extension
 
-Status: evidence-informed design; inactive until incremental evaluation
+Status: evidence-informed design; scheduled after the first minimal
+research-team pilot and inactive until incremental evaluation
 
 Scope: pure and applied microeconomic theory, industrial-organization theory,
 information economics, game theory, market and mechanism design, networks, and
@@ -118,9 +119,12 @@ move card states when each side is appropriate.
 
 ## 4. Contemporary microeconomic-theory evidence policy
 
-The first production-quality research corpus should explore roughly 40--60
+The long-run production-quality research corpus should explore roughly 40--60
 methodologically diverse active scholars and 100--200 public primary sources,
-not the top 100 of a ranking. A 48-scholar, roughly 132--138-source first pass
+not the top 100 of a ranking. This coverage target is not a prerequisite for
+the first useful research-team pilot: the first source-audited batch may use
+about eight scholars or twenty primary sources and should expand only when it
+adds a genuine move or boundary. A 48-scholar, roughly 132--138-source first pass
 is one planning midpoint, not an acceptance target. The initial weighting is:
 
 | Source date | Curation weight |
@@ -451,23 +455,25 @@ document or source card changes. Validation scales with the behavior changed.
    diagnostic. Length, token count, theorem count, notation count, and
    confidence are never success measures.
 4. **Held-out paired replication.** Screening can reject a move but cannot
-   activate it. Replicate the preregistered primary outcome and harm checks on
-   inaccessible paired seeds. If forced use performs worse, the result supports
-   optional routing rather than deletion.
+   justify default activation or a quality claim. Replicate the preregistered
+   primary outcome and harm checks on inaccessible paired seeds. If forced use
+   performs worse, the result supports optional routing rather than deletion.
 5. **Source-isolated cases.** Include two or three classic mechanisms plus one
    genuinely new project question. Hiding papers and answer keys does not erase
    pretraining knowledge, so this is not called knowledge-blind. Use renamed
    primitives, parameter/timing counterfactuals, synthetic isomorphs, and
    contamination probes; classic cases mainly test mechanism reconstruction,
    while new cases test discovery.
-6. **Experimental end-to-end pilot.** After held-out component replication,
-   run the best small set through one complete theory lifecycle without live
-   default activation. Do not expand the whole corpus and run a full-paper
-   experiment simultaneously.
-7. **Activation rule.** A move enters live WorkPackets only after the held-out
-   paired replication and experimental end-to-end pilot support its primary
-   outcome with no critical-error increase or material collapse in idea
-   diversity.
+6. **Experimental end-to-end pilot.** After source audit, an explicitly
+   researcher-authorized, non-default move set may enter a declared pilot
+   WorkPacket before held-out replication so that real product use can expose
+   missing triggers and harms. It carries no quality claim and must not expand
+   the whole corpus and run a full-paper experiment simultaneously.
+7. **Activation rule.** A move becomes eligible for automatic default
+   selection only after the held-out paired replication and experimental
+   end-to-end pilot support its primary outcome with no critical-error increase
+   or material collapse in idea diversity. Source-audited opt-in experimental
+   use is not default activation.
 8. **Regression scope.** Corpus/data-only changes receive schema, hash,
    isolation, retrieval, and focused scientific tests. WorkPacket selection or
    evaluator changes receive affected-route and bridge tests. Only changes to
@@ -476,28 +482,30 @@ document or source card changes. Validation scales with the behavior changed.
 
 ## 10. Delivery sequence
 
-The smallest sound implementation is:
+The first real research-team pilot should precede corpus expansion so that
+observed question, model, proof, and editing failures determine which methods
+deserve early retrieval. The smallest sound implementation is:
 
 1. freeze this design and the evidence taxonomy;
-2. curate a versioned development corpus in `craft/research_corpus.v1.json`,
-   outside evaluation holdouts;
-3. run source audit and offline A/B screening without changing live route
-   behavior;
-4. replicate the preregistered effects on held-out paired,
-   source-isolated and genuinely new cases;
-5. run the best small set in one experimental end-to-end lifecycle;
-6. promote only the supported two-to-four-move menus into existing
-   WorkPackets; and
+2. curate one small versioned development batch in
+   `craft/research_corpus.v1.json`, outside evaluation holdouts;
+3. source-audit the batch and expose a small set only in an explicit opt-in
+   research-team pilot;
+4. run offline micro A/B screening on the moves that address observed pilot
+   failures;
+5. replicate promising effects on held-out paired, source-isolated, and
+   genuinely new cases;
+6. promote only the supported two-to-four-move menus to automatic selection in
+   existing WorkPackets; and
 7. expand coverage only when the marginal source adds a new move, a real
    boundary, a contradictory method, or a previously uncovered field.
 
-Only after held-out paired replication and the experimental end-to-end pilot
-are positive should live integration add
-`src/econ_theorist/research_craft_policy.py`, a compact projection in
-`src/econ_theorist/context.py`, package-resource wiring, and focused policy and
-context tests. The first release adds no canonical entity, schema, Decision,
-gate, route, or navigation state; the WorkPacket's existing compiled-context
-hash supplies run provenance.
+After source audit, a disabled-by-default experimental selector and compact
+projection may be added to support the opt-in pilot. Automatic route selection
+and production package-resource wiring require positive held-out replication
+and the experimental end-to-end evidence. Neither mode adds a canonical
+entity, schema, Decision, gate, route, or navigation state; the WorkPacket's
+existing compiled-context hash supplies run provenance.
 
 One practical exploration cadence uses batches of about eight scholars or
 twenty sources. An initial saturation signal is two consecutive batches with

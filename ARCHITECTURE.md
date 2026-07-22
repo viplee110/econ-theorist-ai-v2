@@ -1,13 +1,15 @@
 # Architecture v0.1
 
-Status: design baseline with a Phase 5A host-boundary amendment, not an
-implementation claim
+Status: design baseline with Phase 5A host-boundary and research-product
+priority amendments, not an implementation claim
 
 Scope: economic theory only
 
 Baseline date: 2026-07-11
 
 Phase 5A host-boundary amendment date: 2026-07-13
+
+Research-product priority amendment date: 2026-07-22
 
 ## 1. Mission
 
@@ -23,6 +25,45 @@ The system optimizes a vector, not a single score:
 6. substantive human time required to reach a research-faithful draft.
 
 No system state, checklist, panel vote, or language-model score can certify journal acceptance. Econometrica, Top-5, and leading field journals describe ambition, audience burden, and comparison sets.
+
+### Researcher-facing product contract
+
+V2 is an open-source, trusted-local research collaborator, not an enterprise
+workflow product. Its primary interface is a sustained natural-language
+scientific conversation. The researcher should normally discuss the question,
+economics, model, results, and paper; the engine should compile route names,
+object identities, transaction bindings, provenance, and recovery mechanics
+without asking the researcher or the strongest reasoning model to maintain
+them by hand.
+
+The minimum research team has three functional responsibilities:
+
+- a **mentor** challenges importance, benchmarks, assumptions, contribution,
+  and whether to continue, simplify, pivot, park, or kill;
+- a **collaborator** develops and compares mechanisms, examples,
+  formalizations, conjectures, boundaries, and counterarguments; and
+- a **research worker** performs bounded literature work, derivation, proof
+  checks, numerical or symbolic exploration, drafting, and revision.
+
+These are research responsibilities, not named-person personas or independent
+scientific authorities. One model may cover more than one responsibility, and
+additional agents are justified only when independent search, criticism, or
+specialized execution has value. Agents may explore reversible branches, but
+one canonical writer prepares a promotion proposal and the researcher retains
+the human authority boundaries below.
+
+The hard constraints are scientific: do not fabricate evidence or proof,
+separate assumptions from results and formal truth from economic
+interpretation, preserve informative failures, and obtain human confirmation
+for structural scientific choices. Within those bounds, agents should have
+wide latitude to question the frame, propose rival mechanisms, abandon weak
+approaches, and use their own reasoning rather than mechanically complete a
+fixed form.
+
+Scholar-derived knowledge enters as provenance-bearing functional
+`ResearchMove` and `CraftMove` evidence, never as imitation of a scholar's
+personality, prose, prestige, or presumed private thought process. Runtime
+selection is by the current research problem and risk.
 
 ## 2. Scope and anti-goals
 
@@ -143,12 +184,14 @@ The detailed owners are:
 - state and execution substrate: `docs/architecture/state_runtime.md`;
 - authoring: `docs/architecture/manuscript_compiler.md`;
 - craft and target calibration: `docs/architecture/profiles_and_craft.md`;
-- optional upstream research-move design:
+- planned post-core research-move distillation:
   `docs/architecture/scientific_discovery_craft.md`;
 - evaluation: `docs/architecture/evaluation.md`;
 - integration walkthroughs: `docs/architecture/scenario_walkthroughs.md`.
 - Phase 5A host bootstrap, natural-language onboarding, and cross-host
   acceptance: `docs/implementation/phase5a_contract.md`.
+- minimal Phase 5B.0 framing research team:
+  `docs/implementation/phase5b_framing_team_contract.md`.
 
 ## 5. Research control flow
 
@@ -264,6 +307,11 @@ instructions, contexts, validators, and human authority rules.
 The researcher-facing goal is natural-language operation. A capable host may
 install, initialize, inspect, open, resume, stage, validate, and commit through
 the machine interface without requiring the researcher to type shell commands.
+The ordinary researcher supplies and refines the question, discusses
+scientific alternatives, provides relevant materials, and confirms structural
+or external choices. Route ids, schemas, object ids, receipts, retries, and
+structural repair are engine responsibilities and must not become researcher
+tasks.
 The first software installation, protected write, network operation, credential
 access, or other host/OS-sensitive action may still require a bounded,
 inspectable approval. Natural-language convenience never implies silent
@@ -295,11 +343,13 @@ Host integration obeys these cross-cutting rules:
    cryptographic identity or resistance to a compromised local host;
 9. the complete machine/CLI path remains usable without any IDE adapter.
 
-Phase 5A first owns a Codex research-ready vertical slice for this boundary.
-That gate permits controlled Phase 5B lanes and exploratory quality pilots;
-Claude/Cursor parity and public-release hardening may proceed later without
-blocking scientific learning. Phase 6 owns confirmatory claims about
-comparative quality or human-effort reduction.
+Phase 5A first owns the bounded Codex substrate for this boundary. Once one
+real route commit, exact retry/recovery, and engine-owned canonical writing are
+demonstrated, a non-release Phase 5B product pilot may begin. The complete
+local research-ready gate still controls formal Phase 5B acceptance and any
+release claim; Claude/Cursor parity and public-release hardening may proceed
+later without blocking scientific learning. Phase 6 owns confirmatory claims
+about comparative quality or human-effort reduction.
 
 ## 10. Architecture budgets
 

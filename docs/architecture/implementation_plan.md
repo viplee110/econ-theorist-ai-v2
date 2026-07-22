@@ -27,9 +27,13 @@ private-oracle and adversarial checks pass. Exact-wheel packaged-runtime
 transport/oracle verification also passes: both surfaces validate under
 unchanged V8, produce an identical scientific projection, and write no
 canonical state; wrong-base rejection remains closed. This is deterministic
-self-test evidence, not fresh model evidence. Design and freeze one genuinely
-new held-out case, then run one final independent two-arm pair; bridge
-integration, V9, and an exploratory v1/v2 quality pilot remain blocked. See
+self-test evidence, not fresh model evidence. The 2026-07-22 researcher
+priority decision stops additional protocol-only paired runs here: the next
+milestone is a minimal researcher-facing Phase 5B team slice and one real
+theory-project pilot. A new held-out authoring pair may be resumed only when a
+concrete product failure makes that comparison decision-relevant; it is not a
+prerequisite for beginning product learning. Bridge integration, V9, and an
+exploratory v1/v2 quality claim remain blocked. See
 the exact [packaged-runtime verification](../../review_outputs/phase5a2_v8_authoring_pair_v2/packaged_runtime_verification.md).
 
 ## 1. Delivery strategy
@@ -37,6 +41,13 @@ the exact [packaged-runtime verification](../../review_outputs/phase5a2_v8_autho
 Implementation should proceed by thin end-to-end slices. The project must demonstrate that a research object can be created, challenged, invalidated, explained, and recovered before it accumulates a large prompt library or dozens of schemas.
 
 The first useful system is not a manuscript generator. It is a reliable theory-project substrate that can carry one small argument from benchmark to a verified, readable result block while preserving human authority and invalidating dependent work when an upstream object changes.
+
+The first useful product is also not a protocol demonstration. A researcher
+should be able to bring a question, discuss scientific choices with an AI
+research team, and receive useful exploration and execution without
+transcribing object ids, route names, or transaction structure. After the
+bounded substrate exists, real research use takes priority over additional
+host matrices, protocol-only blind pairs, or hostile-environment hardening.
 
 ## 2. Phase 0 — freeze Architecture v0.1
 
@@ -372,16 +383,20 @@ The evidence-informed discovery extension in
 behavior. It proposes a separate, noncanonical `ResearchMove` library for
 question, benchmark, model, mechanism, and theorem discovery; it does not
 overload the implemented local-exposition `CraftMove`, add a route or gate, or
-change live WorkPackets before source audit, held-out paired replication, and
-an experimental end-to-end pilot justify an incremental release.
+change default live WorkPackets before source audit, held-out paired
+replication, and an experimental end-to-end pilot justify activation. A
+source-audited, disabled-by-default projection may be used earlier in an
+explicitly authorized research-team pilot without making a quality claim.
 
 ## 7. Phase 5 -- host adaptation and controlled multi-agent execution
 
-Phase 5 is split into two ordered capability groups. Phase 5A makes the
-accepted single-agent core safely installable and operable from supported
-coding-agent hosts. Phase 5B adds controlled multi-agent scientific lanes and
-optional research-tool adapters. This split does not add a seventh
-implementation phase or move comparative claims out of Phase 6.
+Phase 5 is split into two capability groups with a bounded exploratory overlap.
+Phase 5A makes the accepted single-agent core safely installable and operable
+from supported coding-agent hosts. Once its bounded exploratory floor is
+demonstrated, Phase 5B adds the researcher-facing AI team and optional
+research-tool adapters while the complete 5A release gate remains open. This
+split does not add a seventh implementation phase or move comparative claims
+out of Phase 6.
 
 The active target is trusted local self-use. Two gates are distinct:
 
@@ -390,8 +405,10 @@ The active target is trusted local self-use. Two gates are distinct:
 - **public-distribution-ready:** broad host/platform support, signed release
   infrastructure, and hostile-environment hardening.
 
-Research-ready is the prerequisite for scientific learning. Public-release
-hardening must not postpone the first real paper route.
+The bounded exploratory floor is the prerequisite for product learning; the
+complete research-ready gate is the prerequisite for formal Phase 5B
+acceptance and a local release claim. Public-release hardening must not postpone
+the first real paper route.
 
 ### 7.1 Phase 5A -- host bootstrap and natural-language onboarding
 
@@ -526,22 +543,63 @@ The public-distribution gate proves bounded host portability for one acting
 agent. Neither gate proves multi-agent benefit, complete-paper generation,
 lower human effort, or Top-5 readiness.
 
-### 7.2 Phase 5B -- controlled multi-agent lanes and optional research adapters
+### 7.2 Phase 5B -- researcher-facing AI team and optional research adapters
 
-Add after the Phase 5A research-ready boundary passes; do not wait for the
-optional public-distribution gate:
+The normative owner for the first framing-only slice is
+[`../implementation/phase5b_framing_team_contract.md`](../implementation/phase5b_framing_team_contract.md).
 
-- isolated mechanism/model lanes;
-- general multi-agent lanes beyond Phase 2's sealed confirmatory-evaluation
-  contexts, including broader blind, context, and literature-review panels;
-- judge synthesis with minority preservation;
-- version-control adapter;
-- Lean or other formal-proof adapter;
-- private researcher-memory adapter;
-- advanced symbolic/numerical tools.
+The current tree implements only its noncanonical binding and persistence
+layer: an exact framing WorkPacket can declare one mentor and two sealed
+collaborators, preserve all advice, record a clear direct-user synthesis, and
+produce one worker handoff without moving canonical state. Focused tests cover
+wrong/stale bindings, idempotence, tampering, minority preservation, `park`/
+`kill`, and forged handoffs. This is not yet a usable team surface: model
+dispatch, direct-user capture, ambiguity/scope classification, honest fallback,
+and one real pilot remain open.
+
+Begin the exploratory product slice after the bounded Phase 5A substrate has
+demonstrated one real route commit, exact retry/recovery, and engine-owned
+canonical writes. The still-open full local research-ready gate remains a
+release claim, not a blocker on product learning; do not wait for the optional
+public-distribution gate.
+
+The minimum slice organizes three functional responsibilities behind one
+natural-language research conversation:
+
+- a mentor lane challenges the question, benchmark, assumptions, taste, and
+  continue/simplify/pivot/park/kill choice;
+- one or more collaborator lanes generate genuinely different mechanisms,
+  examples, formalizations, conjectures, and objections; and
+- a research-worker lane carries out bounded literature work, derivations,
+  proof or counterexample checks, drafting, and revisions after the relevant
+  human choice.
+
+Roles are not personas and do not imply three standing agents on every task.
+The orchestrator uses the smallest useful team, preserves isolated proposals
+and minority objections when independence matters, and gives one canonical
+writer the selected work. No lane writes canonical state directly or confirms
+a human-owned Decision.
+
+The first implementation order is:
+
+1. expose one natural-language team entry point that hides machine bookkeeping;
+2. support mentor advice, rival collaborator proposals, and one worker handoff
+   on existing routes without adding a second workflow or new scientific
+   schema;
+3. run one genuine theory project from question and benchmarks through a
+   verified, readable result block while recording researcher interventions;
+4. use the observed scientific and usability failures to select the first
+   small `ResearchMove` batch from
+   [`scientific_discovery_craft.md`](scientific_discovery_craft.md); and
+5. keep version control, formal proof, private cross-project memory, and
+   advanced symbolic/numerical adapters optional.
 
 #### Phase 5B exit criteria
 
+- the researcher can operate the team by discussing scientific content and
+  decisions, without manually authoring machine-protocol objects;
+- mentor, collaborator, and worker contributions remain attributable and do
+  not collapse disagreement into one unexplained answer;
 - multi-agent agreement is recorded as correlated evidence rather than proof;
 - raw lanes and exact context manifests remain inspectable;
 - a judge cannot confirm a human-owned decision;
@@ -550,7 +608,10 @@ optional public-distribution gate:
 - concurrent proposals preserve exact base heads and never use
   last-writer-wins scientific commits;
 - optional adapters cannot weaken privacy, authority, or evidence semantics;
-- the core remains usable without any optional adapter.
+- the core remains usable without any optional adapter; and
+- one real end-to-end theory-project pilot records scientific usefulness,
+  failure points, and substantive researcher effort before broader panels or
+  scholar-corpus expansion.
 
 Phase 5B scales controlled search, criticism, and optional tooling. It does
 not replace the canonical writer with prose assembly by committee, turn
@@ -597,7 +658,10 @@ The following decisions should be confirmed at the end of Phase 0 because they s
 4. use a universal frontier-theory floor plus composable soft target overlays;
 5. use one canonical manuscript writer and independent critics rather than multi-agent prose assembly;
 6. require human promotion of structural scientific decisions while permitting autonomous provisional exploration;
-7. keep multi-agent panels, formal proof, version control automation, and cross-project memory optional;
+7. make the minimal mentor/collaborator/research-worker team a core
+   researcher-facing capability after the local substrate, while keeping
+   broader panels, formal proof, version-control automation, and cross-project
+   memory optional;
 8. preserve Apache License 2.0.
 
 ## 10. Proposed repository shape

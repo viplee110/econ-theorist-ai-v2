@@ -11,6 +11,9 @@ machine-mixed, `A-FAIL`, `REVISE`, and `R-FAIL`/H4. A later held-out authoring
 pair found large structural and detailed reader-recovery gains from Semantic
 V2 but no valid candidate in either three-attempt arm. The full host-native
 research-ready gate remains open and no public-release claim is made.
+The 2026-07-22 research-product amendment permits a non-release Phase 5B pilot
+after the bounded exploratory floor; the complete gate below still controls
+formal Phase 5B acceptance and release claims.
 
 Phase 5A.1 implementation branch (historical): `agent/phase5a-machine-facade`
 
@@ -1179,9 +1182,12 @@ The local profile is accepted when:
 7. focused tests, the complete non-long regression suite, exporters, and
    `doctor` pass.
 
-Passing this gate permits controlled Phase 5B work and exploratory quality
-pilots. It does not claim v2 superiority, lower human effort, broad host parity,
-or public-release security.
+Passing this gate permits formal Phase 5B acceptance and a local
+research-ready release claim. It does not claim v2 superiority, lower human
+effort, broad host parity, or public-release security. Before the full gate is
+accepted, a non-release Phase 5B product pilot may begin only after the bounded
+exploratory floor has demonstrated one real route commit, exact retry/recovery,
+and engine-owned canonical writes.
 
 This gate is not yet accepted. The recorded public functional slice satisfies
 the real-model first-route subset but not all privacy and first-use criteria.
@@ -1242,8 +1248,10 @@ Phase 5A does not implement or validate:
 - external communication, release of a manuscript, or submission execution.
 
 Controlled multi-agent scientific execution and optional research-tool
-adapters belong to Phase 5B after the local research-ready gate; they need not
-wait for public-distribution hardening. Held-out v1/v2 and outcome comparisons across
+adapters belong to Phase 5B. A bounded non-release product pilot may begin
+after the exploratory floor; formal Phase 5B acceptance still follows the
+complete local research-ready gate. Neither needs to wait for
+public-distribution hardening. Held-out v1/v2 and outcome comparisons across
 models or hosts, plus ablation, quality, and human-effort comparisons, belong
 to Phase 6. `evaluation.md` must be extended and preregistered before it is used
 for a model- or host-outcome comparison not already present in its frozen arms.
