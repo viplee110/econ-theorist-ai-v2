@@ -1,0 +1,38 @@
+{
+  "manifest_schema": "economic-theory-frame/q-manifest/v1",
+  "prepared_at_utc": "2026-07-22T14:16:39.3323437Z",
+  "root": "C:\\tmp\\qf1",
+  "purpose": "independent cold reading of one proposed economic-theory frame",
+  "files": [
+    {
+      "name": "FRAMING_INPUT.json",
+      "bytes": 13113,
+      "sha256": "43ea849be933a8528b357b3ba79c789587e1ecdad376d893382d750ac3820bb8"
+    },
+    {
+      "name": "TASK_PROMPT.md",
+      "bytes": 2663,
+      "sha256": "ca4b8289119e33d2fa8f4e2295b01ca7b03014acb334dec55662a20cb9616364"
+    },
+    {
+      "name": "VERIFY_MANIFEST.ps1",
+      "bytes": 1429,
+      "sha256": "0ff0ed8a29e63d6148cd286781a8a9ea7db25c872d38a033d4eef859d3964a72"
+    }
+  ],
+  "initial_inventory": [
+    "FRAMING_INPUT.json",
+    "Q_MANIFEST.json",
+    "TASK_PROMPT.md",
+    "VERIFY_MANIFEST.ps1",
+    "report"
+  ],
+  "report_directory_initially_empty": true,
+  "reader_boundary": {
+    "network": false,
+    "subagents": false,
+    "outside_root": false,
+    "literature_or_novelty_assessment": false,
+    "process_or_provenance_evidence": false
+  }
+}

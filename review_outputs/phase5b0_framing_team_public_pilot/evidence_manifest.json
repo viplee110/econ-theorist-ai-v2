@@ -1,0 +1,193 @@
+{
+    "manifest_schema":  "econ-theorist/phase5b0-pilot-evidence-manifest/v1",
+    "generated_at_utc":  "2026-07-22T14:58:38.8818146Z",
+    "engine_commit":  "cb2abb97e94086e940bb1a84c95eb054cd4eca2c",
+    "wheel_sha256":  "f94f62ecfbc11bcdf7ad52b5cadd4ed127de0006309a54daf025e1bea7670064",
+    "pilot_model_observation":  "user-selected-high-intelligence-unverified",
+    "q_reader_model_observation":  "high-intelligence-model-unverified",
+    "canonical_head":  "50fa98f65c974269044331d023eb06cf6071a6207df27ab3f5c71e8a5771fcfd",
+    "verdicts":  {
+                     "machine_validity":  "PASS",
+                     "team_behavior":  "MIXED",
+                     "researcher_usefulness":  "NOT_ESTABLISHED",
+                     "framing_quality":  "MIXED",
+                     "framing_quality_confidence":  0.91
+                 },
+    "files":  [
+                  {
+                      "path":  "agent-report.md",
+                      "bytes":  13176,
+                      "sha256":  "df49d2ffeb306a39300429e09063bc7dadc31105374a9a445bdb5b667d7162db"
+                  },
+                  {
+                      "path":  "canonical/framing_transaction.json",
+                      "bytes":  12369,
+                      "sha256":  "50fa98f65c974269044331d023eb06cf6071a6207df27ab3f5c71e8a5771fcfd"
+                  },
+                  {
+                      "path":  "CASE.md",
+                      "bytes":  4938,
+                      "sha256":  "945b7caf66a22275c33681c1fc988968143b08719a154bc5341a22939c3b7715"
+                  },
+                  {
+                      "path":  "control/EVALUATION_RUBRIC.md",
+                      "bytes":  3060,
+                      "sha256":  "0e4e175291e39707637529d29554113300b2f33584cf984fb6648ce446501f0c"
+                  },
+                  {
+                      "path":  "control/PREFLIGHT_MANIFEST.json",
+                      "bytes":  3966,
+                      "sha256":  "1d29ca26e194d9010e0e01e2bd50bc01b9d8d91090c784d93df8b9965a729442"
+                  },
+                  {
+                      "path":  "control/PREFLIGHT_MANIFEST.sha256",
+                      "bytes":  90,
+                      "sha256":  "653c702e2a5f782f625df6a9f7a443702ad467e57a2cea5d9889f3a954b6d233"
+                  },
+                  {
+                      "path":  "control/PROTOCOL.md",
+                      "bytes":  4706,
+                      "sha256":  "639a26bbc521f1ae6770e3c6933d1499b70fd88f5bc6947d6e45156bc168a5ab"
+                  },
+                  {
+                      "path":  "control/TASK_PROMPT.md",
+                      "bytes":  9013,
+                      "sha256":  "7f0986a8bb9800e8f6a1707f36528bf8baba7e59b3a6bf4b09a65429e1582ca6"
+                  },
+                  {
+                      "path":  "evaluation_summary.md",
+                      "bytes":  3490,
+                      "sha256":  "37a24e1139777b72148e7a91ac5cf00372b4f4381509727bb77867ce649b22ae"
+                  },
+                  {
+                      "path":  "historical_pre_q/POSTFLIGHT_AUDIT.md",
+                      "bytes":  4143,
+                      "sha256":  "844b987e46c8e3f34ed6ba7c956a8366764d77c151816b4b9b79868a8e35dd26"
+                  },
+                  {
+                      "path":  "historical_pre_q/POSTFLIGHT_AUDIT.sha256",
+                      "bytes":  86,
+                      "sha256":  "8157154be5c357bc9da04de2a43041329d33f072cf414372983491b2317926de"
+                  },
+                  {
+                      "path":  "machine_audit.md",
+                      "bytes":  2751,
+                      "sha256":  "16762ab1c5d5f1360713ece6832fc058f450c1d9b4a4db60ead39fae8fc26664"
+                  },
+                  {
+                      "path":  "postflight_manifest.md",
+                      "bytes":  3075,
+                      "sha256":  "f1ab505853877f73831ae1ecd3dd96942ea9067b59fc175e86f37304cffed38c"
+                  },
+                  {
+                      "path":  "q/controller/build_projection.ps1",
+                      "bytes":  1443,
+                      "sha256":  "be147a23485872cfbe4b04d8c6b4714c44d9a25f7f359c2f9f2d3f9f397960b2"
+                  },
+                  {
+                      "path":  "q/controller/Q_MANIFEST.sha256",
+                      "bytes":  97,
+                      "sha256":  "cd378431427460e5c02fec8cef7cfea30a3cd7cb53ba9da5f206952195fc7be5"
+                  },
+                  {
+                      "path":  "q/controller/SOURCE_BINDING.json",
+                      "bytes":  1532,
+                      "sha256":  "bb74603cbdee8837dc8f031b7865a5c2a0fa3ba5f23b1c2e78d8626f8af76dad"
+                  },
+                  {
+                      "path":  "q/reader_root/FRAMING_INPUT.json",
+                      "bytes":  13113,
+                      "sha256":  "43ea849be933a8528b357b3ba79c789587e1ecdad376d893382d750ac3820bb8"
+                  },
+                  {
+                      "path":  "q/reader_root/Q_MANIFEST.json",
+                      "bytes":  1072,
+                      "sha256":  "73d717244ae0a8d2c360f850c7c182b277823abfaa8860115ab77c9fc0d440ed"
+                  },
+                  {
+                      "path":  "q/reader_root/report/Q_LOCK.json",
+                      "bytes":  384,
+                      "sha256":  "9767f7c214af1d163fdb44dfa619fe5bedd0ce0cfcae08aa7eb121a3ad26d8d1"
+                  },
+                  {
+                      "path":  "q/reader_root/report/Q_LOCK.md",
+                      "bytes":  6842,
+                      "sha256":  "c4915b9c646f6b3b57f0d2bdffd1bd401358c4bf5e029dad1b7835b11355f501"
+                  },
+                  {
+                      "path":  "q/reader_root/TASK_PROMPT.md",
+                      "bytes":  2663,
+                      "sha256":  "ca4b8289119e33d2fa8f4e2295b01ca7b03014acb334dec55662a20cb9616364"
+                  },
+                  {
+                      "path":  "q/reader_root/VERIFY_MANIFEST.ps1",
+                      "bytes":  1429,
+                      "sha256":  "0ff0ed8a29e63d6148cd286781a8a9ea7db25c872d38a033d4eef859d3964a72"
+                  },
+                  {
+                      "path":  "team/completion_binding.json",
+                      "bytes":  1659,
+                      "sha256":  "a4ae08d9f75fcfaca06631ebf8b7afbb8bedad4efc752f68050b6be2a7705bd6"
+                  },
+                  {
+                      "path":  "team/handoff.json",
+                      "bytes":  2022,
+                      "sha256":  "89ff1c396ba22b9d591ac4e6e6edfe221a1871cd0279c2df20e9d21a5b5716a4"
+                  },
+                  {
+                      "path":  "team/panel.json",
+                      "bytes":  22825,
+                      "sha256":  "2b067dcae8e62cd3bfee08208fb09e97433cf0c07e8c2de61c8385fadda9da4b"
+                  },
+                  {
+                      "path":  "team/synthesis.json",
+                      "bytes":  2257,
+                      "sha256":  "90c380c55370405a9daa27eefdd67b5eebcb9527aa59d2e7f604a0b1f6454bd3"
+                  },
+                  {
+                      "path":  "team/team_plan.json",
+                      "bytes":  1826,
+                      "sha256":  "c4ef0fb04bb1972fdcd329dadf6515c288d7777f50712563524b3afddfbc44ad"
+                  },
+                  {
+                      "path":  "team/worker_activation.json",
+                      "bytes":  1374,
+                      "sha256":  "ae451693bb31e24e19978d6fa6c1b9254a89fea44c113cd187132d69a5e21827"
+                  },
+                  {
+                      "path":  "terminal/complete_capture_metadata.json",
+                      "bytes":  2966,
+                      "sha256":  "b7544486315c1cf08c3a5cd413a59772352d900469a5b9d144418533340222e4"
+                  },
+                  {
+                      "path":  "terminal/complete_request.json",
+                      "bytes":  712,
+                      "sha256":  "a4108fa5abddc7937c629d89123cb0a14f7c87934d269f7050f9cf8a05e7d2cd"
+                  },
+                  {
+                      "path":  "terminal/complete_response.json",
+                      "bytes":  1483,
+                      "sha256":  "abe0bab4ce18521896144b5bceb70d479b328aa0482157baf36fd851f9938731"
+                  },
+                  {
+                      "path":  "terminal/host_receipt.json",
+                      "bytes":  1011,
+                      "sha256":  "3a2abf14797dd98351df17fb132916aa6aa23cf4089de3a9d7c521c6e52d4211"
+                  },
+                  {
+                      "path":  "terminal/team_terminal_outcome.json",
+                      "bytes":  1116,
+                      "sha256":  "42dcc4da328c497741b2039ee75efcc0ebc9fb802d931bab21ee3e0ce08fd582"
+                  }
+              ],
+    "exclusions":  [
+                       "001-006 raw capture bundles",
+                       "large 001-004 bridge responses and WorkPacket",
+                       "rejected and raw candidate attempts",
+                       "worker delivery",
+                       "unrelated canonical/operational state",
+                       "wheel and virtual environment",
+                       "host state, source, tests, and historical evidence outside the preserved pre-Q audit"
+                   ],
+    "claim_boundary":  "compact source-aware audit archive; not provider/backend attestation, model-delivery proof, multi-agent-benefit evidence, usability proof, or research-quality acceptance"
+}

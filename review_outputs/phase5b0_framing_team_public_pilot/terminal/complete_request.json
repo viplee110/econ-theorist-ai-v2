@@ -1,0 +1,15 @@
+{
+  "operation": "complete",
+  "project_root": "C:\\tmp\\p5b1",
+  "route_run_id": "run_op_aa380ca47c2adbc16bd7a4643e20123e7472b410b06132a2",
+  "work_packet_hash": "b15db115d1803573cd2e492af3af81339d32ca93064530b4f200f8d12114607a",
+  "delivery_envelope_hash": "2e399d7a0ced6e3f37b4304ee94171d7578e28cd72ffa7e258d28354f4caae70",
+  "framing_team_handoff_hash": "89ff1c396ba22b9d591ac4e6e6edfe221a1871cd0279c2df20e9d21a5b5716a4",
+  "framing_team_worker": {
+    "observation_schema": "econ-theorist/codex-framing-worker-observation/v1",
+    "lane_id": "research_worker",
+    "agent_label": "research_worker",
+    "model_observation": "user-selected-high-intelligence-unverified"
+  },
+  "action": "stage_and_commit"
+}

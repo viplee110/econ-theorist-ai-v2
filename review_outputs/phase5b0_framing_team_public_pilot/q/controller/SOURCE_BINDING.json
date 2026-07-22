@@ -1,0 +1,32 @@
+{
+  "binding_schema": "economic-theory-frame/q-source-binding/v1",
+  "prepared_at_utc": "2026-07-22T14:16:39.3323437Z",
+  "not_exposed_to_cold_reader": true,
+  "source_root": "C:\\tmp\\p5b1",
+  "canonical_head": "50fa98f65c974269044331d023eb06cf6071a6207df27ab3f5c71e8a5771fcfd",
+  "canonical_transaction": {
+    "path": "C:\\tmp\\p5b1\\.econ-theorist\\transactions\\sha256\\50fa98f65c974269044331d023eb06cf6071a6207df27ab3f5c71e8a5771fcfd",
+    "bytes": 12369,
+    "sha256": "50fa98f65c974269044331d023eb06cf6071a6207df27ab3f5c71e8a5771fcfd"
+  },
+  "selection": {
+    "rule": "fail unless transaction contains exactly one entity.create ResearchQuestion and exactly one entity.create BenchmarkSet; copy each exact title, summary, and facets.economic_interpretation.payload without rewriting",
+    "excluded": "all wrapper, actor, ids, timestamps, access, privacy, relation, route-outcome, acceptance, process, team, worker, repair, model, and machine metadata"
+  },
+  "builder": {
+    "path": "C:\\tmp\\qf1-control\\build_projection.ps1",
+    "bytes": 1443,
+    "sha256": "be147a23485872cfbe4b04d8c6b4714c44d9a25f7f359c2f9f2d3f9f397960b2"
+  },
+  "projection": {
+    "path": "C:\\tmp\\qf1\\FRAMING_INPUT.json",
+    "bytes": 13113,
+    "sha256": "43ea849be933a8528b357b3ba79c789587e1ecdad376d893382d750ac3820bb8",
+    "field_equality_verified": true
+  },
+  "cold_reader_manifest": {
+    "path": "C:\\tmp\\qf1\\Q_MANIFEST.json",
+    "bytes": 1072,
+    "sha256": "73d717244ae0a8d2c360f850c7c182b277823abfaa8860115ab77c9fc0d440ed"
+  }
+}

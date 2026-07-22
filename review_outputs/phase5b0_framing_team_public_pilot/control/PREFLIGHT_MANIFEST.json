@@ -1,0 +1,110 @@
+{
+  "manifest_schema": "econ-theorist/phase5b-pilot-preflight/v1",
+  "prepared_at_utc": "2026-07-22T12:26:11.6717799Z",
+  "pilot_id": "p5b1-score-disclosure-before-appeal",
+  "purpose": "first genuine researcher-in-the-loop Phase 5B framing-team pilot",
+  "generator_root": "C:\\tmp\\p5b1",
+  "control_root": "C:\\tmp\\p5b1-control",
+  "engine_source": {
+    "repository": "C:\\Projects\\Econ Theorist AI v2",
+    "branch": "agent/research-first-audit-repair",
+    "commit": "cb2abb97e94086e940bb1a84c95eb054cd4eca2c",
+    "worktree_was_clean_at_build": true,
+    "package_version": "0.1.0",
+    "python_version": "3.12.13",
+    "build_method": "python -m pip wheel . --no-deps --no-build-isolation",
+    "install_method": "fresh isolated venv with system site packages; offline install of the listed wheel"
+  },
+  "generator_inputs": [
+    {
+      "path": "C:\\tmp\\p5b1\\CASE.md",
+      "bytes": 4938,
+      "sha256": "945b7caf66a22275c33681c1fc988968143b08719a154bc5341a22939c3b7715"
+    },
+    {
+      "path": "C:\\tmp\\p5b1\\.agents\\skills\\econ-theorist-v2\\SKILL.md",
+      "bytes": 6400,
+      "sha256": "c6c6d0fe51a28cb53a2ac87652b76a5f1e7e6ab6880e71285cbb47e9aa456a93"
+    },
+    {
+      "path": "C:\\tmp\\p5b1\\.agents\\skills\\econ-theorist-v2\\agents\\openai.yaml",
+      "bytes": 296,
+      "sha256": "d0db034c3c93616cb42390df90343f13a45f81af6cbe48d4b678fc54e0e09c17"
+    },
+    {
+      "path": "C:\\tmp\\p5b1\\capture_codex_invocation.py",
+      "bytes": 18731,
+      "sha256": "590ef3bdb4bb3e7ba80952108a4c98db8893f0bce3684e69372464967906291d"
+    },
+    {
+      "path": "C:\\tmp\\p5b1\\distribution\\econ_theorist_ai-0.1.0-py3-none-any.whl",
+      "bytes": 744746,
+      "sha256": "f94f62ecfbc11bcdf7ad52b5cadd4ed127de0006309a54daf025e1bea7670064"
+    }
+  ],
+  "control_files": [
+    {
+      "path": "C:\\tmp\\p5b1-control\\TASK_PROMPT.md",
+      "bytes": 9013,
+      "sha256": "7f0986a8bb9800e8f6a1707f36528bf8baba7e59b3a6bf4b09a65429e1582ca6",
+      "generator_may_read": true
+    },
+    {
+      "path": "C:\\tmp\\p5b1-control\\PROTOCOL.md",
+      "bytes": 4706,
+      "sha256": "639a26bbc521f1ae6770e3c6933d1499b70fd88f5bc6947d6e45156bc168a5ab",
+      "generator_may_read": false
+    },
+    {
+      "path": "C:\\tmp\\p5b1-control\\EVALUATION_RUBRIC.md",
+      "bytes": 3060,
+      "sha256": "0e4e175291e39707637529d29554113300b2f33584cf984fb6648ce446501f0c",
+      "generator_may_read": false
+    }
+  ],
+  "generator_root_top_level_before_initialization": [
+    ".agents",
+    ".host-state",
+    ".venv",
+    "CASE.md",
+    "capture_codex_invocation.py",
+    "distribution",
+    "run"
+  ],
+  "preflight": {
+    "installed_import_root": "C:\\tmp\\p5b1\\.venv\\Lib\\site-packages\\econ_theorist\\__init__.py",
+    "doctor_required_ok": true,
+    "doctor_registry": "active v8; 35 routes; 35 enabled with verified instructions",
+    "codex_bridge_available": true,
+    "framing_team_operations_present": [
+      "framing_team.open",
+      "framing_team.publish_panel",
+      "framing_team.apply_user_turn"
+    ],
+    "optional_tools_unavailable": [
+      "latexmk",
+      "pdflatex",
+      "lean",
+      "node"
+    ],
+    "optional_tools_note": "These are optional doctor findings, not passes and not blockers for the framing route.",
+    "run_directory_empty": true,
+    "host_state_directory_empty": true,
+    "project_not_initialized": true,
+    "canonical_writes": 0,
+    "real_model_calls": 0
+  },
+  "frozen_scope": {
+    "route": "frame.question_and_benchmarks only",
+    "team": "one mentor, two sealed collaborators, one direct researcher choice, and at most one worker",
+    "completion_action": "stage_and_commit only",
+    "terminal_boundary": "stop after framing commit or honest terminal failure; no decomposition, audit, G1, or later route",
+    "claims_not_authorized": [
+      "multi-agent superiority",
+      "provider or backend independence",
+      "research quality",
+      "novelty",
+      "target-venue readiness"
+    ]
+  }
+}

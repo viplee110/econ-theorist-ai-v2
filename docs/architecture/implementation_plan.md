@@ -28,12 +28,16 @@ transport/oracle verification also passes: both surfaces validate under
 unchanged V8, produce an identical scientific projection, and write no
 canonical state; wrong-base rejection remains closed. This is deterministic
 self-test evidence, not fresh model evidence. The 2026-07-22 researcher
-priority decision stops additional protocol-only paired runs here: the next
-milestone is a minimal researcher-facing Phase 5B team slice and one real
-theory-project pilot. A new held-out authoring pair may be resumed only when a
-concrete product failure makes that comparison decision-relevant; it is not a
-prerequisite for beginning product learning. Bridge integration, V9, and an
-exploratory v1/v2 quality claim remain blocked. See
+priority decision stopped additional protocol-only paired runs. The minimal
+researcher-facing Phase 5B framing team and its first real framing-only pilot
+are now complete at the source-aware machine-path level: M passed, T was mixed,
+U was not established, and a source-isolated candidate-only model cold read
+rated Q mixed. The exact [pilot evidence summary](../../review_outputs/phase5b0_framing_team_public_pilot/evaluation_summary.md)
+binds those claims to the engine commit, wheel digest, and observable model
+labels. The next milestone is a frozen noncanonical nondegeneracy probe before
+any later canonical route or `ResearchMove` selection. A new held-out authoring
+pair may be resumed only when a concrete product failure makes that comparison
+decision-relevant. V9 and an exploratory v1/v2 quality claim remain blocked. See
 the exact [packaged-runtime verification](../../review_outputs/phase5a2_v8_authoring_pair_v2/packaged_runtime_verification.md).
 
 ## 1. Delivery strategy
@@ -563,10 +567,13 @@ cannot take ownership of a previously staged candidate. Focused tests cover
 wrong/stale bindings, idempotence, tampering, minority preservation,
 ambiguity, changed briefs, `park`/`kill`, delivery/capture session mismatch,
 terminal conflicts, and forged handoffs. Actual model dispatch and semantic
-classification remain host responsibilities; one real public framing pilot is
-still required before calling the surface demonstrated. Safe canonical
+classification remain host responsibilities. One real public framing-only
+pilot has now provided [source-aware evidence](../../review_outputs/phase5b0_framing_team_public_pilot/evaluation_summary.md)
+for the machine surface and a recorded single-worker completion binding, but
+not provider-independent model delivery, strong collaborator diversity,
+unscripted user value, or scientific quality. Safe canonical
 disposition/reframe recovery after `kill` or `new_brief_required` also remains
-open; those statuses stop the exploratory pilot.
+open; those statuses stop an exploratory pilot.
 
 Begin the exploratory product slice after the bounded Phase 5A substrate has
 demonstrated one real route commit, exact retry/recovery, and engine-owned

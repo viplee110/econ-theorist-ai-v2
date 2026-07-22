@@ -72,15 +72,22 @@ The researcher changed the product priority on 2026-07-22. Do not spend the
 next iteration on another protocol-only held-out pair. Preserve any unfinished
 fresh-pair design as noncanonical local work, but do not run or promote it
 unless a concrete researcher-facing failure makes the comparison necessary.
-The current product milestone is the minimal Phase 5B mentor/collaborator/
-research-worker team described in `docs/architecture/implementation_plan.md`,
-followed by one genuine theory-project pilot. That pilot should determine the
-first small scholar-derived `ResearchMove` batch. Do not reuse the packaged
-verification root or rerun either frozen case, create V9, merge this branch to
-`main`, or integrate the prototype into the public bridge. A canonical
-end-to-end audit and economics/editing-burden inspection remain required
-before an exploratory v1/v2 comparison. Do not expand generic security
-infrastructure unless a concrete local-use failure requires it.
+The minimal Phase 5B mentor/collaborator/research-worker slice has now completed
+one genuine framing-only public pilot. Its source-aware machine audit passed;
+team behavior was mixed because the collaborator proposals were not strongly
+different; researcher usefulness was not established because one recorded turn
+provides no usability baseline or friction measure and direct-current-user
+capture remains a host claim; and a source-isolated candidate-only model cold
+read rated the scientific frame mixed because it may collapse to finite-cell
+threshold enumeration. The immediate executable work is one frozen,
+noncanonical nondegeneracy probe on that frame. Its outcome should determine
+whether to continue, reframe, park, or kill the case and which first small
+scholar-derived `ResearchMove` batch is decision-relevant. Do not reuse the
+packaged verification root or rerun either frozen case, create V9, merge this
+branch to `main`, or integrate the semantic compiler prototype into the public
+bridge. A canonical end-to-end audit and economics/editing-burden inspection
+remain required before an exploratory v1/v2 comparison. Do not expand generic
+security infrastructure unless a concrete local-use failure requires it.
 
 The framing-only Phase 5B.0 contract, noncanonical binding/persistence module,
 and thin public Codex bridge projection are now present. They bind one mentor
@@ -96,13 +103,18 @@ the team path accepts only `stage_and_commit`; it cannot take ownership of a
 previously staged candidate. The bridge verifies the exact delivery/session,
 terminal direction, worker observation, and handoff but still trusts the
 host's direct-user, semantic-classification, and logical-sealing claims. It
-does not itself dispatch models or prove real multi-agent benefit. The
-immediate executable work is one genuine public framing pilot through the
-repository Codex skill, ending after the existing framing completion result.
-Inspect scientific usefulness and user friction before extending the team to
-another route or selecting `ResearchMove`s. If the pilot returns `kill` or
-`new_brief_required`, stop: safe canonical disposition/reframe recovery for
-the unfinished run remains open.
+does not itself dispatch models or prove real multi-agent benefit. The first
+public framing pilot's recorded completion committed after two exact
+relation-binding repairs and stopped before decomposition, audit, or G1.
+Postflight verdicts are M `PASS`, T `MIXED`, U `NOT ESTABLISHED`, and Q `MIXED`
+(confidence 0.91); see
+`review_outputs/phase5b0_framing_team_public_pilot/evaluation_summary.md`. Do
+not treat this as provider-independent delivery proof, multi-agent benefit,
+user-effort reduction, or research-quality evidence. Run the bounded
+scientific probe before extending the team, selecting `ResearchMove`s, or
+resuming later canonical routes. If any later pilot returns `kill` or
+`new_brief_required`, stop: safe canonical disposition/reframe recovery for the
+unfinished run remains open.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or

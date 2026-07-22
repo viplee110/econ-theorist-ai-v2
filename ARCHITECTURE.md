@@ -343,12 +343,17 @@ Host integration obeys these cross-cutting rules:
    cryptographic identity or resistance to a compromised local host;
 9. the complete machine/CLI path remains usable without any IDE adapter.
 
-Phase 5A first owns the bounded Codex substrate for this boundary. Once one
-real route commit, exact retry/recovery, and engine-owned canonical writing are
-demonstrated, a non-release Phase 5B product pilot may begin. The complete
-local research-ready gate still controls formal Phase 5B acceptance and any
-release claim; Claude/Cursor parity and public-release hardening may proceed
-later without blocking scientific learning. Phase 6 owns confirmatory claims
+Phase 5A first owns the bounded Codex substrate for this boundary. In one
+framing-only Phase 5B public pilot, host and operational records bind one packet
+to a mentor and two collaborator outputs, one researcher synthesis, and one
+worker activation/completion chain ending in an engine-owned canonical commit;
+see the exact [pilot evidence summary](review_outputs/phase5b0_framing_team_public_pilot/evaluation_summary.md).
+It demonstrates the source-aware machine path, not provider-independent model
+delivery, strong proposal diversity, unscripted user value, research quality,
+or multi-agent benefit. The complete local research-ready gate still controls
+formal Phase 5B acceptance and any release claim; Claude/Cursor parity and
+public-release hardening may proceed later without blocking scientific
+learning. Phase 6 owns confirmatory claims
 about comparative quality or human-effort reduction.
 
 ## 10. Architecture budgets

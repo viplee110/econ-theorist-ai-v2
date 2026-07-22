@@ -1,0 +1,9 @@
+{
+  "lock_schema": "economic-theory-frame/q-lock/v1",
+  "input_sha256": "43ea849be933a8528b357b3ba79c789587e1ecdad376d893382d750ac3820bb8",
+  "report_sha256": "c4915b9c646f6b3b57f0d2bdffd1bd401358c4bf5e029dad1b7835b11355f501",
+  "verdict": "MIXED",
+  "confidence": 0.91,
+  "model_observation": "high-intelligence-model-unverified",
+  "locked_at_utc": "2026-07-22T14:24:46.7304816Z"
+}

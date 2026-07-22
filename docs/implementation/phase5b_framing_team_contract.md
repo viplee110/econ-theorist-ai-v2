@@ -1,9 +1,10 @@
 # Phase 5B.0 Framing Research-Team Contract
 
 Status: researcher-authorized contract with an implemented noncanonical
-binding/persistence slice and thin public Codex host projection; a real-model
-pilot remains open, and no research-quality or multi-agent-benefit claim is
-made
+binding/persistence slice, thin public Codex host projection, and one completed
+real-model framing-only pilot; its source-aware machine path is recorded, while
+provider-independent delivery, research-quality, user-value, strong
+proposal-diversity, and multi-agent-benefit claims remain open
 
 Scope: `frame.question_and_benchmarks` only
 
@@ -230,7 +231,8 @@ captured directly, advisory lanes were logically sealed, and the semantic
 classification is honest. It does not independently observe UI gestures,
 provider/backend identity, meaningful proposal diversity, or model isolation.
 Focused deterministic tests therefore establish host-protocol behavior, not a
-completed real-model pilot or a multi-agent advantage.
+real-model result or a multi-agent advantage. The later pilot in Section 10 is
+separate source-aware evidence with the same host-trust boundary.
 
 Focused acceptance demonstrates:
 
@@ -245,9 +247,44 @@ Focused acceptance demonstrates:
    staged candidates cannot be claimed by the team;
 8. creating or reading team records does not move the canonical head;
 9. `single_fallback` leaves the existing Phase 5A route usable; and
-10. a later real framing pilot records user interventions, useful disagreement,
-   and friction without claiming multi-agent superiority.
+10. a real framing pilot records the intervention and disagreement evidence
+    needed to assess, rather than assume, usability or multi-agent value.
 
 Only the focused Phase 5B.0 tests are required during implementation. Run the
 complete non-long suite and exporters once before declaring the slice stable,
 not after every small edit.
+
+## 10. First real-model pilot evidence
+
+The first public framing-team pilot is recorded in the exact
+[evidence summary](../../review_outputs/phase5b0_framing_team_public_pilot/evaluation_summary.md)
+and its compact archive.
+It used engine commit
+`cb2abb97e94086e940bb1a84c95eb054cd4eca2c`, wheel SHA-256
+`f94f62ecfbc11bcdf7ad52b5cadd4ed127de0006309a54daf025e1bea7670064`,
+and the host-observed model label
+`user-selected-high-intelligence-unverified`. The Q reader separately recorded
+`high-intelligence-model-unverified`; neither label establishes the actual
+backend, model identity, or lane independence.
+
+Host and operational records bind the immutable packet to one mentor output and
+two attributed collaborator outputs, one researcher synthesis to one worker
+handoff, and one recorded worker activation/completion chain to the framing
+candidate. That candidate committed after two exact relation-binding repairs;
+no later route or human gate ran. This does not independently prove direct-user
+capture, logical sealing, or provider-level worker identity. Source-aware
+postflight assigned M `PASS`. Team behavior was `MIXED`: the mentor challenge
+and recorded handoff were useful and faithful, but both collaborator frames
+retained the same finite posterior-threshold mechanism. U remains `NOT
+ESTABLISHED`: a single recorded turn, with no comparison baseline or friction
+measurement, cannot establish spontaneous usefulness or low user burden. A
+source-isolated candidate-only model cold read assigned Q `MIXED` with
+confidence 0.91: the benchmark and economic margin were recoverable and honest,
+but the minimal model may reduce to four-cell threshold arithmetic.
+
+This evidence supports a source-aware audit of the recorded framing-team
+transport, persistence, and bounded single-writer path. It does not satisfy the
+full Phase 5B exit criteria or justify a broader panel, default research-move
+activation, quality claim, or usability claim. A noncanonical scientific probe
+must first decide whether the case admits an open-region, economically
+interpretable characterization beyond finite-cell enumeration.

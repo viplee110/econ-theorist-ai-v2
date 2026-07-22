@@ -361,11 +361,20 @@ getting closer.**
   canonical, route-valid `frame.question_and_benchmarks` commit
 - ✅ One later public blind run with canonical framing and primitive-decomposition
   commits, an honestly negative audit candidate, and no fabricated G1 decision
+- ✅ One recorded framing-team pilot whose host/operational evidence binds a
+  mentor, two attributed collaborators, one natural-language researcher
+  synthesis, and one worker completion chain to a canonical framing commit; the
+  exact [engine/wheel/model-bound verdicts](review_outputs/phase5b0_framing_team_public_pilot/evaluation_summary.md)
+  are M `PASS`, T `MIXED`, U not established, and Q `MIXED`, so this is
+  source-aware machine-path evidence rather than provider-independent delivery,
+  multi-agent, usability, or quality evidence
 
 ### Still being tested or built
 
 - 🧪 Successful post-stabilization V8 audit rerun and held-out V1/V2 comparison
 - 🧪 Comparative readability, token, wall-time, and active-human-effort gains
+- 🧪 A nondegeneracy probe for the first framing-team case and a later genuinely
+  unscripted user-choice pilot
 - 🚧 Clean first-use installation and positive private execution
 - 🚧 Claude Code and Cursor host parity
 - ⏳ End-to-end human–AI paper development at the intended quality bar

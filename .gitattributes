@@ -18,3 +18,4 @@ review_outputs/phase5a2_v5_2_codex_public_pilot/canonical_store/** -text -eol
 review_outputs/phase5a2_v5_3_codex_public_pilot/generator_report.md -text -eol
 review_outputs/phase5a2_v5_3_codex_public_pilot/run/** -text -eol
 review_outputs/phase5a2_v5_3_codex_public_pilot/canonical_state/** -text -eol
+review_outputs/phase5b0_framing_team_public_pilot/** -text -eol whitespace=-blank-at-eol,-blank-at-eof
