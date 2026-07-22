@@ -82,15 +82,27 @@ end-to-end audit and economics/editing-burden inspection remain required
 before an exploratory v1/v2 comparison. Do not expand generic security
 infrastructure unless a concrete local-use failure requires it.
 
-The framing-only Phase 5B.0 contract and its noncanonical binding/persistence
-module are now present. They bind one mentor and two collaborator outputs to
-one immutable framing WorkPacket, preserve all advice, and create at most one
-worker handoff; focused tests do not move canonical state. The module does not
-dispatch models or prove direct-user capture, ambiguity/scope classification,
-fallback, or real multi-agent benefit. The immediate executable work is the
-thin trusted-local Codex host projection for those missing controls, followed
-by one real framing pilot. Do not expose the sidecar as a usable team feature
-before that host slice is complete.
+The framing-only Phase 5B.0 contract, noncanonical binding/persistence module,
+and thin public Codex bridge projection are now present. They bind one mentor
+and two collaborator outputs to one immutable framing WorkPacket, preserve all
+advice, distinguish clear direction from ambiguity or a changed brief, expose
+honest single fallback, explicitly authorize the three advisory exposures
+plus one terminal-handoff-conditional worker exposure after the original
+single-coordinator delivery, and create at most one terminal worker handoff;
+focused tests do not move canonical state. An additive operational completion
+binding records worker/handoff provenance without repurposing frozen receipt
+tool identities. One immutable activation fixes the worker per handoff, and
+the team path accepts only `stage_and_commit`; it cannot take ownership of a
+previously staged candidate. The bridge verifies the exact delivery/session,
+terminal direction, worker observation, and handoff but still trusts the
+host's direct-user, semantic-classification, and logical-sealing claims. It
+does not itself dispatch models or prove real multi-agent benefit. The
+immediate executable work is one genuine public framing pilot through the
+repository Codex skill, ending after the existing framing completion result.
+Inspect scientific usefulness and user friction before extending the team to
+another route or selecting `ResearchMove`s. If the pilot returns `kill` or
+`new_brief_required`, stop: safe canonical disposition/reframe recovery for
+the unfinished run remains open.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or

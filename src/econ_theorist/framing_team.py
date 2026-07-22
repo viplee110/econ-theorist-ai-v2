@@ -14,15 +14,16 @@ from typing import Literal, TypeVar
 from pydantic import model_validator
 
 from .codec import canonical_json_bytes, sha256_digest
-from .machine.models import WorkPacketV1
+from .machine.models import OperationKey, WorkPacketV1
 from .machine.operational import (
     ContentAddressedOperationalStore,
     OperationalError,
     ProjectOperationalLayout,
+    write_immutable_operational,
 )
 from .machine.packets import read_work_packet
 from .models import Digest, NonEmptyString, StableId, StrictModel
-from .runtime.layout import StoreLayout
+from .runtime.layout import StoreLayout, assert_safe_store_path, path_entry_exists
 from .runtime.replay import replay
 
 
@@ -31,7 +32,23 @@ FramingAdvisoryLaneId = Literal[
     "collaborator_a",
     "collaborator_b",
 ]
+FramingTeamLaneId = Literal[
+    "mentor",
+    "collaborator_a",
+    "collaborator_b",
+    "research_worker",
+]
 FramingDisposition = Literal["continue", "simplify", "pivot", "park", "kill"]
+FramingTeamStopStatus = Literal[
+    "awaiting_clarification",
+    "new_brief_required",
+]
+FramingTeamTerminalStatus = Literal[
+    "handoff_ready",
+    "new_brief_required",
+    "parked",
+    "killed",
+]
 
 _FRAMING_ROUTE_ID = "frame.question_and_benchmarks"
 _LANE_ROLES: dict[str, Literal["mentor", "collaborator"]] = {
@@ -72,12 +89,57 @@ class _FramingPacketBoundV1(StrictModel):
     run_input_brief_hash: Digest | None
 
 
+class FramingTeamDeliveryAuthorizationV1(_FramingPacketBoundV1):
+    """Declare the bounded Phase 5B team after single-host delivery."""
+
+    authorization_schema: Literal[
+        "econ-theorist/framing-team-delivery-authorization/v1"
+    ] = "econ-theorist/framing-team-delivery-authorization/v1"
+    source_delivery_envelope_hash: Digest
+    source_capability_receipt_hash: Digest
+    source_egress_plan_hash: Digest
+    host_product: NonEmptyString
+    host_version: NonEmptyString
+    adapter_id: NonEmptyString
+    adapter_version: NonEmptyString
+    host_session_id: NonEmptyString
+    source_agent_topology: Literal["single"] = "single"
+    authorized_lane_ids: tuple[FramingTeamLaneId, ...] = (
+        "mentor",
+        "collaborator_a",
+        "collaborator_b",
+        "research_worker",
+    )
+    delegated_packet_exposure_count: Literal[4] = 4
+    worker_exposure_condition: Literal["after_exact_terminal_handoff"] = (
+        "after_exact_terminal_handoff"
+    )
+    lane_separation_claim: Literal["logical", "host_enforced"]
+    direct_user_capture_claim: Literal["current_user_turn"] = "current_user_turn"
+    canonical_write_allowed: Literal[False] = False
+    authority_semantics: Literal[
+        "phase5b_declared_bounded_team_delegation_after_single_coordinator_delivery"
+    ] = "phase5b_declared_bounded_team_delegation_after_single_coordinator_delivery"
+
+    @model_validator(mode="after")
+    def _exact_advisory_exposures(self) -> "FramingTeamDeliveryAuthorizationV1":
+        if self.authorized_lane_ids != (
+            "mentor",
+            "collaborator_a",
+            "collaborator_b",
+            "research_worker",
+        ):
+            raise ValueError("framing team authorization requires the exact four lanes")
+        return self
+
+
 class FramingTeamPlanV1(_FramingPacketBoundV1):
     plan_schema: Literal["econ-theorist/framing-team-plan/v1"] = (
         "econ-theorist/framing-team-plan/v1"
     )
     execution_mode: Literal["isolated_multi_agent", "sequential_single_model"]
     isolation_claim: Literal["logical", "host_enforced"]
+    delivery_authorization_hash: Digest
     role_overlay_version: Literal["framing-team-role-overlay/v1"] = (
         "framing-team-role-overlay/v1"
     )
@@ -194,6 +256,102 @@ class FramingWorkerHandoffV1(_FramingPacketBoundV1):
     )
 
 
+class FramingWorkerActivationV1(_FramingPacketBoundV1):
+    """Fix the one observable worker allowed to use a terminal handoff."""
+
+    activation_schema: Literal[
+        "econ-theorist/framing-worker-activation/v1"
+    ] = "econ-theorist/framing-worker-activation/v1"
+    team_plan_hash: Digest
+    panel_hash: Digest
+    synthesis_hash: Digest
+    worker_handoff_hash: Digest
+    delivery_envelope_hash: Digest
+    worker_lane_id: Literal["research_worker"] = "research_worker"
+    worker_agent_label: StableId
+    worker_model_observation: NonEmptyString
+    exposure_condition: Literal["exact_terminal_handoff_satisfied"] = (
+        "exact_terminal_handoff_satisfied"
+    )
+    authority_semantics: Literal["one_worker_per_terminal_handoff"] = (
+        "one_worker_per_terminal_handoff"
+    )
+
+
+class FramingWorkerCompletionBindingV1(_FramingPacketBoundV1):
+    """Operational provenance for one declared team completion request.
+
+    This sidecar deliberately does not change the frozen Phase 5A host receipt.
+    A matching host receipt proves the operation completed; this record only
+    binds that operation key to the exact worker observation and handoff that
+    the Phase 5B host declared before invoking ``candidate.complete``.
+    """
+
+    binding_schema: Literal[
+        "econ-theorist/framing-worker-completion-binding/v1"
+    ] = "econ-theorist/framing-worker-completion-binding/v1"
+    team_plan_hash: Digest
+    panel_hash: Digest
+    synthesis_hash: Digest
+    worker_handoff_hash: Digest
+    worker_activation_hash: Digest
+    completion_operation_key: OperationKey
+    delivery_envelope_hash: Digest
+    candidate_digest: Digest
+    worker_lane_id: Literal["research_worker"] = "research_worker"
+    worker_agent_label: StableId
+    worker_model_observation: NonEmptyString
+    binding_status: Literal["declared_before_candidate_completion"] = (
+        "declared_before_candidate_completion"
+    )
+    authority_semantics: Literal["operational_provenance_not_tool_identity"] = (
+        "operational_provenance_not_tool_identity"
+    )
+
+
+class FramingTeamStopV1(_FramingPacketBoundV1):
+    stop_schema: Literal["econ-theorist/framing-team-stop/v1"] = (
+        "econ-theorist/framing-team-stop/v1"
+    )
+    team_plan_hash: Digest
+    panel_hash: Digest
+    researcher_id: StableId
+    capture_channel: Literal["trusted_local_direct_user"] = (
+        "trusted_local_direct_user"
+    )
+    researcher_text: NonEmptyString
+    status: FramingTeamStopStatus
+    reason: NonEmptyString
+    authority_semantics: Literal["noncanonical_stop_no_handoff"] = (
+        "noncanonical_stop_no_handoff"
+    )
+
+
+class FramingTeamTerminalOutcomeV1(_FramingPacketBoundV1):
+    """The one immutable terminal direction allowed for a framing team run."""
+
+    outcome_schema: Literal["econ-theorist/framing-team-terminal-outcome/v1"] = (
+        "econ-theorist/framing-team-terminal-outcome/v1"
+    )
+    team_plan_hash: Digest
+    panel_hash: Digest
+    status: FramingTeamTerminalStatus
+    outcome_record_hash: Digest
+    worker_handoff_hash: Digest | None = None
+    authority_semantics: Literal["one_terminal_direction_per_route_run"] = (
+        "one_terminal_direction_per_route_run"
+    )
+
+    @model_validator(mode="after")
+    def _worker_hash_matches_status(self) -> "FramingTeamTerminalOutcomeV1":
+        if self.status == "handoff_ready":
+            if self.worker_handoff_hash != self.outcome_record_hash:
+                raise ValueError("handoff outcome must name its exact handoff")
+        elif self.worker_handoff_hash is not None:
+            raise ValueError("no-worker terminal outcome cannot name a handoff")
+        return self
+
+
 _RecordT = TypeVar("_RecordT", bound=StrictModel)
 
 
@@ -221,6 +379,36 @@ def _packet_binding(packet: WorkPacketV1, work_packet_hash: str) -> dict[str, ob
         "compiled_context_hash": packet.compiled_context_hash,
         "run_input_brief_hash": packet.run_input_brief_hash,
     }
+
+
+def build_framing_team_delivery_authorization(
+    packet: WorkPacketV1,
+    work_packet_hash: str,
+    *,
+    source_delivery_envelope_hash: str,
+    source_capability_receipt_hash: str,
+    source_egress_plan_hash: str,
+    host_product: str,
+    host_version: str,
+    adapter_id: str,
+    adapter_version: str,
+    host_session_id: str,
+    lane_separation_claim: Literal["logical", "host_enforced"],
+) -> FramingTeamDeliveryAuthorizationV1:
+    """Build the declaration for three advisors and one conditional worker."""
+
+    return FramingTeamDeliveryAuthorizationV1(
+        **_packet_binding(packet, work_packet_hash),
+        source_delivery_envelope_hash=source_delivery_envelope_hash,
+        source_capability_receipt_hash=source_capability_receipt_hash,
+        source_egress_plan_hash=source_egress_plan_hash,
+        host_product=host_product,
+        host_version=host_version,
+        adapter_id=adapter_id,
+        adapter_version=adapter_version,
+        host_session_id=host_session_id,
+        lane_separation_claim=lane_separation_claim,
+    )
 
 
 def _team_store(
@@ -253,11 +441,35 @@ def _read_record(
     return value
 
 
+def _read_fixed_record(
+    operational: ProjectOperationalLayout,
+    route_run_id: str,
+    filename: str,
+    model: type[_RecordT],
+) -> _RecordT | None:
+    store = _team_store(operational, route_run_id)
+    path = store.root / filename
+    if not path_entry_exists(path):
+        return None
+    try:
+        assert_safe_store_path(
+            store.anchor, path, expected="file", allow_missing=False
+        )
+        data = path.read_bytes()
+        value = model.model_validate_json(data, strict=True)
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise OperationalError(f"invalid fixed framing-team record: {filename}") from exc
+    if canonical_json_bytes(value) != data:
+        raise OperationalError(f"noncanonical fixed framing-team record: {filename}")
+    return value
+
+
 def _load_current_framing_packet(
     operational: ProjectOperationalLayout,
     *,
     route_run_id: str,
     work_packet_hash: str,
+    require_current_head: bool = True,
 ) -> WorkPacketV1:
     packet = read_work_packet(operational, route_run_id, work_packet_hash)
     if sha256_digest(canonical_json_bytes(packet)) != work_packet_hash:
@@ -267,7 +479,7 @@ def _load_current_framing_packet(
     snapshot = replay(StoreLayout.from_store_root(operational.store_root))
     if snapshot.project_id != packet.project_id:
         raise OperationalError("framing team project binding is stale")
-    if snapshot.head != packet.base_head:
+    if require_current_head and snapshot.head != packet.base_head:
         raise OperationalError("framing team base head is stale")
     return packet
 
@@ -284,6 +496,103 @@ def _require_binding(
     )
     if _binding_tuple(value) != _binding_tuple(expected):
         raise OperationalError(f"{label} does not match the WorkPacket binding")
+
+
+def _read_activation(
+    operational: ProjectOperationalLayout,
+    packet: WorkPacketV1,
+    work_packet_hash: str,
+) -> tuple[
+    str,
+    FramingTeamPlanV1,
+    FramingTeamDeliveryAuthorizationV1,
+] | None:
+    plan = _read_fixed_record(
+        operational,
+        packet.route_run_id,
+        "framing-team-plan.json",
+        FramingTeamPlanV1,
+    )
+    if plan is None:
+        return None
+    plan_hash = sha256_digest(canonical_json_bytes(plan))
+    stored = _read_record(
+        _team_store(operational, packet.route_run_id),
+        "framing-team-plans",
+        plan_hash,
+        FramingTeamPlanV1,
+    )
+    if stored != plan:
+        raise OperationalError("fixed framing team plan differs from content store")
+    _require_binding(plan, packet, work_packet_hash, label="framing team plan")
+    authorization = _read_record(
+        _team_store(operational, packet.route_run_id),
+        "framing-team-delivery-authorizations",
+        plan.delivery_authorization_hash,
+        FramingTeamDeliveryAuthorizationV1,
+    )
+    _require_binding(
+        authorization,
+        packet,
+        work_packet_hash,
+        label="framing team delivery authorization",
+    )
+    if authorization.lane_separation_claim != plan.isolation_claim:
+        raise OperationalError("team plan isolation differs from its authorization")
+    return plan_hash, plan, authorization
+
+
+def _publish_terminal_outcome(
+    operational: ProjectOperationalLayout,
+    packet: WorkPacketV1,
+    work_packet_hash: str,
+    outcome: FramingTeamTerminalOutcomeV1,
+) -> FramingTeamTerminalOutcomeV1:
+    activation = _read_activation(operational, packet, work_packet_hash)
+    if activation is None or activation[0] != outcome.team_plan_hash:
+        raise OperationalError("terminal framing outcome lacks its exact team plan")
+    _require_binding(
+        outcome, packet, work_packet_hash, label="framing team terminal outcome"
+    )
+    store = _team_store(operational, packet.route_run_id)
+    store.install("framing-team-terminal-outcomes", outcome)
+    write_immutable_operational(
+        store.anchor,
+        store.root / "framing-team-terminal-outcome.json",
+        canonical_json_bytes(outcome),
+    )
+    return outcome
+
+
+def _read_terminal_outcome(
+    operational: ProjectOperationalLayout,
+    packet: WorkPacketV1,
+    work_packet_hash: str,
+) -> FramingTeamTerminalOutcomeV1 | None:
+    outcome = _read_fixed_record(
+        operational,
+        packet.route_run_id,
+        "framing-team-terminal-outcome.json",
+        FramingTeamTerminalOutcomeV1,
+    )
+    if outcome is None:
+        return None
+    digest = sha256_digest(canonical_json_bytes(outcome))
+    stored = _read_record(
+        _team_store(operational, packet.route_run_id),
+        "framing-team-terminal-outcomes",
+        digest,
+        FramingTeamTerminalOutcomeV1,
+    )
+    if stored != outcome:
+        raise OperationalError("fixed terminal outcome differs from content store")
+    activation = _read_activation(operational, packet, work_packet_hash)
+    if activation is None or activation[0] != outcome.team_plan_hash:
+        raise OperationalError("terminal framing outcome lacks its exact team plan")
+    _require_binding(
+        outcome, packet, work_packet_hash, label="framing team terminal outcome"
+    )
+    return outcome
 
 
 def framing_lane_input_hash(
@@ -310,6 +619,7 @@ def open_framing_team_plan(
     *,
     route_run_id: str,
     work_packet_hash: str,
+    delivery_authorization: FramingTeamDeliveryAuthorizationV1,
     execution_mode: Literal[
         "isolated_multi_agent", "sequential_single_model"
     ] = "isolated_multi_agent",
@@ -322,15 +632,95 @@ def open_framing_team_plan(
         route_run_id=route_run_id,
         work_packet_hash=work_packet_hash,
     )
+    _require_binding(
+        delivery_authorization,
+        packet,
+        work_packet_hash,
+        label="framing team delivery authorization",
+    )
+    if delivery_authorization.lane_separation_claim != isolation_claim:
+        raise OperationalError(
+            "requested team isolation differs from delivery authorization"
+        )
+    store = _team_store(operational, route_run_id)
+    authorization_hash, _ = store.install(
+        "framing-team-delivery-authorizations", delivery_authorization
+    )
     plan = FramingTeamPlanV1(
         **_packet_binding(packet, work_packet_hash),
         execution_mode=execution_mode,
         isolation_claim=isolation_claim,
+        delivery_authorization_hash=authorization_hash,
         role_overlays=dict(_ROLE_OVERLAYS),
     )
-    return _team_store(operational, route_run_id).install(
-        "framing-team-plans", plan
-    )[0], plan
+    plan_hash, _ = store.install("framing-team-plans", plan)
+    write_immutable_operational(
+        store.anchor,
+        store.root / "framing-team-plan.json",
+        canonical_json_bytes(plan),
+    )
+    return plan_hash, plan
+
+
+def framing_team_is_active(
+    operational: ProjectOperationalLayout,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    require_current_head: bool = True,
+) -> bool:
+    """Return whether this exact packet has entered the declared team path."""
+
+    packet = _load_current_framing_packet(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        require_current_head=require_current_head,
+    )
+    return _read_activation(operational, packet, work_packet_hash) is not None
+
+
+def read_framing_team_plan(
+    operational: ProjectOperationalLayout,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    team_plan_hash: str,
+) -> FramingTeamPlanV1:
+    """Read one declared team plan and revalidate its live packet binding."""
+
+    packet = _load_current_framing_packet(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+    )
+    activation = _read_activation(operational, packet, work_packet_hash)
+    if activation is None or activation[0] != team_plan_hash:
+        raise OperationalError("framing team plan is not the active plan")
+    plan = activation[1]
+    return plan
+
+
+def read_framing_team_delivery_authorization(
+    operational: ProjectOperationalLayout,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    team_plan_hash: str,
+    require_current_head: bool = True,
+) -> FramingTeamDeliveryAuthorizationV1:
+    """Read the exact host/session declaration behind one active team plan."""
+
+    packet = _load_current_framing_packet(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        require_current_head=require_current_head,
+    )
+    activation = _read_activation(operational, packet, work_packet_hash)
+    if activation is None or activation[0] != team_plan_hash:
+        raise OperationalError("framing team authorization is not active")
+    return activation[2]
 
 
 def build_framing_lane_output(
@@ -384,9 +774,10 @@ def publish_framing_team_panel(
         work_packet_hash=work_packet_hash,
     )
     store = _team_store(operational, route_run_id)
-    plan = _read_record(
-        store, "framing-team-plans", team_plan_hash, FramingTeamPlanV1
-    )
+    activation = _read_activation(operational, packet, work_packet_hash)
+    if activation is None or activation[0] != team_plan_hash:
+        raise OperationalError("framing team panel uses a non-active plan")
+    plan = activation[1]
     _require_binding(plan, packet, work_packet_hash, label="framing team plan")
     for output in (mentor, *collaborators):
         _require_binding(output, packet, work_packet_hash, label="framing lane output")
@@ -395,15 +786,49 @@ def publish_framing_team_panel(
         expected_input = framing_lane_input_hash(plan, team_plan_hash, output.lane_id)
         if output.lane_input_hash != expected_input:
             raise OperationalError("framing lane input binding is invalid")
-        store.install("framing-lane-outputs", output)
     panel = FramingTeamPanelV1(
         **_packet_binding(packet, work_packet_hash),
         team_plan_hash=team_plan_hash,
         mentor=mentor,
         collaborators=collaborators,
     )
+    expected_panel_hash = sha256_digest(canonical_json_bytes(panel))
+    terminal = _read_terminal_outcome(operational, packet, work_packet_hash)
+    if terminal is not None and terminal.panel_hash != expected_panel_hash:
+        raise OperationalError("framing team already has a terminal direction")
+    for output in (mentor, *collaborators):
+        store.install("framing-lane-outputs", output)
     panel_hash, _ = store.install("framing-team-panels", panel)
+    if panel_hash != expected_panel_hash:  # pragma: no cover
+        raise OperationalError("framing team panel digest changed during publish")
     return panel_hash, panel
+
+
+def read_framing_team_panel(
+    operational: ProjectOperationalLayout,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    panel_hash: str,
+) -> FramingTeamPanelV1:
+    """Read one complete panel and revalidate its plan and packet binding."""
+
+    packet = _load_current_framing_packet(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+    )
+    store = _team_store(operational, route_run_id)
+    panel = _read_record(
+        store, "framing-team-panels", panel_hash, FramingTeamPanelV1
+    )
+    activation = _read_activation(operational, packet, work_packet_hash)
+    if activation is None or activation[0] != panel.team_plan_hash:
+        raise OperationalError("framing team panel uses a non-active plan")
+    plan = activation[1]
+    _require_binding(plan, packet, work_packet_hash, label="framing team plan")
+    _require_binding(panel, packet, work_packet_hash, label="framing team panel")
+    return panel
 
 
 def build_framing_researcher_synthesis(
@@ -462,12 +887,10 @@ def publish_framing_researcher_synthesis(
     panel = _read_record(
         store, "framing-team-panels", panel_hash, FramingTeamPanelV1
     )
-    plan = _read_record(
-        store,
-        "framing-team-plans",
-        panel.team_plan_hash,
-        FramingTeamPlanV1,
-    )
+    activation = _read_activation(operational, packet, work_packet_hash)
+    if activation is None or activation[0] != panel.team_plan_hash:
+        raise OperationalError("researcher synthesis uses a non-active plan")
+    plan = activation[1]
     _require_binding(plan, packet, work_packet_hash, label="framing team plan")
     _require_binding(panel, packet, work_packet_hash, label="framing team panel")
     _require_binding(
@@ -477,8 +900,143 @@ def publish_framing_researcher_synthesis(
         raise OperationalError("researcher synthesis references a different panel")
     if synthesis.team_plan_hash != panel.team_plan_hash:
         raise OperationalError("researcher synthesis references a different plan")
+    expected_synthesis_hash = sha256_digest(canonical_json_bytes(synthesis))
+    terminal = _read_terminal_outcome(operational, packet, work_packet_hash)
+    if terminal is not None:
+        if synthesis.disposition in {"park", "kill"}:
+            expected_status = (
+                "parked" if synthesis.disposition == "park" else "killed"
+            )
+            exact_retry = (
+                terminal.status == expected_status
+                and terminal.outcome_record_hash == expected_synthesis_hash
+            )
+        elif terminal.status == "handoff_ready" and terminal.worker_handoff_hash:
+            prior_handoff = _read_record(
+                store,
+                "framing-team-handoffs",
+                terminal.worker_handoff_hash,
+                FramingWorkerHandoffV1,
+            )
+            exact_retry = prior_handoff.synthesis_hash == expected_synthesis_hash
+        else:
+            exact_retry = False
+        if not exact_retry:
+            raise OperationalError(
+                "framing team already has a different terminal direction"
+            )
     synthesis_hash, _ = store.install("framing-team-syntheses", synthesis)
+    if synthesis_hash != expected_synthesis_hash:  # pragma: no cover
+        raise OperationalError("researcher synthesis digest changed during publish")
+    if synthesis.disposition in {"park", "kill"}:
+        status: FramingTeamTerminalStatus = (
+            "parked" if synthesis.disposition == "park" else "killed"
+        )
+        _publish_terminal_outcome(
+            operational,
+            packet,
+            work_packet_hash,
+            FramingTeamTerminalOutcomeV1(
+                **_packet_binding(packet, work_packet_hash),
+                team_plan_hash=synthesis.team_plan_hash,
+                panel_hash=panel_hash,
+                status=status,
+                outcome_record_hash=synthesis_hash,
+            ),
+        )
     return synthesis_hash, synthesis
+
+
+def build_framing_team_stop(
+    panel: FramingTeamPanelV1,
+    panel_hash: str,
+    *,
+    researcher_id: str,
+    researcher_text: str,
+    status: FramingTeamStopStatus,
+    reason: str,
+) -> FramingTeamStopV1:
+    """Build an attributed clarification or new-brief stop without a handoff."""
+
+    return FramingTeamStopV1(
+        **panel.model_dump(
+            include={
+                "project_id",
+                "route_id",
+                "route_run_id",
+                "base_head",
+                "work_packet_hash",
+                "context_manifest_hash",
+                "compiled_context_hash",
+                "run_input_brief_hash",
+            }
+        ),
+        team_plan_hash=panel.team_plan_hash,
+        panel_hash=panel_hash,
+        researcher_id=researcher_id,
+        researcher_text=researcher_text,
+        status=status,
+        reason=reason,
+    )
+
+
+def publish_framing_team_stop(
+    operational: ProjectOperationalLayout,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    panel_hash: str,
+    stop: FramingTeamStopV1,
+) -> tuple[str, FramingTeamStopV1]:
+    """Persist one typed stop while proving that no worker handoff was made."""
+
+    panel = read_framing_team_panel(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        panel_hash=panel_hash,
+    )
+    packet = _load_current_framing_packet(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+    )
+    _require_binding(stop, packet, work_packet_hash, label="framing team stop")
+    if stop.panel_hash != panel_hash:
+        raise OperationalError("framing team stop references a different panel")
+    if stop.team_plan_hash != panel.team_plan_hash:
+        raise OperationalError("framing team stop references a different plan")
+    expected_stop_hash = sha256_digest(canonical_json_bytes(stop))
+    terminal = _read_terminal_outcome(operational, packet, work_packet_hash)
+    if terminal is not None:
+        exact_retry = (
+            stop.status == "new_brief_required"
+            and terminal.status == "new_brief_required"
+            and terminal.outcome_record_hash == expected_stop_hash
+        )
+        if not exact_retry:
+            raise OperationalError(
+                "framing team already has a different terminal direction"
+            )
+    stop_hash, _ = _team_store(operational, route_run_id).install(
+        "framing-team-stops", stop
+    )
+    if stop_hash != expected_stop_hash:  # pragma: no cover
+        raise OperationalError("framing team stop digest changed during publish")
+    if stop.status == "new_brief_required":
+        _publish_terminal_outcome(
+            operational,
+            packet,
+            work_packet_hash,
+            FramingTeamTerminalOutcomeV1(
+                **_packet_binding(packet, work_packet_hash),
+                team_plan_hash=stop.team_plan_hash,
+                panel_hash=panel_hash,
+                status="new_brief_required",
+                outcome_record_hash=stop_hash,
+            ),
+        )
+    return stop_hash, stop
 
 
 def publish_framing_worker_handoff(
@@ -530,7 +1088,31 @@ def publish_framing_worker_handoff(
         candidate_logical_path=packet.candidate_logical_path,
         worker_brief=synthesis.worker_brief,
     )
+    expected_handoff_hash = sha256_digest(canonical_json_bytes(handoff))
+    terminal = _read_terminal_outcome(operational, packet, work_packet_hash)
+    if terminal is not None and (
+        terminal.status != "handoff_ready"
+        or terminal.worker_handoff_hash != expected_handoff_hash
+    ):
+        raise OperationalError(
+            "framing team already has a different terminal direction"
+        )
     handoff_hash, _ = store.install("framing-team-handoffs", handoff)
+    if handoff_hash != expected_handoff_hash:  # pragma: no cover - digest invariant
+        raise OperationalError("framing worker handoff digest changed during publish")
+    _publish_terminal_outcome(
+        operational,
+        packet,
+        work_packet_hash,
+        FramingTeamTerminalOutcomeV1(
+            **_packet_binding(packet, work_packet_hash),
+            team_plan_hash=handoff.team_plan_hash,
+            panel_hash=handoff.panel_hash,
+            status="handoff_ready",
+            outcome_record_hash=handoff_hash,
+            worker_handoff_hash=handoff_hash,
+        ),
+    )
     return handoff_hash, handoff
 
 
@@ -540,18 +1122,25 @@ def read_framing_worker_inputs(
     route_run_id: str,
     work_packet_hash: str,
     handoff_hash: str,
+    require_current_head: bool = True,
 ) -> tuple[
     WorkPacketV1,
     FramingTeamPanelV1,
     FramingResearcherSynthesisV1,
     FramingWorkerHandoffV1,
 ]:
-    """Read and revalidate the complete bounded input for the one worker."""
+    """Read and revalidate the complete bounded input for the one worker.
+
+    ``require_current_head=False`` is reserved for an exact completion retry
+    after this route already has a canonical outcome; all immutable packet and
+    sidecar bindings are still revalidated.
+    """
 
     packet = _load_current_framing_packet(
         operational,
         route_run_id=route_run_id,
         work_packet_hash=work_packet_hash,
+        require_current_head=require_current_head,
     )
     store = _team_store(operational, route_run_id)
     handoff = _read_record(
@@ -560,12 +1149,10 @@ def read_framing_worker_inputs(
     panel = _read_record(
         store, "framing-team-panels", handoff.panel_hash, FramingTeamPanelV1
     )
-    plan = _read_record(
-        store,
-        "framing-team-plans",
-        handoff.team_plan_hash,
-        FramingTeamPlanV1,
-    )
+    activation = _read_activation(operational, packet, work_packet_hash)
+    if activation is None or activation[0] != handoff.team_plan_hash:
+        raise OperationalError("worker handoff uses a non-active plan")
+    plan = activation[1]
     synthesis = _read_record(
         store,
         "framing-team-syntheses",
@@ -611,21 +1198,370 @@ def read_framing_worker_inputs(
             raise OperationalError("stored lane output differs from the panel")
     if handoff.candidate_logical_path != packet.candidate_logical_path:
         raise OperationalError("worker handoff candidate path differs from WorkPacket")
+    terminal = _read_terminal_outcome(operational, packet, work_packet_hash)
+    if (
+        terminal is None
+        or terminal.status != "handoff_ready"
+        or terminal.worker_handoff_hash != handoff_hash
+        or terminal.outcome_record_hash != handoff_hash
+    ):
+        raise OperationalError("worker handoff is not the terminal team direction")
     return packet, panel, synthesis, handoff
 
 
+def _completion_binding_filename(completion_operation_key: str) -> str:
+    key_digest = sha256_digest(completion_operation_key.encode("utf-8"))
+    return f"team-completions/by-key/{key_digest}.json"
+
+
+def _worker_activation_filename(handoff_hash: str) -> str:
+    return f"team-workers/by-handoff/{handoff_hash}.json"
+
+
+def publish_framing_worker_completion_binding(
+    operational: ProjectOperationalLayout,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    handoff_hash: str,
+    completion_operation_key: str,
+    delivery_envelope_hash: str,
+    candidate_digest: str,
+    worker_agent_label: str,
+    worker_model_observation: str,
+    require_current_head: bool = True,
+) -> tuple[str, FramingWorkerCompletionBindingV1, bool]:
+    """Bind one team-authored completion request without changing its receipt."""
+
+    packet, panel, synthesis, handoff = read_framing_worker_inputs(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        handoff_hash=handoff_hash,
+        require_current_head=require_current_head,
+    )
+    authorization = read_framing_team_delivery_authorization(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        team_plan_hash=handoff.team_plan_hash,
+        require_current_head=require_current_head,
+    )
+    if authorization.source_delivery_envelope_hash != delivery_envelope_hash:
+        raise OperationalError(
+            "worker completion delivery differs from team authorization"
+        )
+    activation = FramingWorkerActivationV1(
+        **_packet_binding(packet, work_packet_hash),
+        team_plan_hash=handoff.team_plan_hash,
+        panel_hash=handoff.panel_hash,
+        synthesis_hash=handoff.synthesis_hash,
+        worker_handoff_hash=handoff_hash,
+        delivery_envelope_hash=delivery_envelope_hash,
+        worker_agent_label=worker_agent_label,
+        worker_model_observation=worker_model_observation,
+    )
+    store = _team_store(operational, route_run_id)
+    existing_activation = _read_fixed_record(
+        operational,
+        route_run_id,
+        _worker_activation_filename(handoff_hash),
+        FramingWorkerActivationV1,
+    )
+    if existing_activation is not None and existing_activation != activation:
+        raise OperationalError(
+            "framing handoff is already assigned to a different research worker"
+        )
+    activation_hash = sha256_digest(canonical_json_bytes(activation))
+    if existing_activation is None:
+        activation_content_was_present = path_entry_exists(
+            store.path_for("team-workers", activation_hash)
+        )
+        installed_activation_hash, _ = store.install("team-workers", activation)
+        if installed_activation_hash != activation_hash:  # pragma: no cover
+            raise OperationalError("worker activation digest changed")
+        activation_fixed_written = write_immutable_operational(
+            store.anchor,
+            store.root / _worker_activation_filename(handoff_hash),
+            canonical_json_bytes(activation),
+        )
+        activation_mutated = (
+            not activation_content_was_present or activation_fixed_written
+        )
+    else:
+        stored_activation = _read_record(
+            store,
+            "team-workers",
+            activation_hash,
+            FramingWorkerActivationV1,
+        )
+        if stored_activation != existing_activation:
+            raise OperationalError(
+                "fixed worker activation differs from content store"
+            )
+        activation_mutated = False
+    binding = FramingWorkerCompletionBindingV1(
+        **_packet_binding(packet, work_packet_hash),
+        team_plan_hash=handoff.team_plan_hash,
+        panel_hash=handoff.panel_hash,
+        synthesis_hash=handoff.synthesis_hash,
+        worker_handoff_hash=handoff_hash,
+        worker_activation_hash=activation_hash,
+        completion_operation_key=completion_operation_key,
+        delivery_envelope_hash=delivery_envelope_hash,
+        candidate_digest=candidate_digest,
+        worker_agent_label=worker_agent_label,
+        worker_model_observation=worker_model_observation,
+    )
+    if binding.panel_hash != sha256_digest(canonical_json_bytes(panel)):
+        raise OperationalError("worker completion panel hash is invalid")
+    if binding.synthesis_hash != sha256_digest(canonical_json_bytes(synthesis)):
+        raise OperationalError("worker completion synthesis hash is invalid")
+    binding_hash = sha256_digest(canonical_json_bytes(binding))
+    content_path = store.path_for("team-completions", binding_hash)
+    content_was_present = path_entry_exists(content_path)
+    installed_hash, _ = store.install("team-completions", binding)
+    if installed_hash != binding_hash:  # pragma: no cover - digest invariant
+        raise OperationalError("worker completion binding digest changed")
+    fixed_written = write_immutable_operational(
+        store.anchor,
+        store.root / _completion_binding_filename(binding.completion_operation_key),
+        canonical_json_bytes(binding),
+    )
+    return binding_hash, binding, (
+        activation_mutated or not content_was_present or fixed_written
+    )
+
+
+def read_framing_worker_activation(
+    operational: ProjectOperationalLayout,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    handoff_hash: str,
+    require_current_head: bool = True,
+) -> FramingWorkerActivationV1:
+    """Read and revalidate the one worker fixed for a terminal handoff."""
+
+    packet, panel, synthesis, handoff = read_framing_worker_inputs(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        handoff_hash=handoff_hash,
+        require_current_head=require_current_head,
+    )
+    activation = _read_fixed_record(
+        operational,
+        route_run_id,
+        _worker_activation_filename(handoff_hash),
+        FramingWorkerActivationV1,
+    )
+    if activation is None:
+        raise OperationalError("framing worker activation is unavailable")
+    _require_binding(activation, packet, work_packet_hash, label="worker activation")
+    if (
+        activation.team_plan_hash != handoff.team_plan_hash
+        or activation.panel_hash != handoff.panel_hash
+        or activation.synthesis_hash != handoff.synthesis_hash
+        or activation.worker_handoff_hash != handoff_hash
+        or activation.panel_hash != sha256_digest(canonical_json_bytes(panel))
+        or activation.synthesis_hash
+        != sha256_digest(canonical_json_bytes(synthesis))
+    ):
+        raise OperationalError("worker activation differs from its handoff")
+    activation_hash = sha256_digest(canonical_json_bytes(activation))
+    stored = _read_record(
+        _team_store(operational, route_run_id),
+        "team-workers",
+        activation_hash,
+        FramingWorkerActivationV1,
+    )
+    if stored != activation:
+        raise OperationalError("fixed worker activation differs from content store")
+    authorization = read_framing_team_delivery_authorization(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        team_plan_hash=activation.team_plan_hash,
+        require_current_head=require_current_head,
+    )
+    if (
+        activation.delivery_envelope_hash
+        != authorization.source_delivery_envelope_hash
+    ):
+        raise OperationalError("worker activation delivery differs from authorization")
+    return activation
+
+
+def framing_worker_activation_exists(
+    operational: ProjectOperationalLayout,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    handoff_hash: str,
+    require_current_head: bool = True,
+) -> bool:
+    """Probe the fixed worker for a handoff and validate any present record."""
+
+    store = _team_store(operational, route_run_id)
+    path = store.root / _worker_activation_filename(handoff_hash)
+    if not path_entry_exists(path):
+        return False
+    read_framing_worker_activation(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        handoff_hash=handoff_hash,
+        require_current_head=require_current_head,
+    )
+    return True
+
+
+def read_framing_worker_completion_binding(
+    operational: ProjectOperationalLayout,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    completion_operation_key: str,
+    require_current_head: bool = True,
+) -> FramingWorkerCompletionBindingV1:
+    """Read and revalidate the Phase 5B provenance for one completion key."""
+
+    packet = _load_current_framing_packet(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        require_current_head=require_current_head,
+    )
+    binding = _read_fixed_record(
+        operational,
+        route_run_id,
+        _completion_binding_filename(completion_operation_key),
+        FramingWorkerCompletionBindingV1,
+    )
+    if binding is None:
+        raise OperationalError("framing worker completion binding is unavailable")
+    if binding.completion_operation_key != completion_operation_key:
+        raise OperationalError("framing worker completion operation key differs")
+    binding_hash = sha256_digest(canonical_json_bytes(binding))
+    stored = _read_record(
+        _team_store(operational, route_run_id),
+        "team-completions",
+        binding_hash,
+        FramingWorkerCompletionBindingV1,
+    )
+    if stored != binding:
+        raise OperationalError(
+            "fixed worker completion binding differs from content store"
+        )
+    _require_binding(
+        binding, packet, work_packet_hash, label="worker completion binding"
+    )
+    _, panel, synthesis, handoff = read_framing_worker_inputs(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        handoff_hash=binding.worker_handoff_hash,
+        require_current_head=require_current_head,
+    )
+    if (
+        binding.team_plan_hash != handoff.team_plan_hash
+        or binding.panel_hash != handoff.panel_hash
+        or binding.synthesis_hash != handoff.synthesis_hash
+        or binding.panel_hash != sha256_digest(canonical_json_bytes(panel))
+        or binding.synthesis_hash != sha256_digest(canonical_json_bytes(synthesis))
+    ):
+        raise OperationalError("worker completion binding differs from its handoff")
+    authorization = read_framing_team_delivery_authorization(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        team_plan_hash=binding.team_plan_hash,
+        require_current_head=require_current_head,
+    )
+    if (
+        binding.delivery_envelope_hash
+        != authorization.source_delivery_envelope_hash
+    ):
+        raise OperationalError(
+            "worker completion binding delivery differs from authorization"
+        )
+    activation = read_framing_worker_activation(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        handoff_hash=binding.worker_handoff_hash,
+        require_current_head=require_current_head,
+    )
+    if (
+        binding.worker_activation_hash
+        != sha256_digest(canonical_json_bytes(activation))
+        or binding.worker_agent_label != activation.worker_agent_label
+        or binding.worker_model_observation != activation.worker_model_observation
+        or binding.delivery_envelope_hash != activation.delivery_envelope_hash
+    ):
+        raise OperationalError("worker completion binding differs from activation")
+    return binding
+
+
+def framing_worker_completion_binding_exists(
+    operational: ProjectOperationalLayout,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    completion_operation_key: str,
+    require_current_head: bool = True,
+) -> bool:
+    """Probe one exact binding while still validating any present record."""
+
+    store = _team_store(operational, route_run_id)
+    path = store.root / _completion_binding_filename(completion_operation_key)
+    if not path_entry_exists(path):
+        return False
+    read_framing_worker_completion_binding(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        completion_operation_key=completion_operation_key,
+        require_current_head=require_current_head,
+    )
+    return True
+
+
 __all__ = [
+    "FramingAdvisoryLaneId",
+    "FramingDisposition",
     "FramingLaneOutputV1",
     "FramingResearcherSynthesisV1",
+    "FramingTeamDeliveryAuthorizationV1",
     "FramingTeamPanelV1",
     "FramingTeamPlanV1",
+    "FramingTeamStopV1",
+    "FramingTeamStopStatus",
+    "FramingTeamTerminalOutcomeV1",
+    "FramingTeamTerminalStatus",
+    "FramingTeamLaneId",
+    "FramingWorkerActivationV1",
+    "FramingWorkerCompletionBindingV1",
     "FramingWorkerHandoffV1",
     "build_framing_lane_output",
     "build_framing_researcher_synthesis",
+    "build_framing_team_delivery_authorization",
+    "build_framing_team_stop",
     "framing_lane_input_hash",
+    "framing_worker_activation_exists",
+    "framing_worker_completion_binding_exists",
+    "framing_team_is_active",
     "open_framing_team_plan",
     "publish_framing_researcher_synthesis",
+    "publish_framing_team_stop",
     "publish_framing_team_panel",
+    "publish_framing_worker_completion_binding",
     "publish_framing_worker_handoff",
+    "read_framing_worker_completion_binding",
+    "read_framing_worker_activation",
     "read_framing_worker_inputs",
+    "read_framing_team_panel",
+    "read_framing_team_plan",
+    "read_framing_team_delivery_authorization",
 ]

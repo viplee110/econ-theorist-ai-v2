@@ -9,6 +9,7 @@ from econ_theorist.errors import IntegrityError
 from econ_theorist.framing_team import (
     build_framing_lane_output,
     build_framing_researcher_synthesis,
+    build_framing_team_delivery_authorization,
     open_framing_team_plan,
     publish_framing_researcher_synthesis,
     publish_framing_team_panel,
@@ -98,11 +99,27 @@ class Phase5BFramingTeamTests(unittest.TestCase):
             self.operational.runs / self.route_run_id,
         )
 
+    def _delivery_authorization(self):
+        return build_framing_team_delivery_authorization(
+            self.packet,
+            self.work_packet_hash,
+            source_delivery_envelope_hash="a" * 64,
+            source_capability_receipt_hash="b" * 64,
+            source_egress_plan_hash="c" * 64,
+            host_product="focused-test-host",
+            host_version="1",
+            adapter_id="focused-test-adapter",
+            adapter_version="1",
+            host_session_id="focused-test-session",
+            lane_separation_claim="logical",
+        )
+
     def _team_outputs(self):
         plan_hash, plan = open_framing_team_plan(
             self.operational,
             route_run_id=self.route_run_id,
             work_packet_hash=self.work_packet_hash,
+            delivery_authorization=self._delivery_authorization(),
         )
         mentor = build_framing_lane_output(
             plan,
@@ -214,6 +231,7 @@ class Phase5BFramingTeamTests(unittest.TestCase):
             self.operational,
             route_run_id=self.route_run_id,
             work_packet_hash=self.work_packet_hash,
+            delivery_authorization=self._delivery_authorization(),
         )
         self.assertEqual((repeated_plan_hash, repeated_plan), (plan_hash, plan))
         repeated_panel_hash, _ = publish_framing_team_panel(
@@ -249,6 +267,7 @@ class Phase5BFramingTeamTests(unittest.TestCase):
                 self.operational,
                 route_run_id=self.route_run_id,
                 work_packet_hash=wrong_route_hash,
+                delivery_authorization=self._delivery_authorization(),
             )
 
         stale_packet = self.packet.model_copy(update={"base_head": "f" * 64})
@@ -258,6 +277,7 @@ class Phase5BFramingTeamTests(unittest.TestCase):
                 self.operational,
                 route_run_id=self.route_run_id,
                 work_packet_hash=stale_hash,
+                delivery_authorization=self._delivery_authorization(),
             )
         self.assertEqual(replay(self.layout).head, self.head_before)
 
@@ -284,42 +304,42 @@ class Phase5BFramingTeamTests(unittest.TestCase):
             )
         self.assertEqual(replay(self.layout).head, self.head_before)
 
-    def test_park_and_kill_never_create_worker_handoff(self) -> None:
+    def _assert_inactive_disposition_has_no_handoff(self, disposition: str) -> None:
         _, _, panel_hash, panel = self._published_panel()
-        for disposition in ("park", "kill"):
-            with self.subTest(disposition=disposition):
-                synthesis = build_framing_researcher_synthesis(
-                    panel,
-                    panel_hash,
-                    researcher_id="human.owner",
-                    researcher_text=f"{disposition} this framing.",
-                    disposition=disposition,
-                    synthesis_markdown=f"Researcher chose to {disposition}.",
-                )
-                synthesis_hash, stored = publish_framing_researcher_synthesis(
-                    self.operational,
-                    route_run_id=self.route_run_id,
-                    work_packet_hash=self.work_packet_hash,
-                    panel_hash=panel_hash,
-                    synthesis=synthesis,
-                )
-                self.assertEqual(stored, synthesis)
-                self.assertEqual(
-                    self.run_store.read_bytes(
-                        "framing-team-syntheses", synthesis_hash
-                    ),
-                    canonical_json_bytes(synthesis),
-                )
-                with self.assertRaisesRegex(
-                    OperationalError, "has no worker handoff"
-                ):
-                    publish_framing_worker_handoff(
-                        self.operational,
-                        route_run_id=self.route_run_id,
-                        work_packet_hash=self.work_packet_hash,
-                        synthesis_hash=synthesis_hash,
-                    )
+        synthesis = build_framing_researcher_synthesis(
+            panel,
+            panel_hash,
+            researcher_id="human.owner",
+            researcher_text=f"{disposition} this framing.",
+            disposition=disposition,
+            synthesis_markdown=f"Researcher chose to {disposition}.",
+        )
+        synthesis_hash, stored = publish_framing_researcher_synthesis(
+            self.operational,
+            route_run_id=self.route_run_id,
+            work_packet_hash=self.work_packet_hash,
+            panel_hash=panel_hash,
+            synthesis=synthesis,
+        )
+        self.assertEqual(stored, synthesis)
+        self.assertEqual(
+            self.run_store.read_bytes("framing-team-syntheses", synthesis_hash),
+            canonical_json_bytes(synthesis),
+        )
+        with self.assertRaisesRegex(OperationalError, "has no worker handoff"):
+            publish_framing_worker_handoff(
+                self.operational,
+                route_run_id=self.route_run_id,
+                work_packet_hash=self.work_packet_hash,
+                synthesis_hash=synthesis_hash,
+            )
         self.assertEqual(replay(self.layout).head, self.head_before)
+
+    def test_park_never_creates_worker_handoff(self) -> None:
+        self._assert_inactive_disposition_has_no_handoff("park")
+
+    def test_kill_never_creates_worker_handoff(self) -> None:
+        self._assert_inactive_disposition_has_no_handoff("kill")
 
     def test_tampered_lane_sidecar_is_detected(self) -> None:
         _, _, panel_hash, panel = self._published_panel()
@@ -406,13 +426,7 @@ class Phase5BFramingTeamTests(unittest.TestCase):
             disposition="park",
             synthesis_markdown="Park pending a better benchmark.",
         )
-        park_hash, _ = publish_framing_researcher_synthesis(
-            self.operational,
-            route_run_id=self.route_run_id,
-            work_packet_hash=self.work_packet_hash,
-            panel_hash=panel_hash,
-            synthesis=park,
-        )
+        park_hash, _ = self.run_store.install("framing-team-syntheses", park)
         forged_park_handoff = handoff.model_copy(update={"synthesis_hash": park_hash})
         forged_park_hash, _ = self.run_store.install(
             "framing-team-handoffs", forged_park_handoff

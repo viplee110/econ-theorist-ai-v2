@@ -29,7 +29,15 @@ def _fallback_operation(data: bytes) -> str:
     operation = value.get("operation") if isinstance(value, dict) else None
     return (
         operation
-        if operation in {"start_or_resume", "complete", "finish"}
+        if operation
+        in {
+            "start_or_resume",
+            "complete",
+            "finish",
+            "framing_team.open",
+            "framing_team.publish_panel",
+            "framing_team.apply_user_turn",
+        }
         else "start_or_resume"
     )
 

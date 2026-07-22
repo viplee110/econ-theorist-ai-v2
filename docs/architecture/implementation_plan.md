@@ -548,14 +548,25 @@ lower human effort, or Top-5 readiness.
 The normative owner for the first framing-only slice is
 [`../implementation/phase5b_framing_team_contract.md`](../implementation/phase5b_framing_team_contract.md).
 
-The current tree implements only its noncanonical binding and persistence
-layer: an exact framing WorkPacket can declare one mentor and two sealed
-collaborators, preserve all advice, record a clear direct-user synthesis, and
-produce one worker handoff without moving canonical state. Focused tests cover
-wrong/stale bindings, idempotence, tampering, minority preservation, `park`/
-`kill`, and forged handoffs. This is not yet a usable team surface: model
-dispatch, direct-user capture, ambiguity/scope classification, honest fallback,
-and one real pilot remain open.
+The current tree implements its noncanonical binding/persistence layer and one
+thin public Codex projection over the existing bridge. An exact framing
+WorkPacket can declare one mentor and two sealed collaborators, preserve all
+advice, record a direct-user synthesis or a typed no-handoff stop, expose an
+honest single-worker fallback, explicitly authorize three advisory exposures
+plus one terminal-handoff-conditional worker exposure after the original
+single-coordinator delivery, and bind at most one terminal worker handoff
+without moving canonical state. Worker and handoff provenance is kept in an
+additive completion-binding sidecar rather than repurposing the frozen host
+receipt's tool identities. One immutable activation fixes the worker per
+handoff, and the initial team slice uses only atomic `stage_and_commit` so it
+cannot take ownership of a previously staged candidate. Focused tests cover
+wrong/stale bindings, idempotence, tampering, minority preservation,
+ambiguity, changed briefs, `park`/`kill`, delivery/capture session mismatch,
+terminal conflicts, and forged handoffs. Actual model dispatch and semantic
+classification remain host responsibilities; one real public framing pilot is
+still required before calling the surface demonstrated. Safe canonical
+disposition/reframe recovery after `kill` or `new_brief_required` also remains
+open; those statuses stop the exploratory pilot.
 
 Begin the exploratory product slice after the bounded Phase 5A substrate has
 demonstrated one real route commit, exact retry/recovery, and engine-owned

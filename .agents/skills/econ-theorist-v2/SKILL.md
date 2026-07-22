@@ -24,12 +24,12 @@ Codex host over the engine-owned bridge.
 5. Send `requested_scope` and `framing_intent` only to start an unframed
    project or when the user explicitly requests a new frame/reframe. Omit both
    on every ordinary continuation after a committed route; their presence is
-   an explicit request to run framing again. If an omitted-input continuation
-   is blocked, surface its diagnostic rather than replaying the old framing
-   inputs to obtain a different route.
+   an explicit reframe request. If an omitted-input continuation is blocked,
+   surface its diagnostic rather than replaying the old framing inputs.
 6. Follow the bridge status exactly. Stop and surface the smallest necessary
    user choice for an ambiguous route, structural human gate, privacy blocker,
-   incompatible root, repair requirement, or unsupported host capability.
+   incompatible root, or repair requirement. Handle an explicit
+   `single_fallback` only as described below.
 7. Treat the returned WorkPacket as the only scientific instruction, context,
    and output contract for the route. Do not supplement it with a remembered
    workflow, a journal stereotype, or instructions copied from another run.
@@ -55,10 +55,32 @@ Codex host over the engine-owned bridge.
     packet and envelope bindings. Do not finish an ordinary human wait,
     clarification, handoff, or intentional pause; resume the same immutable run.
 
+## Use the bounded framing team
+
+- Only when the bridge returns `team_ready`, start exactly one mentor and two
+  sealed collaborator advisory lanes. Give each the exact delivered WorkPacket
+  plus only its bridge-supplied role overlay. Advisory lanes cannot write the
+  candidate, call completion, see another lane's output, or delegate again.
+- If collaborator outputs are byte-identical or plainly the same proposal, ask
+  collaborator B for one bounded diversity repair before publishing the panel.
+- Publish raw lane drafts through the bridge, show the attributed panel, and ask
+  the researcher one natural-language choice. Send the exact current user turn;
+  never manufacture or silently sharpen the researcher's direction.
+- Follow `awaiting_clarification`, `new_brief_required`, and `single_fallback`
+  literally. For `single_fallback`, disclose that the team is unavailable and
+  use exactly one worker with the packet and authoring contract; never pretend
+  that one model supplied three independent opinions. The other two statuses
+  create no worker.
+- Only `handoff_ready` permits exactly one research worker to author the declared
+  candidate. Give it the returned packet, candidate authoring contract, panel,
+  synthesis, and handoff; include the exact handoff hash plus the worker's
+  observable agent/model labels in one `stage_and_commit`; never use `stage_only` or
+  `commit_staged` for the team. Stop after the framing result.
+
 ## Preserve boundaries
 
-- Keep Phase 5A execution single-agent. Do not delegate the delivered route to
-  subagents or expose its packet to another model session.
+- Keep Phase 5A execution single-agent outside the bridge-declared framing-team
+  exception. Do not otherwise delegate a route or expose its packet elsewhere.
 - Do not choose or reorder routes yourself.
 - Do not restate theory-kernel, profile, craft, Top-5, or route-specific rules
   in this skill; the pinned WorkPacket owns them.
