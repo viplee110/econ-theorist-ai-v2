@@ -2922,6 +2922,57 @@ class FramingQualityRouteTests(unittest.TestCase):
                 with self.assertRaisesRegex(CandidateValidationError, message):
                     self._commit_audit(core, bundle_mutator=mutator)
 
+    def test_margin_diagnostic_aggregates_invalid_payoff_and_state_nodes(self) -> None:
+        core = self._phase2_prefix()
+
+        def invalid_bindings(
+            bundle: FramingQualityBundle,
+        ) -> FramingQualityBundle:
+            bundle = self._research_first_bundle(bundle)
+            witness = bundle.causal_chain[0].active_margin_witness
+            assert witness is not None
+            binding = witness.consequence_binding
+            assert binding is not None
+            binding = binding.model_copy(
+                update={
+                    "public_state_conditions": (
+                        *binding.public_state_conditions,
+                        PublicStateCondition(
+                            node_id="node.missing.state",
+                            relation="positive",
+                        ),
+                    )
+                }
+            )
+            witness = witness.model_copy(
+                update={
+                    "payoff_node_ids": (
+                        *witness.payoff_node_ids,
+                        "node.missing.payoff",
+                    ),
+                    "consequence_binding": binding,
+                }
+            )
+            step = bundle.causal_chain[0].model_copy(
+                update={"active_margin_witness": witness}
+            )
+            return bundle.model_copy(
+                update={"causal_chain": (step, *bundle.causal_chain[1:])}
+            )
+
+        with self.assertRaisesRegex(
+            CandidateValidationError,
+            (
+                r"(?s)node\.missing\.payoff\(missing\).*"
+                r"node\.missing\.state\(missing\)"
+            ),
+        ):
+            self._commit_audit(
+                core,
+                bundle_mutator=invalid_bindings,
+                route_registry_hash=ROUTE_REGISTRY_V8_HASH,
+            )
+
     def test_inactive_margin_commits_an_honest_upstream_revision(self) -> None:
         core = self._phase2_prefix()
 

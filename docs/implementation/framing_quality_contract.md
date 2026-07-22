@@ -10,10 +10,15 @@ semantics with zero canonical writes. Its held-out ordinary-model pair is
 complete: neither arm reached the scientific validator, but the semantic
 surface substantially reduced structure and improved detailed reader recovery
 without established material scientific degradation. A later developer-
-assisted, nonblind Scheme-B follow-up canonically committed the unchanged-V8
-audit at head `aea3e7a77ab7a3dc0e4d0b334403eb6d9df38a69bf3ddbca730075e6728fd230`.
-That audit remains `revise_framing`, and no G1 decision occurred. Public
-integration and fresh WorkPacket-only quality evidence remain blocked. The
+audit at checkpoint head
+`aea3e7a77ab7a3dc0e4d0b334403eb6d9df38a69bf3ddbca730075e6728fd230`.
+The researcher later authorized the exact outcome-vector/locus terminology
+repair without capacity or optimization. A clean strict-validator continuation
+committed a fresh unchanged-V8 audit at
+`bf4e7fdd49bcf089b18318e77075514cbaea027939049113d1d5840073b4800c`;
+exact replay passes, the audit proposes `ready_for_g1`, and no human G1 decision
+occurred. Public integration and fresh independent quality evidence remain
+blocked. The
 bounded authoring/diagnostic candidate is implemented, source-level private-
 oracle/adversarial checks pass, and exact-wheel packaged-runtime verification
 passes. The 2026-07-22 product priority forbids another protocol-only held-out
@@ -464,7 +469,8 @@ final-rule class,
 phi(s,r) = psi(r),  psi(1) > psi(0),
 ```
 
-with `phi(s,r)=r` as the minimal deterministic baseline. This choice did not
+with `phi(s,r)=r` as the minimal deterministic baseline. At that checkpoint,
+this choice did not
 authorize a welfare ranking, capacity mechanism, distinctive-mechanism claim,
 ResearchQuestion terminology repair, or human G1 decision.
 
@@ -477,8 +483,26 @@ consequence bindings. It nevertheless proposed `revise_framing`, recorded no
 distinctive-mechanism contribution, and created no G1 decision. The sole
 recorded scientific gap is the ResearchQuestion's use of strict `frontier` for
 an outcome-vector comparison or locus without a feasible set, capacity,
-objective, or optimization structure. The researcher has not authorized that
-wording repair.
+objective, or optimization structure. The researcher had not yet authorized
+that wording repair at this checkpoint.
+
+The researcher subsequently authorized only that terminology repair: replace
+strict `frontier` with outcome-vector comparison/locus and add neither capacity
+nor optimization. An initial experimental continuation reached `4aed9a...` but
+contained a failed-route transaction accepted only by a temporary Phase-2
+validator relaxation. That relaxation was reverted, and the lineage is not an
+admissible final-code canonical result.
+
+A separate clean continuation resumed from the last strict-replayable head
+`ed2371...`. It committed the exact PrimitiveGraph dependency repair at
+`922c2cb4...`, the refreshed PrimitiveGraph/G1 dossier package at
+`d99a9aee...`, and the fresh unchanged-V8 audit at final head
+`bf4e7fdd49bcf089b18318e77075514cbaea027939049113d1d5840073b4800c`.
+The final audit binds one active posterior-threshold appeal witness to the
+institutional outcome vector, disclaims a distinctive-mechanism contribution,
+and proposes `ready_for_g1`. The replacement dossier merely proposes
+`approve`; it does not record, confirm, or imply an effective human G1 decision.
+The strict chain replays successfully.
 
 The exact
 [follow-up evidence](../../review_outputs/phase5b0_framing_team_public_pilot_followup/FOLLOWUP_SUMMARY.md)
@@ -487,6 +511,7 @@ decomposition refresh used developer-assisted canonical carry-forward beyond
 its delivered WorkPacket, and the accepted audit followed a rejected candidate
 plus source inspection. The exercised checkout was dirty and only partially
 source-bound; its observable model label was unconfirmed. This therefore shows
-one canonical unchanged-V8 audit route result, not a fresh blind model pass,
-provider-independent execution, research quality, or lower editing burden. No
-post-capture recovery hardening may be reported as though this run exercised it.
+canonical unchanged-V8 route evidence, not a fresh blind model pass,
+provider-independent execution, research quality, or lower editing burden. The
+later strict recovery is also developer-assisted and nonblind; its successful
+audit does not retroactively validate the rejected experimental lineage.

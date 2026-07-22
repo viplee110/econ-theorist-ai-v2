@@ -1,0 +1,804 @@
+{
+    "transaction_id":  "tx_strict_outcome_locus_framing_audit_20260723",
+    "transaction_schema":  1,
+    "origin":  "route_run",
+    "project_id":  "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+    "base_revision":  "d99a9aee75130eaeb41c9015fe148afd8976a0ae7a217c77b9dcacc5fd9ed0c4",
+    "route_run_id":  "run_op_71e7b5655c3610e83c7e8b740f3334c41a7b9b76bde92c52",
+    "route_id":  "audit.framing_economics",
+    "route_run_hash":  "d7a951216f5cc92c2c20a721ecff8b1d064f5d1c2091775c89c253f78e8ff9f0",
+    "context_manifest_hash":  "32639c9ed32d625f899169711b0b03b58f84ff9511e77266f8694c18e2c334d7",
+    "compiled_context_hash":  "35ff79caf3dcd2539ef3b7e800a75ad6e4128611cbe15efc952b2451defba5e1",
+    "actor":  {
+                  "actor_id":  "scientific_agent",
+                  "kind":  "agent"
+              },
+    "intent":  "Audit the exact outcome-vector/locus frame under unchanged V8, with one active payoff witness and no capacity, optimization, welfare, novelty, or human-gate claim.",
+    "preconditions":  [
+
+                      ],
+    "changed_facets":  [
+
+                       ],
+    "operations":  [
+                       {
+                           "op":  "entity.create",
+                           "entity":  {
+                                          "entity_id":  "fqb_score_disclosure_outcome_locus_strict_audit",
+                                          "entity_type":  "FramingQualityBundle",
+                                          "version":  1,
+                                          "project_id":  "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+                                          "title":  "Framing audit: rejected-score disclosure and appeal selection",
+                                          "summary":  "A positive economics audit of the outcome-locus framing, with one active appeal-margin witness and no welfare, capacity, optimization, or human-G1 claim.",
+                                          "status":  {
+                                                         "formal_validity":  "unassessed",
+                                                         "interpretation_validity":  "hypothesized",
+                                                         "lifecycle":  "proposed",
+                                                         "literature":  null
+                                                     },
+                                          "facets":  {
+                                                         "formal":  {
+
+                                                                    },
+                                                         "economic_interpretation":  {
+                                                                                         "schema":  "econ_theorist.framing_quality/FramingQualityBundle/v1",
+                                                                                         "payload":  {
+                                                                                                         "schema_version":  1,
+                                                                                                         "research_question_ref":  {
+                                                                                                                                       "entity_id":  "rq_score_disclosure_appeal_selection",
+                                                                                                                                       "version":  2
+                                                                                                                                   },
+                                                                                                         "benchmark_set_ref":  {
+                                                                                                                                   "entity_id":  "bmk_decision_only_disclosure_delta",
+                                                                                                                                   "version":  2
+                                                                                                                               },
+                                                                                                         "primitive_graph_ref":  {
+                                                                                                                                     "entity_id":  "pg_score_disclosure_appeal_selection",
+                                                                                                                                     "version":  5
+                                                                                                                                 },
+                                                                                                         "source_g1_dossier_ref":  {
+                                                                                                                                       "entity_id":  "gate_g1_score_disclosure_outcome_locus_strict",
+                                                                                                                                       "version":  1
+                                                                                                                                   },
+                                                                                                         "tension":  {
+                                                                                                                         "result_archetype":  "characterization_bounds",
+                                                                                                                         "tension_kind":  "boundary_or_tightness",
+                                                                                                                         "conventional_prediction":  "Because the initial rule, review technology, and final rule are fixed, revealing which rejected score occurred may appear irrelevant to the institution\u0027s post-rejection classification outcomes.",
+                                                                                                                         "countervailing_logic":  "The same final rule is applied to a different selected appeal pool: score disclosure changes the applicant\u0027s posterior before the costly appeal choice and can move a cell across the appeal threshold.",
+                                                                                                                         "economic_puzzle":  "When can a pure refinement of rejected applicants\u0027 information change who seeks reconsideration, and hence the classification-processing outcome vector, even though every institutional rule is unchanged?",
+                                                                                                                         "resolution_target":  "Characterize the open cost and signal regions in which disclosed score cells and the pooled rejection cell lie on opposite sides of the appeal threshold, then decompose their exact outcome-vector contributions."
+                                                                                                                     },
+                                                                                                         "forces":  [
+                                                                                                                        {
+                                                                                                                            "force_id":  "force.disclosure_selection",
+                                                                                                                            "label":  "Posterior refinement changes appeal selection",
+                                                                                                                            "role":  "baseline_force",
+                                                                                                                            "operative_margin":  "The appeal-versus-no-appeal payoff difference v*A_psi(p)-c at a rejected score-private-signal cell.",
+                                                                                                                            "direction":  "changes_composition",
+                                                                                                                            "economic_logic":  "Disclosure replaces a pooled posterior with score-specific posteriors. Strict review monotonicity makes anticipated acceptance strictly increasing in that posterior, so an intermediate appeal cost can make some cells enter or exit appeal.",
+                                                                                                                            "active_when":  "A positive-probability disclosed cell and the corresponding pooled cell have different A_psi values and c/v lies strictly between them.",
+                                                                                                                            "source_node_id":  "disclosure_partition_delta",
+                                                                                                                            "margin_node_id":  "appeal_choice",
+                                                                                                                            "target_node_id":  "institutional_outcome_vector"
+                                                                                                                        }
+                                                                                                                    ],
+                                                                                                         "causal_chain":  [
+                                                                                                                              {
+                                                                                                                                  "step_number":  1,
+                                                                                                                                  "force_ids":  [
+                                                                                                                                                    "force.disclosure_selection"
+                                                                                                                                                ],
+                                                                                                                                  "cause":  "Score disclosure refines the pooled low-or-middle rejection message.",
+                                                                                                                                  "endogenous_response":  "For a fixed private signal, the applicant uses a score-specific rather than pooled qualification posterior.",
+                                                                                                                                  "consequence":  "The anticipated fixed-rule acceptance probability A_psi(p) differs across the disclosed and pooled information cells.",
+                                                                                                                                  "source_node_id":  "disclosure_partition_delta",
+                                                                                                                                  "target_node_id":  "applicant_posterior"
+                                                                                                                              },
+                                                                                                                              {
+                                                                                                                                  "step_number":  2,
+                                                                                                                                  "force_ids":  [
+                                                                                                                                                    "force.disclosure_selection"
+                                                                                                                                                ],
+                                                                                                                                  "cause":  "The posterior changes the continuation-inclusive appeal payoff v*A_psi(p)-c.",
+                                                                                                                                  "endogenous_response":  "The rejected applicant chooses appeal rather than non-appeal when that payoff difference crosses zero.",
+                                                                                                                                  "consequence":  "A positive-probability score-private-signal cell enters or exits the selected appeal pool.",
+                                                                                                                                  "source_node_id":  "applicant_posterior",
+                                                                                                                                  "target_node_id":  "appeal_choice",
+                                                                                                                                  "active_margin_witness":  {
+                                                                                                                                                                "decision_node_id":  "appeal_choice",
+                                                                                                                                                                "payoff_node_ids":  [
+                                                                                                                                                                                        "appeal_value_and_cost"
+                                                                                                                                                                                    ],
+                                                                                                                                                                "concrete_state":  "A rejected applicant has middle score and private signal x under score_disclosure, before the fresh review draw, with posterior p=0.8. The illustrative common primitives are rho_0=0.2, rho_1=0.8, psi(0)=0, psi(1)=1, v=1, and c=0.56.",
+                                                                                                                                                                "decision_maker":  "The rejected applicant",
+                                                                                                                                                                "focal_action":  "Pay c and appeal",
+                                                                                                                                                                "alternative_action":  "Do not appeal and remain rejected",
+                                                                                                                                                                "focal_payoff":  "v*A_psi(0.8)-c = 1*(0.2+0.6*0.8)-0.56 = 0.12, including the fixed continuation review and final decision.",
+                                                                                                                                                                "alternative_payoff":  "0, because a non-appellant remains finally rejected and pays no appeal cost.",
+                                                                                                                                                                "feasibility_basis":  "At this pre-review decision node the feasible set is binary: appeal or do not appeal. These two actions exhaust the maintained action set, and both face the same information, beliefs, timing, and continuation rule.",
+                                                                                                                                                                "best_response_inequality":  "Appeal is optimal iff v*A_psi(p)-c \u003e= 0. Here 0.12\u003e0. Under the pooled decision_only message with the same private signal, p=0.5 gives v*A_psi(0.5)-c=0.50-0.56=-0.06, so non-appeal is strict.",
+                                                                                                                                                                "activity_status":  "active",
+                                                                                                                                                                "status_basis":  "The disclosure_partition_delta changes the posterior from the pooled p=0.5 to the middle-cell p=0.8. Because rho_1\u003erho_0 and psi(1)\u003epsi(0), A_psi(p) is strictly increasing, so the source raises the appeal payoff difference by 0.18. The strict inequalities persist on a nonempty open neighborhood of these primitives.",
+                                                                                                                                                                "kill_condition":  "This link is inactive if score refinement never changes A_psi(p) across a positive-probability cell, or if no positive cost ratio lies strictly between the pooled and disclosed-cell acceptance probabilities.",
+                                                                                                                                                                "consequence_binding":  {
+                                                                                                                                                                                            "consequence_node_id":  "institutional_outcome_vector",
+                                                                                                                                                                                            "transition_kind":  "increase",
+                                                                                                                                                                                            "causal_edge_ids":  [
+                                                                                                                                                                                                                    "appeal_choice_to_outcomes"
+                                                                                                                                                                                                                ],
+                                                                                                                                                                                            "public_state_conditions":  [
+                                                                                                                                                                                                                            {
+                                                                                                                                                                                                                                "node_id":  "institutional_score",
+                                                                                                                                                                                                                                "relation":  "equals",
+                                                                                                                                                                                                                                "value":  "middle"
+                                                                                                                                                                                                                            },
+                                                                                                                                                                                                                            {
+                                                                                                                                                                                                                                "node_id":  "applicant_private_signal",
+                                                                                                                                                                                                                                "relation":  "equals",
+                                                                                                                                                                                                                                "value":  "x"
+                                                                                                                                                                                                                            },
+                                                                                                                                                                                                                            {
+                                                                                                                                                                                                                                "node_id":  "final_review_rule",
+                                                                                                                                                                                                                                "relation":  "equals",
+                                                                                                                                                                                                                                "value":  "phi(s,r)=r"
+                                                                                                                                                                                                                            },
+                                                                                                                                                                                                                            {
+                                                                                                                                                                                                                                "node_id":  "timing_sequence",
+                                                                                                                                                                                                                                "relation":  "equals",
+                                                                                                                                                                                                                                "value":  "appeal precedes fresh review"
+                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                        ],
+                                                                                                                                                                                            "focal_consequence":  "The cell contributes one appeal and one positive per-appeal processing burden, and its classification consequence is realized through the fixed fresh-review rule.",
+                                                                                                                                                                                            "alternative_consequence":  "The same applicant remains rejected, contributes no appeal and no processing burden, and cannot generate a review-induced acceptance.",
+                                                                                                                                                                                            "feasibility_basis":  "The PrimitiveGraph edge appeal_choice_to_outcomes directly maps the binary decision into distinct outcome-vector contributions at this positive-probability state; the alternative contribution is zero."
+                                                                                                                                                                                        }
+                                                                                                                                                            }
+                                                                                                                              },
+                                                                                                                              {
+                                                                                                                                  "step_number":  3,
+                                                                                                                                  "force_ids":  [
+                                                                                                                                                    "force.disclosure_selection"
+                                                                                                                                                ],
+                                                                                                                                  "cause":  "The appeal set and its qualification composition change.",
+                                                                                                                                  "endogenous_response":  "Only selected appellants receive fresh review and consume the fixed per-appeal processing burden.",
+                                                                                                                                  "consequence":  "Appeal load, appellant composition, corrected qualified rejections, and review-induced unqualified acceptances move as a vector, with no general aggregate sign imposed.",
+                                                                                                                                  "source_node_id":  "appeal_choice",
+                                                                                                                                  "target_node_id":  "institutional_outcome_vector"
+                                                                                                                              }
+                                                                                                                          ],
+                                                                                                         "minimal_example":  {
+                                                                                                                                 "role":  "illustrative_only",
+                                                                                                                                 "title":  "A middle-score cell enters appeal under disclosure",
+                                                                                                                                 "setup":  "For one positive-probability private-signal realization x, take p_low,x=0.2, p_pool,x=0.5, and p_middle,x=0.8. Let rho_0=0.2, rho_1=0.8, psi(0)=0, psi(1)=1, v=1, and c=0.56. Then A(p)=0.2+0.6p gives 0.32, 0.50, and 0.68 respectively.",
+                                                                                                                                 "moving_primitive":  "Only the rejected applicant\u0027s information partition moves from the pooled low-or-middle message to the realized low or middle score.",
+                                                                                                                                 "held_fixed":  [
+                                                                                                                                                    "The prior and joint score, private-signal, and review-signal laws",
+                                                                                                                                                    "The initial acceptance rule",
+                                                                                                                                                    "The score-blind final rule phi(s,r)=r",
+                                                                                                                                                    "The value v, appeal cost c, tie rule, and per-appeal burden"
+                                                                                                                                                ],
+                                                                                                                                 "endogenous_responses":  [
+                                                                                                                                                              "The middle-x cell appeals under score_disclosure because 0.68-0.56\u003e0",
+                                                                                                                                                              "The pooled-x cell does not appeal under decision_only because 0.50-0.56\u003c0",
+                                                                                                                                                              "The selected appeal pool and its outcome-vector contribution change"
+                                                                                                                                                          ],
+                                                                                                                                 "predicted_pattern":  "The middle-x cell enters appeal under score_disclosure while the pooled x cell does not; strict inequalities make this behavior robust on an open neighborhood. No sign is implied for the aggregate classification vector.",
+                                                                                                                                 "economic_intuition":  "A fixed review rule does not make disclosure neutral because applicants self-select into that rule after updating on the disclosed rejected score.",
+                                                                                                                                 "limitation":  "These illustrative posteriors demonstrate a feasible active margin but do not prove the full characterization or rank all outcome components.",
+                                                                                                                                 "cannot_establish":  [
+                                                                                                                                                          "A universal increase or decrease in appeal volume",
+                                                                                                                                                          "A welfare or policy ranking",
+                                                                                                                                                          "Formal validity of a general theorem",
+                                                                                                                                                          "Novelty or human G1 approval"
+                                                                                                                                                      ]
+                                                                                                                             },
+                                                                                                         "economist_memo":  {
+                                                                                                                                "headline":  "Rejected-score disclosure changes selection into review",
+                                                                                                                                "opening_question":  "When does telling a rejected applicant whether the score was low or middle change who appeals, even when review policy is fixed?",
+                                                                                                                                "benchmark_message":  "Under decision_only, low and middle rejections are pooled before the same private signal and posterior-threshold appeal choice.",
+                                                                                                                                "tension_message":  "Conditional review is unchanged, but the pool reaching review need not be.",
+                                                                                                                                "mechanism_message":  "Disclosure changes the posterior, the posterior changes the binary appeal payoff, and threshold crossings change the volume and composition of appeals.",
+                                                                                                                                "result_preview":  "Open cost intervals between pooled and score-specific acceptance probabilities generate cell entry or exit and map into a parameterized classification-processing outcome locus.",
+                                                                                                                                "contribution_message":  "The potential contribution is a bounded characterization separating appeal quantity, composition, correction, erroneous acceptance, and processing consequences; no distinctive mechanism, welfare, or novelty claim is made at this gate.",
+                                                                                                                                "scope_condition":  "The result is conditional on the static Bayesian scope, conditional independence baseline, score-blind strictly review-monotone final rule, and absence of capacity, congestion, rationing, or endogenous review.",
+                                                                                                                                "reader_takeaway":  "Information disclosure can matter through endogenous selection into a fixed review technology, and its consequences should be reported as a vector rather than collapsed into an unsupported scalar ranking."
+                                                                                                                            },
+                                                                                                         "benchmark_assessments":  [
+                                                                                                                                       {
+                                                                                                                                           "benchmark_id":  "decision_only",
+                                                                                                                                           "changed":  [
+                                                                                                                                                           {
+                                                                                                                                                               "object_id":  "object.disclosure_partition",
+                                                                                                                                                               "label":  "Rejected-score information partition",
+                                                                                                                                                               "semantic_level":  "primitive",
+                                                                                                                                                               "primitive_node_id":  "disclosure_partition_delta"
+                                                                                                                                                           }
+                                                                                                                                                       ],
+                                                                                                                                           "held_fixed":  [
+                                                                                                                                                              {
+                                                                                                                                                                  "object_id":  "fixed.initial_rule",
+                                                                                                                                                                  "label":  "Initial acceptance rule",
+                                                                                                                                                                  "semantic_level":  "primitive",
+                                                                                                                                                                  "fixing_level":  "policy_rule",
+                                                                                                                                                                  "primitive_node_id":  "initial_decision_rule"
+                                                                                                                                                              },
+                                                                                                                                                              {
+                                                                                                                                                                  "object_id":  "fixed.review_signal",
+                                                                                                                                                                  "label":  "Fresh review signal law",
+                                                                                                                                                                  "semantic_level":  "primitive",
+                                                                                                                                                                  "fixing_level":  "conditional_distribution",
+                                                                                                                                                                  "primitive_node_id":  "fresh_review_signal"
+                                                                                                                                                              },
+                                                                                                                                                              {
+                                                                                                                                                                  "object_id":  "fixed.final_rule",
+                                                                                                                                                                  "label":  "Score-blind final review rule",
+                                                                                                                                                                  "semantic_level":  "primitive",
+                                                                                                                                                                  "fixing_level":  "policy_rule",
+                                                                                                                                                                  "primitive_node_id":  "final_review_rule"
+                                                                                                                                                              },
+                                                                                                                                                              {
+                                                                                                                                                                  "object_id":  "fixed.appeal_payoffs",
+                                                                                                                                                                  "label":  "Appeal value, cost, and tie rule",
+                                                                                                                                                                  "semantic_level":  "primitive",
+                                                                                                                                                                  "fixing_level":  "payoff_ledger",
+                                                                                                                                                                  "primitive_node_id":  "appeal_value_and_cost"
+                                                                                                                                                              },
+                                                                                                                                                              {
+                                                                                                                                                                  "object_id":  "fixed.processing_burden",
+                                                                                                                                                                  "label":  "Positive per-appeal processing burden",
+                                                                                                                                                                  "semantic_level":  "primitive",
+                                                                                                                                                                  "fixing_level":  "primitive",
+                                                                                                                                                                  "primitive_node_id":  "processing_burden"
+                                                                                                                                                              }
+                                                                                                                                                          ],
+                                                                                                                                           "reoptimizing":  [
+                                                                                                                                                                {
+                                                                                                                                                                    "object_id":  "response.appeal_choice",
+                                                                                                                                                                    "label":  "Appeal versus non-appeal choice",
+                                                                                                                                                                    "semantic_level":  "choice",
+                                                                                                                                                                    "primitive_node_id":  "appeal_choice"
+                                                                                                                                                                }
+                                                                                                                                                            ],
+                                                                                                                                           "still_endogenous":  [
+                                                                                                                                                                    {
+                                                                                                                                                                        "object_id":  "endogenous.posterior",
+                                                                                                                                                                        "label":  "Regime-contingent applicant posterior",
+                                                                                                                                                                        "semantic_level":  "equilibrium_object",
+                                                                                                                                                                        "primitive_node_id":  "applicant_posterior"
+                                                                                                                                                                    },
+                                                                                                                                                                    {
+                                                                                                                                                                        "object_id":  "endogenous.outcome_vector",
+                                                                                                                                                                        "label":  "Classification-processing outcome vector",
+                                                                                                                                                                        "semantic_level":  "outcome",
+                                                                                                                                                                        "primitive_node_id":  "institutional_outcome_vector"
+                                                                                                                                                                    }
+                                                                                                                                                                ],
+                                                                                                                                           "targets":  [
+                                                                                                                                                           {
+                                                                                                                                                               "object_id":  "target.outcome_vector",
+                                                                                                                                                               "label":  "Classification-processing outcome vector",
+                                                                                                                                                               "semantic_level":  "outcome",
+                                                                                                                                                               "primitive_node_id":  "institutional_outcome_vector"
+                                                                                                                                                           }
+                                                                                                                                                       ],
+                                                                                                                                           "channel_kind":  "active_response",
+                                                                                                                                           "channel_path":  [
+                                                                                                                                                                "disclosure_partition_delta",
+                                                                                                                                                                "applicant_posterior",
+                                                                                                                                                                "appeal_choice",
+                                                                                                                                                                "institutional_outcome_vector"
+                                                                                                                                                            ],
+                                                                                                                                           "channel_summary":  "Relative to decision_only, score disclosure refines the posterior; the applicant reoptimizes the appeal decision; threshold crossings reweight the cases exposed to fixed review and processing.",
+                                                                                                                                           "aggregate_invariance":  {
+                                                                                                                                                                        "aggregate_object":  "The appeal-weighted classification-processing outcome vector",
+                                                                                                                                                                        "pointwise_policy_fixed":  true,
+                                                                                                                                                                        "weighting_distribution_status":  "changed",
+                                                                                                                                                                        "claims_aggregate_fixed":  false,
+                                                                                                                                                                        "basis":  "The initial and final policy rules are pointwise fixed, but the distribution of types selecting into appeal changes with the information partition.",
+                                                                                                                                                                        "implication_for_attribution":  "Attribution is to selection induced by the information refinement, not to an invariant aggregate or a change in review policy."
+                                                                                                                                                                    },
+                                                                                                                                           "selection_assurance":  {
+                                                                                                                                                                       "status":  "not_applicable",
+                                                                                                                                                                       "selection_rule":  "Each rejected applicant uses the deterministic binary threshold: appeal iff v*A_psi(p)-c\u003e=0, with ties assigned to appeal.",
+                                                                                                                                                                       "basis":  "There is one individual Bayesian choice and no equilibrium correspondence or discretionary selector in the maintained frame.",
+                                                                                                                                                                       "implication_for_attribution":  "The channel does not rely on choosing among multiple equilibria; all composition changes follow from the stated threshold rule."
+                                                                                                                                                                   },
+                                                                                                                                           "attribution_strength":  "clean",
+                                                                                                                                           "attribution_basis":  "The sole changed primitive is the rejected-score information partition; the exact active path and same-state payoff witness connect it to the appeal choice and outcome contribution while every rule and payoff is fixed.",
+                                                                                                                                           "distinctive_mechanism":  {
+                                                                                                                                                                         "claim_kind":  "not_claimed",
+                                                                                                                                                                         "mechanism_label":  "Posterior-threshold appeal selection",
+                                                                                                                                                                         "basis":  "Decision_only and score_disclosure share the same appeal-selection mechanism. The comparison changes the information entering that mechanism, so no mechanism absent from the contrast is claimed."
+                                                                                                                                                                     }
+                                                                                                                                       }
+                                                                                                                                   ],
+                                                                                                         "distinctive_mechanism_contribution_status":  "not_claimed",
+                                                                                                         "disclosed_gaps":  [
+
+                                                                                                                            ],
+                                                                                                         "proposed_action":  "ready_for_g1",
+                                                                                                         "action_rationale":  "The exact decision_only benchmark is covered once; the only changed primitive has a connected active posterior-to-appeal payoff witness and a bound outcome consequence; aggregate reweighting is disclosed rather than held fixed; the minimal example supplies a nonempty open margin; and the scope now uses an outcome-vector comparison/locus without capacity or optimization. This is only an audit proposal for human G1 consideration, not a G1 decision."
+                                                                                                     }
+                                                                                     },
+                                                         "literature_novelty":  {
+
+                                                                                },
+                                                         "terminology_presentation":  {
+
+                                                                                      },
+                                                         "authority":  {
+
+                                                                       }
+                                                     },
+                                          "artifact_refs":  [
+
+                                                            ],
+                                          "scope_ref":  "rq_score_disclosure_appeal_selection",
+                                          "privacy":  "public",
+                                          "access_compartments":  [
+                                                                      "project_research"
+                                                                  ],
+                                          "created_at":  "2026-07-22T22:05:07.492389Z",
+                                          "supersedes":  null
+                                      }
+                       },
+                       {
+                           "op":  "entity.create",
+                           "entity":  {
+                                          "entity_id":  "gate_g1_score_disclosure_outcome_locus_strict_audit",
+                                          "entity_type":  "GateDossier",
+                                          "version":  1,
+                                          "project_id":  "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+                                          "title":  "Replacement G1 dossier after outcome-locus framing audit",
+                                          "summary":  "An unconfirmed G1 dossier that appends the fresh positive framing audit without mutating the pre-audit dossier.",
+                                          "status":  {
+                                                         "formal_validity":  "unassessed",
+                                                         "interpretation_validity":  "hypothesized",
+                                                         "lifecycle":  "proposed",
+                                                         "literature":  null
+                                                     },
+                                          "facets":  {
+                                                         "formal":  {
+
+                                                                    },
+                                                         "economic_interpretation":  {
+
+                                                                                     },
+                                                         "literature_novelty":  {
+
+                                                                                },
+                                                         "terminology_presentation":  {
+
+                                                                                      },
+                                                         "authority":  {
+                                                                           "schema":  "econ_theorist.theory/GateDossier/v1",
+                                                                           "payload":  {
+                                                                                           "gate_kind":  "G1_question_benchmark",
+                                                                                           "ordered_artifact_refs":  [
+
+                                                                                                                     ],
+                                                                                           "ordered_object_refs":  [
+                                                                                                                       {
+                                                                                                                           "entity_id":  "rq_score_disclosure_appeal_selection",
+                                                                                                                           "version":  2
+                                                                                                                       },
+                                                                                                                       {
+                                                                                                                           "entity_id":  "bmk_decision_only_disclosure_delta",
+                                                                                                                           "version":  2
+                                                                                                                       },
+                                                                                                                       {
+                                                                                                                           "entity_id":  "pg_score_disclosure_appeal_selection",
+                                                                                                                           "version":  5
+                                                                                                                       },
+                                                                                                                       {
+                                                                                                                           "entity_id":  "fqb_score_disclosure_outcome_locus_strict_audit",
+                                                                                                                           "version":  1
+                                                                                                                       }
+                                                                                                                   ],
+                                                                                           "prepared_at":  "2026-07-22T22:05:07.492389Z",
+                                                                                           "proposed_action":  "approve",
+                                                                                           "rationale":  "The fresh audit proposes that the exact question, decision_only benchmark, and Scheme-B decomposition are ready for the researcher to consider at G1. The audit supplies a connected active-margin witness and retains all no-sign, no-welfare, no-capacity, and outcome-locus boundaries. No human G1 decision is recorded or implied.",
+                                                                                           "requirements":  [
+                                                                                                                {
+                                                                                                                    "description":  "The question identifies the rejected-score disclosure perturbation, the appeal-selection object, and the separate classification and processing outcomes without imposing a directional or welfare claim.",
+                                                                                                                    "evidence_refs":  [
+                                                                                                                                          {
+                                                                                                                                              "entity_id":  "rq_score_disclosure_appeal_selection",
+                                                                                                                                              "version":  2
+                                                                                                                                          }
+                                                                                                                                      ],
+                                                                                                                    "recorded_condition":  "evidence_supplied",
+                                                                                                                    "requirement_id":  "g1_question_exactness"
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "description":  "The benchmark set contains exactly decision_only, and score_disclosure changes only the rejected applicant\u0027s information partition while every other maintained primitive is fixed.",
+                                                                                                                    "evidence_refs":  [
+                                                                                                                                          {
+                                                                                                                                              "entity_id":  "bmk_decision_only_disclosure_delta",
+                                                                                                                                              "version":  2
+                                                                                                                                          },
+                                                                                                                                          {
+                                                                                                                                              "entity_id":  "rq_score_disclosure_appeal_selection",
+                                                                                                                                              "version":  2
+                                                                                                                                          }
+                                                                                                                                      ],
+                                                                                                                    "recorded_condition":  "evidence_supplied",
+                                                                                                                    "requirement_id":  "g1_benchmark_exactness"
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "description":  "The potential importance is a transparent separation of appeal volume, appellant composition, corrected qualified rejections, erroneous final acceptances, and processing burden; this is a bounded contribution radius rather than a claim about transparency, welfare, or policy generally.",
+                                                                                                                    "evidence_refs":  [
+                                                                                                                                          {
+                                                                                                                                              "entity_id":  "rq_score_disclosure_appeal_selection",
+                                                                                                                                              "version":  2
+                                                                                                                                          },
+                                                                                                                                          {
+                                                                                                                                              "entity_id":  "pg_score_disclosure_appeal_selection",
+                                                                                                                                              "version":  5
+                                                                                                                                          }
+                                                                                                                                      ],
+                                                                                                                    "recorded_condition":  "risk_disclosed",
+                                                                                                                    "requirement_id":  "g1_importance_radius"
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "description":  "The researcher selected the score-blind class phi(s,r)=psi(r), psi(1)\u003epsi(0), with phi(s,r)=r as the deterministic baseline; PrimitiveGraph version 5 preserves its implied acceptance probability and appeal payoff.",
+                                                                                                                    "evidence_refs":  [
+                                                                                                                                          {
+                                                                                                                                              "entity_id":  "pg_score_disclosure_appeal_selection",
+                                                                                                                                              "version":  5
+                                                                                                                                          }
+                                                                                                                                      ],
+                                                                                                                    "recorded_condition":  "evidence_supplied",
+                                                                                                                    "requirement_id":  "g1_final_rule_gap"
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "description":  "Park or kill the framing if no admissible nonempty open region changes a positive-probability appeal cell, or if all results remain mechanical threshold enumeration with no interpretable posterior ordering, selection decomposition, or sufficient statistic.",
+                                                                                                                    "evidence_refs":  [
+                                                                                                                                          {
+                                                                                                                                              "entity_id":  "rq_score_disclosure_appeal_selection",
+                                                                                                                                              "version":  2
+                                                                                                                                          },
+                                                                                                                                          {
+                                                                                                                                              "entity_id":  "pg_score_disclosure_appeal_selection",
+                                                                                                                                              "version":  5
+                                                                                                                                          }
+                                                                                                                                      ],
+                                                                                                                    "recorded_condition":  "risk_disclosed",
+                                                                                                                    "requirement_id":  "g1_kill_condition"
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "description":  "The current question and PrimitiveGraph describe a parameterized classification-processing outcome-vector comparison/locus, not a strict feasible-set or optimization frontier. A positive per-appeal burden does not add capacity, rationing, congestion, endogenous review, or welfare aggregation; any such mechanism would require a later human framing decision.",
+                                                                                                                    "evidence_refs":  [
+                                                                                                                                          {
+                                                                                                                                              "entity_id":  "rq_score_disclosure_appeal_selection",
+                                                                                                                                              "version":  2
+                                                                                                                                          },
+                                                                                                                                          {
+                                                                                                                                              "entity_id":  "bmk_decision_only_disclosure_delta",
+                                                                                                                                              "version":  2
+                                                                                                                                          },
+                                                                                                                                          {
+                                                                                                                                              "entity_id":  "pg_score_disclosure_appeal_selection",
+                                                                                                                                              "version":  5
+                                                                                                                                          }
+                                                                                                                                      ],
+                                                                                                                    "recorded_condition":  "evidence_supplied",
+                                                                                                                    "requirement_id":  "g1_scope_and_terminology_risk"
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "description":  "No human G1 decision is recorded in this dossier; a human must confirm the core question, exact benchmark scope, and any final-review primitive before they become stable dependencies.",
+                                                                                                                    "evidence_refs":  [
+                                                                                                                                          {
+                                                                                                                                              "entity_id":  "rq_score_disclosure_appeal_selection",
+                                                                                                                                              "version":  2
+                                                                                                                                          },
+                                                                                                                                          {
+                                                                                                                                              "entity_id":  "bmk_decision_only_disclosure_delta",
+                                                                                                                                              "version":  2
+                                                                                                                                          }
+                                                                                                                                      ],
+                                                                                                                    "recorded_condition":  "gap_disclosed",
+                                                                                                                    "requirement_id":  "g1_human_authority"
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "requirement_id":  "g1.framing_quality",
+                                                                                                                    "description":  "The fresh framing-economics audit binds an active posterior-threshold appeal margin to the institutional outcome vector, discloses endogenous composition, and preserves the outcome-locus and no-capacity boundaries.",
+                                                                                                                    "evidence_refs":  [
+                                                                                                                                          {
+                                                                                                                                              "entity_id":  "fqb_score_disclosure_outcome_locus_strict_audit",
+                                                                                                                                              "version":  1
+                                                                                                                                          }
+                                                                                                                                      ],
+                                                                                                                    "recorded_condition":  "evidence_supplied"
+                                                                                                                }
+                                                                                                            ],
+                                                                                           "research_question_ref":  {
+                                                                                                                         "entity_id":  "rq_score_disclosure_appeal_selection",
+                                                                                                                         "version":  2
+                                                                                                                     },
+                                                                                           "schema_version":  1
+                                                                                       }
+                                                                       }
+                                                     },
+                                          "artifact_refs":  [
+
+                                                            ],
+                                          "scope_ref":  "rq_score_disclosure_appeal_selection",
+                                          "privacy":  "public",
+                                          "access_compartments":  [
+                                                                      "project_research"
+                                                                  ],
+                                          "created_at":  "2026-07-22T22:05:07.492389Z",
+                                          "supersedes":  null
+                                      }
+                       },
+                       {
+                           "op":  "relation.create",
+                           "relation":  {
+                                            "relation_id":  "rel_strict_audit_1_framing_audits_research_question",
+                                            "relation_type":  "audits",
+                                            "version":  1,
+                                            "project_id":  "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+                                            "source":  {
+                                                           "entity_id":  "rq_score_disclosure_appeal_selection",
+                                                           "version":  2
+                                                       },
+                                            "target":  {
+                                                           "entity_id":  "fqb_score_disclosure_outcome_locus_strict_audit",
+                                                           "version":  1
+                                                       },
+                                            "dependency_mode":  "hard",
+                                            "upstream":  {
+                                                             "entity_id":  "rq_score_disclosure_appeal_selection",
+                                                             "version":  2,
+                                                             "facet":  "economic_interpretation",
+                                                             "field_path":  null,
+                                                             "semantic_hash":  "5600f571b5116cbe75643d12811ff858617c792d5eb7bb3bdb00726ca2b7d748"
+                                                         },
+                                            "downstream":  {
+                                                               "entity_id":  "fqb_score_disclosure_outcome_locus_strict_audit",
+                                                               "version":  1,
+                                                               "facet":  "economic_interpretation",
+                                                               "field_path":  null
+                                                           },
+                                            "scope_ref":  "rq_score_disclosure_appeal_selection",
+                                            "scope_overlap":  null,
+                                            "privacy":  "public",
+                                            "access_compartments":  [
+                                                                        "project_research"
+                                                                    ],
+                                            "created_at":  "2026-07-22T22:05:07.492389Z",
+                                            "supersedes":  null
+                                        }
+                       },
+                       {
+                           "op":  "relation.create",
+                           "relation":  {
+                                            "relation_id":  "rel_strict_audit_2_framing_audits_benchmark_set",
+                                            "relation_type":  "audits",
+                                            "version":  1,
+                                            "project_id":  "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+                                            "source":  {
+                                                           "entity_id":  "bmk_decision_only_disclosure_delta",
+                                                           "version":  2
+                                                       },
+                                            "target":  {
+                                                           "entity_id":  "fqb_score_disclosure_outcome_locus_strict_audit",
+                                                           "version":  1
+                                                       },
+                                            "dependency_mode":  "hard",
+                                            "upstream":  {
+                                                             "entity_id":  "bmk_decision_only_disclosure_delta",
+                                                             "version":  2,
+                                                             "facet":  "economic_interpretation",
+                                                             "field_path":  null,
+                                                             "semantic_hash":  "d1e38c5a02a5f66b20d53a945633c23e617db9895031da52664f891b80f1d1b9"
+                                                         },
+                                            "downstream":  {
+                                                               "entity_id":  "fqb_score_disclosure_outcome_locus_strict_audit",
+                                                               "version":  1,
+                                                               "facet":  "economic_interpretation",
+                                                               "field_path":  null
+                                                           },
+                                            "scope_ref":  "rq_score_disclosure_appeal_selection",
+                                            "scope_overlap":  null,
+                                            "privacy":  "public",
+                                            "access_compartments":  [
+                                                                        "project_research"
+                                                                    ],
+                                            "created_at":  "2026-07-22T22:05:07.492389Z",
+                                            "supersedes":  null
+                                        }
+                       },
+                       {
+                           "op":  "relation.create",
+                           "relation":  {
+                                            "relation_id":  "rel_strict_audit_3_framing_audits_primitive_graph",
+                                            "relation_type":  "audits",
+                                            "version":  1,
+                                            "project_id":  "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+                                            "source":  {
+                                                           "entity_id":  "pg_score_disclosure_appeal_selection",
+                                                           "version":  5
+                                                       },
+                                            "target":  {
+                                                           "entity_id":  "fqb_score_disclosure_outcome_locus_strict_audit",
+                                                           "version":  1
+                                                       },
+                                            "dependency_mode":  "hard",
+                                            "upstream":  {
+                                                             "entity_id":  "pg_score_disclosure_appeal_selection",
+                                                             "version":  5,
+                                                             "facet":  "economic_interpretation",
+                                                             "field_path":  null,
+                                                             "semantic_hash":  "49a8ddeb714281bfeb7e96f77dd3dd31e3c9e303cf49d39956a0c5fd0be83b37"
+                                                         },
+                                            "downstream":  {
+                                                               "entity_id":  "fqb_score_disclosure_outcome_locus_strict_audit",
+                                                               "version":  1,
+                                                               "facet":  "economic_interpretation",
+                                                               "field_path":  null
+                                                           },
+                                            "scope_ref":  "rq_score_disclosure_appeal_selection",
+                                            "scope_overlap":  null,
+                                            "privacy":  "public",
+                                            "access_compartments":  [
+                                                                        "project_research"
+                                                                    ],
+                                            "created_at":  "2026-07-22T22:05:07.492389Z",
+                                            "supersedes":  null
+                                        }
+                       },
+                       {
+                           "op":  "relation.create",
+                           "relation":  {
+                                            "relation_id":  "rel_strict_audit_4_framing_audits_source_g1_dossier",
+                                            "relation_type":  "audits",
+                                            "version":  1,
+                                            "project_id":  "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+                                            "source":  {
+                                                           "entity_id":  "gate_g1_score_disclosure_outcome_locus_strict",
+                                                           "version":  1
+                                                       },
+                                            "target":  {
+                                                           "entity_id":  "fqb_score_disclosure_outcome_locus_strict_audit",
+                                                           "version":  1
+                                                       },
+                                            "dependency_mode":  "hard",
+                                            "upstream":  {
+                                                             "entity_id":  "gate_g1_score_disclosure_outcome_locus_strict",
+                                                             "version":  1,
+                                                             "facet":  "authority",
+                                                             "field_path":  null,
+                                                             "semantic_hash":  "cca8d47c3cdab97d165e418496a6998384f243f5c2433930614a0b90d7529159"
+                                                         },
+                                            "downstream":  {
+                                                               "entity_id":  "fqb_score_disclosure_outcome_locus_strict_audit",
+                                                               "version":  1,
+                                                               "facet":  "economic_interpretation",
+                                                               "field_path":  null
+                                                           },
+                                            "scope_ref":  "rq_score_disclosure_appeal_selection",
+                                            "scope_overlap":  null,
+                                            "privacy":  "public",
+                                            "access_compartments":  [
+                                                                        "project_research"
+                                                                    ],
+                                            "created_at":  "2026-07-22T22:05:07.492389Z",
+                                            "supersedes":  null
+                                        }
+                       },
+                       {
+                           "op":  "relation.create",
+                           "relation":  {
+                                            "relation_id":  "rel_strict_audit_5_framing_governs_replacement_g1_dossier",
+                                            "relation_type":  "governs",
+                                            "version":  1,
+                                            "project_id":  "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+                                            "source":  {
+                                                           "entity_id":  "fqb_score_disclosure_outcome_locus_strict_audit",
+                                                           "version":  1
+                                                       },
+                                            "target":  {
+                                                           "entity_id":  "gate_g1_score_disclosure_outcome_locus_strict_audit",
+                                                           "version":  1
+                                                       },
+                                            "dependency_mode":  "hard",
+                                            "upstream":  {
+                                                             "entity_id":  "fqb_score_disclosure_outcome_locus_strict_audit",
+                                                             "version":  1,
+                                                             "facet":  "economic_interpretation",
+                                                             "field_path":  null,
+                                                             "semantic_hash":  null
+                                                         },
+                                            "downstream":  {
+                                                               "entity_id":  "gate_g1_score_disclosure_outcome_locus_strict_audit",
+                                                               "version":  1,
+                                                               "facet":  "authority",
+                                                               "field_path":  null
+                                                           },
+                                            "scope_ref":  "rq_score_disclosure_appeal_selection",
+                                            "scope_overlap":  null,
+                                            "privacy":  "public",
+                                            "access_compartments":  [
+                                                                        "project_research"
+                                                                    ],
+                                            "created_at":  "2026-07-22T22:05:07.492389Z",
+                                            "supersedes":  null
+                                        }
+                       },
+                       {
+                           "op":  "route.outcome",
+                           "outcome":  {
+                                           "route_run_id":  "run_op_71e7b5655c3610e83c7e8b740f3334c41a7b9b76bde92c52",
+                                           "route_id":  "audit.framing_economics",
+                                           "outcome":  "completed_with_candidate",
+                                           "rationale":  "The fresh V8 audit binds the exact outcome-locus frame to one active posterior-threshold appeal margin and its institutional outcome-vector consequence, preserves aggregate endogeneity and all no-capacity/no-optimization boundaries, and only proposes human G1 consideration.",
+                                           "candidate_refs":  [
+                                                                  {
+                                                                      "entity_id":  "fqb_score_disclosure_outcome_locus_strict_audit",
+                                                                      "version":  1
+                                                                  },
+                                                                  {
+                                                                      "entity_id":  "gate_g1_score_disclosure_outcome_locus_strict_audit",
+                                                                      "version":  1
+                                                                  },
+                                                                  {
+                                                                      "relation_id":  "rel_strict_audit_1_framing_audits_research_question",
+                                                                      "version":  1
+                                                                  },
+                                                                  {
+                                                                      "relation_id":  "rel_strict_audit_2_framing_audits_benchmark_set",
+                                                                      "version":  1
+                                                                  },
+                                                                  {
+                                                                      "relation_id":  "rel_strict_audit_3_framing_audits_primitive_graph",
+                                                                      "version":  1
+                                                                  },
+                                                                  {
+                                                                      "relation_id":  "rel_strict_audit_4_framing_audits_source_g1_dossier",
+                                                                      "version":  1
+                                                                  },
+                                                                  {
+                                                                      "relation_id":  "rel_strict_audit_5_framing_governs_replacement_g1_dossier",
+                                                                      "version":  1
+                                                                  }
+                                                              ],
+                                           "validator_report_refs":  [
+
+                                                                     ],
+                                           "privacy":  "public",
+                                           "access_compartments":  [
+                                                                       "project_research"
+                                                                   ]
+                                       }
+                       }
+                   ],
+    "evidence_refs":  [
+                          {
+                              "entity_id":  "bmk_decision_only_disclosure_delta",
+                              "version":  2
+                          },
+                          {
+                              "entity_id":  "gate_g1_score_disclosure_outcome_locus_strict",
+                              "version":  1
+                          },
+                          {
+                              "entity_id":  "pg_score_disclosure_appeal_selection",
+                              "version":  5
+                          },
+                          {
+                              "entity_id":  "rq_score_disclosure_appeal_selection",
+                              "version":  2
+                          }
+                      ],
+    "authority_basis":  [
+
+                        ],
+    "created_at":  "2026-07-22T22:05:07.492389Z",
+    "parent_transaction_hash":  "d99a9aee75130eaeb41c9015fe148afd8976a0ae7a217c77b9dcacc5fd9ed0c4",
+    "privacy":  "public",
+    "access_compartments":  [
+                                "project_research"
+                            ]
+}

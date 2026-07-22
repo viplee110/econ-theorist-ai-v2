@@ -1,0 +1,15 @@
+{
+  "command": "C:\\Projects\\Econ Theorist AI v2\\.venv\\Scripts\\etai.exe --project C:\\tmp\\p5b1-outcome-locus-clean-20260723 validate",
+  "recorded_at_utc": null,
+  "exit_code": 0,
+  "result": {
+    "artifacts": 0,
+    "entities": 19,
+    "head": "bf4e7fdd49bcf089b18318e77075514cbaea027939049113d1d5840073b4800c",
+    "project_id": "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+    "relations": 24,
+    "transactions": 12,
+    "valid": true
+  },
+  "claim_boundary": "Developer-transcribed replay result from the dirty editable checkout identified in OUTCOME_LOCUS_SOURCE_BINDING.json; the exact invocation timestamp was not separately captured, and this is not an independent model or packaged-wheel result."
+}

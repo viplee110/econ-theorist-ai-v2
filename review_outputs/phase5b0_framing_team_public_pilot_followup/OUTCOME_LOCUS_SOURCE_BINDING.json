@@ -1,0 +1,81 @@
+{
+  "binding_schema": "econ-theorist/phase5b0-outcome-locus-source-binding/v1",
+  "prepared_at_utc": "2026-07-22T22:15:46.1867840Z",
+  "prior_followup_manifest_sha256": "d7b8f20aec836cc4db9ed6c5cfdedc3a9a64e3f5bad6e9739cdb1610429a6c2a",
+  "authority": {
+    "exact_researcher_choice": "Replace strict frontier in the ResearchQuestion with outcome-vector comparison/locus.",
+    "capacity_added": false,
+    "optimization_added": false,
+    "human_g1_authorized_or_confirmed": false
+  },
+  "execution": {
+    "original_project_root": "C:\\tmp\\p5b1",
+    "clean_recovery_root": "C:\\tmp\\p5b1-outcome-locus-clean-20260723",
+    "repository_root": "C:\\Projects\\Econ Theorist AI v2",
+    "base_git_head": "56b734204aaf6382cfe3ee0260549f783b60021f",
+    "git_worktree_state": "dirty",
+    "exact_dirty_tree_snapshot_captured": false,
+    "exact_dirty_diff_captured": false,
+    "etai_executable": "C:\\Projects\\Econ Theorist AI v2\\.venv\\Scripts\\etai.exe",
+    "editable_source_observed": true,
+    "wheel_sha256": null,
+    "exact_runtime_distribution_digest_available": false,
+    "source_binding_strength": "partial",
+    "observable_model_label": "user-selected-current-model-unverified",
+    "provider_backend_independently_confirmed": false
+  },
+  "recovery_boundary": {
+    "strict_resume_head": "ed2371dbf7f4b741b90ff8348065f017e5e8e78d62ebe5dbe7ba5090c1e66285",
+    "original_experimental_head": "4aed9a215cd9333cea19c5c538eec02cce95eb07386e8a9c7992839770e54c95",
+    "original_experimental_head_valid_under_final_code": false,
+    "invalid_transaction": "17fc2667e4957eee6c29f40241eeb76569b2a2e22277a7885fac534dd65e34d8",
+    "strict_replay_error": "route decompose.primitives output requires at least 1 GateDossier, got 0",
+    "validator_relaxation_retained": false,
+    "original_project_modified_by_recovery": false,
+    "clean_copy_unreachable_experimental_run_state_removed": true,
+    "claim_boundary": "The original post-ed2371 lineage is negative evidence only. The clean copy resumed from the last strict-replayable head and is the only final-code-valid continuation reported as canonical evidence."
+  },
+  "canonical_result": {
+    "project_id": "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+    "primitive_graph_dependency_repair_head": "922c2cb43e90b5cadfb79fe6cafc095588df098e78d03324af9b3831bb5d5397",
+    "decomposition_refresh_head": "d99a9aee75130eaeb41c9015fe148afd8976a0ae7a217c77b9dcacc5fd9ed0c4",
+    "final_audit_head": "bf4e7fdd49bcf089b18318e77075514cbaea027939049113d1d5840073b4800c",
+    "strict_replay_valid": true,
+    "strict_replay_transaction_count": 12,
+    "strict_replay_entity_count": 19,
+    "strict_replay_relation_count": 24,
+    "human_g1_confirmed": false
+  },
+  "audit": {
+    "route_id": "audit.framing_economics",
+    "run_id": "run_op_71e7b5655c3610e83c7e8b740f3334c41a7b9b76bde92c52",
+    "work_packet_hash": "bea5202e70485891e9de94cd71df4206e42a7b09f8652a427c092289e0c76447",
+    "delivery_envelope_hash": "0ac20ef0473c689b3afcf73a216dfe5b65d6d1ee2320af05ef8ebf6935e7a90a",
+    "head_before": "d99a9aee75130eaeb41c9015fe148afd8976a0ae7a217c77b9dcacc5fd9ed0c4",
+    "head_after": "bf4e7fdd49bcf089b18318e77075514cbaea027939049113d1d5840073b4800c",
+    "route_outcome": "committed",
+    "completion_status": "committed",
+    "transaction_digest": "bf4e7fdd49bcf089b18318e77075514cbaea027939049113d1d5840073b4800c",
+    "host_receipt_hash": "359cc6c2c986ac70ca8afbaec1327e644cb97906cd662df6adcaddbdfcc40830",
+    "framing_action": "ready_for_g1",
+    "replacement_dossier_proposal": "approve",
+    "canonical_audit_commit": true,
+    "human_g1_confirmed": false
+  },
+  "authorship": {
+    "candidate_authorship": "developer-assisted_nonblind_recovery",
+    "work_packet_only_model_evidence": false,
+    "public_blind_claim": false,
+    "provider_backend_confirmed": false,
+    "notes": [
+      "The audit draft was mechanically rebound from the earlier same-case draft and checked against the new exact WorkPacket.",
+      "The clean continuation is canonical route evidence, not a fresh independent model-quality evaluation."
+    ]
+  },
+  "diagnostic_change": {
+    "file": "src/econ_theorist/framing_quality_validation.py",
+    "acceptance_predicates_changed": false,
+    "invalid_node_aggregation_branch_exercised_by_successful_audit": false,
+    "description": "The additive diagnostic reports all invalid payoff/public-state node IDs and kinds together; the successful clean audit supplied only valid node kinds and did not exercise that rejection branch."
+  }
+}

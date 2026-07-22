@@ -42,6 +42,7 @@ from .policy import (
     ROUTE_REGISTRY_V6_HASH,
     ROUTE_REGISTRY_V7_HASH,
     ROUTE_REGISTRY_V8_HASH,
+    SELECTOR_VERSION_DECOMPOSITION_REFRESH,
     route_spec_by_hash,
 )
 from .runs import read_run, transaction_bindings
@@ -908,6 +909,9 @@ def _endpoint_constraints_for_route(
 ) -> tuple[CandidateEndpointConstraintV1, ...]:
     if packet.packet_compiler_version < 2 or route.route_id != "decompose.primitives":
         return ()
+    refresh_v2 = (
+        packet.context_selector_version == SELECTOR_VERSION_DECOMPOSITION_REFRESH
+    )
     return (
         CandidateEndpointConstraintV1(
             relation_type="decomposes",
@@ -915,9 +919,18 @@ def _endpoint_constraints_for_route(
             entity_type="PrimitiveGraph",
             output_ordinal=1,
             repair_hint=(
-                "At least one decomposes relation must target the new "
-                "PrimitiveGraph output; if the endpoints are reversed, swap "
-                "source and target."
+                (
+                    "Use the exact focused ResearchQuestion as source and the "
+                    "new PrimitiveGraph as target. This is provenance-only: "
+                    "set dependency_mode to trace_only and set upstream and "
+                    "downstream to null; do not compute a semantic hash."
+                )
+                if refresh_v2
+                else (
+                    "At least one decomposes relation must target the new "
+                    "PrimitiveGraph output; if the endpoints are reversed, "
+                    "swap source and target."
+                )
             ),
         ),
     )

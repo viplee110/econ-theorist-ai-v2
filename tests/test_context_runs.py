@@ -54,6 +54,8 @@ from econ_theorist.policy import (
     ROUTE_REGISTRY_V6_HASH,
     ROUTE_REGISTRY_V7_HASH,
     ROUTE_REGISTRY_V8_HASH,
+    SELECTOR_VERSION_DECOMPOSITION_REFRESH,
+    SELECTOR_VERSION_DECOMPOSITION_REFRESH_V1,
     V2_ENABLED_ROUTE_IDS,
     V4_ENABLED_ROUTE_IDS,
     V7_ENABLED_ROUTE_IDS,
@@ -61,6 +63,10 @@ from econ_theorist.policy import (
     load_route_registry,
     load_route_registry_by_hash,
     registry_hash,
+    route_spec_by_hash,
+    selector_version_for_new_navigation,
+    selector_version_for_route,
+    selector_version_is_supported,
     theory_kernel,
 )
 from econ_theorist.project import init_project
@@ -77,6 +83,16 @@ from econ_theorist.runs import (
     run_path,
 )
 from econ_theorist.runtime import HeadStore, StoreLayout
+from econ_theorist.theory import (
+    BenchmarkRecord,
+    BenchmarkSet,
+    GateDossier,
+    GateRequirement,
+    PrimitiveGraph,
+    PrimitiveNode,
+    ResearchQuestion,
+    pack_theory_payload,
+)
 
 
 HEAD = "a" * 64
@@ -281,6 +297,53 @@ class RouteRegistryTests(unittest.TestCase):
             len(V4_ENABLED_ROUTE_IDS),
         )
 
+    def test_decomposition_refresh_selectors_do_not_reinterpret_old_registries(
+        self,
+    ) -> None:
+        historical_hashes = (
+            ROUTE_REGISTRY_V1_HASH,
+            ROUTE_REGISTRY_V2_HASH,
+            ROUTE_REGISTRY_V3_HASH,
+            ROUTE_REGISTRY_V4_HASH,
+            ROUTE_REGISTRY_V5_HASH,
+            ROUTE_REGISTRY_V6_HASH,
+            ROUTE_REGISTRY_V7_HASH,
+        )
+        refresh_versions = (
+            SELECTOR_VERSION_DECOMPOSITION_REFRESH_V1,
+            SELECTOR_VERSION_DECOMPOSITION_REFRESH,
+        )
+        for registry_hash_value in historical_hashes:
+            with self.subTest(registry_hash=registry_hash_value):
+                route = route_spec_by_hash(
+                    "decompose.primitives", registry_hash_value
+                )
+                self.assertEqual(
+                    selector_version_for_new_navigation(route),
+                    selector_version_for_route(route),
+                )
+                self.assertTrue(
+                    selector_version_is_supported(
+                        route, selector_version_for_route(route)
+                    )
+                )
+                for refresh_version in refresh_versions:
+                    self.assertFalse(
+                        selector_version_is_supported(route, refresh_version)
+                    )
+
+        active_route = route_spec_by_hash(
+            "decompose.primitives", ROUTE_REGISTRY_V8_HASH
+        )
+        self.assertEqual(
+            selector_version_for_new_navigation(active_route),
+            SELECTOR_VERSION_DECOMPOSITION_REFRESH,
+        )
+        for refresh_version in refresh_versions:
+            self.assertTrue(
+                selector_version_is_supported(active_route, refresh_version)
+            )
+
 
 class ContextCompilerTests(unittest.TestCase):
     def test_etai_lexical_v1_has_an_explicit_provider_neutral_definition(self) -> None:
@@ -325,6 +388,225 @@ class ContextCompilerTests(unittest.TestCase):
         self.assertIn(("ent_verification", 1), selected)
         self.assertNotIn(("ent_independent", 1), selected)
         self.assertEqual(first.context_hash, sha256_bytes(first.encoded))
+
+    def test_decomposition_refresh_includes_exact_prior_graph_and_g1_dossier(
+        self,
+    ) -> None:
+        question_v1 = EntityVersion(
+            entity_id="question.refresh",
+            entity_type="ResearchQuestion",
+            version=1,
+            project_id="prj_context",
+            title="Refresh question",
+            summary="A bounded refresh question.",
+            status=ScientificStatus(lifecycle="proposed"),
+            facets=pack_theory_payload(
+                ResearchQuestion(
+                    phenomenon="One information partition changes.",
+                    object_to_explain="The induced choice set.",
+                    unresolved_delta="The exact outcome vector remains open.",
+                    importance="Selection changes institutional outcomes.",
+                    kill_condition="No positive-probability choice changes.",
+                    proposed_scope="A finite Bayesian environment.",
+                    candidate_archetypes=("comparative_statics_threshold",),
+                )
+            ),
+            created_at="2026-07-11T00:00:00Z",
+        )
+        question_v2 = question_v1.model_copy(
+            update={
+                "version": 2,
+                "created_at": "2026-07-11T00:00:01Z",
+                "supersedes": EntityVersionRef(
+                    entity_id=question_v1.entity_id, version=1
+                ),
+            }
+        )
+        benchmark_v1 = EntityVersion(
+            entity_id="benchmark.refresh",
+            entity_type="BenchmarkSet",
+            version=1,
+            project_id="prj_context",
+            title="Refresh benchmark",
+            summary="One exact benchmark.",
+            status=ScientificStatus(lifecycle="proposed"),
+            facets=pack_theory_payload(
+                BenchmarkSet(
+                    question_ref=EntityVersionRef(
+                        entity_id=question_v1.entity_id, version=1
+                    ),
+                    benchmarks=(
+                        BenchmarkRecord(
+                            benchmark_id="benchmark.base",
+                            label="Base benchmark",
+                            exact_primitives=("One state",),
+                            timing=("Information then action",),
+                            solution_concept="Bayesian choice",
+                            prediction="No sign is imposed.",
+                            unresolved_delta="Selection may change.",
+                        ),
+                    ),
+                    exact_question_delta="Refine only the information partition.",
+                )
+            ),
+            created_at="2026-07-11T00:00:00Z",
+        )
+        benchmark_v2 = benchmark_v1.model_copy(
+            update={
+                "version": 2,
+                "created_at": "2026-07-11T00:00:01Z",
+                "supersedes": EntityVersionRef(
+                    entity_id=benchmark_v1.entity_id, version=1
+                ),
+            }
+        )
+        graph_v3_ref = EntityVersionRef(entity_id="graph.refresh", version=3)
+        graph_payload = PrimitiveGraph(
+            question_ref=EntityVersionRef(
+                entity_id=question_v1.entity_id, version=1
+            ),
+            benchmark_set_ref=EntityVersionRef(
+                entity_id=benchmark_v1.entity_id, version=1
+            ),
+            nodes=(
+                PrimitiveNode(
+                    node_id="node.selection",
+                    kind="choice",
+                    label="Selection",
+                    economic_meaning="The information partition changes selection.",
+                    status="primitive",
+                ),
+            ),
+        )
+        graph_v3 = EntityVersion(
+            entity_id=graph_v3_ref.entity_id,
+            entity_type="PrimitiveGraph",
+            version=3,
+            project_id="prj_context",
+            title="Prior graph",
+            summary="The exact prior decomposition.",
+            status=ScientificStatus(lifecycle="proposed"),
+            facets=pack_theory_payload(graph_payload),
+            created_at="2026-07-11T00:00:02Z",
+            supersedes=EntityVersionRef(entity_id=graph_v3_ref.entity_id, version=2),
+        )
+        graph_v4 = graph_v3.model_copy(
+            update={
+                "version": 4,
+                "created_at": "2026-07-11T00:00:03Z",
+                "supersedes": graph_v3_ref,
+            }
+        )
+        dossier = EntityVersion(
+            entity_id="gate.refresh",
+            entity_type="GateDossier",
+            version=1,
+            project_id="prj_context",
+            title="Prior G1 dossier",
+            summary="The exact prior pre-audit package.",
+            status=ScientificStatus(lifecycle="proposed"),
+            facets=pack_theory_payload(
+                GateDossier(
+                    gate_kind="G1_question_benchmark",
+                    research_question_ref=graph_payload.question_ref,
+                    ordered_object_refs=(
+                        graph_payload.question_ref,
+                        graph_payload.benchmark_set_ref,
+                        graph_v3_ref,
+                    ),
+                    requirements=(
+                        GateRequirement(
+                            requirement_id="requirement.refresh",
+                            description="The exact frame and graph are recorded.",
+                            evidence_refs=(graph_v3_ref,),
+                            recorded_condition="evidence_supplied",
+                        ),
+                    ),
+                    proposed_action="revise",
+                    rationale="The package remains a proposal for a human gate.",
+                    prepared_at="2026-07-11T00:00:02Z",
+                )
+            ),
+            created_at="2026-07-11T00:00:02Z",
+        )
+        entities = (
+            question_v1,
+            question_v2,
+            benchmark_v1,
+            benchmark_v2,
+            graph_v3,
+            graph_v4,
+            dossier,
+        )
+        snapshot = Snapshot(
+            project_id="prj_context",
+            head=HEAD,
+            chain=(HEAD,),
+            entity_versions=entities,
+            current_entities={
+                question_v2.entity_id: 2,
+                benchmark_v2.entity_id: 2,
+                graph_v4.entity_id: 4,
+                dossier.entity_id: 1,
+            },
+        )
+
+        compiled = compile_context(
+            snapshot,
+            route=get_route("decompose.primitives"),
+            actor=ACTOR,
+            purpose="research_discovery",
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            focus_entity_ids=(question_v2.entity_id, benchmark_v2.entity_id),
+            budget_units=10_000,
+            selector_version=SELECTOR_VERSION_DECOMPOSITION_REFRESH,
+        )
+
+        selected = {
+            (reference.entity_id, reference.version)
+            for reference in compiled.selected_entity_refs
+        }
+        self.assertIn((question_v2.entity_id, 2), selected)
+        self.assertIn((benchmark_v2.entity_id, 2), selected)
+        self.assertIn((graph_v4.entity_id, 4), selected)
+        self.assertIn((dossier.entity_id, 1), selected)
+
+        preserved_v1 = compile_context(
+            snapshot,
+            route=get_route("decompose.primitives"),
+            actor=ACTOR,
+            purpose="research_discovery",
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            focus_entity_ids=(question_v2.entity_id, benchmark_v2.entity_id),
+            budget_units=10_000,
+            selector_version=SELECTOR_VERSION_DECOMPOSITION_REFRESH_V1,
+        )
+        self.assertEqual(
+            {
+                (reference.entity_id, reference.version)
+                for reference in preserved_v1.selected_entity_refs
+            },
+            selected,
+        )
+
+        historical = compile_context(
+            snapshot,
+            route=get_route("decompose.primitives"),
+            actor=ACTOR,
+            purpose="research_discovery",
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            focus_entity_ids=(question_v2.entity_id, benchmark_v2.entity_id),
+            budget_units=10_000,
+        )
+        historical_selected = {
+            (reference.entity_id, reference.version)
+            for reference in historical.selected_entity_refs
+        }
+        self.assertNotIn((graph_v4.entity_id, 4), historical_selected)
+        self.assertNotIn((dossier.entity_id, 1), historical_selected)
 
     def test_budget_omits_optional_neighbor_but_never_required_ancestor(self) -> None:
         snapshot = fixture_snapshot()

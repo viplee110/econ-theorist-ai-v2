@@ -21,12 +21,17 @@ nondegeneracy probe (`PARK`, 0.95), and the researcher selected Scheme B: a
 score-blind final rule strictly increasing in the review signal, with
 `phi(s,r)=r` as the minimal baseline. A developer-assisted, nonblind follow-up
 canonically committed the PrimitiveGraph repair, dependent decomposition
-refresh, and unchanged-V8 audit at head
+refresh, and unchanged-V8 audit at checkpoint head
 `aea3e7a77ab7a3dc0e4d0b334403eb6d9df38a69bf3ddbca730075e6728fd230`.
-The audit remains `revise_framing`; its sole recorded scientific gap is the
-ResearchQuestion's unsupported strict `frontier` terminology. That wording has
-not been authorized for repair, no G1 decision occurred, and the follow-up is
-not fresh model or research-quality evidence.
+The researcher then authorized replacing the ResearchQuestion's unsupported
+strict `frontier` with an outcome-vector comparison/locus without adding
+capacity or optimization. A clean continuation under the restored strict
+Phase-2 validator committed the dependency repair, decomposition refresh, and
+fresh unchanged-V8 audit at
+`bf4e7fdd49bcf089b18318e77075514cbaea027939049113d1d5840073b4800c`.
+Exact replay passes and the audit proposes `ready_for_g1`; no human G1 decision
+occurred. The recovery remains developer-assisted, nonblind evidence rather
+than a fresh model or research-quality result.
 
 Current implementation milestone: bounded authoring and diagnostic repair
 implemented. Semantic V2 now compiles only explicitly located force margins
@@ -48,11 +53,11 @@ rated Q mixed. The exact [pilot evidence summary](../../review_outputs/phase5b0_
 binds those claims to the engine commit, wheel digest, and observable model
 labels. The probe and bounded Scheme-B follow-up are now recorded in the
 [sibling evidence archive](../../review_outputs/phase5b0_framing_team_public_pilot_followup/FOLLOWUP_SUMMARY.md).
-The next scientific step requires a separate researcher choice on the exact
-ResearchQuestion terminology before any further canonical framing repair or
-`ResearchMove` selection. A new held-out authoring
-pair may be resumed only when a concrete product failure makes that comparison
-decision-relevant. V9 and an exploratory v1/v2 quality claim remain blocked. See
+The next scientific step is an explicit researcher G1 review of the exact
+ready proposal; do not activate a `ResearchMove` batch until that human choice.
+A new held-out authoring pair may be resumed only when a concrete product
+failure makes that comparison decision-relevant. V9 and an exploratory v1/v2
+quality claim remain blocked. See
 the exact [packaged-runtime verification](../../review_outputs/phase5a2_v8_authoring_pair_v2/packaged_runtime_verification.md).
 
 ## 1. Delivery strategy
@@ -588,17 +593,20 @@ pilot has now provided [source-aware evidence](../../review_outputs/phase5b0_fra
 for the machine surface and a recorded single-worker completion binding, but
 not provider-independent model delivery, strong collaborator diversity,
 unscripted user value, or scientific quality. The later frozen probe returned
-`PARK` (0.95), and the researcher selected only the Scheme-B rule class and
-baseline. The resulting developer-assisted, nonblind follow-up committed
-repair, decomposition, and the unchanged-V8 audit, but the audit remains
-`revise_framing` and no G1 occurred. A narrow bridge-level `reframe.repair`
+`PARK` (0.95), and the researcher selected the Scheme-B rule class and baseline,
+then separately authorized outcome-vector/locus terminology without capacity or
+optimization. The strict-replay recovery committed the dependency repair,
+decomposition, and unchanged-V8 audit; the audit proposes `ready_for_g1`, but
+no human G1 occurred. A narrow bridge-level `reframe.repair`
 composite now handles only an untouched, empty-focus framing-v2 run: it records
 a noncanonical operational disposition bound to the exact target, successor
 brief, and navigation candidate, then opens that exact dependency repair with
 recoverable exact retry. It does not apply to an activated team, so general
 recovery after team `kill` or `new_brief_required` remains open and those
-statuses still stop an exploratory pilot. The recovery hardening postdates,
-and was not exercised by, the preserved `p5b1` run.
+statuses still stop an exploratory pilot. The original `p5b1` experimental
+lineage after `ed2371...` is negative evidence only because it contains a
+failed-route transaction admitted by a reverted validator relaxation; the
+separate clean continuation is the replay-valid result.
 
 Begin the exploratory product slice after the bounded Phase 5A substrate has
 demonstrated one real route commit, exact retry/recovery, and engine-owned

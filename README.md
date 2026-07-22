@@ -376,18 +376,21 @@ getting closer.**
   multi-agent, usability, or quality evidence
 - ✅ One frozen noncanonical probe returned `PARK` (0.95), followed by the
   researcher's Scheme-B choice and a developer-assisted, nonblind canonical
-  repair/decomposition/audit sequence ending at
-  `aea3e7a77ab7a3dc0e4d0b334403eb6d9df38a69bf3ddbca730075e6728fd230`;
+  checkpoint at `aea3e7...`, then explicit authorization to replace strict
+  `frontier` with an outcome-vector comparison/locus without capacity or
+  optimization. A clean strict-validator continuation ends at
+  `bf4e7fdd49bcf089b18318e77075514cbaea027939049113d1d5840073b4800c`,
+  replays successfully, and proposes `ready_for_g1` without confirming G1;
   the exact [follow-up evidence boundary](review_outputs/phase5b0_framing_team_public_pilot_followup/FOLLOWUP_SUMMARY.md)
   records why this is not fresh model or research-quality evidence
 
 ### Still being tested or built
 
-- 🧪 A fresh WorkPacket-only V8 audit; another held-out V1/V2 comparison
-  only if a concrete researcher-facing failure makes it decision-relevant
+- 🧪 Independent economics/editing-burden inspection and an explicit human G1
+  review; another held-out V1/V2 comparison only if a concrete
+  researcher-facing failure makes it decision-relevant
 - 🧪 Comparative readability, token, wall-time, and active-human-effort gains
-- 🧪 An explicit researcher decision on whether to replace the remaining strict
-  `frontier` terminology, plus a later genuinely unscripted user-choice pilot
+- 🧪 A later genuinely unscripted user-choice pilot
 - 🚧 Clean first-use installation and positive private execution
 - 🚧 Claude Code and Cursor host parity
 - ⏳ End-to-end human–AI paper development at the intended quality bar
@@ -478,12 +481,14 @@ source-isolated nondegeneracy probe returned `PARK` with confidence 0.95; the
 researcher then selected a score-blind rule strictly increasing in the review
 signal, with `phi(s,r)=r` as the minimal baseline. Developer-assisted, nonblind
 candidates canonically committed the corresponding repair, decomposition
-refresh, and unchanged-V8 audit. The final audit still says `revise_framing`
-because the ResearchQuestion calls an outcome-vector comparison/locus a strict
-`frontier`; changing that term has not been authorized. No G1 decision occurred.
+refresh, and unchanged-V8 audit at checkpoint head `aea3e7...`. The researcher
+then authorized the exact outcome-vector/locus terminology repair without
+capacity or optimization. A separate strict-replay recovery reaches
+`bf4e7fdd...4800c`; its fresh V8 audit proposes `ready_for_g1`, but no human G1
+decision occurred.
 The [follow-up archive](review_outputs/phase5b0_framing_team_public_pilot_followup/FOLLOWUP_SUMMARY.md)
-also records its partial dirty-source binding and that later recovery hardening
-was not exercised by the preserved run.
+records the partial dirty-source binding, the rejected experimental lineage,
+and the developer-assisted/nonblind boundary of the valid recovery.
 
 <details>
 <summary><strong>Show verification commands</strong></summary>

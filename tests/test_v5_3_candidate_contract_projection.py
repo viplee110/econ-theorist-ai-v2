@@ -23,6 +23,8 @@ from econ_theorist.policy import (
     ROUTE_REGISTRY_V5_HASH,
     ROUTE_REGISTRY_V6_HASH,
     ROUTE_REGISTRY_V7_HASH,
+    SELECTOR_VERSION_DECOMPOSITION_REFRESH,
+    SELECTOR_VERSION_DECOMPOSITION_REFRESH_V1,
     instruction_bundle_bytes,
     route_spec_by_hash,
 )
@@ -425,7 +427,7 @@ class V53CandidateContractProjectionTests(unittest.TestCase):
         self.assertEqual(canonical_governs.downstream.facet, template.target.facet)
 
     def test_work_packet_focus_must_equal_canonical_run_focus_at_base(self) -> None:
-        _, packet, _, _, _ = self._open_audit_contract()
+        _, packet, snapshot, _, _ = self._open_audit_contract()
         tampered = packet.model_copy(
             update={"focus_refs": tuple(reversed(packet.focus_refs))}
         )
@@ -687,6 +689,49 @@ class V53CandidateContractProjectionTests(unittest.TestCase):
         self.assertEqual(constraints[0].endpoint_role, "target")
         self.assertEqual(constraints[0].entity_type, "PrimitiveGraph")
         self.assertEqual(constraints[0].output_ordinal, 1)
+
+    def test_decomposition_refresh_v2_exposes_trace_only_topology_hint(self) -> None:
+        _, packet, snapshot, _, _ = self._open_audit_contract()
+        route = route_spec_by_hash("decompose.primitives", ROUTE_REGISTRY_V7_HASH)
+        decompose_packet = packet.model_copy(
+            update={
+                "packet_compiler_version": 2,
+                "route_id": route.route_id,
+                "route_version": route.route_version,
+                "context_selector_version": SELECTOR_VERSION_DECOMPOSITION_REFRESH,
+            }
+        )
+        constraints = _endpoint_constraints_for_route(route, decompose_packet)
+        self.assertEqual(len(constraints), 1)
+        self.assertIn(
+            "exact focused ResearchQuestion as source",
+            constraints[0].repair_hint,
+        )
+        self.assertIn("dependency_mode to trace_only", constraints[0].repair_hint)
+        self.assertIn("do not compute a semantic hash", constraints[0].repair_hint)
+        self.assertEqual(
+            _relation_templates_for_route(route, decompose_packet, snapshot),
+            (),
+        )
+
+        historical_packet = decompose_packet.model_copy(
+            update={
+                "context_selector_version": SELECTOR_VERSION_DECOMPOSITION_REFRESH_V1
+            }
+        )
+        historical_constraints = _endpoint_constraints_for_route(
+            route,
+            historical_packet,
+        )
+        self.assertEqual(len(historical_constraints), 1)
+        self.assertEqual(
+            historical_constraints[0].repair_hint,
+            (
+                "At least one decomposes relation must target the new "
+                "PrimitiveGraph output; if the endpoints are reversed, swap "
+                "source and target."
+            ),
+        )
 
 
 

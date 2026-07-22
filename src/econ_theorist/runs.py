@@ -59,7 +59,7 @@ from .policy import (
     decision_registry_version_for_route,
     instruction_bundle_bytes,
     registry_hash_for_route,
-    selector_version_for_route,
+    selector_version_is_supported,
 )
 from .route_registry import authorize_route, get_route, validate_privacy_clearance
 from .theory_validation import TheoryValidationError, validate_phase2_route_entry
@@ -415,6 +415,7 @@ def begin_run(
     context_manifest_id: str | None = None,
     created_at: str | None = None,
     route_registry_hash: str | None = None,
+    context_selector_version: str | None = None,
 ) -> RouteRun:
     """Compile and start an isolated route run at ``snapshot.head``.
 
@@ -479,6 +480,7 @@ def begin_run(
         focus_entity_ids=focus_tuple,
         budget_units=budget_units,
         layout=layout,
+        selector_version=context_selector_version,
     )
 
     run_id = route_run_id or new_id("run")
@@ -496,6 +498,7 @@ def begin_run(
         focus_entity_ids=focus_tuple,
         budget_units=budget_units,
         created_at=timestamp,
+        selector_version=context_selector_version,
     )
     run = RouteRun(
         route_run_id=run_id,
@@ -589,7 +592,7 @@ def read_context(layout: StoreLayout, route_run_id: str) -> ContextManifest:
     if (
         manifest.decision_registry_version
         != decision_registry_version_for_route(route)
-        or manifest.selector_version != selector_version_for_route(route)
+        or not selector_version_is_supported(route, manifest.selector_version)
         or manifest.kernel_version != KERNEL_VERSION
         or manifest.kernel_hash != KERNEL_HASH
         or manifest.validator_version != VALIDATOR_VERSION
@@ -694,6 +697,7 @@ def provenance_bytes(layout: StoreLayout, route_run_id: str) -> dict[str, bytes]
         focus_entity_ids=run.focus_entity_ids,
         budget_units=manifest.budget_units,
         layout=layout,
+        selector_version=manifest.selector_version,
     )
     expected_manifest = make_context_manifest(
         compiled,
@@ -707,6 +711,7 @@ def provenance_bytes(layout: StoreLayout, route_run_id: str) -> dict[str, bytes]
         focus_entity_ids=run.focus_entity_ids,
         budget_units=manifest.budget_units,
         created_at=manifest.created_at,
+        selector_version=manifest.selector_version,
     )
     expected_run = run.model_copy(
         update={"context_hash": compiled.context_hash}

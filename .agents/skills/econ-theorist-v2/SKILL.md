@@ -7,7 +7,6 @@ description: Operate Econ Theorist AI v2 through its installed machine protocol 
 
 Use the installed engine as sole owner of workflow, state, instructions,
 schemas, validation, and routing. Act as a thin host over its bridge.
-
 ## Operate the project
 
 1. Use only the explicit project root; do not scan parent/sibling directories.
@@ -29,7 +28,10 @@ schemas, validation, and routing. Act as a thin host over its bridge.
    disposition is operational and noncanonical, not a scientific choice/gate.
 6. Follow the bridge status exactly. Stop and surface the smallest necessary
    user choice for an ambiguous route, structural human gate, privacy blocker,
-   incompatible root, or repair requirement. Handle an explicit
+   incompatible root, or repair requirement. After the user chooses one route
+   from `ambiguous_next`, relay only that existing route id through
+   `requested_route_id`; never invent a route, combine it with a reframe brief,
+   or treat the route choice as a human scientific gate. Handle an explicit
    `single_fallback` only as described below.
 7. Treat the returned WorkPacket as the only scientific instruction, context,
    and output contract for the route. Do not supplement it with a remembered
@@ -52,7 +54,6 @@ schemas, validation, and routing. Act as a thin host over its bridge.
     explicit user cancellation, or an abnormal host/model abort. Use the exact
     packet and envelope bindings. Do not finish an ordinary human wait,
     clarification, handoff, or intentional pause; resume the same immutable run.
-
 ## Use the bounded framing team
 
 - Only when the bridge returns `team_ready`, start exactly one mentor and two

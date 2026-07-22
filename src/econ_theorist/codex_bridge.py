@@ -193,6 +193,13 @@ class CodexStartRequestV1(StrictModel):
             "together with requested_scope and omit for ordinary continuation."
         ),
     )
+    requested_route_id: StableId | None = Field(
+        default=None,
+        description=(
+            "One explicit route choice after ambiguous_next. Omit for ordinary "
+            "automatic continuation and for frame/reframe requests."
+        ),
+    )
     profile_request: NonEmpty | None = None
     budget_units: Annotated[int, Field(ge=1)] | None = None
     session: CodexSessionV1
@@ -204,6 +211,10 @@ class CodexStartRequestV1(StrictModel):
         if (self.requested_scope is None) != (self.framing_intent is None):
             raise ValueError(
                 "requested_scope and framing_intent must be provided together"
+            )
+        if self.requested_route_id is not None and self.requested_scope is not None:
+            raise ValueError(
+                "requested_route_id cannot be combined with a frame/reframe brief"
             )
         return self
 
@@ -1376,13 +1387,28 @@ class CodexBridge:
                 actor_role="scientific_agent",
                 profile_request=request.profile_request,
             )
+        effective_requested_route_ids = requested_route_ids
+        if (
+            effective_requested_route_ids is None
+            and request.requested_route_id is not None
+        ):
+            effective_requested_route_ids = (request.requested_route_id,)
+        if (
+            effective_requested_route_ids is None
+            and request.requested_scope is not None
+        ):
+            # The public start schema defines requested_scope + framing_intent
+            # as an explicit frame/reframe request.  Constrain that request to
+            # its owning route so unrelated legal continuations cannot turn a
+            # clear user reframe into ambiguous_next.
+            effective_requested_route_ids = ("frame.question_and_benchmarks",)
         navigation_parameters: dict[str, Any] = {
             "compartments": ["project_research"],
             "privacy_clearance": "public",
         }
-        if requested_route_ids is not None:
+        if effective_requested_route_ids is not None:
             navigation_parameters["requested_route_ids"] = list(
-                requested_route_ids
+                effective_requested_route_ids
             )
         if request.budget_units is not None:
             navigation_parameters["budget_units"] = request.budget_units

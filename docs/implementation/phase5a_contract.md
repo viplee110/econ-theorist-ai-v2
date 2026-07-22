@@ -761,6 +761,11 @@ multiple genuinely legal candidates.
   continuation omits both fields so navigation can advance from current
   scientific state. A host must surface a blocked no-brief continuation; it
   must not replay the prior brief merely to make framing enterable again.
+- If that ordinary continuation returns `ambiguous_next`, the host may relay
+  one explicit user choice as `requested_route_id`. The field narrows only the
+  existing validator-backed navigation set; it cannot be combined with a
+  frame/reframe brief and does not bypass route entry, focus selection, or a
+  human gate.
 - Open a new run only from an exact current head and exact legal route/focus.
 - Return a work packet and candidate workspace; do not return write access to
   canonical storage.
@@ -1480,9 +1485,9 @@ The additive
 does not alter the original frozen Phase 5B pilot archive. Its source-isolated
 noncanonical probe returned `PARK` (0.95). The researcher then authorized a
 score-blind final-rule class, `phi(s,r)=psi(r)`, with `psi(1)>psi(0)` and
-`phi(s,r)=r` as the minimal deterministic baseline. The researcher did not
-authorize changing the ResearchQuestion's `frontier` terminology or confirming
-G1.
+`phi(s,r)=r` as the minimal deterministic baseline. At that checkpoint the
+researcher did not authorize changing the ResearchQuestion's `frontier`
+terminology or confirming G1.
 
 The resulting developer-assisted, nonblind route sequence committed the
 PrimitiveGraph repair, dependent decomposition refresh, and unchanged-V8 audit
@@ -1493,15 +1498,30 @@ remains `revise_framing`: the ResearchQuestion still calls an outcome-vector
 comparison or locus a strict `frontier` without the needed feasible-set,
 capacity, objective, or optimization structure. No G1 decision occurred.
 
+The researcher later authorized only that exact terminology repair: use
+outcome-vector comparison/locus and add neither capacity nor optimization. An
+initial experimental continuation after `ed2371...` contains a failed-route
+transaction accepted only by a temporary Phase-2 validator relaxation. The
+relaxation was reverted, so that lineage is negative evidence rather than an
+admissible final-code canonical result. A separate clean continuation under the
+restored strict validator committed the dependency repair at `922c2cb4...`, the
+decomposition refresh at `d99a9aee...`, and the fresh unchanged-V8 audit at
+`bf4e7fdd49bcf089b18318e77075514cbaea027939049113d1d5840073b4800c`.
+Exact replay passes. The audit proposes `ready_for_g1`; the replacement dossier
+proposes `approve`, but no human G1 decision was requested, confirmed, or
+fabricated.
+
 These candidates were not authored from the WorkPacket alone. The decomposition
 refresh used developer-assisted canonical carry-forward, and the accepted audit
 followed a rejected attempt plus source inspection. The run used a dirty local
 editable checkout with only a partial source binding and no exact wheel digest;
 its observable model label was not independently confirmed. It is therefore
 canonical route evidence, not fresh model, provider-independent, research-
-quality, usability, or editing-burden evidence.
+quality, usability, or editing-burden evidence. The later strict recovery is
+also developer-assisted and nonblind.
 
-The run did exercise the first narrow `reframe.repair` disposition, but the
+The Scheme-B checkpoint did exercise the first narrow `reframe.repair`
+disposition, but the
 crash-recovery and post-head exact-retry hardening described in Sections 7.1 and
 10 was added after the preserved captures. The `p5b1` run did not exercise
 those fixes, and the follow-up archive makes no such regression claim. General

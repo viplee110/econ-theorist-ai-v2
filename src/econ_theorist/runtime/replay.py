@@ -74,7 +74,7 @@ from ..policy import (
     decision_registry_version_for_route,
     load_route_registry_by_hash,
     route_spec,
-    selector_version_for_route,
+    selector_version_is_supported,
     validate_decision_authority,
     validate_runtime_validator,
 )
@@ -450,7 +450,7 @@ def _validate_operational_provenance(
         or manifest.decision_registry_version
         != decision_registry_version_for_route(route)
         or manifest.validator_version != VALIDATOR_VERSION
-        or manifest.selector_version != selector_version_for_route(route)
+        or not selector_version_is_supported(route, manifest.selector_version)
         or manifest.kernel_version != KERNEL_VERSION
         or manifest.kernel_hash != KERNEL_HASH
         or manifest.instruction_bundle_id != route.instruction_bundle_id
@@ -472,6 +472,7 @@ def _validate_operational_provenance(
             focus_entity_ids=run.focus_entity_ids,
             budget_units=manifest.budget_units,
             layout=layout,
+            selector_version=manifest.selector_version,
         )
         expected_manifest = make_context_manifest(
             compiled,
@@ -485,6 +486,7 @@ def _validate_operational_provenance(
             focus_entity_ids=run.focus_entity_ids,
             budget_units=manifest.budget_units,
             created_at=manifest.created_at,
+            selector_version=manifest.selector_version,
         )
     except (EconTheoristError, RuntimeError, ValueError) as exc:
         raise ChainIntegrityError(

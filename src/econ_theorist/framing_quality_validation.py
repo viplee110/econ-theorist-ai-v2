@@ -1033,6 +1033,13 @@ def _state_condition_key(
     return condition.node_id, condition.relation, condition.value
 
 
+def _node_kind_diagnostic(
+    node_id: str,
+    node: t.PrimitiveNode | None,
+) -> str:
+    return f"{node_id}({node.kind if node is not None else 'missing'})"
+
+
 def _validate_choice_consequence_binding(
     *,
     step: fq.CausalChainStep,
@@ -1071,13 +1078,24 @@ def _validate_choice_consequence_binding(
             "choice_consequence_binding: the claimed consequence is not on the "
             "witnessed causal spine"
         )
-    for condition in binding.public_state_conditions:
-        node = node_by_id.get(condition.node_id)
-        if node is None or node.kind not in _PUBLIC_STATE_NODE_KINDS:
-            raise FramingQualityValidationError(
-                "choice_consequence_binding: every public-state condition must bind "
-                "an exact state, information, institution, or transition node"
-            )
+    invalid_conditions = tuple(
+        (condition.node_id, node_by_id.get(condition.node_id))
+        for condition in binding.public_state_conditions
+        if (
+            node_by_id.get(condition.node_id) is None
+            or node_by_id[condition.node_id].kind not in _PUBLIC_STATE_NODE_KINDS
+        )
+    )
+    if invalid_conditions:
+        invalid = ", ".join(
+            _node_kind_diagnostic(node_id, node)
+            for node_id, node in invalid_conditions
+        )
+        raise FramingQualityValidationError(
+            "choice_consequence_binding: every public-state condition must bind "
+            "an exact state, information, institution, or transition node; "
+            f"invalid conditions: {invalid}"
+        )
 
 
 def _validate_distinctive_mechanism(
@@ -1385,17 +1403,28 @@ def _validate_bundle_science(
             payoff_nodes = tuple(
                 node_by_id.get(node_id) for node_id in witness.payoff_node_ids
             )
-            if any(node is None for node in payoff_nodes) or any(
-                node is not None
-                and node.kind not in {"preference_technology", "equilibrium_object"}
-                for node in payoff_nodes
-            ):
-                raise FramingQualityValidationError(
-                    "active_margin_payoff_binding: every payoff reference must bind "
-                    "an exact PrimitiveGraph payoff-basis or continuation node"
+            witness_issues: list[str] = []
+            invalid_payoff_nodes = tuple(
+                (node_id, node)
+                for node_id, node in zip(witness.payoff_node_ids, payoff_nodes)
+                if node is None
+                or node.kind
+                not in {"preference_technology", "equilibrium_object"}
+            )
+            if invalid_payoff_nodes:
+                invalid = ", ".join(
+                    _node_kind_diagnostic(node_id, node)
+                    for node_id, node in invalid_payoff_nodes
                 )
-            if any(
-                not (
+                witness_issues.append(
+                    "active_margin_payoff_binding: every payoff reference must bind "
+                    "an exact PrimitiveGraph payoff-basis or continuation node; "
+                    f"invalid references: {invalid}"
+                )
+            disconnected_payoff_nodes = tuple(
+                node_id
+                for node_id in witness.payoff_node_ids
+                if not (
                     _reachable(
                         frozen_adjacency, node_id, witness.decision_node_id
                     )
@@ -1403,11 +1432,12 @@ def _validate_bundle_science(
                         frozen_adjacency, witness.decision_node_id, node_id
                     )
                 )
-                for node_id in witness.payoff_node_ids
-            ):
-                raise FramingQualityValidationError(
+            )
+            if disconnected_payoff_nodes:
+                witness_issues.append(
                     "active_margin_payoff_binding: every cited payoff object must be "
-                    "connected to the witnessed decision"
+                    "connected to the witnessed decision; disconnected references: "
+                    + ", ".join(disconnected_payoff_nodes)
                 )
             if not any(
                 node is not None
@@ -1417,24 +1447,30 @@ def _validate_bundle_science(
                 )
                 for node in payoff_nodes
             ):
-                raise FramingQualityValidationError(
+                witness_issues.append(
                     "active_margin_payoff_binding: at least one exact payoff-basis "
                     "node must reach the witnessed decision"
                 )
-            witnessed_choice_nodes.add(witness.decision_node_id)
             if require_research_first_bindings and witness.consequence_binding is None:
-                raise FramingQualityValidationError(
+                witness_issues.append(
                     "choice_consequence_binding_missing: every v7 payoff witness "
                     "must bind the action comparison to its claimed causal "
                     "consequence and public-state class"
                 )
-            _validate_choice_consequence_binding(
-                step=step,
-                witness=witness,
-                node_by_id=node_by_id,
-                edge_by_id=edge_by_id,
-                adjacency=frozen_adjacency,
-            )
+            elif witness.consequence_binding is not None:
+                try:
+                    _validate_choice_consequence_binding(
+                        step=step,
+                        witness=witness,
+                        node_by_id=node_by_id,
+                        edge_by_id=edge_by_id,
+                        adjacency=frozen_adjacency,
+                    )
+                except FramingQualityValidationError as exc:
+                    witness_issues.append(str(exc))
+            if witness_issues:
+                raise FramingQualityValidationError(" | ".join(witness_issues))
+            witnessed_choice_nodes.add(witness.decision_node_id)
             witnessed_steps.append((step, witness))
         for force_index, force_id in enumerate(step.force_ids):
             force = force_by_id[force_id]

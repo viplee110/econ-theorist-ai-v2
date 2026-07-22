@@ -33,14 +33,19 @@ than a fresh WorkPacket-only model result. After a frozen nondegeneracy probe
 returned `PARK` with confidence 0.95, the researcher selected a score-blind
 final-rule class, strictly increasing in the review signal, with
 `phi(s,r)=r` as the minimal baseline. The PrimitiveGraph repair, dependent
-decomposition refresh, and framing audit committed through canonical head
-`aea3e7a77ab7a3dc0e4d0b334403eb6d9df38a69bf3ddbca730075e6728fd230`.
-The audit remains `revise_framing`: the only recorded scientific gap is that
-the ResearchQuestion calls an outcome-vector comparison or locus a strict
-`frontier` without a feasible set, capacity, objective, or optimization
-structure. The researcher has not authorized that terminology repair, and no
-G1 decision occurred. This closes neither independent economics inspection nor
-research-quality, editing-burden, or provider-independent evidence.
+decomposition refresh, and framing audit first committed through checkpoint
+head `aea3e7a77ab7a3dc0e4d0b334403eb6d9df38a69bf3ddbca730075e6728fd230`.
+The researcher then explicitly authorized replacing the ResearchQuestion's
+unsupported strict `frontier` with an outcome-vector comparison/locus, without
+adding capacity or optimization. A clean strict-validator continuation from
+the last admissible pre-experiment head committed the dependency repair,
+decomposition refresh, and fresh V8 audit at final head
+`bf4e7fdd49bcf089b18318e77075514cbaea027939049113d1d5840073b4800c`.
+Exact replay passes and the audit proposes `ready_for_g1`; no human G1 decision
+was requested, confirmed, or fabricated. The recovery was developer-assisted
+and nonblind, so it closes neither independent economics inspection nor
+research-quality, editing-burden, multi-agent-benefit, or provider-independent
+evidence.
 
 The bounded post-pilot stabilization passed its 594-test routine non-long gate,
 all seven exporters, and required `doctor` checks without changing V8
@@ -97,22 +102,22 @@ threshold enumeration. The frozen noncanonical nondegeneracy probe returned
 `PARK` (0.95), after which the researcher selected Scheme B only: a score-blind
 final rule strictly increasing in the review signal, with `phi(s,r)=r` as the
 minimal baseline. A developer-assisted, nonblind follow-up canonically
-committed the corresponding PrimitiveGraph repair, dependent decomposition
-refresh, and unchanged V8 audit; see
+committed the Scheme-B checkpoint and, after the researcher's separate
+terminology authorization, a strict-replayable outcome-locus continuation and
+fresh unchanged-V8 audit; see
 `review_outputs/phase5b0_framing_team_public_pilot_followup/FOLLOWUP_SUMMARY.md`.
 Keep `review_outputs/phase5b0_framing_team_public_pilot/` byte-frozen; any later
 evidence for this case belongs in the sibling follow-up archive.
-The audit remains `revise_framing` solely because the current ResearchQuestion
-uses strict `frontier` terminology for an outcome-vector comparison/locus. Do
-not modify that ResearchQuestion without a separate explicit researcher choice,
-select a `ResearchMove` batch, or treat the follow-up as blind model evidence.
-Do not reuse the
-packaged verification root or rerun either frozen case, create V9, merge this
-branch to `main`, or integrate the semantic compiler prototype into the public
-bridge. A fresh WorkPacket-only canonical end-to-end audit and economics/
-editing-burden inspection remain required before an exploratory v1/v2
-comparison; the developer-assisted follow-up above does not supply that
-evidence. Do not expand generic
+The current audit proposes `ready_for_g1`, but the next scientific action is an
+explicit researcher G1 review; do not confirm it, select a `ResearchMove` batch,
+or treat the follow-up as blind model evidence automatically. The earlier
+experimental `C:\tmp\p5b1` branch after head `ed2371...` contains a failed-route
+transaction admitted only by a reverted validator relaxation and is not a
+valid final-code canonical result; preserve it only as negative evidence. Do
+not reuse the packaged verification root or rerun either frozen case, create
+V9, merge this branch to `main`, or integrate the semantic compiler prototype
+into the public bridge. Independent economics/editing-burden inspection remains
+required before an exploratory v1/v2 comparison. Do not expand generic
 security infrastructure unless a concrete local-use failure requires it.
 
 The framing-only Phase 5B.0 contract, noncanonical binding/persistence module,

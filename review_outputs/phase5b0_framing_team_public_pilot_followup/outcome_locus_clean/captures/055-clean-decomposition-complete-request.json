@@ -1,0 +1,10 @@
+{
+    "bridge_request_schema":  "econ-theorist/codex-complete-request/v1",
+    "bridge_version":  1,
+    "operation":  "complete",
+    "project_root":  "C:\\tmp\\p5b1-outcome-locus-clean-20260723",
+    "route_run_id":  "run_op_f9adab51faaff6ecaca1605d7b77d347b091d6516b754aa7",
+    "work_packet_hash":  "4d538c68cb527bad1536ad6c2e98953d73baa05902fb0c52f18c4993736b445f",
+    "delivery_envelope_hash":  "5959a91e821c4e226c33a8b6a1596697291869eee9c60fcf0037cbe07a50bfcd",
+    "action":  "stage_and_commit"
+}

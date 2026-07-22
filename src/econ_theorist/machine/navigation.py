@@ -17,7 +17,7 @@ from ..policy import (
     KERNEL_HASH,
     ROUTE_REGISTRY_HASH,
     registry_hash_for_route,
-    selector_version_for_route,
+    selector_version_for_new_navigation,
 )
 from ..profile_craft_policy import CRAFT_CORPUS_V1_HASH, PROFILE_CATALOG_V1_HASH
 from ..route_registry import load_registry
@@ -203,6 +203,7 @@ def enumerate_navigation_candidates(
     budget_units: int | None = None,
     requested_route_ids: Iterable[str] | None = None,
     run_input_brief: RunInputBriefV1 | None = None,
+    pinned_context_selector_version: str | None = None,
 ) -> tuple[tuple[NavigationCandidateV1, ...], tuple[DiagnosticV1, ...]]:
     """Enumerate candidates and pass every one through the real entry boundary.
 
@@ -222,6 +223,12 @@ def enumerate_navigation_candidates(
     requested = None if requested_route_ids is None else tuple(requested_route_ids)
     if requested is not None and (not requested or len(set(requested)) != len(requested)):
         raise NavigationError("requested route IDs must be non-empty and unique")
+    if pinned_context_selector_version is not None and (
+        requested is None or len(requested) != 1
+    ):
+        raise NavigationError(
+            "a pinned context selector requires exactly one requested route"
+        )
 
     navigation = load_navigation_registry()
     active = load_registry()
@@ -279,6 +286,11 @@ def enumerate_navigation_candidates(
             continue
         for focus_ids in enumeration.focus_sets:
             effective_budget = budget_units or policy.default_budget_units
+            context_selector_version = (
+                pinned_context_selector_version
+                if pinned_context_selector_version is not None
+                else selector_version_for_new_navigation(route)
+            )
             if policy.selector_id == "uncompleted_decomposition_scope.v1":
                 focused = tuple(current[entity_id] for entity_id in focus_ids)
                 questions = tuple(
@@ -338,6 +350,7 @@ def enumerate_navigation_candidates(
                     focus_entity_ids=focus_ids,
                     budget_units=effective_budget,
                     layout=layout,
+                    selector_version=context_selector_version,
                 )
             except (RouteEntryError, RuntimeError, ValueError) as exc:
                 message = str(exc)
@@ -371,7 +384,7 @@ def enumerate_navigation_candidates(
                 context_hash=sha256_digest(compiled.encoded),
                 route_registry_hash=registry_hash_for_route(validated_route),
                 instruction_bundle_hash=validated_route.instruction_bundle_hash,
-                context_selector_version=selector_version_for_route(validated_route),
+                context_selector_version=context_selector_version,
                 navigation_registry_hash=NAVIGATION_REGISTRY_HASH,
                 policy_hashes={
                     "kernel": KERNEL_HASH,

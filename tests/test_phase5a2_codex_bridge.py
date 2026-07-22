@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from econ_theorist.cli import build_parser
 from econ_theorist.codec import canonical_json_bytes, sha256_digest, transaction_bytes
@@ -48,6 +49,11 @@ from econ_theorist.models import (
     Transaction,
 )
 from econ_theorist.project import _genesis_transaction
+from econ_theorist.policy import (
+    SELECTOR_VERSION_DECOMPOSITION_REFRESH,
+    SELECTOR_VERSION_DECOMPOSITION_REFRESH_V1,
+    SELECTOR_VERSION_V1,
+)
 from econ_theorist.runs import read_context, read_run, transaction_bindings
 from econ_theorist.runtime import ObjectStore, StoreLayout
 from econ_theorist.runtime.replay import replay
@@ -383,6 +389,93 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
         )
         return operational, envelope, plan
 
+    def _assert_historical_decomposition_selector_resumes(
+        self, selector_version: str
+    ) -> None:
+        framing = self.bridge.invoke(self._start_request())
+        self.assertEqual(framing.outcome, "ready", framing)
+        framing_path = self.root / framing.candidate_logical_path
+        framing_path.parent.mkdir(parents=True, exist_ok=True)
+        framing_path.write_text(
+            json.dumps(
+                self._framing_transaction(framing.route_run_id).model_dump(
+                    mode="json"
+                ),
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        committed = self.bridge.invoke(
+            CodexCompleteRequestV1(
+                project_root=str(self.root),
+                route_run_id=framing.route_run_id,
+                work_packet_hash=framing.work_packet_hash,
+                delivery_envelope_hash=framing.delivery_envelope_hash,
+            )
+        )
+        self.assertEqual(committed.outcome, "committed", committed)
+
+        layout = StoreLayout.at(self.root)
+        snapshot = replay(layout)
+        actor = Actor(kind="agent", actor_id="scientific_agent")
+        with patch(
+            "econ_theorist.machine.navigation.selector_version_for_new_navigation",
+            return_value=selector_version,
+        ):
+            historical_plan = plan_next(
+                layout,
+                snapshot,
+                actor=actor,
+                compartments=("project_research",),
+                privacy_clearance="public",
+                budget_units=8_000,
+            )
+            self.assertEqual(historical_plan.outcome, "unique_next")
+            self.assertEqual(len(historical_plan.candidates), 1)
+            historical_candidate = historical_plan.candidates[0]
+            self.assertEqual(
+                historical_candidate.key.context_selector_version,
+                selector_version,
+            )
+            historical_open = open_or_resume_run(
+                layout,
+                operation_key=(
+                    "historical.decomposition.open."
+                    + sha256_digest(selector_version.encode("utf-8"))[:16]
+                ),
+                reserved_at=NOW,
+                candidate=historical_candidate,
+                run_input_brief=None,
+                operational=ProjectOperationalLayout.at(layout),
+            )
+        self.assertEqual(historical_open.status, "opened")
+        self.assertEqual(
+            read_context(layout, historical_open.route_run_id).selector_version,
+            selector_version,
+        )
+
+        resumed = self.bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(self.root),
+                session=self.session.model_copy(
+                    update={
+                        "session_id": (
+                            "codex-session-resume-"
+                            + sha256_digest(selector_version.encode("utf-8"))[:16]
+                        )
+                    }
+                ),
+            )
+        )
+        self.assertEqual(resumed.outcome, "ready", resumed)
+        self.assertEqual(resumed.route_run_id, historical_open.route_run_id)
+        self.assertEqual(resumed.work_packet_hash, historical_open.work_packet_hash)
+        self.assertEqual(
+            resumed.work_packet.context_selector_version,
+            selector_version,
+        )
+
     def test_provider_identity_exact_retry_and_canonical_commit(self) -> None:
         request = self._start_request()
         first = self.bridge.invoke(request)
@@ -562,6 +655,113 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
         self.assertEqual(resumed.route_run_id, ready.route_run_id)
         self.assertEqual(resumed.work_packet_hash, ready.work_packet_hash)
 
+    def test_base_selector_unfinished_decomposition_resumes_exactly(self) -> None:
+        self._assert_historical_decomposition_selector_resumes(SELECTOR_VERSION_V1)
+
+    def test_refresh_v1_unfinished_decomposition_resumes_exactly(self) -> None:
+        self._assert_historical_decomposition_selector_resumes(
+            SELECTOR_VERSION_DECOMPOSITION_REFRESH_V1
+        )
+
+    def test_explicit_reframe_after_commit_targets_framing_route(self) -> None:
+        ready = self.bridge.invoke(self._start_request())
+        self.assertEqual(ready.outcome, "ready", ready)
+        candidate_path = self.root / ready.candidate_logical_path
+        candidate_path.parent.mkdir(parents=True, exist_ok=True)
+        candidate_path.write_text(
+            json.dumps(
+                self._framing_transaction(ready.route_run_id).model_dump(mode="json"),
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        committed = self.bridge.invoke(
+            CodexCompleteRequestV1(
+                project_root=str(self.root),
+                route_run_id=ready.route_run_id,
+                work_packet_hash=ready.work_packet_hash,
+                delivery_envelope_hash=ready.delivery_envelope_hash,
+            )
+        )
+        self.assertEqual(committed.outcome, "committed", committed)
+
+        reframed = self.bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(self.root),
+                requested_scope="Preserve the existing bounded theory scope.",
+                framing_intent=(
+                    "Replace unsupported frontier terminology with an "
+                    "outcome-vector comparison."
+                ),
+                session=self.session.model_copy(
+                    update={"session_id": "codex-session-explicit-reframe-after-commit"}
+                ),
+            )
+        )
+
+        self.assertEqual(reframed.outcome, "ready", reframed)
+        self.assertEqual(
+            reframed.work_packet.route_id, "frame.question_and_benchmarks"
+        )
+        self.assertEqual(
+            reframed.work_packet.run_input.framing_intent,
+            (
+                "Replace unsupported frontier terminology with an "
+                "outcome-vector comparison."
+            ),
+        )
+
+    def test_requested_route_id_binds_an_explicit_navigation_choice(self) -> None:
+        ready = self.bridge.invoke(self._start_request())
+        self.assertEqual(ready.outcome, "ready", ready)
+        candidate_path = self.root / ready.candidate_logical_path
+        candidate_path.parent.mkdir(parents=True, exist_ok=True)
+        candidate_path.write_text(
+            json.dumps(
+                self._framing_transaction(ready.route_run_id).model_dump(mode="json"),
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        committed = self.bridge.invoke(
+            CodexCompleteRequestV1(
+                project_root=str(self.root),
+                route_run_id=ready.route_run_id,
+                work_packet_hash=ready.work_packet_hash,
+                delivery_envelope_hash=ready.delivery_envelope_hash,
+            )
+        )
+        self.assertEqual(committed.outcome, "committed", committed)
+
+        selected = self.bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(self.root),
+                requested_route_id="decompose.primitives",
+                session=self.session.model_copy(
+                    update={"session_id": "codex-session-selected-decomposition"}
+                ),
+            )
+        )
+
+        self.assertEqual(selected.outcome, "ready", selected)
+        self.assertEqual(selected.work_packet.route_id, "decompose.primitives")
+        self.assertIsNone(selected.work_packet.run_input)
+
+    def test_requested_route_id_cannot_reinterpret_a_reframe_brief(self) -> None:
+        with self.assertRaisesRegex(
+            ValueError,
+            "requested_route_id cannot be combined with a frame/reframe brief",
+        ):
+            CodexStartRequestV1(
+                project_root=str(self.root),
+                requested_scope="Keep the current theory scope.",
+                framing_intent="Reframe the question.",
+                requested_route_id="decompose.primitives",
+                session=self.session,
+            )
+
     def test_finish_records_terminal_host_receipt_and_same_run_can_resume(
         self,
     ) -> None:
@@ -714,6 +914,17 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
         decomposition = self.bridge.invoke(continuation_request)
         self.assertEqual(decomposition.outcome, "ready", decomposition)
         self.assertEqual(decomposition.work_packet.route_id, "decompose.primitives")
+        self.assertEqual(
+            decomposition.work_packet.context_selector_version,
+            SELECTOR_VERSION_DECOMPOSITION_REFRESH,
+        )
+        assert decomposition.candidate_authoring_contract is not None
+        endpoint_constraints = (
+            decomposition.candidate_authoring_contract.output_contract.required_endpoint_constraints
+        )
+        self.assertEqual(len(endpoint_constraints), 1)
+        self.assertIn("trace_only", endpoint_constraints[0].repair_hint)
+        self.assertIn("do not compute a semantic hash", endpoint_constraints[0].repair_hint)
         self.assertEqual(
             read_context(layout, decomposition.route_run_id).budget_units, 8_000
         )

@@ -5,7 +5,10 @@ binding/persistence slice, thin public Codex host projection, and one completed
 real-model framing-only pilot. A later frozen noncanonical probe returned
 `PARK` (0.95); the researcher selected Scheme B, and a developer-assisted,
 nonblind follow-up committed the repair, decomposition refresh, and unchanged-
-V8 audit. The audit remains `revise_framing`, no G1 decision occurred, and
+V8 audit at a Scheme-B checkpoint. The researcher later authorized the exact
+outcome-vector/locus terminology repair without capacity or optimization; a
+clean strict-validator continuation now ends in a replay-valid unchanged-V8
+audit proposing `ready_for_g1`. No human G1 decision occurred, and
 provider-independent delivery, research quality, user value, strong proposal
 diversity, and multi-agent benefit remain open.
 
@@ -318,11 +321,11 @@ scope. The source-isolated noncanonical probe returned `PARK` with confidence
 outcome-vector object without a feasible set, capacity, objective, or
 optimization structure.
 
-The researcher then authorized Scheme B only: the final rule is score-blind,
+The researcher first authorized Scheme B only: the final rule is score-blind,
 `phi(s,r)=psi(r)`, strictly increasing in the review signal,
 `psi(1)>psi(0)`, with `phi(s,r)=r` as the minimal deterministic baseline. This
-did not authorize a ResearchQuestion terminology change, welfare or capacity
-claim, distinctive-mechanism claim, or human G1 decision.
+did not at that checkpoint authorize a ResearchQuestion terminology change,
+welfare or capacity claim, distinctive-mechanism claim, or human G1 decision.
 
 Developer-assisted, nonblind route authoring committed the corresponding
 PrimitiveGraph repair at `2a61a652...`, the dependent decomposition refresh at
@@ -331,15 +334,28 @@ PrimitiveGraph repair at `2a61a652...`, the dependent decomposition refresh at
 The committed audit validates the positive active margin and exact
 appeal-to-outcome consequence binding, but remains `revise_framing`. Its only
 recorded scientific gap is that the ResearchQuestion calls the outcome-vector
-comparison or locus a strict `frontier`. The researcher has not authorized
-that repair, and no G1 decision was requested, confirmed, or fabricated.
+comparison or locus a strict `frontier`. The researcher had not yet authorized
+that repair at this checkpoint, and no G1 decision was requested, confirmed, or
+fabricated.
+
+The researcher later made the separate narrow choice: use outcome-vector
+comparison/locus and introduce neither capacity nor optimization. The first
+experimental continuation after `ed2371...` is negative evidence only because
+it contains a failed-route transaction admitted by a reverted Phase-2 validator
+relaxation. A separate clean continuation under the restored strict validator
+committed dependency repair `922c2cb4...`, decomposition refresh
+`d99a9aee...`, and the fresh unchanged-V8 audit at
+`bf4e7fdd49bcf089b18318e77075514cbaea027939049113d1d5840073b4800c`.
+The chain replays exactly. The audit proposes `ready_for_g1`; its replacement
+dossier proposes `approve`, but neither object records a human G1 decision.
 
 This is not fresh WorkPacket-only model evidence. The decomposition helper
 carried forward canonical objects omitted from its packet, and the accepted
 audit followed one rejection plus developer source inspection. The run used a
 dirty editable checkout with only a partial source binding and an unconfirmed
 observable model label. Recovery/exact-retry hardening added after the captures
-was not exercised by this run. Consequently the follow-up establishes a
-canonical unchanged-V8 route result, not provider independence, multi-agent
+was not exercised by the Scheme-B checkpoint. The later clean recovery remains
+developer-assisted and nonblind. Consequently the follow-up establishes
+replay-valid canonical unchanged-V8 route evidence, not provider independence, multi-agent
 benefit, low user effort, research quality, or resolution of the original
 M/T/U/Q verdicts.

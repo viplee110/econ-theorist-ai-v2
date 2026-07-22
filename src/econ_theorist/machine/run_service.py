@@ -155,29 +155,7 @@ def open_or_resume_run(
             ):
                 raise ActiveRunConflict("run input brief differs from candidate key")
 
-            legal, _ = enumerate_navigation_candidates(
-                layout,
-                snapshot,
-                actor=candidate.key.actor,
-                compartments=candidate.key.compartments,
-                privacy_clearance=candidate.key.privacy_clearance,
-                budget_units=candidate.key.context_budget,
-                requested_route_ids=(candidate.key.route_id,),
-                run_input_brief=run_input_brief,
-            )
-            if candidate not in legal:
-                raise ActiveRunConflict(
-                    "exact navigation candidate no longer passes the current validator"
-                )
-
             views = derive_all_run_execution_views(layout, snapshot)
-            assert_reframe_successor_allowed(
-                layout,
-                operational,
-                views,
-                candidate,
-                run_input_brief,
-            )
             disposed_ids = valid_disposed_run_ids(
                 layout, operational, views
             )
@@ -188,6 +166,32 @@ def open_or_resume_run(
             )
             matched_run_id, _ = _find_incomplete_match(
                 operational, active_views, candidate
+            )
+            legal, _ = enumerate_navigation_candidates(
+                layout,
+                snapshot,
+                actor=candidate.key.actor,
+                compartments=candidate.key.compartments,
+                privacy_clearance=candidate.key.privacy_clearance,
+                budget_units=candidate.key.context_budget,
+                requested_route_ids=(candidate.key.route_id,),
+                run_input_brief=run_input_brief,
+                pinned_context_selector_version=(
+                    candidate.key.context_selector_version
+                    if matched_run_id is not None
+                    else None
+                ),
+            )
+            if candidate not in legal:
+                raise ActiveRunConflict(
+                    "exact navigation candidate no longer passes the current validator"
+                )
+            assert_reframe_successor_allowed(
+                layout,
+                operational,
+                views,
+                candidate,
+                run_input_brief,
             )
             deterministic_run_id, context_id = _deterministic_ids(
                 snapshot.project_id, operation_key, candidate.candidate_digest
@@ -216,6 +220,9 @@ def open_or_resume_run(
                     context_manifest_id=context_id,
                     created_at=reserved_at,
                     route_registry_hash=candidate.key.route_registry_hash,
+                    context_selector_version=(
+                        candidate.key.context_selector_version
+                    ),
                 )
             else:
                 route_run_id = matched_run_id
@@ -249,6 +256,9 @@ def open_or_resume_run(
                         context_manifest_id=context_id,
                         created_at=reserved_at,
                         route_registry_hash=candidate.key.route_registry_hash,
+                        context_selector_version=(
+                            candidate.key.context_selector_version
+                        ),
                     )
                 elif matched_view.base_freshness != "current":
                     raise ActiveRunConflict(

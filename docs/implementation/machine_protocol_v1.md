@@ -246,11 +246,13 @@ The later Phase 5B
 preserves a source-isolated `PARK` probe (0.95), the researcher's score-blind,
 strictly review-monotone rule choice with `phi(s,r)=r` as its minimal baseline,
 and a developer-assisted, nonblind canonical repair/decomposition/audit
-sequence. The final head is
-`aea3e7a77ab7a3dc0e4d0b334403eb6d9df38a69bf3ddbca730075e6728fd230`;
-the audit remains `revise_framing` solely because the ResearchQuestion's strict
-`frontier` terminology is unsupported, that wording repair is not authorized,
-and no G1 decision occurred. The run used a dirty editable checkout with only a
-partial source binding. It exercised an earlier form of the narrow disposition,
-not the post-capture crash-recovery and post-head exact-retry hardening, so those
-later fixes cannot be attributed to the preserved pilot.
+checkpoint at `aea3e7...`. The researcher later authorized replacing strict
+`frontier` with outcome-vector comparison/locus without capacity or
+optimization. A separate clean continuation under the restored strict Phase-2
+validator reaches replay-valid head
+`bf4e7fdd49bcf089b18318e77075514cbaea027939049113d1d5840073b4800c`;
+its unchanged-V8 audit proposes `ready_for_g1`, and no human G1 decision
+occurred. Both continuations used dirty editable source with partial source
+binding and remain developer-assisted/nonblind evidence. The original `p5b1`
+lineage after `ed2371...` contains a failed-route transaction admitted only by
+a reverted validator relaxation and is negative evidence, not the final result.

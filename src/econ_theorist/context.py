@@ -38,12 +38,15 @@ from .policy import (
     ISOLATION_POLICY,
     KERNEL_HASH,
     KERNEL_VERSION,
+    SELECTOR_VERSION_DECOMPOSITION_REFRESH,
+    SELECTOR_VERSION_DECOMPOSITION_REFRESH_V1,
     VALIDATOR_VERSION,
     V3_NATIVE_ROUTE_IDS,
     V4_NATIVE_ROUTE_IDS,
     decision_registry_version_for_route,
     instruction_bundle_bytes,
     registry_hash_for_route,
+    selector_version_is_supported,
     selector_version_for_route,
     theory_kernel,
 )
@@ -559,6 +562,102 @@ def _blocker_is_relevant(
     )
 
 
+def _decomposition_preservation_entities(
+    all_entities: Mapping[tuple[str, int], EntityVersion],
+    current_entities: Mapping[tuple[str, int], EntityVersion],
+    required_entities: Mapping[tuple[str, int], EntityVersion],
+) -> tuple[EntityVersion, ...]:
+    """Expose one exact prior decomposition package for a bounded refresh.
+
+    The route focus and evidence contract remain the current question and
+    benchmark.  This extra read-only context is selected only by exact typed
+    lineage IDs, so a refresh can preserve an existing PrimitiveGraph instead
+    of reconstructing unexposed scientific choices from memory.
+    """
+
+    from .theory import GateDossier, PrimitiveGraph, parse_theory_entity
+
+    questions = tuple(
+        entity
+        for entity in required_entities.values()
+        if entity.entity_type == "ResearchQuestion"
+    )
+    benchmarks = tuple(
+        entity
+        for entity in required_entities.values()
+        if entity.entity_type == "BenchmarkSet"
+    )
+    if len(questions) != 1 or not benchmarks:
+        return ()
+    question_id = questions[0].entity_id
+    benchmark_ids = {entity.entity_id for entity in benchmarks}
+
+    matching_graphs: list[tuple[EntityVersion, PrimitiveGraph]] = []
+    for entity in current_entities.values():
+        if entity.entity_type != "PrimitiveGraph":
+            continue
+        try:
+            payload = parse_theory_entity(entity)
+        except (TypeError, ValueError):
+            continue
+        if (
+            isinstance(payload, PrimitiveGraph)
+            and payload.question_ref.entity_id == question_id
+            and payload.benchmark_set_ref.entity_id in benchmark_ids
+        ):
+            matching_graphs.append((entity, payload))
+    if not matching_graphs:
+        return ()
+    if len(matching_graphs) != 1:
+        raise ContextCompilationError(
+            "decomposition refresh has multiple current PrimitiveGraph lineages"
+        )
+
+    graph_entity, graph = matching_graphs[0]
+    selected = [graph_entity]
+    prior_graph_ref = graph_entity.supersedes
+    if prior_graph_ref is None:
+        return tuple(selected)
+    prior_graph_entity = all_entities.get(
+        (prior_graph_ref.entity_id, prior_graph_ref.version)
+    )
+    if prior_graph_entity is None:
+        raise ContextCompilationError(
+            "decomposition refresh graph supersedes a missing exact predecessor"
+        )
+    prior_graph = parse_theory_entity(prior_graph_entity)
+    if not isinstance(prior_graph, PrimitiveGraph):
+        raise ContextCompilationError(
+            "decomposition refresh predecessor is not a PrimitiveGraph"
+        )
+    required_old_refs = {
+        prior_graph_ref,
+        prior_graph.question_ref,
+        prior_graph.benchmark_set_ref,
+    }
+    matching_dossiers: list[EntityVersion] = []
+    for entity in current_entities.values():
+        if entity.entity_type != "GateDossier":
+            continue
+        try:
+            payload = parse_theory_entity(entity)
+        except (TypeError, ValueError):
+            continue
+        if (
+            isinstance(payload, GateDossier)
+            and payload.gate_kind == "G1_question_benchmark"
+            and payload.research_question_ref == prior_graph.question_ref
+            and set(payload.ordered_object_refs) == required_old_refs
+        ):
+            matching_dossiers.append(entity)
+    if len(matching_dossiers) > 1:
+        raise ContextCompilationError(
+            "decomposition refresh has multiple exact prior G1 dossiers"
+        )
+    selected.extend(matching_dossiers)
+    return tuple(selected)
+
+
 def _required_slice(
     snapshot: Snapshot,
     *,
@@ -567,6 +666,7 @@ def _required_slice(
     clearance: PrivacyLabel,
     grants: frozenset[str],
     purpose: str,
+    include_decomposition_preservation: bool = False,
 ) -> tuple[
     dict[tuple[str, int], EntityVersion],
     dict[tuple[str, int], RelationVersion],
@@ -603,6 +703,15 @@ def _required_slice(
         )
         if project_entities:
             required_entities[_entity_key(project_entities[0])] = project_entities[0]
+
+    if (
+        route.route_id == "decompose.primitives"
+        and include_decomposition_preservation
+    ):
+        for entity in _decomposition_preservation_entities(
+            all_entities, current_entities, required_entities
+        ):
+            required_entities[_entity_key(entity)] = entity
 
     effective = _effective_decisions(snapshot)
     while True:
@@ -2443,6 +2552,7 @@ def compile_context(
     focus_entity_ids: Iterable[str] = (),
     budget_units: int,
     layout: StoreLayout | None = None,
+    selector_version: str | None = None,
 ) -> CompiledContext:
     """Compile a deterministic exact-version context without touching disk."""
 
@@ -2462,6 +2572,16 @@ def compile_context(
         raise ContextCompilationError("focus entity IDs must be unique")
     grants = frozenset(grants_tuple)
     focus = tuple(sorted(focus_tuple))
+    selected_selector_version = (
+        selector_version_for_route(route)
+        if selector_version is None
+        else selector_version
+    )
+    if not selector_version_is_supported(route, selected_selector_version):
+        raise ContextCompilationError(
+            f"unsupported selector version for route {route.route_id}: "
+            f"{selected_selector_version}"
+        )
 
     if isinstance(route, RouteSpecV4) and route.route_id in _PHASE4_NATIVE_ROUTE_IDS:
         exact_entities, phase4_artifacts, role_packet = _phase4_context_inputs(
@@ -2622,6 +2742,13 @@ def compile_context(
         clearance=privacy_clearance,
         grants=grants,
         purpose=purpose,
+        include_decomposition_preservation=(
+            selected_selector_version
+            in {
+                SELECTOR_VERSION_DECOMPOSITION_REFRESH_V1,
+                SELECTOR_VERSION_DECOMPOSITION_REFRESH,
+            }
+        ),
     )
     neighbors, privacy_omissions = _optional_neighbor_groups(
         snapshot,
@@ -2735,9 +2862,20 @@ def make_context_manifest(
     focus_entity_ids: Iterable[str],
     budget_units: int,
     created_at: str,
+    selector_version: str | None = None,
 ) -> ContextManifest:
     """Bind compiled bytes to one immutable operational manifest."""
 
+    selected_selector_version = (
+        selector_version_for_route(route)
+        if selector_version is None
+        else selector_version
+    )
+    if not selector_version_is_supported(route, selected_selector_version):
+        raise ContextCompilationError(
+            f"unsupported selector version for route {route.route_id}: "
+            f"{selected_selector_version}"
+        )
     return ContextManifest(
         context_manifest_id=context_manifest_id,
         project_id=snapshot.project_id,
@@ -2746,7 +2884,7 @@ def make_context_manifest(
         route_version=route.route_version,
         route_registry_hash=registry_hash_for_route(route),
         decision_registry_version=decision_registry_version_for_route(route),
-        selector_version=selector_version_for_route(route),
+        selector_version=selected_selector_version,
         kernel_version=KERNEL_VERSION,
         kernel_hash=KERNEL_HASH,
         validator_version=VALIDATOR_VERSION,

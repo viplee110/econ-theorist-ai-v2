@@ -9,7 +9,7 @@ from typing import Literal
 from .. import __version__
 from ..codec import canonical_json_bytes, sha256_digest
 from ..models import EntityVersionRef, StrictModel
-from ..policy import instruction_bundle_bytes, selector_version_for_route
+from ..policy import instruction_bundle_bytes, selector_version_is_supported
 from ..route_registry import get_route
 from ..runs import read_compiled_context, read_context, read_run
 from ..runtime.layout import StoreLayout
@@ -192,7 +192,7 @@ def compile_work_packet(
     route = get_route(
         run.route_id, route_registry_hash=manifest.route_registry_hash
     )
-    if selector_version_for_route(route) != key.context_selector_version:
+    if not selector_version_is_supported(route, key.context_selector_version):
         raise OperationalError("route selector policy differs from candidate key")
     brief = read_run_input_brief(operational, route_run_id, candidate)
     if brief is not None and (
