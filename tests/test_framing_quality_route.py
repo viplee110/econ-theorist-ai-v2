@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from pydantic import ValidationError
@@ -20,6 +21,13 @@ from tests.helpers import REPOSITORY_ROOT  # noqa: F401  # installs src
 from econ_theorist.authoring_validation import facet_semantic_hash
 from econ_theorist.candidate_contract import compile_candidate_authoring_contract
 from econ_theorist.codec import canonical_json_bytes, sha256_digest
+from econ_theorist.codex_bridge import (
+    CodexBridge,
+    CodexDirectUserCaptureV1,
+    CodexReframeRepairRequestV1,
+    CodexSessionV1,
+    CodexStartRequestV1,
+)
 from econ_theorist.decisions import DecisionInputError, commit_decision
 from econ_theorist.framing_quality import (
     ActiveMarginWitness,
@@ -47,11 +55,29 @@ from econ_theorist.framing_quality_validation import (
     diagnose_framing_quality_entity,
     validate_framing_quality_entity,
 )
-from econ_theorist.machine.models import DiagnosticV1, WorkPacketV1
+from econ_theorist.machine.disposition import (
+    assert_run_not_disposed,
+    dispose_run_for_reframe,
+)
+from econ_theorist.machine.egress import create_egress_plan, deliver_work_packet
+from econ_theorist.machine.inspection import inspect_project
+from econ_theorist.machine.models import (
+    CapabilityReceiptV1,
+    CapabilityV1,
+    DiagnosticV1,
+    RunInputBriefV1,
+    WorkPacketV1,
+)
 from econ_theorist.machine.navigation import (
     enumerate_navigation_candidates,
     plan_next,
 )
+from econ_theorist.machine.operational import (
+    OperationalError,
+    ProjectOperationalLayout,
+)
+from econ_theorist.machine.packets import read_work_packet
+from econ_theorist.machine.run_service import open_or_resume_run
 from econ_theorist.models import (
     Actor,
     ChangedFacets,
@@ -61,6 +87,7 @@ from econ_theorist.models import (
     EntityVersion,
     EntityVersionRef,
     FacetPathRef,
+    PrivacyLabel,
     RecordDecisionOp,
     RecordRouteOutcomeOp,
     RelationVersion,
@@ -190,17 +217,21 @@ class FramingQualityRouteTests(unittest.TestCase):
     def setUp(self) -> None:
         self._reset_project()
 
-    def _reset_project(self) -> None:
+    def _reset_project(
+        self, *, project_privacy: PrivacyLabel = "project_private"
+    ) -> None:
         temporary_directory = tempfile.TemporaryDirectory()
         self.addCleanup(temporary_directory.cleanup)
         self.root = Path(temporary_directory.name)
         self.layout = StoreLayout.at(self.root)
+        self.project_privacy = project_privacy
         self.snapshot = init_project(
             self.root,
             name="Certification and endogenous quality",
             actor_id=HUMAN.actor_id,
             project_id="project.framing.route",
             created_at=T0,
+            project_privacy=project_privacy,
         )
         self.route_counter = 0
 
@@ -256,6 +287,8 @@ class FramingQualityRouteTests(unittest.TestCase):
             summary=f"Canonical test object for {title}.",
             status=ScientificStatus(lifecycle="proposed"),
             facets=pack_theory_payload(payload),
+            privacy=self.project_privacy,
+            access_compartments=("project_research",),
             created_at=created_at,
             supersedes=supersedes,
         )
@@ -278,6 +311,8 @@ class FramingQualityRouteTests(unittest.TestCase):
             summary="Benchmark semantics, economic forces, and attribution risks.",
             status=ScientificStatus(interpretation_validity="hypothesized"),
             facets=pack_framing_quality_payload(payload),
+            privacy=self.project_privacy,
+            access_compartments=("project_research",),
             created_at=created_at,
             supersedes=supersedes,
         )
@@ -300,6 +335,7 @@ class FramingQualityRouteTests(unittest.TestCase):
             actor=AGENT,
             purpose=purpose,
             compartments=("project_research",),
+            privacy_clearance=self.project_privacy,
             focus_entity_ids=focus,
             budget_units=32_000,
             route_run_id=f"run.framing.{self.route_counter}",
@@ -357,7 +393,7 @@ class FramingQualityRouteTests(unittest.TestCase):
             base_revision=getattr(run, "base_revision"),
             route_run_id=run_id,
             route_id=route_id,
-            actor=AGENT,
+            actor=getattr(run, "actor"),
             intent=f"Exercise the exact {route_id} acceptance contract.",
             changed_facets=tuple(declarations),
             operations=(
@@ -373,10 +409,14 @@ class FramingQualityRouteTests(unittest.TestCase):
                             *(eref(item) for item in outputs),
                             *relation_refs,
                         ),
+                        privacy=self.project_privacy,
+                        access_compartments=("project_research",),
                     )
                 ),
             ),
             evidence_refs=evidence_refs,
+            privacy=self.project_privacy,
+            access_compartments=("project_research",),
             created_at=created_at,
             parent_transaction_hash=getattr(run, "base_revision"),
         )
@@ -463,6 +503,8 @@ class FramingQualityRouteTests(unittest.TestCase):
                 project_id=self.snapshot.project_id,
                 source=eref(question),
                 target=eref(benchmarks),
+                privacy=self.project_privacy,
+                access_compartments=("project_research",),
                 created_at=T1,
             ),
             RelationVersion(
@@ -472,6 +514,8 @@ class FramingQualityRouteTests(unittest.TestCase):
                 project_id=self.snapshot.project_id,
                 source=eref(question),
                 target=eref(benchmarks),
+                privacy=self.project_privacy,
+                access_compartments=("project_research",),
                 created_at=T1,
             ),
         )
@@ -606,6 +650,8 @@ class FramingQualityRouteTests(unittest.TestCase):
                 project_id=self.snapshot.project_id,
                 source=eref(question),
                 target=eref(graph),
+                privacy=self.project_privacy,
+                access_compartments=("project_research",),
                 created_at=T2,
             ),
             RelationVersion(
@@ -615,6 +661,8 @@ class FramingQualityRouteTests(unittest.TestCase):
                 project_id=self.snapshot.project_id,
                 source=eref(source_dossier),
                 target=eref(question),
+                privacy=self.project_privacy,
+                access_compartments=("project_research",),
                 created_at=T2,
             ),
         )
@@ -1424,6 +1472,8 @@ class FramingQualityRouteTests(unittest.TestCase):
                 version=target.version,
                 facet=target_owner,
             ),
+            privacy=self.project_privacy,
+            access_compartments=("project_research",),
             created_at=created_at,
         )
 
@@ -1889,6 +1939,408 @@ class FramingQualityRouteTests(unittest.TestCase):
                 focus=(core[0].entity_id, bundle.entity_id),
                 created_at=T4,
             )
+
+    def _public_bridge_reframe_fixture(
+        self,
+    ) -> tuple[
+        tuple[EntityVersion, EntityVersion, EntityVersion, EntityVersion],
+        EntityVersion,
+        CodexBridge,
+        CodexReframeRepairRequestV1,
+    ]:
+        self._reset_project(project_privacy="public")
+        core = self._phase2_prefix()
+        bundle, _, _ = self._commit_audit(
+            core,
+            proposed_action="revise_framing",
+            repair_target=core[2],
+        )
+        session = CodexSessionV1(
+            session_id="codex-session-reframe-repair",
+            selected_model="gpt-5",
+            installed_models=("gpt-5",),
+            observed_at=T4,
+        )
+        bridge = CodexBridge(
+            trusted_clock=lambda: T4,
+            preproject_operational_home=self.root / ".preproject-operations",
+        )
+        source_brief = RunInputBriefV1(
+            project_id=self.snapshot.project_id,
+            base_head=self.snapshot.head,
+            requested_scope="An explicit but contextless framing request.",
+            framing_intent="This run must be disposed before the exact repair.",
+            privacy="public",
+            compartments=("project_research",),
+            actor_role="scientific_agent",
+        )
+        source = bridge._start(
+            CodexStartRequestV1(
+                project_root=str(self.root),
+                requested_scope=source_brief.requested_scope,
+                framing_intent=source_brief.framing_intent,
+                budget_units=4_000,
+                session=session,
+            ),
+            requested_route_ids=("frame.question_and_benchmarks",),
+            exact_brief=source_brief,
+        )
+        self.assertEqual(source.outcome, "ready", source)
+        assert source.route_run_id is not None
+        assert source.work_packet_hash is not None
+        assert source.delivery_envelope_hash is not None
+        request = CodexReframeRepairRequestV1(
+            project_root=str(self.root),
+            route_run_id=source.route_run_id,
+            work_packet_hash=source.work_packet_hash,
+            delivery_envelope_hash=source.delivery_envelope_hash,
+            requested_scope="Repair only the named PrimitiveGraph.",
+            framing_intent="Use the user's exact final-review rule choice.",
+            repair_target_ref=eref(core[2]),
+            budget_units=32_000,
+            session=session,
+            capture=CodexDirectUserCaptureV1(
+                session_id=session.session_id,
+                researcher_id=HUMAN.actor_id,
+                captured_at=T4,
+                text="Use the score-blind final rule and repair this graph.",
+            ),
+        )
+        return core, bundle, bridge, request
+
+    def test_codex_reframe_repair_replays_after_successor_commit(self) -> None:
+        core, bundle, bridge, request = self._public_bridge_reframe_fixture()
+
+        first = bridge.invoke(request)
+        self.assertEqual(first.outcome, "ready", first)
+        self.assertTrue(first.mutated)
+        self.assertIn(
+            "reframe_disposition_bound",
+            {item.code for item in first.diagnostics},
+        )
+        self.assertEqual(replay(self.layout).head, first.head)
+        same_head_retry = bridge.invoke(request)
+        self.assertEqual(same_head_retry, first)
+
+        assert first.route_run_id is not None
+        graph_payload = parse_theory_entity(core[2])
+        assert isinstance(graph_payload, PrimitiveGraph)
+        revised_graph = self._theory_entity(
+            core[2].entity_id,
+            graph_payload.model_copy(
+                update={
+                    "nodes": (
+                        graph_payload.nodes[0].model_copy(
+                            update={
+                                "economic_meaning": (
+                                    graph_payload.nodes[0].economic_meaning
+                                    + " The exact reframe repair is now recorded."
+                                )
+                            }
+                        ),
+                        *graph_payload.nodes[1:],
+                    )
+                }
+            ),
+            title=core[2].title,
+            created_at=T5,
+            version=2,
+            supersedes=eref(core[2]),
+        )
+        self.route_counter += 1
+        self.snapshot = self._commit_started(
+            self.snapshot,
+            read_run(self.layout, first.route_run_id),
+            outputs=(revised_graph,),
+            relations=(),
+            evidence_refs=(eref(bundle), eref(core[2])),
+            created_at=T5,
+        )
+        self.assertNotEqual(self.snapshot.head, first.head)
+
+        after_commit_retry = bridge.invoke(request)
+        self.assertEqual(after_commit_retry, first)
+
+    def test_codex_reframe_repair_recovers_after_successor_open_error(self) -> None:
+        _, _, bridge, request = self._public_bridge_reframe_fixture()
+
+        with patch.object(
+            bridge,
+            "_start",
+            side_effect=OperationalError("injected successor open failure"),
+        ):
+            failed = bridge.invoke(request)
+        self.assertEqual(failed.outcome, "error", failed)
+        self.assertTrue(failed.mutated)
+        self.assertEqual(
+            {item.code for item in failed.diagnostics},
+            {
+                "codex_reframe_successor_open_failed",
+                "reframe_disposition_bound",
+            },
+        )
+
+        original_start = bridge._start
+
+        def fail_after_successor_open(*args: Any, **kwargs: Any) -> object:
+            opened = original_start(*args, **kwargs)
+            self.assertEqual(opened.outcome, "ready", opened)
+            raise OperationalError("injected failure after successor open")
+
+        with patch.object(
+            bridge,
+            "_start",
+            side_effect=fail_after_successor_open,
+        ):
+            failed_after_open = bridge.invoke(request)
+        self.assertEqual(failed_after_open.outcome, "error", failed_after_open)
+        self.assertTrue(failed_after_open.mutated)
+
+        recovered = bridge.invoke(request)
+        self.assertEqual(recovered.outcome, "ready", recovered)
+        self.assertTrue(recovered.mutated)
+        self.assertIn(
+            "reframe_disposition_bound",
+            {item.code for item in recovered.diagnostics},
+        )
+
+    def test_untouched_framing_run_can_bind_one_exact_reframe_repair(self) -> None:
+        core = self._phase2_prefix()
+        bundle, _, _ = self._commit_audit(
+            core,
+            proposed_action="revise_framing",
+            repair_target=core[2],
+        )
+        source_brief = RunInputBriefV1(
+            project_id=self.snapshot.project_id,
+            base_head=self.snapshot.head,
+            requested_scope="An explicit but contextless framing request.",
+            framing_intent="This run must be disposed before the exact repair.",
+            privacy="project_private",
+            compartments=("project_research",),
+            actor_role=AGENT.actor_id,
+        )
+        source_candidates, _ = enumerate_navigation_candidates(
+            self.layout,
+            self.snapshot,
+            actor=AGENT,
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            budget_units=4_000,
+            requested_route_ids=("frame.question_and_benchmarks",),
+            run_input_brief=source_brief,
+        )
+        self.assertEqual(len(source_candidates), 1)
+        operational = ProjectOperationalLayout.at(self.layout)
+        source = open_or_resume_run(
+            self.layout,
+            operation_key="open.contextless.reframe.source",
+            reserved_at=T4,
+            candidate=source_candidates[0],
+            run_input_brief=source_brief,
+            operational=operational,
+        )
+        source_packet = read_work_packet(
+            operational, source.route_run_id, source.work_packet_hash
+        )
+        capability = CapabilityReceiptV1(
+            host_product="test-host",
+            host_version="1.0",
+            adapter_id="generic.test",
+            adapter_version="1.0",
+            execution_class="local",
+            technically_accessible_roots=(str(self.root),),
+            model_tool_isolation="verified",
+            trusted_human_channel="verified",
+            capabilities=tuple(
+                CapabilityV1(
+                    capability_id=identifier,
+                    available=True,
+                    required=True,
+                    evidence="trusted test adapter",
+                )
+                for identifier in (
+                    "python_runtime",
+                    "structured_process_invocation",
+                    "single_agent_topology",
+                )
+            ),
+            observed_at=T4,
+        )
+        egress_plan = create_egress_plan(
+            source_packet,
+            capability,
+            host_product="test-host",
+            host_version="1.0",
+            adapter_id="generic.test",
+            provider="local.engine",
+            model="model.test",
+            execution_class="local",
+        )
+        delivery = deliver_work_packet(
+            self.layout,
+            operational,
+            route_run_id=source.route_run_id,
+            packet_hash=source.work_packet_hash,
+            operation_key="deliver.contextless.reframe.source",
+            request_digest="a" * 64,
+            plan=egress_plan,
+            capability=capability,
+            host_session_id="session.contextless.reframe",
+            adapter_version="1.0",
+            delivery_time=T4,
+        )
+        self.assertEqual(delivery.status, "delivery_started")
+
+        successor_brief = RunInputBriefV1(
+            project_id=self.snapshot.project_id,
+            base_head=self.snapshot.head,
+            requested_scope="Repair only the named PrimitiveGraph.",
+            framing_intent="Use the user's exact final-review rule choice.",
+            privacy="project_private",
+            compartments=("project_research",),
+            actor_role=AGENT.actor_id,
+        )
+        repair_candidates, diagnostics = enumerate_navigation_candidates(
+            self.layout,
+            self.snapshot,
+            actor=AGENT,
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            budget_units=32_000,
+            requested_route_ids=("repair.dependency",),
+            run_input_brief=successor_brief,
+        )
+        matching = tuple(
+            candidate
+            for candidate in repair_candidates
+            if eref(core[2]) in candidate.key.focus_refs
+        )
+        self.assertEqual(
+            len(matching), 1, tuple(item.message for item in diagnostics)
+        )
+        result, mutated = dispose_run_for_reframe(
+            self.layout,
+            operational,
+            operation_key="dispose.contextless.for.exact.repair",
+            disposed_at=T4,
+            route_run_id=source.route_run_id,
+            work_packet_hash=source.work_packet_hash,
+            delivery_envelope_hash=delivery.delivery_envelope_hash,
+            successor_run_input_brief=successor_brief,
+            successor_candidate=matching[0],
+            repair_target_ref=eref(core[2]),
+            direct_user_capture_hash="b" * 64,
+        )
+        self.assertTrue(mutated)
+        self.assertEqual(
+            result.successor_navigation_candidate_digest,
+            matching[0].candidate_digest,
+        )
+        inspection = inspect_project(
+            self.layout,
+            actor=AGENT,
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            budget_units=32_000,
+            requested_route_ids=("repair.dependency",),
+            run_input_brief=successor_brief,
+        )
+        self.assertEqual(inspection.navigation.outcome, "unique_next")
+        self.assertFalse(inspection.navigation.active_run_ids)
+        successor = open_or_resume_run(
+            self.layout,
+            operation_key="open.exact.reframe.successor",
+            reserved_at=T5,
+            candidate=matching[0],
+            run_input_brief=successor_brief,
+            operational=operational,
+        )
+        successor_packet = read_work_packet(
+            operational, successor.route_run_id, successor.work_packet_hash
+        )
+        self.assertEqual(successor_packet.route_id, "repair.dependency")
+        self.assertEqual(
+            successor_packet.focus_refs,
+            (eref(bundle), eref(core[2])),
+        )
+        original_payload = parse_theory_entity(core[2])
+        assert isinstance(original_payload, PrimitiveGraph)
+        revised_first = original_payload.nodes[0].model_copy(
+            update={
+                "economic_meaning": (
+                    original_payload.nodes[0].economic_meaning
+                    + " The exact reframe repair is now recorded."
+                )
+            }
+        )
+        revised_graph = self._theory_entity(
+            core[2].entity_id,
+            original_payload.model_copy(
+                update={
+                    "nodes": (
+                        revised_first,
+                        *original_payload.nodes[1:],
+                    )
+                }
+            ),
+            title=core[2].title,
+            created_at=T5,
+            version=2,
+            supersedes=eref(core[2]),
+        )
+        self.route_counter += 1
+        self.snapshot = self._commit_started(
+            self.snapshot,
+            read_run(self.layout, successor.route_run_id),
+            outputs=(revised_graph,),
+            relations=(),
+            evidence_refs=(eref(bundle), eref(core[2])),
+            created_at=T5,
+        )
+        after_commit = inspect_project(
+            self.layout,
+            actor=AGENT,
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            budget_units=32_000,
+        )
+        self.assertFalse(after_commit.navigation.active_run_ids)
+        self.assertFalse(
+            any(
+                candidate.key.route_id == "repair.dependency"
+                and any(
+                    reference.entity_id
+                    == "dossier.g1.certification.source"
+                    for reference in candidate.key.focus_refs
+                )
+                for candidate in after_commit.navigation.candidates
+            )
+        )
+        source_view = next(
+            view
+            for view in after_commit.run_views
+            if view.route_run_id == source.route_run_id
+        )
+        self.assertEqual(source_view.integrity, "valid")
+        self.assertEqual(source_view.base_freshness, "stale")
+        retried, retry_mutated = dispose_run_for_reframe(
+            self.layout,
+            operational,
+            operation_key="dispose.contextless.for.exact.repair",
+            disposed_at=T5,
+            route_run_id=source.route_run_id,
+            work_packet_hash=source.work_packet_hash,
+            delivery_envelope_hash=delivery.delivery_envelope_hash,
+            successor_run_input_brief=successor_brief,
+            successor_candidate=matching[0],
+            repair_target_ref=eref(core[2]),
+            direct_user_capture_hash="b" * 64,
+        )
+        self.assertFalse(retry_mutated)
+        self.assertEqual(retried, result)
+        with self.assertRaisesRegex(OperationalError, "disposed run"):
+            assert_run_not_disposed(operational, source.route_run_id)
 
     def test_each_gap_named_upstream_revision_commits_stales_and_blocks_g1(self) -> None:
         for upstream_index in range(3):

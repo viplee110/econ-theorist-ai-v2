@@ -19,6 +19,7 @@ from ..compatibility import probe_project_root
 from ..ids import utc_now
 from ..models import Actor, Decision, PrivacyLabel, StrictModel
 from ..runtime.layout import StoreLayout
+from ..runtime.lock import ExclusiveFileLock
 from ..runtime.replay import CandidateValidationError, replay
 from .authority import (
     HmacTrustedHumanChannel,
@@ -35,6 +36,7 @@ from .bootstrap import (
     verify_engine_inventory,
 )
 from .completion import complete_candidate, record_host_finish
+from .disposition import assert_run_not_disposed
 from .egress import (
     HmacTrustedEgressChannel,
     create_egress_plan,
@@ -1148,25 +1150,30 @@ class MachineDispatcher:
                         ),
                     ),
                 )
-            delivery = deliver_work_packet(
-                layout,
-                ProjectOperationalLayout.at(layout),
-                route_run_id=parameters.route_run_id,
-                packet_hash=parameters.work_packet_hash,
-                operation_key=request.operation_key,
-                request_digest=_request_digest(request),
-                plan=parameters.plan,
-                capability=capability,
-                host_session_id=session.host_session_id,
-                adapter_version=capability.adapter_version,
-                delivery_time=delivery_time,
-                session_fresh=session.fresh_session,
-                cross_run_memory_disabled=session.cross_run_memory_disabled,
-                authorization=(
-                    parameters.authorization if channel is not None else None
-                ),
-                channel=channel,
-            )
+            operational = ProjectOperationalLayout.at(layout)
+            with ExclusiveFileLock(operational.navigation_lock):
+                assert_run_not_disposed(
+                    operational, parameters.route_run_id
+                )
+                delivery = deliver_work_packet(
+                    layout,
+                    operational,
+                    route_run_id=parameters.route_run_id,
+                    packet_hash=parameters.work_packet_hash,
+                    operation_key=request.operation_key,
+                    request_digest=_request_digest(request),
+                    plan=parameters.plan,
+                    capability=capability,
+                    host_session_id=session.host_session_id,
+                    adapter_version=capability.adapter_version,
+                    delivery_time=delivery_time,
+                    session_fresh=session.fresh_session,
+                    cross_run_memory_disabled=session.cross_run_memory_disabled,
+                    authorization=(
+                        parameters.authorization if channel is not None else None
+                    ),
+                    channel=channel,
+                )
             outcome = {
                 "delivery_started": "ok",
                 "blocked_before_delivery": "blocked",

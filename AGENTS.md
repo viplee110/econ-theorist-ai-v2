@@ -26,7 +26,21 @@ commit when the upstream graph makes an honest payoff witness unavailable. Its n
 of improved readability, lower intervention, or research quality. The first
 fresh V8 public blind run committed framing and decomposition but exhausted its
 two repairs without an audit commit; no G1 decision occurred. A successful
-canonical audit rerun and independent economics inspection remain open.
+canonical audit rerun and independent economics inspection remained open at
+that checkpoint. A later Phase 5B Scheme-B follow-up exercised the unchanged
+V8 route canonically, but it is developer-assisted, nonblind evidence rather
+than a fresh WorkPacket-only model result. After a frozen nondegeneracy probe
+returned `PARK` with confidence 0.95, the researcher selected a score-blind
+final-rule class, strictly increasing in the review signal, with
+`phi(s,r)=r` as the minimal baseline. The PrimitiveGraph repair, dependent
+decomposition refresh, and framing audit committed through canonical head
+`aea3e7a77ab7a3dc0e4d0b334403eb6d9df38a69bf3ddbca730075e6728fd230`.
+The audit remains `revise_framing`: the only recorded scientific gap is that
+the ResearchQuestion calls an outcome-vector comparison or locus a strict
+`frontier` without a feasible set, capacity, objective, or optimization
+structure. The researcher has not authorized that terminology repair, and no
+G1 decision occurred. This closes neither independent economics inspection nor
+research-quality, editing-burden, or provider-independent evidence.
 
 The bounded post-pilot stabilization passed its 594-test routine non-long gate,
 all seven exporters, and required `doctor` checks without changing V8
@@ -79,14 +93,26 @@ different; researcher usefulness was not established because one recorded turn
 provides no usability baseline or friction measure and direct-current-user
 capture remains a host claim; and a source-isolated candidate-only model cold
 read rated the scientific frame mixed because it may collapse to finite-cell
-threshold enumeration. The immediate executable work is one frozen,
-noncanonical nondegeneracy probe on that frame. Its outcome should determine
-whether to continue, reframe, park, or kill the case and which first small
-scholar-derived `ResearchMove` batch is decision-relevant. Do not reuse the
+threshold enumeration. The frozen noncanonical nondegeneracy probe returned
+`PARK` (0.95), after which the researcher selected Scheme B only: a score-blind
+final rule strictly increasing in the review signal, with `phi(s,r)=r` as the
+minimal baseline. A developer-assisted, nonblind follow-up canonically
+committed the corresponding PrimitiveGraph repair, dependent decomposition
+refresh, and unchanged V8 audit; see
+`review_outputs/phase5b0_framing_team_public_pilot_followup/FOLLOWUP_SUMMARY.md`.
+Keep `review_outputs/phase5b0_framing_team_public_pilot/` byte-frozen; any later
+evidence for this case belongs in the sibling follow-up archive.
+The audit remains `revise_framing` solely because the current ResearchQuestion
+uses strict `frontier` terminology for an outcome-vector comparison/locus. Do
+not modify that ResearchQuestion without a separate explicit researcher choice,
+select a `ResearchMove` batch, or treat the follow-up as blind model evidence.
+Do not reuse the
 packaged verification root or rerun either frozen case, create V9, merge this
 branch to `main`, or integrate the semantic compiler prototype into the public
-bridge. A canonical end-to-end audit and economics/editing-burden inspection
-remain required before an exploratory v1/v2 comparison. Do not expand generic
+bridge. A fresh WorkPacket-only canonical end-to-end audit and economics/
+editing-burden inspection remain required before an exploratory v1/v2
+comparison; the developer-assisted follow-up above does not supply that
+evidence. Do not expand generic
 security infrastructure unless a concrete local-use failure requires it.
 
 The framing-only Phase 5B.0 contract, noncanonical binding/persistence module,
@@ -110,11 +136,18 @@ Postflight verdicts are M `PASS`, T `MIXED`, U `NOT ESTABLISHED`, and Q `MIXED`
 (confidence 0.91); see
 `review_outputs/phase5b0_framing_team_public_pilot/evaluation_summary.md`. Do
 not treat this as provider-independent delivery proof, multi-agent benefit,
-user-effort reduction, or research-quality evidence. Run the bounded
-scientific probe before extending the team, selecting `ResearchMove`s, or
-resuming later canonical routes. If any later pilot returns `kill` or
-`new_brief_required`, stop: safe canonical disposition/reframe recovery for the
-unfinished run remains open.
+user-effort reduction, or research-quality evidence. The bounded scientific
+probe and Scheme-B follow-up are now complete as described above; they do not
+upgrade the original pilot's M/T/U/Q verdicts. A narrow bridge-level
+`reframe.repair` composite may dispose only an untouched, empty-focus
+framing-v2 run and open its exact dependency repair. Its operational
+disposition is bound to the exact source delivery, direct-user capture, repair
+target, successor brief, and navigation candidate; it is recoverable and
+exactly retryable, but it is not a canonical scientific decision. It does not
+apply to an activated team. General recovery after a team returns `kill` or
+`new_brief_required` remains open and must still stop. The crash-recovery and
+exact-retry hardening for this narrow composite postdates the preserved
+`p5b1` captures and was not exercised by that pilot.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or

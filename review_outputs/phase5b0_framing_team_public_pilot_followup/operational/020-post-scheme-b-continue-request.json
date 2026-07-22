@@ -1,0 +1,16 @@
+{
+  "bridge_request_schema": "econ-theorist/codex-start-request/v1",
+  "bridge_version": 1,
+  "operation": "start_or_resume",
+  "project_root": "C:\\tmp\\p5b1",
+  "initialize": false,
+  "session": {
+    "session_schema": "econ-theorist/codex-session/v1",
+    "session_id": "codex-20260723-post-scheme-b-decomposition",
+    "selected_model": "user-selected-current-model-unverified",
+    "installed_models": [
+      "user-selected-current-model-unverified"
+    ],
+    "observed_at": "2026-07-23T03:10:00Z"
+  }
+}

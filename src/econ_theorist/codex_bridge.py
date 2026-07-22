@@ -12,7 +12,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Annotated, Any, Literal, TypeAlias
 
-from pydantic import Field, TypeAdapter, model_validator
+from pydantic import Field, TypeAdapter, model_serializer, model_validator
 
 from .candidate_contract import (
     CandidateAuthoringContractV1,
@@ -49,7 +49,7 @@ from .framing_team import (
     read_framing_worker_inputs,
 )
 from .ids import utc_now
-from .models import Digest, StableId, StrictModel
+from .models import Actor, Digest, EntityVersionRef, StableId, StrictModel
 from .machine.dispatcher import (
     MachineDispatcher,
     TrustedHostCompletionObservation,
@@ -59,6 +59,14 @@ from .machine.completion import (
     CandidateTransactionValidationError,
     CompletionError,
     candidate_source_digest,
+)
+from .machine.disposition import (
+    assert_run_not_disposed,
+    dispose_run_for_reframe,
+    read_reframe_bridge_result_bytes,
+    read_run_reframe_disposition,
+    recoverable_reframe_successor,
+    write_reframe_bridge_result_bytes,
 )
 from .machine.models import (
     CandidateCompletionResultV1,
@@ -81,8 +89,10 @@ from .machine.operational import (
     OperationalError,
     ProjectOperationalLayout,
 )
+from .machine.navigation import enumerate_navigation_candidates
 from .machine.packets import read_work_packet
 from .runtime import StoreLayout
+from .runtime.lock import ExclusiveFileLock
 from .runtime.replay import replay
 from .staging import StagingError, read_staged_transaction
 
@@ -92,9 +102,11 @@ CODEX_HOST_VERSION = "phase5a2-pilot"
 CODEX_ADAPTER_ID = "econ-theorist.codex.phase5a2"
 CODEX_ADAPTER_VERSION = "1"
 CODEX_PROVIDER = "openai"
+_CODEX_SCIENTIFIC_AGENT = Actor(kind="agent", actor_id="scientific_agent")
 
 CodexBridgeOperation: TypeAlias = Literal[
     "start_or_resume",
+    "reframe.repair",
     "complete",
     "finish",
     "framing_team.open",
@@ -330,6 +342,28 @@ class CodexDirectUserCaptureV1(StrictModel):
     text: NonEmpty
 
 
+class CodexReframeRepairRequestV1(_CodexFramingTeamDeliveryRequestV1):
+    """Replace one untouched framing run with one exact dependency repair."""
+
+    bridge_request_schema: Literal[
+        "econ-theorist/codex-reframe-repair-request/v1"
+    ] = "econ-theorist/codex-reframe-repair-request/v1"
+    operation: Literal["reframe.repair"] = "reframe.repair"
+    requested_scope: NonEmpty
+    framing_intent: NonEmpty
+    repair_target_ref: EntityVersionRef
+    profile_request: NonEmpty | None = None
+    budget_units: Annotated[int, Field(ge=1)] | None = None
+    session: CodexSessionV1
+    capture: CodexDirectUserCaptureV1
+
+    @model_validator(mode="after")
+    def _capture_belongs_to_current_session(self) -> "CodexReframeRepairRequestV1":
+        if self.capture.session_id != self.session.session_id:
+            raise ValueError("direct user capture belongs to a different Codex session")
+        return self
+
+
 class CodexFramingClearInterpretationV1(StrictModel):
     status: Literal["clear_within_packet"] = "clear_within_packet"
     disposition: FramingDisposition
@@ -481,6 +515,7 @@ class CodexFramingTeamResultV1(StrictModel):
 
 CodexBridgeRequestValue: TypeAlias = (
     CodexStartRequestV1
+    | CodexReframeRepairRequestV1
     | CodexCompleteRequestV1
     | CodexFinishRequestV1
     | CodexFramingTeamOpenRequestV1
@@ -515,6 +550,15 @@ class CodexBridgeResponseV1(StrictModel):
     framing_team: CodexFramingTeamResultV1 | None = None
     completion: CandidateCompletionResultV1 | None = None
     diagnostics: tuple[DiagnosticV1, ...] = ()
+
+    @model_serializer(mode="wrap")
+    def _preserve_absent_additive_fields(self, handler: Any) -> Any:
+        """Keep pre-team response bytes stable when the field was absent."""
+
+        data = handler(self)
+        if "framing_team" not in self.model_fields_set:
+            data.pop("framing_team", None)
+        return data
 
     @model_validator(mode="after")
     def _outcome_payload_is_complete(self) -> "CodexBridgeResponseV1":
@@ -870,6 +914,8 @@ class CodexBridge:
         try:
             if isinstance(request, CodexStartRequestV1):
                 return self._start(request)
+            if isinstance(request, CodexReframeRepairRequestV1):
+                return self._reframe_repair(request)
             if isinstance(request, CodexCompleteRequestV1):
                 return self._complete(request)
             if isinstance(request, CodexFinishRequestV1):
@@ -957,7 +1003,261 @@ class CodexBridge:
             diagnostics=diagnostics,
         )
 
-    def _start(self, request: CodexStartRequestV1) -> CodexBridgeResponseV1:
+    def _reframe_repair(
+        self, request: CodexReframeRepairRequestV1
+    ) -> CodexBridgeResponseV1:
+        """Dispose one untouched empty framing run and open its exact repair."""
+
+        root = Path(request.project_root).resolve()
+        if not root.is_dir():
+            raise ValueError("Codex project_root must be an existing directory")
+        layout = StoreLayout.at(root)
+        operational = ProjectOperationalLayout.at(layout)
+        request_digest = _request_digest(request)
+        _, _, source_packet = _read_provider_delivery(
+            root,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+            delivery_envelope_hash=request.delivery_envelope_hash,
+        )
+        existing = read_run_reframe_disposition(
+            operational, request.route_run_id
+        )
+        if existing is None:
+            snapshot = replay(layout)
+            if (
+                source_packet.project_id != snapshot.project_id
+                or source_packet.base_head != snapshot.head
+            ):
+                raise ValueError(
+                    "reframe source delivery is not bound to the current head"
+                )
+            successor_brief = RunInputBriefV1(
+                project_id=snapshot.project_id,
+                base_head=snapshot.head,
+                requested_scope=request.requested_scope,
+                framing_intent=request.framing_intent,
+                privacy="public",
+                compartments=("project_research",),
+                actor_role="scientific_agent",
+                profile_request=request.profile_request,
+            )
+            candidates, _ = enumerate_navigation_candidates(
+                layout,
+                snapshot,
+                actor=_CODEX_SCIENTIFIC_AGENT,
+                compartments=("project_research",),
+                privacy_clearance="public",
+                budget_units=request.budget_units,
+                requested_route_ids=("repair.dependency",),
+                run_input_brief=successor_brief,
+            )
+            matching = tuple(
+                candidate
+                for candidate in candidates
+                if request.repair_target_ref in candidate.key.focus_refs
+            )
+            if len(matching) != 1:
+                return CodexBridgeResponseV1(
+                    operation=request.operation,
+                    request_digest=request_digest,
+                    outcome="blocked",
+                    mutated=False,
+                    project_id=snapshot.project_id,
+                    head=snapshot.head,
+                    diagnostics=(
+                        _diagnostic(
+                            "codex_reframe_candidate_not_unique",
+                            "the exact requested dependency repair is unavailable or ambiguous",
+                        ),
+                    ),
+                )
+            successor_candidate = matching[0]
+        else:
+            successor_brief, successor_candidate = (
+                recoverable_reframe_successor(existing)
+            )
+            if (
+                source_packet.project_id != existing.project_id
+                or source_packet.base_head != existing.head
+            ):
+                raise OperationalError(
+                    "reframe source delivery differs from its disposition"
+                )
+
+        disposition_key = _operation_key(
+            "dispose-for-reframe",
+            {
+                "request_digest": request_digest,
+                "successor_run_input_brief": successor_brief.model_dump(
+                    mode="json"
+                ),
+                "repair_target_ref": request.repair_target_ref.model_dump(
+                    mode="json"
+                ),
+                "successor_navigation_candidate_digest": (
+                    successor_candidate.candidate_digest
+                ),
+            },
+        )
+        disposition, disposition_mutated = dispose_run_for_reframe(
+            layout,
+            operational,
+            operation_key=disposition_key,
+            disposed_at=self._trusted_clock(),
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+            delivery_envelope_hash=request.delivery_envelope_hash,
+            successor_run_input_brief=successor_brief,
+            successor_candidate=successor_candidate,
+            repair_target_ref=request.repair_target_ref,
+            direct_user_capture_hash=sha256_digest(
+                canonical_json_bytes(request.capture)
+            ),
+        )
+        disposition_diagnostic = DiagnosticV1(
+            code="reframe_disposition_bound",
+            severity="info",
+            message="the source run was durably disposed for this exact repair",
+            details={
+                "source_route_run_id": request.route_run_id,
+                "disposition_hash": disposition.disposition_hash,
+                "successor_navigation_candidate_digest": (
+                    disposition.successor_navigation_candidate_digest
+                ),
+            },
+        )
+
+        start_request = CodexStartRequestV1(
+            project_root=str(root),
+            requested_scope=request.requested_scope,
+            framing_intent=request.framing_intent,
+            profile_request=request.profile_request,
+            budget_units=request.budget_units,
+            session=request.session,
+        )
+        # Exact retries replay the outcome of one composite operation.  Once
+        # its durable disposition exists, the operation has mutated state even
+        # when this particular recovery call did not create that file.  This
+        # also prevents a post-open exception from hiding a newly published
+        # successor run behind ``mutated=false``.
+        reframe_mutated = True
+        try:
+            persisted_bytes = read_reframe_bridge_result_bytes(
+                operational, request.route_run_id
+            )
+            if persisted_bytes is not None:
+                persisted = CodexBridgeResponseV1.model_validate_json(
+                    persisted_bytes, strict=True
+                )
+                if (
+                    canonical_json_bytes(persisted) != persisted_bytes
+                    or persisted.operation != request.operation
+                    or persisted.request_digest != request_digest
+                    or persisted.outcome != "ready"
+                    or not persisted.mutated
+                    or persisted.project_id != successor_brief.project_id
+                    or persisted.head != successor_brief.base_head
+                    or persisted.work_packet is None
+                    or persisted.work_packet.route_id != "repair.dependency"
+                    or persisted.work_packet.navigation_candidate_digest
+                    != disposition.successor_navigation_candidate_digest
+                    or request.repair_target_ref
+                    not in persisted.work_packet.focus_refs
+                    or disposition_diagnostic not in persisted.diagnostics
+                ):
+                    raise OperationalError(
+                        "persisted reframe bridge result is invalid"
+                    )
+                assert persisted.route_run_id is not None
+                assert persisted.work_packet_hash is not None
+                assert persisted.delivery_envelope_hash is not None
+                _, _, delivered_packet = _read_provider_delivery(
+                    root,
+                    route_run_id=persisted.route_run_id,
+                    work_packet_hash=persisted.work_packet_hash,
+                    delivery_envelope_hash=persisted.delivery_envelope_hash,
+                )
+                if delivered_packet != persisted.work_packet:
+                    raise OperationalError(
+                        "persisted reframe result differs from its delivery"
+                    )
+                return persisted
+
+            response = self._start(
+                start_request,
+                requested_route_ids=("repair.dependency",),
+                required_focus_ref=request.repair_target_ref,
+                required_candidate_digest=(
+                    disposition.successor_navigation_candidate_digest
+                ),
+                exact_brief=successor_brief,
+            )
+            reframe_mutated = reframe_mutated or response.mutated
+            final_response = response.model_copy(
+                update={
+                    "operation": request.operation,
+                    "request_digest": request_digest,
+                    "mutated": reframe_mutated,
+                    "diagnostics": (
+                        *response.diagnostics,
+                        disposition_diagnostic,
+                    ),
+                }
+            )
+            if final_response.outcome == "ready":
+                final_response = final_response.model_copy(
+                    update={"mutated": True}
+                )
+                write_reframe_bridge_result_bytes(
+                    operational,
+                    request.route_run_id,
+                    canonical_json_bytes(final_response),
+                )
+            return final_response
+        except (
+            CompletionError,
+            RuntimeStoreError,
+            OSError,
+            RuntimeError,
+            ValueError,
+        ) as exc:
+            return CodexBridgeResponseV1(
+                operation=request.operation,
+                request_digest=request_digest,
+                outcome="error",
+                mutated=reframe_mutated,
+                project_id=successor_brief.project_id,
+                head=successor_brief.base_head,
+                diagnostics=(
+                    _diagnostic(
+                        "codex_reframe_successor_open_failed",
+                        str(exc) or type(exc).__name__,
+                    ),
+                    DiagnosticV1(
+                        code="reframe_disposition_bound",
+                        severity="info",
+                        message="the source run was durably disposed for this exact repair",
+                        details={
+                            "source_route_run_id": request.route_run_id,
+                            "disposition_hash": disposition.disposition_hash,
+                            "successor_navigation_candidate_digest": (
+                                disposition.successor_navigation_candidate_digest
+                            ),
+                        },
+                    ),
+                ),
+            )
+
+    def _start(
+        self,
+        request: CodexStartRequestV1,
+        *,
+        requested_route_ids: tuple[str, ...] | None = None,
+        required_focus_ref: EntityVersionRef | None = None,
+        required_candidate_digest: str | None = None,
+        exact_brief: RunInputBriefV1 | None = None,
+    ) -> CodexBridgeResponseV1:
         root = Path(request.project_root).resolve()
         if not root.is_dir():
             raise ValueError("Codex project_root must be an existing directory")
@@ -1045,8 +1345,26 @@ class CodexBridge:
                 ),
             )
 
-        brief = None
-        if request.requested_scope is not None:
+        brief = exact_brief
+        if brief is not None and (
+            brief.project_id != bound.project_id
+            or brief.base_head != bound.head
+        ):
+            return CodexBridgeResponseV1(
+                operation=request.operation,
+                request_digest=_request_digest(request),
+                outcome="conflict",
+                mutated=mutated,
+                project_id=bound.project_id,
+                head=bound.head,
+                diagnostics=(
+                    _diagnostic(
+                        "codex_reframe_base_changed",
+                        "the canonical head changed before the exact repair run opened",
+                    ),
+                ),
+            )
+        if brief is None and request.requested_scope is not None:
             assert request.framing_intent is not None
             brief = RunInputBriefV1(
                 project_id=bound.project_id,
@@ -1062,6 +1380,10 @@ class CodexBridge:
             "compartments": ["project_research"],
             "privacy_clearance": "public",
         }
+        if requested_route_ids is not None:
+            navigation_parameters["requested_route_ids"] = list(
+                requested_route_ids
+            )
         if request.budget_units is not None:
             navigation_parameters["budget_units"] = request.budget_units
         if brief is not None:
@@ -1074,7 +1396,11 @@ class CodexBridge:
                 parameters=navigation_parameters,
             )
         )
-        if navigation.outcome != "ok":
+        selectable_ambiguity = (
+            required_candidate_digest is not None
+            and navigation.outcome == "ambiguous_next"
+        )
+        if navigation.outcome != "ok" and not selectable_ambiguity:
             return self._blocked_from_machine(
                 request,
                 navigation,
@@ -1092,11 +1418,44 @@ class CodexBridge:
                 brief_data = (
                     None if brief is None else brief.model_dump(mode="json")
                 )
+        elif (
+            navigation_outcome == "ambiguous_next"
+            and required_candidate_digest is not None
+        ):
+            matching = [
+                item
+                for item in navigation.result.get("candidates", [])
+                if item.get("candidate_digest") == required_candidate_digest
+            ]
+            if len(matching) == 1:
+                candidate_data = matching[0]
+                brief_data = (
+                    None if brief is None else brief.model_dump(mode="json")
+                )
         elif navigation_outcome == "resume_required":
             descriptors = navigation.result.get("resume_descriptors", [])
             if len(descriptors) == 1:
+                descriptor_brief = descriptors[0].get("run_input_brief")
+                requested_brief = (
+                    None if brief is None else brief.model_dump(mode="json")
+                )
+                if requested_brief is not None and descriptor_brief != requested_brief:
+                    return CodexBridgeResponseV1(
+                        operation=request.operation,
+                        request_digest=_request_digest(request),
+                        outcome="blocked",
+                        mutated=mutated,
+                        project_id=navigation.project_id,
+                        head=navigation.head,
+                        diagnostics=(
+                            _diagnostic(
+                                "explicit_reframe_requires_disposition",
+                                "an explicit new framing brief cannot silently resume an unfinished run; dispose or complete the exact run before reframing",
+                            ),
+                        ),
+                    )
                 candidate_data = descriptors[0].get("navigation_candidate")
-                brief_data = descriptors[0].get("run_input_brief")
+                brief_data = descriptor_brief
         elif navigation_outcome == "complete_for_requested_scope":
             return CodexBridgeResponseV1(
                 operation=request.operation,
@@ -1132,6 +1491,39 @@ class CodexBridge:
         candidate = NavigationCandidateV1.model_validate_json(
             canonical_json_bytes(candidate_data), strict=True
         )
+        if (
+            required_candidate_digest is not None
+            and candidate.candidate_digest != required_candidate_digest
+        ):
+            return CodexBridgeResponseV1(
+                operation=request.operation,
+                request_digest=_request_digest(request),
+                outcome="blocked",
+                mutated=mutated,
+                project_id=navigation.project_id,
+                head=navigation.head,
+                diagnostics=(
+                    _diagnostic(
+                        "requested_repair_candidate_unavailable",
+                        "navigation did not preserve the exact preflighted repair candidate",
+                    ),
+                ),
+            )
+        if required_focus_ref is not None and required_focus_ref not in candidate.key.focus_refs:
+            return CodexBridgeResponseV1(
+                operation=request.operation,
+                request_digest=_request_digest(request),
+                outcome="blocked",
+                mutated=mutated,
+                project_id=navigation.project_id,
+                head=navigation.head,
+                diagnostics=(
+                    _diagnostic(
+                        "requested_repair_focus_unavailable",
+                        "navigation did not expose exactly one repair candidate containing the requested current target",
+                    ),
+                ),
+            )
         open_key = _operation_key(
             "open",
             {
@@ -1318,61 +1710,63 @@ class CodexBridge:
         if envelope.host_session_id != request.session.session_id:
             raise ValueError("framing team open uses a different Codex session")
         operational = ProjectOperationalLayout.at(StoreLayout.at(root))
-        if not request.capability.available:
-            if framing_team_is_active(
+        with ExclusiveFileLock(operational.navigation_lock):
+            assert_run_not_disposed(operational, request.route_run_id)
+            if not request.capability.available:
+                if framing_team_is_active(
+                    operational,
+                    route_run_id=request.route_run_id,
+                    work_packet_hash=request.work_packet_hash,
+                ):
+                    raise OperationalError(
+                        "an active framing team cannot downgrade to single fallback"
+                    )
+                assert request.capability.fallback_reason is not None
+                return _framing_team_response(
+                    request,
+                    root=root,
+                    packet=packet,
+                    result=CodexFramingTeamResultV1(
+                        status="single_fallback",
+                        capability=request.capability,
+                        reason=request.capability.fallback_reason,
+                    ),
+                    mutated=False,
+                )
+            team_already_active = framing_team_is_active(
                 operational,
                 route_run_id=request.route_run_id,
                 work_packet_hash=request.work_packet_hash,
+            )
+            if (
+                _has_active_staged_candidate(root, request.route_run_id)
+                and not team_already_active
             ):
                 raise OperationalError(
-                    "an active framing team cannot downgrade to single fallback"
+                    "framing team cannot activate after a candidate was staged"
                 )
-            assert request.capability.fallback_reason is not None
-            return _framing_team_response(
-                request,
-                root=root,
-                packet=packet,
-                result=CodexFramingTeamResultV1(
-                    status="single_fallback",
-                    capability=request.capability,
-                    reason=request.capability.fallback_reason,
-                ),
-                mutated=False,
+            assert envelope.egress_plan_hash is not None
+            authorization = build_framing_team_delivery_authorization(
+                packet,
+                request.work_packet_hash,
+                source_delivery_envelope_hash=request.delivery_envelope_hash,
+                source_capability_receipt_hash=envelope.capability_receipt_hash,
+                source_egress_plan_hash=envelope.egress_plan_hash,
+                host_product=envelope.host_product,
+                host_version=envelope.host_version,
+                adapter_id=envelope.adapter_id,
+                adapter_version=envelope.adapter_version,
+                host_session_id=envelope.host_session_id,
+                lane_separation_claim="logical",
             )
-        team_already_active = framing_team_is_active(
-            operational,
-            route_run_id=request.route_run_id,
-            work_packet_hash=request.work_packet_hash,
-        )
-        if (
-            _has_active_staged_candidate(root, request.route_run_id)
-            and not team_already_active
-        ):
-            raise OperationalError(
-                "framing team cannot activate after a candidate was staged"
+            plan_hash, plan = open_framing_team_plan(
+                operational,
+                route_run_id=request.route_run_id,
+                work_packet_hash=request.work_packet_hash,
+                delivery_authorization=authorization,
+                execution_mode="isolated_multi_agent",
+                isolation_claim="logical",
             )
-        assert envelope.egress_plan_hash is not None
-        authorization = build_framing_team_delivery_authorization(
-            packet,
-            request.work_packet_hash,
-            source_delivery_envelope_hash=request.delivery_envelope_hash,
-            source_capability_receipt_hash=envelope.capability_receipt_hash,
-            source_egress_plan_hash=envelope.egress_plan_hash,
-            host_product=envelope.host_product,
-            host_version=envelope.host_version,
-            adapter_id=envelope.adapter_id,
-            adapter_version=envelope.adapter_version,
-            host_session_id=envelope.host_session_id,
-            lane_separation_claim="logical",
-        )
-        plan_hash, plan = open_framing_team_plan(
-            operational,
-            route_run_id=request.route_run_id,
-            work_packet_hash=request.work_packet_hash,
-            delivery_authorization=authorization,
-            execution_mode="isolated_multi_agent",
-            isolation_claim="logical",
-        )
         return _framing_team_response(
             request,
             root=root,
@@ -1952,6 +2346,7 @@ __all__ = [
     "CodexFramingTeamResultV1",
     "CodexFramingTeamUserTurnRequestV1",
     "CodexFramingWorkerObservationV1",
+    "CodexReframeRepairRequestV1",
     "CodexSessionV1",
     "CodexStartRequestV1",
     "codex_bridge_schema",

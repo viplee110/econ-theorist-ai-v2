@@ -3,17 +3,22 @@
 Status: additive v8 negative-diagnosis revision candidate; pre-pilot scientific
 and post-pilot host-stabilization deterministic verification passed. R2 and R3
 both committed framing and decomposition but no audit or G1 decision. The
-locked R3 adjudication classified the current failure
-`STRUCTURAL_TAX_PRIMARY` with confidence 0.86 and found no V8 acceptance defect.
-A noncanonical semantic-compiler prototype validates the locked negative
-diagnosis under unchanged V8 semantics with zero canonical writes. Its held-out
-ordinary-model pair is complete: neither arm reached the scientific validator,
-but the semantic surface substantially reduced structure and improved detailed
-reader recovery without established material scientific degradation. Public
-integration remains blocked. The bounded authoring/diagnostic candidate is now
-implemented, source-level private-oracle/adversarial checks pass, and exact-
-wheel packaged-runtime verification passes. The next slice is a genuinely new
-held-out case and one final pair, not V9 or public integration.
+locked R3 adjudication classified that failure `STRUCTURAL_TAX_PRIMARY` with
+confidence 0.86 and found no V8 acceptance defect. A noncanonical semantic-
+compiler prototype validates the locked negative diagnosis under unchanged V8
+semantics with zero canonical writes. Its held-out ordinary-model pair is
+complete: neither arm reached the scientific validator, but the semantic
+surface substantially reduced structure and improved detailed reader recovery
+without established material scientific degradation. A later developer-
+assisted, nonblind Scheme-B follow-up canonically committed the unchanged-V8
+audit at head `aea3e7a77ab7a3dc0e4d0b334403eb6d9df38a69bf3ddbca730075e6728fd230`.
+That audit remains `revise_framing`, and no G1 decision occurred. Public
+integration and fresh WorkPacket-only quality evidence remain blocked. The
+bounded authoring/diagnostic candidate is implemented, source-level private-
+oracle/adversarial checks pass, and exact-wheel packaged-runtime verification
+passes. The 2026-07-22 product priority forbids another protocol-only held-out
+pair unless a concrete researcher-facing failure makes it decision-relevant;
+do not create V9 or integrate the prototype publicly.
 
 This contract owns the first pilot-driven scientific strengthening after the
 Phase 5A.2 public Codex framing run. It addresses a narrow failure: a
@@ -292,9 +297,10 @@ current schema/resource exporters and an installed-wheel `doctor` check passed
 during the v8 pilot freeze; its exact wheel and input hashes are recorded in
 `../../review_outputs/phase5a2_v8_codex_public_pilot/preflight_manifest.md`.
 The three hour-scale historical gold chains were not rerun because this
-additive change preserves their frozen resources. A successful Codex audit
-rerun remains open, so this checkpoint is not evidence that readability, paper
-quality, or human effort has improved.
+additive change preserves their frozen resources. A later developer-assisted,
+nonblind audit rerun committed under unchanged V8, but a fresh WorkPacket-only
+model audit remains open. Neither checkpoint is evidence that readability,
+paper quality, or human effort has improved.
 
 The frozen first V8 run has now occurred. Engine baseline `45a540b` and wheel
 `dad56a86b8863ca63cf7bae3b37da5bcacabeee66cf99c1ea5ad71f7a9f3854d`
@@ -439,10 +445,48 @@ wheel packaged-runtime verification now passes: the installed runtime's two
 private oracles pass unchanged V8, produce the same scientific projection,
 write no canonical state, and reject a wrong base closed. This remains
 deterministic self-test evidence, not a model-authored pass or canonical audit.
-The next pair must use a genuinely new held-out case; the packaged verification
-root reuses the adjudicated accident-liability case and is evidence only. See
+If a later concrete product failure justifies another pair, it must use a
+genuinely new held-out case; the packaged verification root reuses the
+adjudicated accident-liability case and is evidence only. See
 the exact [packaged-runtime verification](../../review_outputs/phase5a2_v8_authoring_pair_v2/packaged_runtime_verification.md),
 [machine verification](../../review_outputs/phase5a2_v8_authoring_pair_v2/PACKAGED_RUNTIME_VERIFICATION.json),
 [preparation record](../../review_outputs/phase5a2_v8_authoring_pair_v2/preparation_record.md),
 [final adjudication](../../review_outputs/phase5a2_v8_authoring_pair_v2/final_adjudication.md),
 and [machine decision](../../review_outputs/phase5a2_v8_authoring_pair_v2/FINAL_DECISION.json).
+
+## 8. Scheme-B canonical follow-up
+
+The first Phase 5B frame's frozen, source-isolated nondegeneracy probe returned
+`PARK` with confidence 0.95. The researcher then authorized only a score-blind
+final-rule class,
+
+```text
+phi(s,r) = psi(r),  psi(1) > psi(0),
+```
+
+with `phi(s,r)=r` as the minimal deterministic baseline. This choice did not
+authorize a welfare ranking, capacity mechanism, distinctive-mechanism claim,
+ResearchQuestion terminology repair, or human G1 decision.
+
+The developer-assisted, nonblind follow-up committed the corresponding
+PrimitiveGraph repair at `2a61a652...`, its dependent decomposition refresh at
+`23ff15b0...`, and the unchanged-V8 audit at final canonical head
+`aea3e7a77ab7a3dc0e4d0b334403eb6d9df38a69bf3ddbca730075e6728fd230`.
+The audit accepted the positive active-margin and exact appeal-to-outcome
+consequence bindings. It nevertheless proposed `revise_framing`, recorded no
+distinctive-mechanism contribution, and created no G1 decision. The sole
+recorded scientific gap is the ResearchQuestion's use of strict `frontier` for
+an outcome-vector comparison or locus without a feasible set, capacity,
+objective, or optimization structure. The researcher has not authorized that
+wording repair.
+
+The exact
+[follow-up evidence](../../review_outputs/phase5b0_framing_team_public_pilot_followup/FOLLOWUP_SUMMARY.md)
+is intentionally separate from the original frozen Phase 5B archive. The
+decomposition refresh used developer-assisted canonical carry-forward beyond
+its delivered WorkPacket, and the accepted audit followed a rejected candidate
+plus source inspection. The exercised checkout was dirty and only partially
+source-bound; its observable model label was unconfirmed. This therefore shows
+one canonical unchanged-V8 audit route result, not a fresh blind model pass,
+provider-independent execution, research quality, or lower editing burden. No
+post-capture recovery hardening may be reported as though this run exercised it.

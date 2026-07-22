@@ -1,0 +1,54 @@
+{
+  "binding_schema": "econ-theorist/phase5b0-followup-source-binding/v1",
+  "prepared_at_utc": "2026-07-22T19:20:09.4868761Z",
+  "archive_role": "additive_sibling_followup_to_frozen_phase5b0_pilot",
+  "parent_archive": {
+    "logical_path": "review_outputs/phase5b0_framing_team_public_pilot",
+    "evidence_manifest_sha256": "32abfbacb73f2b9f2d24093c0aa1a7de9f7c6f4551b37770215825869689a95c",
+    "modified_by_followup": false
+  },
+  "pilot_execution": {
+    "project_root": "C:\\tmp\\p5b1",
+    "repository_root": "C:\\Projects\\Econ Theorist AI v2",
+    "base_git_head": "3774d0a3698e61ebfb237d222441bff95b715f9b",
+    "git_worktree_state": "dirty",
+    "exact_dirty_tree_snapshot_captured": false,
+    "exact_dirty_diff_captured": false,
+    "runtime_executables": [
+      "C:\\tmp\\p5b1\\.venv\\Scripts\\etai.exe",
+      "C:\\Projects\\Econ Theorist AI v2\\.venv\\Scripts\\etai.exe"
+    ],
+    "wheel_sha256": null,
+    "exact_runtime_distribution_digest_available": false,
+    "source_binding_strength": "partial",
+    "limitation": "The base commit is known, but the exercised checkout contained uncommitted source changes and neither an exact dirty-tree snapshot nor a wheel digest was frozen. The base commit alone therefore does not identify every exercised engine byte. Per-invocation executable paths remain preserved in the capture metadata."
+  },
+  "canonical_result": {
+    "project_id": "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+    "primitive_graph_repair_head": "2a61a652135f2b2fcf798b8309fbd158bc8c5e6fba304fe40e93b3829fd28203",
+    "decomposition_refresh_head": "23ff15b0b542e21b638071a6f36f6afb2f19197476103874df6a0621bfd716bc",
+    "final_audit_head": "aea3e7a77ab7a3dc0e4d0b334403eb6d9df38a69bf3ddbca730075e6728fd230",
+    "final_scientific_disposition": "revise_framing",
+    "human_g1_confirmed": false
+  },
+  "authorship_and_observation": {
+    "candidate_authorship": "developer-assisted_nonblind",
+    "work_packet_only_model_evidence": false,
+    "observable_model_label": "user-selected-current-model-unverified",
+    "provider_backend_independently_confirmed": false,
+    "notes": [
+      "The decomposition refresh used canonical-state carry-forward beyond the delivered WorkPacket.",
+      "The accepted audit candidate followed one rejected candidate and developer source inspection."
+    ]
+  },
+  "scientific_authority": {
+    "researcher_authorized": "Score-blind phi(s,r)=psi(r), strict psi(1)>psi(0), with phi(s,r)=r as the minimal deterministic baseline.",
+    "research_question_terminology_change_authorized": false,
+    "human_g1_authorized_or_confirmed": false
+  },
+  "post_pilot_code": {
+    "status": "post_pilot_recovery_and_exact_retry_hardening_not_exercised",
+    "exercised_by_preserved_p5b1_run": false,
+    "claim_boundary": "No post-pilot code change may be reported as though the preserved p5b1 captures exercised it."
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "bridge_request_schema": "econ-theorist/codex-reframe-repair-request/v1",
+  "bridge_version": 1,
+  "operation": "reframe.repair",
+  "project_root": "C:\\tmp\\p5b1",
+  "route_run_id": "run_op_320d7ff1a28a4e6068286cc167829e78ec3e1ad37a9e44e0",
+  "work_packet_hash": "635ade72b6a1b1293ee0ab7085c67cd49275c0db481c4d11da4bf9fd086ca3ee",
+  "delivery_envelope_hash": "83295cdf106d8707737dfc4dad3dd1d486035e4e9df5c151cdec0d351d2a8921",
+  "requested_scope": "仅修复当前 score-disclosure appeal-selection 框架中的 PrimitiveGraph pg_score_disclosure_appeal_selection@1，落实当前 FramingQualityBundle fqb_score_disclosure_audit_0c7f1a94@1 指出的 gap_final_review_mapping。最终复核规则限定为 score-blind 类 φ(s,r)=ψ(r)，且 ψ(1)>ψ(0)；采用确定性的最小基准 φ(s,r)=r，即当且仅当新的复核信号有利时接受。保持既有先验与信号结构、初始高分接受而中低分拒绝、披露与混同拒绝、价值/成本/平局规则、正的逐次申诉负担；不加入容量、拥堵、内生复核、福利或新颖性主张。不修改 ResearchQuestion 或 BenchmarkSet，不确认 G1；frontier 术语仍留作单独的 ResearchQuestion 修复。",
+  "framing_intent": "明确 final_review_rule 及其必要的相连收益与状态转移结构，使申诉成功概率和同状态收益见证可以计算；以 φ(s,r)=r 作为可手算基准。保持 outcome-vector/locus 的解释，由后续审计检验非空开放参数区域；当前不宣称定理、符号结果、科研就绪或 G1 通过。",
+  "repair_target_ref": {
+    "entity_id": "pg_score_disclosure_appeal_selection",
+    "version": 1
+  },
+  "budget_units": 20000,
+  "session": {
+    "session_schema": "econ-theorist/codex-session/v1",
+    "session_id": "codex-20260723-scheme-b-exact-repair-original",
+    "selected_model": "user-selected-current-model-unverified",
+    "installed_models": [
+      "user-selected-current-model-unverified"
+    ],
+    "observed_at": "2026-07-23T03:00:00Z"
+  },
+  "capture": {
+    "capture_schema": "econ-theorist/codex-direct-user-capture/v1",
+    "source": "current_user_turn",
+    "session_id": "codex-20260723-scheme-b-exact-repair-original",
+    "researcher_id": "researcher.local",
+    "captured_at": "2026-07-23T03:00:00Z",
+    "text": "同意方案 B：采用 score-blind、对复核信号严格单调的最终规则类，并以 φ(s,r)=r 作为最小基准。"
+  }
+}

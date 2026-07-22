@@ -6,7 +6,10 @@ pilot, and a corrected-wheel R2 same-case run are recorded in the current
 tree. R2 committed framing and decomposition but not the audit. Independent
 adjudication classified the result as machine-mixed, `A-FAIL`, `REVISE`, and
 `R-FAIL`/H4. The full local research-ready gate remains open, while
-signed/public-distribution hardening is optional 5A.5.
+signed/public-distribution hardening is optional 5A.5. A later Phase 5B
+Scheme-B follow-up canonically committed an unchanged-V8 audit, but it was
+developer-assisted and nonblind, remains `revise_framing`, and created no G1
+decision.
 
 ## Host-neutral transport and Codex projection
 
@@ -68,6 +71,21 @@ A recorded finish does not rewrite the immutable `RouteRun` or prevent a later
 exact resume. In particular, `failed_terminal` records an operational
 host-session receipt; it does not advance the canonical head or become a
 canonical route disposition.
+
+The Codex projection also exposes one narrow bridge-level composite,
+`reframe.repair`. It is deliberately absent from the host-neutral operation
+table below: it composes existing inspection/navigation/open behavior with a
+noncanonical operational disposition. It is eligible only for an untouched,
+empty-focus `frame.question_and_benchmarks` v2 run before any framing-team
+activation. An explicit direct-user reframe request must bind the exact source
+delivery and capture, one current repair target, and the complete successor
+brief. The bridge selects one legal successor and binds that exact navigation
+candidate into the disposition before opening only that `repair.dependency`
+run. The disposition neither writes canonical state nor confirms a human
+Decision. Exact retry recovers the same disposition,
+successor, and ready response, including after the successor has advanced the
+head. This is not general abandon/reframe support for team `kill` or
+`new_brief_required`; those branches remain stopped.
 
 The repository's pilot capture helper is evaluation tooling, not another
 machine or Codex interface. Capture schema v2 pre-reads and strictly validates
@@ -222,3 +240,17 @@ diagnostic/authoring ambiguity, and no established validator false positive.
 The path-aware fixed/endogenous and endpoint details above were implemented
 after that evaluation and were not exercised by the R2 model. See the
 [R2 independent evaluation](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_independent_evaluation_report.md).
+
+The later Phase 5B
+[Scheme-B follow-up](../../review_outputs/phase5b0_framing_team_public_pilot_followup/FOLLOWUP_SUMMARY.md)
+preserves a source-isolated `PARK` probe (0.95), the researcher's score-blind,
+strictly review-monotone rule choice with `phi(s,r)=r` as its minimal baseline,
+and a developer-assisted, nonblind canonical repair/decomposition/audit
+sequence. The final head is
+`aea3e7a77ab7a3dc0e4d0b334403eb6d9df38a69bf3ddbca730075e6728fd230`;
+the audit remains `revise_framing` solely because the ResearchQuestion's strict
+`frontier` terminology is unsupported, that wording repair is not authorized,
+and no G1 decision occurred. The run used a dirty editable checkout with only a
+partial source binding. It exercised an earlier form of the narrow disposition,
+not the post-capture crash-recovery and post-head exact-retry hardening, so those
+later fixes cannot be attributed to the preserved pilot.

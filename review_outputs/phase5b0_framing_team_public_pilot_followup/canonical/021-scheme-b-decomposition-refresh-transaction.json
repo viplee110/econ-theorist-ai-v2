@@ -1,0 +1,620 @@
+{
+  "transaction_id": "tx_refresh_scheme_b_g1_decomposition",
+  "transaction_schema": 1,
+  "origin": "route_run",
+  "project_id": "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+  "base_revision": "2a61a652135f2b2fcf798b8309fbd158bc8c5e6fba304fe40e93b3829fd28203",
+  "route_run_id": "run_op_5d1f994067aacf5eba9a365ebdd70343616a4c3db5fbb0ff",
+  "route_id": "decompose.primitives",
+  "route_run_hash": "8ad552a9efbb61592cb9d2c1b20b2ee00fb0f1ad5ac9300d530f4725fafad06c",
+  "context_manifest_hash": "72c05ba669b4290a43d77703448b82e97912db7c7fc38b1cffa9e7e47188b2e7",
+  "compiled_context_hash": "e30dc35458f0074eb59685968f8986093274d6646c26e5468805cb69cc16d574",
+  "actor": {
+    "kind": "agent",
+    "actor_id": "scientific_agent"
+  },
+  "intent": "Carry Scheme B forward unchanged and refresh only its exact pre-G1 decomposition dossier and trace relations.",
+  "preconditions": [],
+  "changed_facets": [
+    {
+      "entity_id": "pg_score_disclosure_appeal_selection",
+      "previous_version": 2,
+      "new_version": 3,
+      "facets": [
+        "economic_interpretation",
+        "terminology_presentation"
+      ]
+    }
+  ],
+  "operations": [
+    {
+      "op": "entity.supersede",
+      "previous": {
+        "entity_id": "pg_score_disclosure_appeal_selection",
+        "version": 2
+      },
+      "entity": {
+        "entity_id": "pg_score_disclosure_appeal_selection",
+        "entity_type": "PrimitiveGraph",
+        "version": 3,
+        "project_id": "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+        "title": "Primitive graph for rejected-score disclosure and appeal selection",
+        "summary": "A benchmark-bound decomposition in which only the rejected applicant's information partition changes and the common final review mapping is the score-blind, strictly review-monotone class phi(s,r)=psi(r), with phi(s,r)=r as its deterministic baseline. This version re-anchors that unchanged Scheme-B specification in the refreshed pre-G1 decomposition package.",
+        "scope_ref": "rq_score_disclosure_appeal_selection",
+        "status": {
+          "lifecycle": "proposed",
+          "formal_validity": "unassessed",
+          "interpretation_validity": "hypothesized",
+          "literature": null
+        },
+        "facets": {
+          "formal": {},
+          "economic_interpretation": {
+            "schema": "econ_theorist.theory/PrimitiveGraph/v1",
+            "payload": {
+              "schema_version": 1,
+              "question_ref": {
+                "entity_id": "rq_score_disclosure_appeal_selection",
+                "version": 1
+              },
+              "benchmark_set_ref": {
+                "entity_id": "bmk_decision_only_disclosure_delta",
+                "version": 1
+              },
+              "nodes": [
+                {
+                  "node_id": "qualification_state",
+                  "kind": "information",
+                  "label": "Binary qualification state",
+                  "economic_meaning": "Nature draws a full-support qualification state shared by both disclosure regimes; it is the latent object forecast by the institutional, applicant, and review signals.",
+                  "status": "primitive",
+                  "primitive_sufficient_conditions": [
+                    "Both qualification states have strictly positive prior probability.",
+                    "The prior is identical under decision_only and score_disclosure."
+                  ]
+                },
+                {
+                  "node_id": "institutional_score",
+                  "kind": "information",
+                  "label": "Ordered institutional score",
+                  "economic_meaning": "The institution observes an informative score with low, middle, and high values ordered by qualification posterior; low and middle are distinct positive-probability rejected categories.",
+                  "status": "primitive",
+                  "primitive_sufficient_conditions": [
+                    "Low, middle, and high score probabilities and their qualification ordering are fixed across regimes.",
+                    "Low and middle both occur with positive probability among rejected applicants."
+                  ]
+                },
+                {
+                  "node_id": "initial_decision_rule",
+                  "kind": "institution",
+                  "label": "Fixed initial acceptance rule",
+                  "economic_meaning": "The institution accepts a high score and rejects low and middle scores before any appeal; this rule creates the pooled rejection event in the benchmark.",
+                  "status": "primitive",
+                  "primitive_sufficient_conditions": [
+                    "The same initial rule applies in both regimes.",
+                    "Initial participation and application behavior are held fixed."
+                  ]
+                },
+                {
+                  "node_id": "applicant_private_signal",
+                  "kind": "information",
+                  "label": "Private post-rejection signal",
+                  "economic_meaning": "After rejection the applicant privately observes a strictly informative binary signal about qualification before deciding whether to appeal.",
+                  "status": "primitive",
+                  "primitive_sufficient_conditions": [
+                    "Both signal realizations occur with positive probability in every relevant rejected-score cell.",
+                    "The signal technology is identical across disclosure regimes."
+                  ]
+                },
+                {
+                  "node_id": "fresh_review_signal",
+                  "kind": "information",
+                  "label": "Fresh review signal",
+                  "economic_meaning": "An appeal produces a fresh binary review signal r, coded r=1 for favorable and r=0 for unfavorable evidence.  Write rho_q=Pr(r=1|qualification=q), with 0<rho_0<rho_1<1 in the maintained informative full-support baseline.",
+                  "status": "primitive",
+                  "primitive_sufficient_conditions": [
+                    "The review technology and the favorable/unfavorable coding are fixed across regimes.",
+                    "The maintained baseline has 0 < rho_0 < rho_1 < 1, and the review signal is realized only after the appeal choice."
+                  ]
+                },
+                {
+                  "node_id": "final_review_rule",
+                  "kind": "institution",
+                  "label": "Score-blind strictly review-monotone final mapping",
+                  "economic_meaning": "The common final rule is score-blind and depends only on the fresh review signal: phi(s,r)=psi(r), where 0<=psi(0)<psi(1)<=1.  The minimal deterministic benchmark sets psi(0)=0 and psi(1)=1, hence phi(s,r)=r: final acceptance occurs exactly after a favorable fresh review.",
+                  "status": "primitive",
+                  "primitive_sufficient_conditions": [
+                    "Score blindness requires phi(low,r)=phi(middle,r)=psi(r) for each review realization r.",
+                    "Strict review monotonicity requires psi(1)>psi(0); the same fixed psi applies under decision_only and score_disclosure.",
+                    "The hand-solvable baseline is deterministic, psi(0)=0 and psi(1)=1, and the rule never infers the private applicant signal from the appeal act."
+                  ]
+                },
+                {
+                  "node_id": "appeal_value_and_cost",
+                  "kind": "preference_technology",
+                  "label": "Applicant value and appeal cost",
+                  "economic_meaning": "A rejected applicant receives a common positive value from final acceptance and pays a common positive cost to appeal.",
+                  "status": "primitive",
+                  "primitive_sufficient_conditions": [
+                    "Value and cost are identical across regimes and applicant cells.",
+                    "Indifference is resolved in favor of appeal."
+                  ]
+                },
+                {
+                  "node_id": "conditional_independence_normalization",
+                  "kind": "constraint",
+                  "label": "Conditional-independence normalization",
+                  "economic_meaning": "Institutional score, applicant signal, and review signal are conditionally independent given qualification as an explicit parsimonious baseline rather than a claimed economic force.",
+                  "status": "primitive",
+                  "primitive_sufficient_conditions": [
+                    "This normalization is common to both regimes.",
+                    "Any relaxation that lets the disclosed score forecast review noise beyond qualification is a robustness extension, not part of the benchmark delta."
+                  ]
+                },
+                {
+                  "node_id": "disclosure_partition_delta",
+                  "kind": "perturbation",
+                  "label": "Rejected-score information refinement",
+                  "economic_meaning": "This is the sole treatment difference: decision_only reveals only that the score is low or middle, whereas score_disclosure reveals the realized low or middle score before the same private signal and appeal choice.",
+                  "status": "primitive",
+                  "primitive_sufficient_conditions": [
+                    "All priors, signal laws, payoffs, initial and final rules, and review technology remain fixed.",
+                    "No no-appeal, mandatory-appeal, pricing, full-score, altered-review, capacity, or rationing regime is a coequal benchmark."
+                  ]
+                },
+                {
+                  "node_id": "applicant_posterior",
+                  "kind": "equilibrium_object",
+                  "label": "Regime-contingent Bayesian posterior",
+                  "economic_meaning": "Let p be the applicant's posterior qualification probability after the regime-specific rejection message and private signal. Under conditional independence and the score-blind rule, the anticipated acceptance probability is A_psi(p)=psi(0)+[psi(1)-psi(0)]*[p*rho_1+(1-p)*rho_0].  In the minimal phi(s,r)=r benchmark this reduces to p*rho_1+(1-p)*rho_0.",
+                  "status": "derived",
+                  "primitive_sufficient_conditions": [
+                    "Applicants know the maintained prior, signal technologies, rho_0, rho_1, and the common rule psi and update Bayesianly.",
+                    "Because rho_1>rho_0 and psi(1)>psi(0), A_psi(p) is strictly increasing in p; disclosure changes it only through the refined score message."
+                  ]
+                },
+                {
+                  "node_id": "appeal_choice",
+                  "kind": "choice",
+                  "label": "Posterior-threshold appeal choice",
+                  "economic_meaning": "With acceptance value v>0, appeal cost c>0, and the no-appeal continuation payoff normalized to zero, a rejected applicant appeals exactly when v*A_psi(p)-c>=0.  Indifference is resolved in favor of appeal.",
+                  "status": "derived",
+                  "primitive_sufficient_conditions": [
+                    "Non-appellants remain finally rejected, so their continuation payoff is zero under the maintained normalization.",
+                    "Disclosure changes the appeal set only when the disclosed-cell and pooled-rejection values of v*A_psi(p)-c lie on different sides of zero."
+                  ]
+                },
+                {
+                  "node_id": "timing_sequence",
+                  "kind": "timing",
+                  "label": "Application, disclosure, appeal, and review timing",
+                  "economic_meaning": "Nature draws qualification and signals; the institution applies the initial score rule; the rejected applicant receives the regime-specific message and private signal; the applicant chooses whether to appeal; an appeal then generates fresh review information and the fixed final rule is applied.",
+                  "status": "primitive",
+                  "primitive_sufficient_conditions": [
+                    "Disclosure is truthful, committed, and costless within the model.",
+                    "The fresh review signal is realized only after the appeal choice."
+                  ]
+                },
+                {
+                  "node_id": "processing_burden",
+                  "kind": "preference_technology",
+                  "label": "Positive per-appeal processing burden",
+                  "economic_meaning": "Each appeal consumes a fixed positive amount of institutional processing resources; the frame includes no hard capacity, rationing, congestion, or endogenous review quality.",
+                  "status": "primitive",
+                  "primitive_sufficient_conditions": [
+                    "The per-appeal burden is constant across regimes.",
+                    "Total processing burden changes only through the mass of appeals."
+                  ]
+                },
+                {
+                  "node_id": "institutional_outcome_vector",
+                  "kind": "outcome",
+                  "label": "Classification and processing outcome vector",
+                  "economic_meaning": "The institutional comparison separately records total appeal load, qualified appellants, corrected qualified rejections, review-induced acceptances of unqualified applicants, appellant composition, and total processing burden without imposing welfare weights or a sign theorem.",
+                  "status": "derived",
+                  "primitive_sufficient_conditions": [
+                    "Every delta is oriented score_disclosure minus decision_only.",
+                    "A strict frontier interpretation requires an additional capacity or optimization mechanism and is not supplied by a positive per-appeal burden alone."
+                  ]
+                }
+              ],
+              "edges": [
+                {
+                  "edge_id": "state_to_score",
+                  "source_node_id": "qualification_state",
+                  "target_node_id": "institutional_score",
+                  "economic_meaning": "Qualification changes the likelihood of each institutional score."
+                },
+                {
+                  "edge_id": "state_to_private_signal",
+                  "source_node_id": "qualification_state",
+                  "target_node_id": "applicant_private_signal",
+                  "economic_meaning": "Qualification changes the likelihood of the applicant's private signal."
+                },
+                {
+                  "edge_id": "state_to_review_signal",
+                  "source_node_id": "qualification_state",
+                  "target_node_id": "fresh_review_signal",
+                  "economic_meaning": "Qualification changes the likelihood of the fresh review signal."
+                },
+                {
+                  "edge_id": "score_to_initial_rule",
+                  "source_node_id": "institutional_score",
+                  "target_node_id": "initial_decision_rule",
+                  "economic_meaning": "The fixed initial rule maps the observed score into acceptance or the pooled set of rejected categories."
+                },
+                {
+                  "edge_id": "initial_rule_to_disclosure",
+                  "source_node_id": "initial_decision_rule",
+                  "target_node_id": "disclosure_partition_delta",
+                  "economic_meaning": "Only rejected low and middle scores enter the information-partition comparison."
+                },
+                {
+                  "edge_id": "disclosure_to_posterior",
+                  "source_node_id": "disclosure_partition_delta",
+                  "target_node_id": "applicant_posterior",
+                  "economic_meaning": "Pooling versus revealing the rejected score changes the information used in Bayesian updating."
+                },
+                {
+                  "edge_id": "private_signal_to_posterior",
+                  "source_node_id": "applicant_private_signal",
+                  "target_node_id": "applicant_posterior",
+                  "economic_meaning": "The private post-rejection signal combines with the disclosed message in the applicant's posterior."
+                },
+                {
+                  "edge_id": "normalization_to_posterior",
+                  "source_node_id": "conditional_independence_normalization",
+                  "target_node_id": "applicant_posterior",
+                  "economic_meaning": "The baseline factorization disciplines how score and private-signal likelihoods combine."
+                },
+                {
+                  "edge_id": "review_signal_to_final_rule",
+                  "source_node_id": "fresh_review_signal",
+                  "target_node_id": "final_review_rule",
+                  "economic_meaning": "The favorable review indicator r enters the score-blind mapping phi(s,r)=psi(r); the minimal benchmark applies phi=r."
+                },
+                {
+                  "edge_id": "final_rule_to_appeal_choice",
+                  "source_node_id": "final_review_rule",
+                  "target_node_id": "appeal_choice",
+                  "economic_meaning": "The fixed pair psi(0), psi(1) converts the posterior-implied review distribution into A_psi(p), which enters the appeal payoff."
+                },
+                {
+                  "edge_id": "posterior_to_appeal_choice",
+                  "source_node_id": "applicant_posterior",
+                  "target_node_id": "appeal_choice",
+                  "economic_meaning": "The posterior p determines A_psi(p), and the applicant appeals if and only if v*A_psi(p)-c>=0."
+                },
+                {
+                  "edge_id": "payoffs_to_appeal_choice",
+                  "source_node_id": "appeal_value_and_cost",
+                  "target_node_id": "appeal_choice",
+                  "economic_meaning": "Acceptance value and appeal cost determine the common appeal threshold."
+                },
+                {
+                  "edge_id": "appeal_choice_to_outcomes",
+                  "source_node_id": "appeal_choice",
+                  "target_node_id": "institutional_outcome_vector",
+                  "economic_meaning": "Selection into appeal determines volume, composition, and which cases can be corrected or erroneously accepted."
+                },
+                {
+                  "edge_id": "final_rule_to_outcomes",
+                  "source_node_id": "final_review_rule",
+                  "target_node_id": "institutional_outcome_vector",
+                  "economic_meaning": "The fixed final mapping determines the classification consequences conditional on the selected appeal pool."
+                },
+                {
+                  "edge_id": "burden_to_outcomes",
+                  "source_node_id": "processing_burden",
+                  "target_node_id": "institutional_outcome_vector",
+                  "economic_meaning": "A fixed per-appeal burden maps appeal volume into total processing load without creating a capacity frontier."
+                },
+                {
+                  "edge_id": "timing_to_appeal_choice",
+                  "source_node_id": "timing_sequence",
+                  "target_node_id": "appeal_choice",
+                  "economic_meaning": "The applicant chooses after the disclosure message and private signal but before fresh review information."
+                }
+              ]
+            }
+          },
+          "literature_novelty": {},
+          "terminology_presentation": {},
+          "authority": {}
+        },
+        "artifact_refs": [],
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "created_at": "2026-07-22T18:31:40.160577Z",
+        "supersedes": {
+          "entity_id": "pg_score_disclosure_appeal_selection",
+          "version": 2
+        }
+      }
+    },
+    {
+      "op": "entity.create",
+      "entity": {
+        "entity_id": "gate_g1_score_disclosure_appeal_selection_scheme_b",
+        "entity_type": "GateDossier",
+        "version": 1,
+        "project_id": "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+        "title": "G1 dossier for rejected-score disclosure and appeal selection",
+        "summary": "An unconfirmed refreshed G1 dossier that records Scheme B as resolved, preserves the exact benchmark, and retains the separate frontier-terminology and fresh-audit requirements.",
+        "scope_ref": "rq_score_disclosure_appeal_selection",
+        "status": {
+          "lifecycle": "proposed",
+          "formal_validity": "unassessed",
+          "interpretation_validity": "hypothesized",
+          "literature": null
+        },
+        "facets": {
+          "formal": {},
+          "economic_interpretation": {},
+          "literature_novelty": {},
+          "terminology_presentation": {},
+          "authority": {
+            "schema": "econ_theorist.theory/GateDossier/v1",
+            "payload": {
+              "schema_version": 1,
+              "gate_kind": "G1_question_benchmark",
+              "research_question_ref": {
+                "entity_id": "rq_score_disclosure_appeal_selection",
+                "version": 1
+              },
+              "ordered_object_refs": [
+                {
+                  "entity_id": "rq_score_disclosure_appeal_selection",
+                  "version": 1
+                },
+                {
+                  "entity_id": "bmk_decision_only_disclosure_delta",
+                  "version": 1
+                },
+                {
+                  "entity_id": "pg_score_disclosure_appeal_selection",
+                  "version": 3
+                }
+              ],
+              "ordered_artifact_refs": [],
+              "requirements": [
+                {
+                  "requirement_id": "g1_question_exactness",
+                  "description": "The question identifies the rejected-score disclosure perturbation, the appeal-selection object, and the separate classification and processing outcomes without imposing a directional or welfare claim.",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "rq_score_disclosure_appeal_selection",
+                      "version": 1
+                    }
+                  ],
+                  "recorded_condition": "evidence_supplied"
+                },
+                {
+                  "requirement_id": "g1_benchmark_exactness",
+                  "description": "The benchmark set contains exactly decision_only, and score_disclosure changes only the rejected applicant's information partition while every other maintained primitive is fixed.",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "bmk_decision_only_disclosure_delta",
+                      "version": 1
+                    },
+                    {
+                      "entity_id": "rq_score_disclosure_appeal_selection",
+                      "version": 1
+                    }
+                  ],
+                  "recorded_condition": "evidence_supplied"
+                },
+                {
+                  "requirement_id": "g1_importance_radius",
+                  "description": "The potential importance is a transparent separation of appeal volume, appellant composition, corrected qualified rejections, erroneous final acceptances, and processing burden; this is a bounded contribution radius rather than a claim about transparency, welfare, or policy generally.",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "rq_score_disclosure_appeal_selection",
+                      "version": 1
+                    },
+                    {
+                      "entity_id": "pg_score_disclosure_appeal_selection",
+                      "version": 3
+                    }
+                  ],
+                  "recorded_condition": "risk_disclosed"
+                },
+                {
+                  "requirement_id": "g1_final_rule_gap",
+                  "description": "The researcher selected the score-blind class phi(s,r)=psi(r), psi(1)>psi(0), with phi(s,r)=r as the deterministic baseline; PrimitiveGraph version 3 states its implied acceptance probability and appeal payoff.",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "pg_score_disclosure_appeal_selection",
+                      "version": 3
+                    }
+                  ],
+                  "recorded_condition": "evidence_supplied"
+                },
+                {
+                  "requirement_id": "g1_kill_condition",
+                  "description": "Park or kill the framing if no admissible nonempty open region changes a positive-probability appeal cell, or if all results remain mechanical threshold enumeration with no interpretable posterior ordering, selection decomposition, or sufficient statistic.",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "rq_score_disclosure_appeal_selection",
+                      "version": 1
+                    },
+                    {
+                      "entity_id": "pg_score_disclosure_appeal_selection",
+                      "version": 3
+                    }
+                  ],
+                  "recorded_condition": "risk_disclosed"
+                },
+                {
+                  "requirement_id": "g1_scope_and_terminology_risk",
+                  "description": "A positive per-appeal burden supports an outcome-vector comparison but does not by itself define a strict feasible-set or optimization frontier; capacity, rationing, congestion, endogenous review, or welfare aggregation remain outside scope unless a later human framing decision adds them.",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "rq_score_disclosure_appeal_selection",
+                      "version": 1
+                    },
+                    {
+                      "entity_id": "bmk_decision_only_disclosure_delta",
+                      "version": 1
+                    },
+                    {
+                      "entity_id": "pg_score_disclosure_appeal_selection",
+                      "version": 3
+                    }
+                  ],
+                  "recorded_condition": "risk_disclosed"
+                },
+                {
+                  "requirement_id": "g1_human_authority",
+                  "description": "No human G1 decision is recorded in this dossier; a human must confirm the core question, exact benchmark scope, and any final-review primitive before they become stable dependencies.",
+                  "evidence_refs": [
+                    {
+                      "entity_id": "rq_score_disclosure_appeal_selection",
+                      "version": 1
+                    },
+                    {
+                      "entity_id": "bmk_decision_only_disclosure_delta",
+                      "version": 1
+                    }
+                  ],
+                  "recorded_condition": "gap_disclosed"
+                }
+              ],
+              "proposed_action": "revise",
+              "rationale": "Scheme B resolves the final-review mapping gap while preserving the exact decision_only benchmark and all no-sign, no-welfare, and no-capacity boundaries.  G1 remains unconfirmed and this dossier still recommends revision because the ResearchQuestion's strict frontier terminology remains a separate named repair and the refreshed frame must pass a new economics audit.",
+              "prepared_at": "2026-07-22T18:31:40.160577Z"
+            }
+          }
+        },
+        "artifact_refs": [],
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "created_at": "2026-07-22T18:31:40.160577Z",
+        "supersedes": null
+      }
+    },
+    {
+      "op": "relation.supersede",
+      "previous": {
+        "relation_id": "rel_rq_decomposes_pg_score_disclosure",
+        "version": 1
+      },
+      "relation": {
+        "relation_id": "rel_rq_decomposes_pg_score_disclosure",
+        "relation_type": "decomposes",
+        "version": 2,
+        "project_id": "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+        "source": {
+          "entity_id": "rq_score_disclosure_appeal_selection",
+          "version": 1
+        },
+        "target": {
+          "entity_id": "pg_score_disclosure_appeal_selection",
+          "version": 3
+        },
+        "dependency_mode": "trace_only",
+        "upstream": null,
+        "downstream": null,
+        "scope_ref": "rq_score_disclosure_appeal_selection",
+        "scope_overlap": null,
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "created_at": "2026-07-22T18:31:40.160577Z",
+        "supersedes": {
+          "relation_id": "rel_rq_decomposes_pg_score_disclosure",
+          "version": 1
+        }
+      }
+    },
+    {
+      "op": "relation.supersede",
+      "previous": {
+        "relation_id": "rel_gate_governs_rq_score_disclosure",
+        "version": 1
+      },
+      "relation": {
+        "relation_id": "rel_gate_governs_rq_score_disclosure",
+        "relation_type": "governs",
+        "version": 2,
+        "project_id": "prj_8d76c7f0fe786f8a6abf8b49f38807ac47380cdd3681e3a0",
+        "source": {
+          "entity_id": "gate_g1_score_disclosure_appeal_selection_scheme_b",
+          "version": 1
+        },
+        "target": {
+          "entity_id": "rq_score_disclosure_appeal_selection",
+          "version": 1
+        },
+        "dependency_mode": "trace_only",
+        "upstream": null,
+        "downstream": null,
+        "scope_ref": "rq_score_disclosure_appeal_selection",
+        "scope_overlap": null,
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ],
+        "created_at": "2026-07-22T18:31:40.160577Z",
+        "supersedes": {
+          "relation_id": "rel_gate_governs_rq_score_disclosure",
+          "version": 1
+        }
+      }
+    },
+    {
+      "op": "route.outcome",
+      "outcome": {
+        "route_run_id": "run_op_5d1f994067aacf5eba9a365ebdd70343616a4c3db5fbb0ff",
+        "route_id": "decompose.primitives",
+        "outcome": "completed_with_candidate",
+        "rationale": "The refreshed package preserves Scheme B, marks only the final-rule requirement resolved, retains the separate RQ terminology repair, and does not confirm G1.",
+        "candidate_refs": [
+          {
+            "entity_id": "pg_score_disclosure_appeal_selection",
+            "version": 3
+          },
+          {
+            "entity_id": "gate_g1_score_disclosure_appeal_selection_scheme_b",
+            "version": 1
+          },
+          {
+            "relation_id": "rel_rq_decomposes_pg_score_disclosure",
+            "version": 2
+          },
+          {
+            "relation_id": "rel_gate_governs_rq_score_disclosure",
+            "version": 2
+          }
+        ],
+        "validator_report_refs": [],
+        "privacy": "public",
+        "access_compartments": [
+          "project_research"
+        ]
+      }
+    }
+  ],
+  "evidence_refs": [
+    {
+      "entity_id": "bmk_decision_only_disclosure_delta",
+      "version": 1
+    },
+    {
+      "entity_id": "rq_score_disclosure_appeal_selection",
+      "version": 1
+    }
+  ],
+  "authority_basis": [],
+  "privacy": "public",
+  "access_compartments": [
+    "project_research"
+  ],
+  "created_at": "2026-07-22T18:31:40.160577Z",
+  "parent_transaction_hash": "2a61a652135f2b2fcf798b8309fbd158bc8c5e6fba304fe40e93b3829fd28203"
+}

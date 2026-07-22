@@ -15,6 +15,7 @@ from .lifecycle import (
     incomplete_run_views,
     resumable_run_views,
 )
+from .disposition import valid_disposed_run_ids
 from .models import ProjectInspectionV1, RunInputBriefV1
 from .navigation import plan_next
 from .operational import ProjectOperationalLayout
@@ -38,9 +39,13 @@ def inspect_project(
 
     current = snapshot or replay(layout)
     views = derive_all_run_execution_views(layout, current)
-    incomplete = incomplete_run_views(views)
-    resumable = resumable_run_views(views)
     operational = ProjectOperationalLayout.at(layout)
+    disposed_ids = valid_disposed_run_ids(layout, operational, views)
+    active_views = tuple(
+        view for view in views if view.route_run_id not in disposed_ids
+    )
+    incomplete = incomplete_run_views(active_views)
+    resumable = resumable_run_views(active_views)
     resume_descriptors = []
     for view in resumable:
         try:

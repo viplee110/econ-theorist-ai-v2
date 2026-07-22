@@ -10,6 +10,10 @@ from ..runtime.layout import StoreLayout
 from ..runtime.lock import ExclusiveFileLock
 from ..runtime.replay import replay
 from .lifecycle import derive_all_run_execution_views, incomplete_run_views
+from .disposition import (
+    assert_reframe_successor_allowed,
+    valid_disposed_run_ids,
+)
 from .models import NavigationCandidateV1, OpenRunResultV1, RunInputBriefV1
 from .navigation import enumerate_navigation_candidates
 from .operational import (
@@ -167,8 +171,23 @@ def open_or_resume_run(
                 )
 
             views = derive_all_run_execution_views(layout, snapshot)
+            assert_reframe_successor_allowed(
+                layout,
+                operational,
+                views,
+                candidate,
+                run_input_brief,
+            )
+            disposed_ids = valid_disposed_run_ids(
+                layout, operational, views
+            )
+            active_views = tuple(
+                view
+                for view in views
+                if view.route_run_id not in disposed_ids
+            )
             matched_run_id, _ = _find_incomplete_match(
-                operational, views, candidate
+                operational, active_views, candidate
             )
             deterministic_run_id, context_id = _deterministic_ids(
                 snapshot.project_id, operation_key, candidate.candidate_digest
@@ -202,7 +221,9 @@ def open_or_resume_run(
                 route_run_id = matched_run_id
                 status = "resumed"
                 matched_view = next(
-                    view for view in views if view.route_run_id == route_run_id
+                    view
+                    for view in active_views
+                    if view.route_run_id == route_run_id
                 )
                 if matched_view.integrity == "invalid":
                     if route_run_id != deterministic_run_id:

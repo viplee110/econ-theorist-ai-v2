@@ -169,8 +169,11 @@ there. You do not need to learn route names, schemas, or state commands.
 > synthetic research content. This preview has demonstrated one natural-language
 > handoff into a route-valid canonical commit. A later V8 blind run committed
 > framing and decomposition but exhausted its repair budget without an audit
-> commit; a successful post-stabilization audit and a complete paper run remain
-> unproved. Clean first-use activation in an arbitrary paper directory, positive
+> commit. A later developer-assisted, nonblind Scheme-B follow-up did commit an
+> unchanged-V8 audit, but that audit still requires a framing revision and no G1
+> decision occurred; a fresh WorkPacket-only audit and a complete paper run
+> remain unproved. Clean first-use activation in an arbitrary paper directory,
+> positive
 > private execution, and Claude Code/Cursor parity also remain pending.
 
 ### Before you start
@@ -351,6 +354,9 @@ getting closer.**
 - ✅ Human G1–G5 promotion gates; no external-release route is enabled, and any
   future release remains L3 human-controlled
 - ✅ Dependency-driven invalidation and bounded repair/revision routes
+- ✅ Exact-bound `reframe.repair` recovery for an untouched, empty-focus
+  framing-v2 run; activated-team `kill`/`new_brief_required` recovery remains
+  open
 - ✅ Paper IR and manuscript-unit routes with formal-fidelity, economic-reader,
   cold-reader, and profile/craft review
 - ✅ V8 pre-G1 framing-quality audit passing its deterministic acceptance suite
@@ -368,13 +374,20 @@ getting closer.**
   are M `PASS`, T `MIXED`, U not established, and Q `MIXED`, so this is
   source-aware machine-path evidence rather than provider-independent delivery,
   multi-agent, usability, or quality evidence
+- ✅ One frozen noncanonical probe returned `PARK` (0.95), followed by the
+  researcher's Scheme-B choice and a developer-assisted, nonblind canonical
+  repair/decomposition/audit sequence ending at
+  `aea3e7a77ab7a3dc0e4d0b334403eb6d9df38a69bf3ddbca730075e6728fd230`;
+  the exact [follow-up evidence boundary](review_outputs/phase5b0_framing_team_public_pilot_followup/FOLLOWUP_SUMMARY.md)
+  records why this is not fresh model or research-quality evidence
 
 ### Still being tested or built
 
-- 🧪 Successful post-stabilization V8 audit rerun and held-out V1/V2 comparison
+- 🧪 A fresh WorkPacket-only V8 audit; another held-out V1/V2 comparison
+  only if a concrete researcher-facing failure makes it decision-relevant
 - 🧪 Comparative readability, token, wall-time, and active-human-effort gains
-- 🧪 A nondegeneracy probe for the first framing-team case and a later genuinely
-  unscripted user-choice pilot
+- 🧪 An explicit researcher decision on whether to replace the remaining strict
+  `frontier` terminology, plus a later genuinely unscripted user-choice pilot
 - 🚧 Clean first-use installation and positive private execution
 - 🚧 Claude Code and Cursor host parity
 - ⏳ End-to-end human–AI paper development at the intended quality bar
@@ -459,6 +472,18 @@ tests**. All seven exporters and the required `doctor` checks passed. This
 proves deterministic compatibility of the source candidate, not real-model
 success; the [stabilization gate](review_outputs/phase5a2_v8_codex_public_pilot/stabilization_gate.md)
 keeps the next blind-run and economics evidence separate.
+
+The later Phase 5B follow-up is recorded separately from both checkpoints. Its
+source-isolated nondegeneracy probe returned `PARK` with confidence 0.95; the
+researcher then selected a score-blind rule strictly increasing in the review
+signal, with `phi(s,r)=r` as the minimal baseline. Developer-assisted, nonblind
+candidates canonically committed the corresponding repair, decomposition
+refresh, and unchanged-V8 audit. The final audit still says `revise_framing`
+because the ResearchQuestion calls an outcome-vector comparison/locus a strict
+`frontier`; changing that term has not been authorized. No G1 decision occurred.
+The [follow-up archive](review_outputs/phase5b0_framing_team_public_pilot_followup/FOLLOWUP_SUMMARY.md)
+also records its partial dirty-source binding and that later recovery hardening
+was not exercised by the preserved run.
 
 <details>
 <summary><strong>Show verification commands</strong></summary>

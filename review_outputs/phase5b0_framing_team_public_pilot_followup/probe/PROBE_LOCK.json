@@ -1,0 +1,18 @@
+{
+  "lock_schema": "economic-theory-nondegeneracy-probe/v1",
+  "task_prompt_sha256": "421cb64d79134917d6dbd4263a78c25d038c32fc7527dbdb32adc8a8e79039d9",
+  "framing_input_sha256": "43ea849be933a8528b357b3ba79c789587e1ecdad376d893382d750ac3820bb8",
+  "q_lock_report_sha256": "c4915b9c646f6b3b57f0d2bdffd1bd401358c4bf5e029dad1b7835b11355f501",
+  "q_lock_json_sha256": "9767f7c214af1d163fdb44dfa619fe5bedd0ce0cfcae08aa7eb121a3ad26d8d1",
+  "probe_report_sha256": "4f77af1b3b25a02e5c000543da058cddabd887d2841bae865464265e384f5182",
+  "verdict": "PARK",
+  "confidence": 0.95,
+  "model_observation": "Codex desktop assistant; backend identity unverified",
+  "network_used": false,
+  "subagents_used": false,
+  "outside_input_reads_declared": false,
+  "engine_invoked": false,
+  "canonical_writes": 0,
+  "tools_used": ["shell_command", "apply_patch"],
+  "locked_at_utc": "2026-07-22T16:38:02.6571489Z"
+}

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from ..codec import canonical_json_bytes, sha256_digest, transaction_bytes
+from ..errors import RuntimeStoreError
 from ..models import Snapshot, Transaction
 from ..runs import (
     candidate_path,
@@ -165,8 +166,25 @@ def derive_run_execution_view(
     try:
         run = read_run(layout, route_run_id)
         manifest = read_context(layout, route_run_id)
-        read_compiled_context(layout, route_run_id)
-        bindings = transaction_bindings(layout, route_run_id)
+        compiled = read_compiled_context(layout, route_run_id)
+        try:
+            bindings = transaction_bindings(layout, route_run_id)
+        except RuntimeStoreError:
+            if run.base_revision == snapshot.head:
+                raise
+            # A stale unfinished run can no longer be reproduced from the
+            # current head, but its three immutable provenance files remain
+            # self-validating.  Their exact hashes are still needed to inspect
+            # an explicit disposition after its successor commits.
+            bindings = {
+                "route_run_hash": sha256_digest(canonical_json_bytes(run)),
+                "context_manifest_hash": sha256_digest(
+                    canonical_json_bytes(manifest)
+                ),
+                "compiled_context_hash": sha256_digest(
+                    canonical_json_bytes(compiled)
+                ),
+            }
         if manifest.source_head != run.base_revision:
             raise ValueError("run/context base binding differs")
         outcomes = _valid_outcomes(layout, route_run_id)

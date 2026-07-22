@@ -526,6 +526,42 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
         )
         self.assertEqual(replay(StoreLayout.at(self.root)).head, digest)
 
+    def test_explicit_different_brief_cannot_silently_resume_active_run(
+        self,
+    ) -> None:
+        ready = self.bridge.invoke(self._start_request())
+        self.assertEqual(ready.outcome, "ready", ready)
+
+        blocked = self.bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(self.root),
+                requested_scope="Replace the active frame with a different scope.",
+                framing_intent="Use a newly chosen primitive restriction.",
+                session=self.session.model_copy(
+                    update={"session_id": "codex-session-explicit-reframe"}
+                ),
+            )
+        )
+        self.assertEqual(blocked.outcome, "blocked", blocked)
+        self.assertFalse(blocked.mutated)
+        self.assertEqual(
+            blocked.diagnostics[0].code,
+            "explicit_reframe_requires_disposition",
+        )
+        self.assertEqual(replay(StoreLayout.at(self.root)).head, ready.head)
+
+        resumed = self.bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(self.root),
+                session=self.session.model_copy(
+                    update={"session_id": "codex-session-ordinary-resume"}
+                ),
+            )
+        )
+        self.assertEqual(resumed.outcome, "ready", resumed)
+        self.assertEqual(resumed.route_run_id, ready.route_run_id)
+        self.assertEqual(resumed.work_packet_hash, ready.work_packet_hash)
+
     def test_finish_records_terminal_host_receipt_and_same_run_can_resume(
         self,
     ) -> None:

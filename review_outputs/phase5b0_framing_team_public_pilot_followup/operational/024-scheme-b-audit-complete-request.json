@@ -1,0 +1,10 @@
+{
+  "bridge_request_schema": "econ-theorist/codex-complete-request/v1",
+  "bridge_version": 1,
+  "operation": "complete",
+  "project_root": "C:\\tmp\\p5b1",
+  "route_run_id": "run_op_1caf116a51fbbb8ef1113378d5b0f9626d58ee7ee5941ccb",
+  "work_packet_hash": "262fee137f399796f8a7c14706f7fd1ef94871395ae504ddd9b43b9b5c215b30",
+  "delivery_envelope_hash": "a3b617f01d4bd98f0507a99e0218fd6f2f4f4bf047c066d10d81837484726307",
+  "action": "stage_and_commit"
+}

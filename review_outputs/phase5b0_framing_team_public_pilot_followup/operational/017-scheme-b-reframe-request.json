@@ -1,0 +1,18 @@
+{
+  "bridge_request_schema": "econ-theorist/codex-start-request/v1",
+  "bridge_version": 1,
+  "operation": "start_or_resume",
+  "project_root": "C:\\tmp\\p5b1",
+  "initialize": false,
+  "requested_scope": "最终复核规则采用 score-blind、对复核信号严格单调的规则类，并以 φ(s,r)=r 作为最小基准。",
+  "framing_intent": "同意方案 B：采用 score-blind、对复核信号严格单调的最终规则类，并以 φ(s,r)=r 作为最小基准。",
+  "session": {
+    "session_schema": "econ-theorist/codex-session/v1",
+    "session_id": "codex-20260723-scheme-b-reframe-after-audit",
+    "selected_model": "user-selected-current-model-unverified",
+    "installed_models": [
+      "user-selected-current-model-unverified"
+    ],
+    "observed_at": "2026-07-22T17:38:52.9849303Z"
+  }
+}

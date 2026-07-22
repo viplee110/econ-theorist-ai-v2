@@ -42,6 +42,7 @@ from ..staging import (
     stage_candidate,
 )
 from .egress import read_bound_work_packet
+from .disposition import assert_run_not_disposed
 from .models import (
     CandidateCompletionResultV1,
     DeliveryEnvelopeV1,
@@ -985,6 +986,7 @@ def complete_candidate(
         return replayed
 
     with ExclusiveFileLock(operational.navigation_lock, timeout=lock_timeout):
+        assert_run_not_disposed(operational, route_run_id)
         # Recheck after acquiring the domain lock in case another process
         # completed the same exact operation while this caller was waiting.
         replayed = _load_operation_record(
@@ -1461,6 +1463,7 @@ def record_host_finish(
     if replayed is not None:
         return replayed
     with ExclusiveFileLock(operational.navigation_lock, timeout=lock_timeout):
+        assert_run_not_disposed(operational, route_run_id)
         replayed = _load_operation_record(
             operational,
             invocation="host.finish",

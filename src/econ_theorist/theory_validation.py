@@ -1768,6 +1768,13 @@ def _validate_phase2_route_entry_refs(
     root = next(iter(input_roots), None)
 
     if is_repair:
+        if route_spec.route_version >= 5 and any(
+            entity.entity_type not in route_spec.allowed_entity_types
+            for _, entity in typed_inputs
+        ):
+            raise TheoryValidationError(
+                "v5 repair target type is not mutable by repair.dependency"
+            )
         stale_inputs = [
             reference
             for reference, _ in typed_inputs

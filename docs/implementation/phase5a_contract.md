@@ -13,7 +13,11 @@ V2 but no valid candidate in either three-attempt arm. The full host-native
 research-ready gate remains open and no public-release claim is made.
 The 2026-07-22 research-product amendment permits a non-release Phase 5B pilot
 after the bounded exploratory floor; the complete gate below still controls
-formal Phase 5B acceptance and release claims.
+formal Phase 5B acceptance and release claims. That framing pilot's later
+nondegeneracy probe returned `PARK` (0.95); after the researcher selected Scheme
+B, a developer-assisted, nonblind follow-up canonically committed repair,
+decomposition, and the unchanged-V8 audit. It remains `revise_framing`, no G1
+decision occurred, and this does not close the Phase 5A gate.
 
 Phase 5A.1 implementation branch (historical): `agent/phase5a-machine-facade`
 
@@ -607,6 +611,22 @@ returns `repair_required`/`ambiguous_next` and asks for an explicit recovery or
 future disposition mechanism; it does not select the newest run or delete the
 others.
 
+The public Codex projection has one explicit, narrower exception to this
+generic ambiguity rule. `reframe.repair` is a bridge-level composite, not a
+new host-neutral machine operation or an automatic abandonment policy. It is
+eligible only for one untouched, empty-focus
+`frame.question_and_benchmarks` v2 run, before any framing-team activation, when
+the direct user explicitly requests a different brief and the request binds one
+exact current dependency-repair target. The bridge records a noncanonical
+operational disposition bound to the
+source delivery, direct-user capture, target, complete successor brief, and
+exact successor navigation candidate, then opens only that
+`repair.dependency` run. No canonical ObjectStore bytes or human Decision are
+created by the disposition. Exact retry recovers the same disposition,
+successor, and ready response, including after the successor later advances the
+head. This does not solve general `kill` or `new_brief_required` recovery for an
+activated team.
+
 ### 7.2 Duplicate prevention
 
 The Phase 5A facade serializes inspect-plus-resume/open under an engine-owned
@@ -864,7 +884,9 @@ are generated or checked.
 - Codex currently uses `.agents/skills/econ-theorist-v2/SKILL.md` over the
   installed `etai codex invoke` bridge. This prepared-checkout projection is
   public-only and does not establish cold installation or an activation
-  handshake in an arbitrary paper directory.
+  handshake in an arbitrary paper directory. Its narrow `reframe.repair`
+  composite has the eligibility and exact-binding limits in Section 7.1; it is
+  not part of the generic machine-operation union.
 - Claude Code may receive a bounded `CLAUDE.md` integration and, when needed,
   project agent definitions.
 - Cursor may receive bounded project rules in its supported project-rule
@@ -1440,12 +1462,48 @@ private-oracle/adversarial checks pass. Exact-wheel packaged-runtime transport/
 oracle verification also passes: the installed runtime's two private oracles
 pass unchanged V8, produce the same scientific projection, write no canonical
 state, and reject a wrong base closed. This is deterministic self-test
-evidence, not fresh model evidence. The next executable slice is to design and
-freeze one genuinely new held-out case before a final independent two-arm
-pair; the packaged verification root is not that blind workspace. See the
+evidence, not fresh model evidence. The 2026-07-22 product-priority amendment
+supersedes another protocol-only held-out pair as the default next slice; such a
+pair may resume only after a concrete researcher-facing failure makes it
+decision-relevant. The packaged verification root is not a blind workspace. See the
 [R2 report](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt2_run_report.md),
 [R3 protocol](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_route1_protocol.md),
 [adjudication/compiler shadow](../../review_outputs/phase5a2_v8_codex_public_pilot/rerun_attempt3_adjudication_and_compiler_shadow.md),
 [held-out pair adjudication](../../review_outputs/phase5a2_v8_authoring_pair_v2/final_adjudication.md),
 [packaged-runtime verification](../../review_outputs/phase5a2_v8_authoring_pair_v2/packaged_runtime_verification.md),
 and [machine decision](../../review_outputs/phase5a2_v8_authoring_pair_v2/FINAL_DECISION.json).
+
+## 21. Phase 5B Scheme-B follow-up and recovery boundary
+
+The additive
+[follow-up archive](../../review_outputs/phase5b0_framing_team_public_pilot_followup/FOLLOWUP_SUMMARY.md)
+does not alter the original frozen Phase 5B pilot archive. Its source-isolated
+noncanonical probe returned `PARK` (0.95). The researcher then authorized a
+score-blind final-rule class, `phi(s,r)=psi(r)`, with `psi(1)>psi(0)` and
+`phi(s,r)=r` as the minimal deterministic baseline. The researcher did not
+authorize changing the ResearchQuestion's `frontier` terminology or confirming
+G1.
+
+The resulting developer-assisted, nonblind route sequence committed the
+PrimitiveGraph repair, dependent decomposition refresh, and unchanged-V8 audit
+at final canonical head
+`aea3e7a77ab7a3dc0e4d0b334403eb6d9df38a69bf3ddbca730075e6728fd230`.
+The audit validates the Scheme-B active margin and consequence binding but
+remains `revise_framing`: the ResearchQuestion still calls an outcome-vector
+comparison or locus a strict `frontier` without the needed feasible-set,
+capacity, objective, or optimization structure. No G1 decision occurred.
+
+These candidates were not authored from the WorkPacket alone. The decomposition
+refresh used developer-assisted canonical carry-forward, and the accepted audit
+followed a rejected attempt plus source inspection. The run used a dirty local
+editable checkout with only a partial source binding and no exact wheel digest;
+its observable model label was not independently confirmed. It is therefore
+canonical route evidence, not fresh model, provider-independent, research-
+quality, usability, or editing-burden evidence.
+
+The run did exercise the first narrow `reframe.repair` disposition, but the
+crash-recovery and post-head exact-retry hardening described in Sections 7.1 and
+10 was added after the preserved captures. The `p5b1` run did not exercise
+those fixes, and the follow-up archive makes no such regression claim. General
+disposition/reframe recovery for an activated team's `kill` or
+`new_brief_required` outcome remains open.

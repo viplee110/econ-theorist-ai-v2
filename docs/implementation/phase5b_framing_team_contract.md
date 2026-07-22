@@ -2,9 +2,12 @@
 
 Status: researcher-authorized contract with an implemented noncanonical
 binding/persistence slice, thin public Codex host projection, and one completed
-real-model framing-only pilot; its source-aware machine path is recorded, while
-provider-independent delivery, research-quality, user-value, strong
-proposal-diversity, and multi-agent-benefit claims remain open
+real-model framing-only pilot. A later frozen noncanonical probe returned
+`PARK` (0.95); the researcher selected Scheme B, and a developer-assisted,
+nonblind follow-up committed the repair, decomposition refresh, and unchanged-
+V8 audit. The audit remains `revise_framing`, no G1 decision occurred, and
+provider-independent delivery, research quality, user value, strong proposal
+diversity, and multi-agent benefit remain open.
 
 Scope: `frame.question_and_benchmarks` only
 
@@ -201,12 +204,22 @@ Bounded branches are:
 - `park`, `kill`, or user cancellation -> no worker handoff and no canonical
   write.
 
-The current slice makes the old team session terminal after `kill` or
-`new_brief_required`, but it does not yet canonically dispose the unfinished
-route or create a replacement brief while that run exists. A pilot encountering
-either status must stop and report this recovery gap. Safe abandon/reframe
-transition support remains open and is required before claiming foolproof
-recovery for those branches.
+The team slice makes the old team session terminal after `kill` or
+`new_brief_required`. General abandon/reframe transition support for either
+team outcome remains open: a pilot encountering one must stop rather than
+silently create a replacement brief.
+
+The bridge exposes one narrower `reframe.repair` composite for a different
+case: an untouched, empty-focus `frame.question_and_benchmarks` v2 run that has
+not activated a team. On explicit direct-user reframe input, it records one
+noncanonical operational disposition bound to the exact source delivery,
+capture, repair target, successor brief, and successor navigation candidate,
+then opens that exact `repair.dependency` successor. It does not abandon or
+rewrite canonical scientific state, infer a new target, or apply to an
+activated team. Its exact retry recovers the same disposition, successor, and
+ready response, including after the successor advances the head. The crash-
+recovery and exact-retry hardening postdates the preserved `p5b1` captures and
+must not be reported as though that pilot exercised it.
 
 ## 9. First implementation and acceptance
 
@@ -246,8 +259,11 @@ Focused acceptance demonstrates:
 7. one handoff fixes one worker across valid repair attempts, while pre-team
    staged candidates cannot be claimed by the team;
 8. creating or reading team records does not move the canonical head;
-9. `single_fallback` leaves the existing Phase 5A route usable; and
-10. a real framing pilot records the intervention and disagreement evidence
+9. `single_fallback` leaves the existing Phase 5A route usable;
+10. the narrow untouched-run `reframe.repair` composite is exact-bound,
+    idempotent, crash-recoverable, and never becomes a canonical disposition;
+    and
+11. a real framing pilot records the intervention and disagreement evidence
     needed to assess, rather than assume, usability or multi-agent value.
 
 Only the focused Phase 5B.0 tests are required during implementation. Run the
@@ -285,6 +301,45 @@ but the minimal model may reduce to four-cell threshold arithmetic.
 This evidence supports a source-aware audit of the recorded framing-team
 transport, persistence, and bounded single-writer path. It does not satisfy the
 full Phase 5B exit criteria or justify a broader panel, default research-move
-activation, quality claim, or usability claim. A noncanonical scientific probe
-must first decide whether the case admits an open-region, economically
-interpretable characterization beyond finite-cell enumeration.
+activation, quality claim, or usability claim. The next bounded step at that
+checkpoint was a noncanonical scientific probe of whether the case admitted an
+open-region, economically interpretable characterization beyond finite-cell
+enumeration; Section 11 records its result and follow-up.
+
+## 11. Scheme-B probe and canonical follow-up
+
+The additive
+[follow-up archive](../../review_outputs/phase5b0_framing_team_public_pilot_followup/FOLLOWUP_SUMMARY.md)
+preserves the later work without changing any byte in the original frozen pilot
+archive. The later dependency-repair, decomposition, and audit routes used the
+existing Phase 5A/V8 workflow; they do not expand this framing-team slice's
+scope. The source-isolated noncanonical probe returned `PARK` with confidence
+0.95: the frame did not specify a final review rule and used `frontier` for an
+outcome-vector object without a feasible set, capacity, objective, or
+optimization structure.
+
+The researcher then authorized Scheme B only: the final rule is score-blind,
+`phi(s,r)=psi(r)`, strictly increasing in the review signal,
+`psi(1)>psi(0)`, with `phi(s,r)=r` as the minimal deterministic baseline. This
+did not authorize a ResearchQuestion terminology change, welfare or capacity
+claim, distinctive-mechanism claim, or human G1 decision.
+
+Developer-assisted, nonblind route authoring committed the corresponding
+PrimitiveGraph repair at `2a61a652...`, the dependent decomposition refresh at
+`23ff15b0...`, and the unchanged-V8 framing audit at final canonical head
+`aea3e7a77ab7a3dc0e4d0b334403eb6d9df38a69bf3ddbca730075e6728fd230`.
+The committed audit validates the positive active margin and exact
+appeal-to-outcome consequence binding, but remains `revise_framing`. Its only
+recorded scientific gap is that the ResearchQuestion calls the outcome-vector
+comparison or locus a strict `frontier`. The researcher has not authorized
+that repair, and no G1 decision was requested, confirmed, or fabricated.
+
+This is not fresh WorkPacket-only model evidence. The decomposition helper
+carried forward canonical objects omitted from its packet, and the accepted
+audit followed one rejection plus developer source inspection. The run used a
+dirty editable checkout with only a partial source binding and an unconfirmed
+observable model label. Recovery/exact-retry hardening added after the captures
+was not exercised by this run. Consequently the follow-up establishes a
+canonical unchanged-V8 route result, not provider independence, multi-agent
+benefit, low user effort, research quality, or resolution of the original
+M/T/U/Q verdicts.

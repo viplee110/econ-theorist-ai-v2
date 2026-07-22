@@ -32,6 +32,7 @@ def _fallback_operation(data: bytes) -> str:
         if operation
         in {
             "start_or_resume",
+            "reframe.repair",
             "complete",
             "finish",
             "framing_team.open",
