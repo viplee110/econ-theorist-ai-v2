@@ -653,6 +653,41 @@ class ClaimVerificationRouteEntryTests(unittest.TestCase):
         self.assertFalse(unbounded.truncated)
         self.assertEqual(len(unbounded.focus_sets), 7)
 
+    def test_missing_later_requirement_prevents_irrelevant_subset_expansion(
+        self,
+    ) -> None:
+        fixture = ClosureFixture()
+        current = {
+            entity.entity_id: entity
+            for entity in fixture.entities.values()
+            if entity.entity_type == "ProofObligation"
+        }
+        template = next(iter(current.values()))
+        for index in range(18):
+            entity_id = f"obligation.preflight.{index:02d}"
+            current[entity_id] = template.model_copy(
+                update={"entity_id": entity_id}
+            )
+        route = SimpleNamespace(
+            required_input_entities=(
+                SimpleNamespace(
+                    entity_type="ProofObligation",
+                    min_count=1,
+                    max_count=None,
+                ),
+                SimpleNamespace(
+                    entity_type="ValidatedArgumentPackage",
+                    min_count=1,
+                    max_count=1,
+                ),
+            )
+        )
+
+        enumeration = _registry_focus_sets(route, current, limit=64)
+
+        self.assertFalse(enumeration.truncated)
+        self.assertFalse(enumeration.focus_sets)
+
 
 class ProjectionBackHalfClosureTests(unittest.TestCase):
     def test_bundle_cannot_omit_one_retained_claim_obligation(self) -> None:

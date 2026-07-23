@@ -77,6 +77,17 @@ def _registry_focus_sets(
     limit: int,
 ) -> CandidateEnumeration:
     requirements = tuple(getattr(route, "required_input_entities"))
+    available_counts: dict[str, int] = {}
+    for entity in current.values():
+        available_counts[entity.entity_type] = (
+            available_counts.get(entity.entity_type, 0) + 1
+        )
+    if any(
+        available_counts.get(requirement.entity_type, 0)
+        < requirement.min_count
+        for requirement in requirements
+    ):
+        return CandidateEnumeration(())
     choices_by_requirement: list[tuple[tuple[str, ...], ...]] = []
     for requirement in requirements:
         enumeration = _requirement_focus_choices(
