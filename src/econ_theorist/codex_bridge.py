@@ -775,6 +775,51 @@ def _public_pilot_blocker(packet: WorkPacketV1) -> DiagnosticV1 | None:
     return None
 
 
+def _unique_maximal_focus_candidate(
+    candidate_data: list[dict[str, Any]],
+    *,
+    requested_route_id: str | None,
+) -> dict[str, Any] | None:
+    """Resolve only a structurally nested focus ambiguity for one chosen route.
+
+    The researcher has already selected the route through the public bridge.
+    This helper makes no scientific choice: it accepts only one candidate whose
+    focus set strictly contains every other candidate's focus set for that same
+    route.  The result is therefore the complete available context, not a
+    preference among competing mechanisms, questions, or routes.
+    """
+
+    if requested_route_id is None or not candidate_data:
+        return None
+    candidates = tuple(
+        NavigationCandidateV1.model_validate_json(
+            canonical_json_bytes(item), strict=True
+        )
+        for item in candidate_data
+    )
+    if any(candidate.key.route_id != requested_route_id for candidate in candidates):
+        return None
+
+    focus_sets = {
+        candidate.candidate_digest: frozenset(
+            (reference.entity_id, reference.version)
+            for reference in candidate.key.focus_refs
+        )
+        for candidate in candidates
+    }
+    maximal = tuple(
+        candidate
+        for candidate in candidates
+        if all(
+            other_focus <= focus_sets[candidate.candidate_digest]
+            for other_focus in focus_sets.values()
+        )
+    )
+    if len(maximal) != 1:
+        return None
+    return maximal[0].model_dump(mode="json")
+
+
 def _canonical_project_is_public(root: Path, project_id: str) -> bool:
     snapshot = replay(StoreLayout.at(root))
     version = snapshot.current_entities.get(project_id)
@@ -1422,8 +1467,19 @@ class CodexBridge:
                 parameters=navigation_parameters,
             )
         )
+        maximal_focus_candidate = (
+            _unique_maximal_focus_candidate(
+                navigation.result.get("candidates", []),
+                requested_route_id=request.requested_route_id,
+            )
+            if navigation.outcome == "ambiguous_next"
+            else None
+        )
         selectable_ambiguity = (
-            required_candidate_digest is not None
+            (
+                required_candidate_digest is not None
+                or maximal_focus_candidate is not None
+            )
             and navigation.outcome == "ambiguous_next"
         )
         if navigation.outcome != "ok" and not selectable_ambiguity:
@@ -1458,6 +1514,12 @@ class CodexBridge:
                 brief_data = (
                     None if brief is None else brief.model_dump(mode="json")
                 )
+        elif (
+            navigation_outcome == "ambiguous_next"
+            and maximal_focus_candidate is not None
+        ):
+            candidate_data = maximal_focus_candidate
+            brief_data = None if brief is None else brief.model_dump(mode="json")
         elif navigation_outcome == "resume_required":
             descriptors = navigation.result.get("resume_descriptors", [])
             if len(descriptors) == 1:
