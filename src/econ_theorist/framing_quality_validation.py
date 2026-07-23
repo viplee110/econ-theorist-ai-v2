@@ -40,6 +40,7 @@ from .authoring_validation import facet_semantic_hash, facet_semantic_value
 from .codec import canonical_json_bytes, object_digest
 from .theory_validation import (
     TheoryValidationError,
+    is_falsified_verification_repair_root,
     validate_phase2_route_entry,
     validate_phase2_route_transaction,
     validate_theory_entity,
@@ -790,77 +791,6 @@ def _phase2_repair_spec(route_spec: RouteSpecV5) -> RouteSpecV5:
     )
 
 
-def _verification_failure_repair_is_authorized(
-    snapshot: Snapshot,
-    bundle_entity: EntityVersion,
-    target: EntityVersion,
-) -> bool:
-    """Recognize the sole fresh repair opened by a committed failed check.
-
-    A VerificationBundle can faithfully record that one current proof
-    obligation failed without making the whole ClaimGraph structurally stale.
-    This is not permission to revise arbitrary fresh theory: the current,
-    fresh bundle must contain a non-discharged record tied to this exact
-    current obligation and to the exact current formal scope.
-    """
-
-    if (
-        bundle_entity.entity_type != "VerificationBundle"
-        or target.entity_type != "ProofObligation"
-        or not _is_current_and_fresh(snapshot, bundle_entity)
-        or not _is_current_and_fresh(snapshot, target)
-    ):
-        return False
-    try:
-        bundle = validate_theory_entity(bundle_entity)
-        obligation = validate_theory_entity(target)
-    except TheoryValidationError:
-        return False
-    if not isinstance(bundle, t.VerificationBundle) or not isinstance(
-        obligation, t.ProofObligation
-    ):
-        return False
-    target_ref = _entity_ref(target)
-    if (
-        target_ref not in bundle.proof_obligation_refs
-        or obligation.claim_graph_ref != bundle.claim_graph_ref
-    ):
-        return False
-    exact = _exact_entities(snapshot)
-    graph_entity = exact.get(_entity_key(bundle.claim_graph_ref))
-    if graph_entity is None or not _is_current_and_fresh(snapshot, graph_entity):
-        return False
-    try:
-        graph = validate_theory_entity(graph_entity)
-    except TheoryValidationError:
-        return False
-    if not isinstance(graph, t.ClaimGraph):
-        return False
-    scope_refs = (graph.formal_model_ref, graph.assumption_map_ref)
-    for reference in scope_refs:
-        scoped = exact.get(_entity_key(reference))
-        if scoped is None or not _is_current_and_fresh(snapshot, scoped):
-            return False
-    for record_ref in bundle.verification_record_refs:
-        record_entity = exact.get(_entity_key(record_ref))
-        if record_entity is None or not _is_current_and_fresh(snapshot, record_entity):
-            return False
-        try:
-            record = validate_theory_entity(record_entity)
-        except TheoryValidationError:
-            return False
-        if (
-            isinstance(record, t.VerificationRecord)
-            and record.obligation_ref == target_ref
-            and record.claim_graph_ref == bundle.claim_graph_ref
-            and record.formal_model_ref == graph.formal_model_ref
-            and record.assumption_map_ref == graph.assumption_map_ref
-            and record.outcome != "discharged"
-        ):
-            return True
-    return False
-
-
 def _validate_framing_repair_entry_refs(
     snapshot: Snapshot,
     route_spec: RouteSpecV5,
@@ -928,11 +858,13 @@ def _validate_framing_repair_entry_refs(
     if len(verification_bundles) == 1 and len(verification_targets) == 1:
         bundle_entity = verification_bundles[0]
         target = verification_targets[0]
-        if not _verification_failure_repair_is_authorized(
-            snapshot, bundle_entity, target
+        if not is_falsified_verification_repair_root(
+            snapshot,
+            _entity_ref(target),
+            trigger_bundle_ref=_entity_ref(bundle_entity),
         ):
             raise FramingQualityValidationError(
-                "verification repair requires one current failed exact VerificationBundle obligation"
+                "verification repair replay requires one exact falsified bundle obligation"
             )
         try:
             validate_phase2_route_entry(
@@ -940,7 +872,6 @@ def _validate_framing_repair_entry_refs(
                 normalized,
                 (target.entity_id,),
                 actor=actor,
-                allow_fresh_repair=True,
             )
         except TheoryValidationError as exc:
             raise FramingQualityValidationError(str(exc)) from exc
@@ -953,7 +884,7 @@ def _validate_framing_repair_entry_refs(
         )
     if len(bundle_entities) != 1 or len(targets) != 1:
         raise FramingQualityValidationError(
-            "v5 repair requires one stale root, one framing bundle and target, or one failed verification bundle and obligation"
+            "proactive framing repair requires one bundle and one typed framing target"
         )
     bundle_entity = bundle_entities[0]
     target = targets[0]
@@ -2500,30 +2431,29 @@ def validate_framing_repair_route_transaction(
     )
     normalized = _phase2_repair_spec(route_spec)
 
-    if entry.repair_mode == "framing_revision":
-        supersessions = [
-            operation
-            for operation in transaction.operations
-            if isinstance(operation, SupersedeEntityOp)
-        ]
-        if len(supersessions) != 1:
-            raise FramingQualityValidationError(
-                "proactive framing repair must supersede exactly one entity"
-            )
-        operation = supersessions[0]
-        exact = _exact_entities(snapshot)
-        previous = exact.get(_entity_key(entry.target_ref))
-        if (
-            previous is None
-            or operation.previous != entry.target_ref
-            or operation.entity.entity_id != previous.entity_id
-            or operation.entity.entity_type != previous.entity_type
-            or operation.entity.version != previous.version + 1
-            or operation.entity.supersedes != entry.target_ref
-        ):
-            raise FramingQualityValidationError(
-                "proactive framing repair must replace its one exact named target"
-            )
+    supersessions = [
+        operation
+        for operation in transaction.operations
+        if isinstance(operation, SupersedeEntityOp)
+    ]
+    if len(supersessions) != 1:
+        raise FramingQualityValidationError(
+            "repair.dependency must supersede exactly one entity"
+        )
+    operation = supersessions[0]
+    exact = _exact_entities(snapshot)
+    previous = exact.get(_entity_key(entry.target_ref))
+    if (
+        previous is None
+        or operation.previous != entry.target_ref
+        or operation.entity.entity_id != previous.entity_id
+        or operation.entity.entity_type != previous.entity_type
+        or operation.entity.version != previous.version + 1
+        or operation.entity.supersedes != entry.target_ref
+    ):
+        raise FramingQualityValidationError(
+            "repair.dependency must replace its one exact target"
+        )
 
     try:
         validate_phase2_route_transaction(

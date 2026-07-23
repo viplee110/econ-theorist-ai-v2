@@ -1649,6 +1649,82 @@ def _typed_reference_closure_is_current_and_fresh(
     return True
 
 
+def is_falsified_verification_repair_root(
+    snapshot: Snapshot,
+    reference: EntityVersionRef,
+    *,
+    trigger_bundle_ref: EntityVersionRef | None = None,
+) -> bool:
+    """Return whether one exact current proof was invalidated by verification.
+
+    This is a narrow entry-time classification, not a new repair mode.  It
+    promotes only a current ProofObligation named by a current
+    VerificationBundle whose current VerificationRecord is falsified and whose
+    current ``challenges`` relation points back to that exact obligation.
+    """
+
+    if snapshot.current_entities.get(reference.entity_id) != reference.version:
+        return False
+    exact = {
+        _entity_key(entity): entity for entity in snapshot.entity_versions
+    }
+    target_entity = exact.get(_entity_key(reference))
+    if target_entity is None or target_entity.entity_type != "ProofObligation":
+        return False
+    target = validate_theory_entity(target_entity)
+    if not isinstance(target, t.ProofObligation):
+        return False
+
+    current_relations = {
+        (relation.relation_id, relation.version): relation
+        for relation in snapshot.relation_versions
+        if snapshot.current_relations.get(relation.relation_id) == relation.version
+    }
+    for bundle_entity in snapshot.entity_versions:
+        if (
+            bundle_entity.entity_type != "VerificationBundle"
+            or snapshot.current_entities.get(bundle_entity.entity_id)
+            != bundle_entity.version
+            or (
+                trigger_bundle_ref is not None
+                and (
+                    bundle_entity.entity_id != trigger_bundle_ref.entity_id
+                    or bundle_entity.version != trigger_bundle_ref.version
+                )
+            )
+        ):
+            continue
+        bundle = validate_theory_entity(bundle_entity)
+        if (
+            not isinstance(bundle, t.VerificationBundle)
+            or reference not in bundle.proof_obligation_refs
+            or bundle.claim_graph_ref != target.claim_graph_ref
+        ):
+            continue
+        for record_ref in bundle.verification_record_refs:
+            if snapshot.current_entities.get(record_ref.entity_id) != record_ref.version:
+                continue
+            record_entity = exact.get(_entity_key(record_ref))
+            if record_entity is None:
+                continue
+            record = validate_theory_entity(record_entity)
+            if (
+                not isinstance(record, t.VerificationRecord)
+                or record.outcome != "falsified"
+                or record.obligation_ref != reference
+                or record.claim_graph_ref != bundle.claim_graph_ref
+            ):
+                continue
+            if any(
+                relation.relation_type == "challenges"
+                and relation.source == record_ref
+                and relation.target == reference
+                for relation in current_relations.values()
+            ):
+                return True
+    return False
+
+
 def _g3_historical_reference_overrides(
     snapshot: Snapshot,
     dossier_entity: EntityVersion,
@@ -2011,7 +2087,12 @@ def _validate_phase2_route_entry_refs(
         stale_inputs = [
             reference
             for reference, _ in typed_inputs
-            if not _typed_reference_closure_is_current_and_fresh(snapshot, reference)
+            if (
+                not _typed_reference_closure_is_current_and_fresh(
+                    snapshot, reference
+                )
+                or is_falsified_verification_repair_root(snapshot, reference)
+            )
         ]
         valid_root_count = len(stale_inputs) == 1 or (
             allow_fresh_repair and len(stale_inputs) == 0
@@ -4116,6 +4197,7 @@ __all__ = [
     "TheoryRouteEntryReport",
     "TheoryValidationError",
     "has_current_fresh_g1_decomposition_package",
+    "is_falsified_verification_repair_root",
     "validate_phase2_human_gate_transaction",
     "validate_phase2_route_transaction",
     "validate_phase2_route_entry",

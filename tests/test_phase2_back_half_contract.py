@@ -41,7 +41,13 @@ from econ_theorist.models import (
 )
 from econ_theorist.machine.navigation import (
     _claim_verification_focus_sets,
+    _focus_sets_for_policy,
     _registry_focus_sets,
+)
+from econ_theorist.framing_quality_validation import (
+    FramingQualityValidationError,
+    validate_framing_repair_route_entry,
+    validate_framing_repair_route_transaction,
 )
 from econ_theorist.route_registry import get_route
 from econ_theorist.theory import (
@@ -527,6 +533,182 @@ class ClaimVerificationRouteEntryTests(unittest.TestCase):
                 _snapshot(fixture),
                 get_route("verify.claims_proofs_and_interpretation"),
                 partial_focus,
+                actor=AGENT,
+            )
+
+    def test_falsified_obligation_enters_existing_single_root_repair(self) -> None:
+        fixture = ClosureFixture()
+        record = fixture.payload("verification.threshold.closure")
+        assert isinstance(record, VerificationRecord)
+        fixture.replace_payload(
+            "verification.threshold.closure",
+            record.model_copy(update={"outcome": "falsified"}),
+        )
+        graph = fixture.payload("claims.closure")
+        assert isinstance(graph, ClaimGraph)
+        fixture.replace_payload(
+            "claims.closure",
+            graph.model_copy(
+                update={
+                    "claims": tuple(
+                        claim.model_copy(update={"verification_record_refs": ()})
+                        for claim in graph.claims
+                    )
+                }
+            ),
+        )
+        for entity_id in (
+            "absorption.closure",
+            "closest.closure",
+            "dossier.g4.closure",
+            "dossier.g5.closure",
+            "literature.closure",
+            "portfolio.closure",
+            "vap.closure",
+        ):
+            fixture.entities.pop((entity_id, 1), None)
+        fixture.decisions.pop(("decision.g4.closure", 1), None)
+        challenge = _relation(
+            "relation.challenge.threshold.closure",
+            "challenges",
+            eref("verification.threshold.closure"),
+            eref("obligation.threshold.closure"),
+        )
+        snapshot = _snapshot(fixture).model_copy(
+            update={
+                "relation_versions": (challenge,),
+                "current_relations": {challenge.relation_id: challenge.version},
+            }
+        )
+
+        entry = validate_framing_repair_route_entry(
+            snapshot,
+            get_route("repair.dependency"),
+            ("obligation.threshold.closure",),
+            actor=AGENT,
+        )
+
+        self.assertEqual(entry.repair_mode, "stale_root")
+        self.assertEqual(entry.target_ref, eref("obligation.threshold.closure"))
+        replay_entry = validate_framing_repair_route_entry(
+            snapshot,
+            get_route("repair.dependency"),
+            (
+                "verification.bundle.closure",
+                "obligation.threshold.closure",
+            ),
+            actor=AGENT,
+        )
+        self.assertEqual(replay_entry.repair_mode, "verification_revision")
+        current = {
+            entity.entity_id: entity
+            for entity in snapshot.entity_versions
+            if snapshot.current_entities.get(entity.entity_id) == entity.version
+        }
+        enumerated = _focus_sets_for_policy(
+            "framing_or_stale_repair_root.v1",
+            get_route("repair.dependency"),
+            snapshot,
+            current,
+            limit=4096,
+        )
+        self.assertIn(("obligation.threshold.closure",), enumerated.focus_sets)
+        self.assertNotIn(
+            tuple(
+                sorted(
+                    (
+                        "verification.bundle.closure",
+                        "obligation.threshold.closure",
+                    )
+                )
+            ),
+            enumerated.focus_sets,
+        )
+
+        def repair_transaction(target_id: str) -> Transaction:
+            previous = fixture.entities[(target_id, 1)]
+            payload = fixture.payload(target_id)
+            assert isinstance(payload, ProofObligation)
+            revised = previous.model_copy(
+                update={
+                    "version": 2,
+                    "supersedes": eref(target_id),
+                    "facets": pack_theory_payload(
+                        payload.model_copy(
+                            update={
+                                "statement": (
+                                    payload.statement
+                                    + " Apply the corrected exact quantifier."
+                                )
+                            }
+                        )
+                    ),
+                }
+            )
+            return Transaction(
+                transaction_id=f"transaction.repair.{target_id}",
+                origin="route_run",
+                project_id=PROJECT_ID,
+                base_revision=HEAD,
+                route_run_id=f"run.repair.{target_id}",
+                route_id="repair.dependency",
+                route_run_hash=ROUTE_HASH,
+                context_manifest_hash=CONTEXT_HASH,
+                compiled_context_hash=COMPILED_HASH,
+                actor=AGENT,
+                intent="Replace exactly one falsified proof obligation.",
+                changed_facets=(
+                    ChangedFacets(
+                        entity_id=target_id,
+                        previous_version=1,
+                        new_version=2,
+                        facets=("formal",),
+                    ),
+                ),
+                operations=(
+                    SupersedeEntityOp(
+                        previous=eref(target_id),
+                        entity=revised,
+                    ),
+                    RecordRouteOutcomeOp(
+                        outcome=RouteOutcome(
+                            route_run_id=f"run.repair.{target_id}",
+                            route_id="repair.dependency",
+                            outcome="completed_with_candidate",
+                            rationale="Replace the exact falsified obligation.",
+                            candidate_refs=(eref(target_id, 2),),
+                        )
+                    ),
+                ),
+                evidence_refs=(eref("obligation.threshold.closure"),),
+                created_at=CREATED_AT,
+                parent_transaction_hash=HEAD,
+            )
+
+        validate_framing_repair_route_transaction(
+            snapshot,
+            repair_transaction("obligation.threshold.closure"),
+            get_route("repair.dependency"),
+        )
+        with self.assertRaisesRegex(
+            FramingQualityValidationError, "one exact target"
+        ):
+            validate_framing_repair_route_transaction(
+                snapshot,
+                repair_transaction("obligation.boundary.closure"),
+                get_route("repair.dependency"),
+            )
+
+        without_challenge = snapshot.model_copy(
+            update={"relation_versions": (), "current_relations": {}}
+        )
+        with self.assertRaisesRegex(
+            FramingQualityValidationError, "exactly one typed stale root"
+        ):
+            validate_framing_repair_route_entry(
+                without_challenge,
+                get_route("repair.dependency"),
+                ("obligation.threshold.closure",),
                 actor=AGENT,
             )
 
