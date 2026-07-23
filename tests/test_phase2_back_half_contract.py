@@ -60,6 +60,7 @@ from econ_theorist.theory import (
 )
 from econ_theorist.theory_validation import (
     TheoryValidationError,
+    validate_phase2_route_entry,
     validate_phase2_route_transaction,
     validate_theory_projection,
 )
@@ -384,6 +385,99 @@ def _g5_candidate(
         ),
     )
     return package_entity, dossier_entity, relations
+
+
+class ClaimDiscoveryRouteEntryTests(unittest.TestCase):
+    def test_exact_g2_and_g3_approved_chain_can_enter(self) -> None:
+        fixture = ClosureFixture()
+
+        entry = validate_phase2_route_entry(
+            _snapshot(fixture),
+            get_route("discover.claims_and_boundaries"),
+            tuple(reference.entity_id for reference in _discover_inputs()),
+            actor=AGENT,
+        )
+
+        self.assertEqual(entry.research_question_ref, eref("question.closure"))
+        self.assertEqual(len(entry.gate_decision_refs), 3)
+
+    def test_mixed_formal_model_or_mechanism_cannot_enter(self) -> None:
+        fixture = ClosureFixture()
+        substitutions = (
+            (
+                "model",
+                tuple(
+                    "model.contrast.closure"
+                    if reference.entity_id == "model.selected.closure"
+                    else reference.entity_id
+                    for reference in _discover_inputs()
+                ),
+            ),
+            (
+                "mechanism",
+                tuple(
+                    "mechanism.rival.closure"
+                    if reference.entity_id == "mechanism.selected.closure"
+                    else reference.entity_id
+                    for reference in _discover_inputs()
+                ),
+            ),
+        )
+
+        for label, focus in substitutions:
+            with self.subTest(substitution=label), self.assertRaisesRegex(
+                TheoryValidationError, r"(?i)(approved|formal-base chain)"
+            ):
+                validate_phase2_route_entry(
+                    _snapshot(fixture),
+                    get_route("discover.claims_and_boundaries"),
+                    focus,
+                    actor=AGENT,
+                )
+
+    def test_coherent_but_unapproved_same_question_base_cannot_enter(self) -> None:
+        fixture = ClosureFixture()
+        mapping = fixture.payload("formalization.closure")
+        assumptions = fixture.payload("assumptions.closure")
+        assert isinstance(mapping, FormalizationMap)
+        assert isinstance(assumptions, AssumptionMap)
+        alternate_mapping_id = "formalization.unapproved.closure"
+        alternate_assumptions_id = "assumptions.unapproved.closure"
+        fixture.add(
+            _new_entity(
+                alternate_mapping_id,
+                mapping.model_copy(
+                    update={"formal_model_ref": eref("model.contrast.closure")}
+                ),
+            )
+        )
+        fixture.add(
+            _new_entity(
+                alternate_assumptions_id,
+                assumptions.model_copy(
+                    update={
+                        "formal_model_ref": eref("model.contrast.closure"),
+                        "formalization_map_ref": eref(alternate_mapping_id),
+                    }
+                ),
+            )
+        )
+        focus = (
+            alternate_assumptions_id,
+            "argument.closure",
+            "model.contrast.closure",
+            alternate_mapping_id,
+            "mechanism.selected.closure",
+            "question.closure",
+        )
+
+        with self.assertRaisesRegex(TheoryValidationError, r"(?i)G3-approved"):
+            validate_phase2_route_entry(
+                _snapshot(fixture),
+                get_route("discover.claims_and_boundaries"),
+                focus,
+                actor=AGENT,
+            )
 
 
 class ProjectionBackHalfClosureTests(unittest.TestCase):

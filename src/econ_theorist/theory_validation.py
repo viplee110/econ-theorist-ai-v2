@@ -2052,6 +2052,7 @@ def _validate_phase2_route_entry_refs(
                 )
 
     gate_refs: list[DecisionVersionRef] = []
+    selected_gate_dossiers: dict[str, t.GateDossier] = {}
     if route_spec.required_gate_kinds:
         if root is None or not _exact_reference_is_current_and_fresh(snapshot, root):
             raise TheoryValidationError(
@@ -2076,11 +2077,86 @@ def _validate_phase2_route_entry_refs(
                     "the current gate chain is stale after an upstream reapproval"
                 )
             latest_prior = selected[0].decided_at
+            selected_gate_dossiers[kind] = selected[2]
             gate_refs.append(
                 DecisionVersionRef(
                     decision_id=selected[0].decision_id,
                     version=selected[0].version,
                 )
+            )
+
+    if route_spec.route_id == "discover.claims_and_boundaries":
+        inputs_by_type: dict[
+            str, list[tuple[EntityVersionRef, t.TheoryPayload]]
+        ] = {}
+        for reference, entity in typed_inputs:
+            payload = payload_index[_entity_key(reference)]
+            inputs_by_type.setdefault(entity.entity_type, []).append(
+                (reference, payload)
+            )
+
+        def exact_input(
+            entity_type: str,
+        ) -> tuple[EntityVersionRef, t.TheoryPayload]:
+            entries = inputs_by_type.get(entity_type, ())
+            if len(entries) != 1:
+                raise TheoryValidationError(
+                    "claim discovery requires one exact "
+                    f"{entity_type} in its approved formal-base focus"
+                )
+            return entries[0]
+
+        question_ref, question = exact_input("ResearchQuestion")
+        mechanism_ref, mechanism = exact_input("MechanismHypothesis")
+        argument_ref, argument = exact_input("EconomicArgumentGraph")
+        formal_model_ref, formal_model = exact_input("FormalModel")
+        formalization_ref, formalization = exact_input("FormalizationMap")
+        assumptions_ref, assumptions = exact_input("AssumptionMap")
+        if (
+            not isinstance(question, t.ResearchQuestion)
+            or not isinstance(mechanism, t.MechanismHypothesis)
+            or not isinstance(argument, t.EconomicArgumentGraph)
+            or not isinstance(formal_model, t.FormalModel)
+            or not isinstance(formalization, t.FormalizationMap)
+            or not isinstance(assumptions, t.AssumptionMap)
+            or question_ref != root
+            or formal_model.question_ref != question_ref
+            or formal_model.selected_mechanism_ref != mechanism_ref
+            or argument.selected_mechanism_ref != mechanism_ref
+            or argument.primitive_graph_ref != formal_model.primitive_graph_ref
+            or formalization.economic_argument_graph_ref != argument_ref
+            or formalization.formal_model_ref != formal_model_ref
+            or assumptions.formal_model_ref != formal_model_ref
+            or assumptions.formalization_map_ref != formalization_ref
+        ):
+            raise TheoryValidationError(
+                "claim discovery inputs do not form one exact approved "
+                "question-mechanism-formal-base chain"
+            )
+
+        g2_dossier = selected_gate_dossiers.get("G2_mechanism")
+        g3_dossier = selected_gate_dossiers.get("G3_formal_base")
+        if (
+            g2_dossier is None
+            or not {mechanism_ref, argument_ref}.issubset(
+                set(g2_dossier.ordered_object_refs)
+            )
+        ):
+            raise TheoryValidationError(
+                "claim discovery mechanism and economic argument are not "
+                "the exact G2-approved chain"
+            )
+        if (
+            g3_dossier is None
+            or not {
+                formal_model_ref,
+                formalization_ref,
+                assumptions_ref,
+            }.issubset(set(g3_dossier.ordered_object_refs))
+        ):
+            raise TheoryValidationError(
+                "claim discovery formal model, mapping, and assumptions are "
+                "not the exact G3-approved formal base"
             )
     return TheoryRouteEntryReport(
         research_question_ref=root,
