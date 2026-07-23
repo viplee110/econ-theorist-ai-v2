@@ -23,7 +23,8 @@ from ..profile_craft_policy import CRAFT_CORPUS_V1_HASH, PROFILE_CATALOG_V1_HASH
 from ..route_registry import load_registry
 from ..runs import RouteEntryError, validate_run_entry
 from ..runtime.layout import StoreLayout
-from ..theory import ClaimGraph, FormalModel, THEORY_PAYLOAD_MODELS
+from .. import theory as t
+from ..theory import ClaimGraph, FormalModel, THEORY_PAYLOAD_MODELS, parse_theory_entity
 from ..theory_validation import (
     has_current_fresh_g1_decomposition_package,
     validate_theory_entity,
@@ -331,6 +332,25 @@ def _focus_sets_for_policy(
                         focus_sets.add(
                             tuple(sorted((entity.entity_id, current_target.entity_id)))
                         )
+        # A VerificationBundle may truthfully retain a failed check against a
+        # current proof obligation.  The entry validator separately proves the
+        # exact bundle/record/formal-scope binding; this selector merely offers
+        # that bounded pair instead of treating every fresh theory object as
+        # repairable.
+        for entity in current.values():
+            if entity.entity_type != "VerificationBundle":
+                continue
+            payload = parse_theory_entity(entity)
+            if not isinstance(payload, t.VerificationBundle):
+                continue
+            for obligation_ref in payload.proof_obligation_refs:
+                target = current.get(obligation_ref.entity_id)
+                if (
+                    target is not None
+                    and target.version == obligation_ref.version
+                    and target.entity_type == "ProofObligation"
+                ):
+                    focus_sets.add(tuple(sorted((entity.entity_id, target.entity_id))))
         if len(focus_sets) > limit:
             return CandidateEnumeration((), truncated=True)
         return CandidateEnumeration(tuple(sorted(focus_sets)))

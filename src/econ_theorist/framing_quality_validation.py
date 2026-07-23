@@ -148,7 +148,9 @@ class FramingQualityProjectionReport(StrictModel):
 
 class FramingRepairRouteEntryReport(StrictModel):
     route_id: Literal["repair.dependency"] = "repair.dependency"
-    repair_mode: Literal["stale_root", "framing_revision"]
+    repair_mode: Literal[
+        "stale_root", "framing_revision", "verification_revision"
+    ]
     target_ref: EntityVersionRef
     trigger_bundle_ref: EntityVersionRef | None = None
     input_entity_refs: tuple[EntityVersionRef, ...]
@@ -788,6 +790,77 @@ def _phase2_repair_spec(route_spec: RouteSpecV5) -> RouteSpecV5:
     )
 
 
+def _verification_failure_repair_is_authorized(
+    snapshot: Snapshot,
+    bundle_entity: EntityVersion,
+    target: EntityVersion,
+) -> bool:
+    """Recognize the sole fresh repair opened by a committed failed check.
+
+    A VerificationBundle can faithfully record that one current proof
+    obligation failed without making the whole ClaimGraph structurally stale.
+    This is not permission to revise arbitrary fresh theory: the current,
+    fresh bundle must contain a non-discharged record tied to this exact
+    current obligation and to the exact current formal scope.
+    """
+
+    if (
+        bundle_entity.entity_type != "VerificationBundle"
+        or target.entity_type != "ProofObligation"
+        or not _is_current_and_fresh(snapshot, bundle_entity)
+        or not _is_current_and_fresh(snapshot, target)
+    ):
+        return False
+    try:
+        bundle = validate_theory_entity(bundle_entity)
+        obligation = validate_theory_entity(target)
+    except TheoryValidationError:
+        return False
+    if not isinstance(bundle, t.VerificationBundle) or not isinstance(
+        obligation, t.ProofObligation
+    ):
+        return False
+    target_ref = _entity_ref(target)
+    if (
+        target_ref not in bundle.proof_obligation_refs
+        or obligation.claim_graph_ref != bundle.claim_graph_ref
+    ):
+        return False
+    exact = _exact_entities(snapshot)
+    graph_entity = exact.get(_entity_key(bundle.claim_graph_ref))
+    if graph_entity is None or not _is_current_and_fresh(snapshot, graph_entity):
+        return False
+    try:
+        graph = validate_theory_entity(graph_entity)
+    except TheoryValidationError:
+        return False
+    if not isinstance(graph, t.ClaimGraph):
+        return False
+    scope_refs = (graph.formal_model_ref, graph.assumption_map_ref)
+    for reference in scope_refs:
+        scoped = exact.get(_entity_key(reference))
+        if scoped is None or not _is_current_and_fresh(snapshot, scoped):
+            return False
+    for record_ref in bundle.verification_record_refs:
+        record_entity = exact.get(_entity_key(record_ref))
+        if record_entity is None or not _is_current_and_fresh(snapshot, record_entity):
+            return False
+        try:
+            record = validate_theory_entity(record_entity)
+        except TheoryValidationError:
+            return False
+        if (
+            isinstance(record, t.VerificationRecord)
+            and record.obligation_ref == target_ref
+            and record.claim_graph_ref == bundle.claim_graph_ref
+            and record.formal_model_ref == graph.formal_model_ref
+            and record.assumption_map_ref == graph.assumption_map_ref
+            and record.outcome != "discharged"
+        ):
+            return True
+    return False
+
+
 def _validate_framing_repair_entry_refs(
     snapshot: Snapshot,
     route_spec: RouteSpecV5,
@@ -846,9 +919,41 @@ def _validate_framing_repair_entry_refs(
         for item in entities
         if item.entity_type in {"ResearchQuestion", "BenchmarkSet", "PrimitiveGraph"}
     ]
+    verification_bundles = [
+        item for item in entities if item.entity_type == "VerificationBundle"
+    ]
+    verification_targets = [
+        item for item in entities if item.entity_type == "ProofObligation"
+    ]
+    if len(verification_bundles) == 1 and len(verification_targets) == 1:
+        bundle_entity = verification_bundles[0]
+        target = verification_targets[0]
+        if not _verification_failure_repair_is_authorized(
+            snapshot, bundle_entity, target
+        ):
+            raise FramingQualityValidationError(
+                "verification repair requires one current failed exact VerificationBundle obligation"
+            )
+        try:
+            validate_phase2_route_entry(
+                snapshot,
+                normalized,
+                (target.entity_id,),
+                actor=actor,
+                allow_fresh_repair=True,
+            )
+        except TheoryValidationError as exc:
+            raise FramingQualityValidationError(str(exc)) from exc
+        return FramingRepairRouteEntryReport(
+            repair_mode="verification_revision",
+            target_ref=_entity_ref(target),
+            trigger_bundle_ref=_entity_ref(bundle_entity),
+            input_entity_refs=references,
+            actor=actor,
+        )
     if len(bundle_entities) != 1 or len(targets) != 1:
         raise FramingQualityValidationError(
-            "proactive framing repair requires one bundle and one typed framing target"
+            "v5 repair requires one stale root, one framing bundle and target, or one failed verification bundle and obligation"
         )
     bundle_entity = bundle_entities[0]
     target = targets[0]
