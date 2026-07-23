@@ -1487,12 +1487,102 @@ def _historical_entity_refs(payload: t.TheoryPayload) -> frozenset[EntityVersion
     return frozenset()
 
 
+def _assumption_map_historical_entity_refs(
+    snapshot: Snapshot,
+    payload: t.AssumptionMap,
+    *,
+    visiting: set[tuple[str, int]],
+    memo: dict[tuple[str, int], bool],
+    historical_overrides: Mapping[
+        tuple[str, int], frozenset[EntityVersionRef]
+    ]
+    | None,
+) -> frozenset[EntityVersionRef]:
+    """Return only the tournament-selected predecessor used as necessity evidence."""
+
+    successor_ref = payload.formal_model_ref
+    if not _exact_reference_is_current_and_fresh(snapshot, successor_ref):
+        return frozenset()
+    entity_index = {
+        _entity_key(item): item for item in snapshot.entity_versions
+    }
+    successor_entity = entity_index.get(_entity_key(successor_ref))
+    if (
+        successor_entity is None
+        or successor_entity.entity_type != "FormalModel"
+        or successor_entity.supersedes is None
+    ):
+        return frozenset()
+    predecessor_ref = successor_entity.supersedes
+    successor = validate_theory_entity(successor_entity)
+    if not isinstance(successor, t.FormalModel):
+        return frozenset()
+    mapping_ref = payload.formalization_map_ref
+    if not _exact_reference_is_current_and_fresh(snapshot, mapping_ref):
+        return frozenset()
+    mapping_entity = entity_index.get(_entity_key(mapping_ref))
+    if mapping_entity is None or mapping_entity.entity_type != "FormalizationMap":
+        return frozenset()
+    mapping = validate_theory_entity(mapping_entity)
+    if (
+        not isinstance(mapping, t.FormalizationMap)
+        or mapping.formal_model_ref != successor_ref
+    ):
+        return frozenset()
+
+    selected_by_current_tournament = False
+    for entity in snapshot.entity_versions:
+        if (
+            entity.entity_type != "ImplementationTournament"
+            or snapshot.current_entities.get(entity.entity_id) != entity.version
+        ):
+            continue
+        tournament_ref = EntityVersionRef(
+            entity_id=entity.entity_id, version=entity.version
+        )
+        if not _typed_reference_closure_is_current_and_fresh(
+            snapshot,
+            tournament_ref,
+            visiting=visiting,
+            memo=memo,
+            historical_overrides=historical_overrides,
+        ):
+            continue
+        tournament = validate_theory_entity(entity)
+        if (
+            isinstance(tournament, t.ImplementationTournament)
+            and tournament.proposed_selected_model_ref == predecessor_ref
+            and tournament.selected_mechanism_ref
+            == successor.selected_mechanism_ref
+            and tournament.economic_argument_graph_ref
+            == mapping.economic_argument_graph_ref
+        ):
+            selected_by_current_tournament = True
+            break
+    if not selected_by_current_tournament:
+        return frozenset()
+
+    necessity_evidence_refs = {
+        reference
+        for assumption in payload.assumptions
+        for reference in assumption.necessity_evidence_refs
+        if isinstance(reference, EntityVersionRef)
+    }
+    if predecessor_ref not in necessity_evidence_refs:
+        return frozenset()
+    return frozenset((predecessor_ref,))
+
+
 def _typed_reference_closure_is_current_and_fresh(
     snapshot: Snapshot,
     reference: EntityVersionRef,
     *,
     visiting: set[tuple[str, int]] | None = None,
     memo: dict[tuple[str, int], bool] | None = None,
+    historical_overrides: Mapping[
+        tuple[str, int], frozenset[EntityVersionRef]
+    ]
+    | None = None,
 ) -> bool:
     """Treat typed payload refs as an implicit, cycle-safe freshness graph."""
 
@@ -1520,6 +1610,20 @@ def _typed_reference_closure_is_current_and_fresh(
     historical_refs = _historical_entity_refs(payload)
     visiting.add(key)
     try:
+        if isinstance(payload, t.AssumptionMap):
+            historical_refs = historical_refs.union(
+                _assumption_map_historical_entity_refs(
+                    snapshot,
+                    payload,
+                    visiting=visiting,
+                    memo=memo,
+                    historical_overrides=historical_overrides,
+                )
+            )
+        if historical_overrides is not None:
+            historical_refs = historical_refs.union(
+                historical_overrides.get(key, frozenset())
+            )
         for nested in _walk_exact_refs(payload):
             if isinstance(nested, EntityVersionRef):
                 if nested in historical_refs:
@@ -1527,7 +1631,11 @@ def _typed_reference_closure_is_current_and_fresh(
                     # promotion must not rewrite or erase its audit baseline.
                     continue
                 if not _typed_reference_closure_is_current_and_fresh(
-                    snapshot, nested, visiting=visiting, memo=memo
+                    snapshot,
+                    nested,
+                    visiting=visiting,
+                    memo=memo,
+                    historical_overrides=historical_overrides,
                 ):
                     memo[key] = False
                     return False
@@ -1539,6 +1647,124 @@ def _typed_reference_closure_is_current_and_fresh(
         visiting.remove(key)
     memo[key] = True
     return True
+
+
+def _g3_historical_reference_overrides(
+    snapshot: Snapshot,
+    dossier_entity: EntityVersion,
+    dossier: t.GateDossier,
+) -> dict[tuple[str, int], frozenset[EntityVersionRef]]:
+    """Classify one exact tournament predecessor as G3 audit evidence.
+
+    A formal-base promotion supersedes the model selected by the implementation
+    tournament.  The tournament remains an immutable audit baseline, and a G3
+    dossier may expose that exact predecessor alongside its promoted successor.
+    This exception is deliberately narrower than general staleness:
+
+    * the predecessor must be the current tournament's exact selection;
+    * the dossier must expose both that predecessor and its exact current
+      successor;
+    * the current FormalizationMap and AssumptionMap must bind the successor;
+    * only the dossier and AssumptionRecord necessity evidence may retain the
+      predecessor.
+
+    Every other reference in the G3 closure keeps the ordinary current/fresh
+    requirement.
+    """
+
+    if dossier.gate_kind != "G3_formal_base":
+        return {}
+
+    entity_index = {
+        _entity_key(item): item for item in snapshot.entity_versions
+    }
+    ordered_refs = set(dossier.ordered_object_refs)
+    tournament_entries: list[
+        tuple[EntityVersionRef, t.ImplementationTournament]
+    ] = []
+    for reference in dossier.ordered_object_refs:
+        entity = entity_index.get(_entity_key(reference))
+        if entity is None or entity.entity_type != "ImplementationTournament":
+            continue
+        payload = validate_theory_entity(entity)
+        if isinstance(payload, t.ImplementationTournament):
+            tournament_entries.append((reference, payload))
+    if len(tournament_entries) != 1:
+        return {}
+
+    tournament_ref, tournament = tournament_entries[0]
+    if not _typed_reference_closure_is_current_and_fresh(
+        snapshot, tournament_ref
+    ):
+        return {}
+    predecessor_ref = tournament.proposed_selected_model_ref
+    if predecessor_ref is None or predecessor_ref not in ordered_refs:
+        return {}
+
+    successor_ref = EntityVersionRef(
+        entity_id=predecessor_ref.entity_id,
+        version=predecessor_ref.version + 1,
+    )
+    if (
+        snapshot.current_entities.get(predecessor_ref.entity_id)
+        != successor_ref.version
+        or successor_ref not in ordered_refs
+    ):
+        return {}
+    successor_entity = entity_index.get(_entity_key(successor_ref))
+    if (
+        successor_entity is None
+        or successor_entity.entity_type != "FormalModel"
+        or successor_entity.supersedes != predecessor_ref
+    ):
+        return {}
+    successor = validate_theory_entity(successor_entity)
+    if (
+        not isinstance(successor, t.FormalModel)
+        or successor.question_ref != dossier.research_question_ref
+    ):
+        return {}
+
+    mapping_entries: list[
+        tuple[EntityVersionRef, t.FormalizationMap]
+    ] = []
+    for reference in dossier.ordered_object_refs:
+        entity = entity_index.get(_entity_key(reference))
+        if entity is None or entity.entity_type != "FormalizationMap":
+            continue
+        payload = validate_theory_entity(entity)
+        if (
+            isinstance(payload, t.FormalizationMap)
+            and payload.formal_model_ref == successor_ref
+            and _exact_reference_is_current_and_fresh(snapshot, reference)
+        ):
+            mapping_entries.append((reference, payload))
+    if len(mapping_entries) != 1:
+        return {}
+    mapping_ref, _ = mapping_entries[0]
+
+    assumption_entries: list[
+        tuple[EntityVersionRef, t.AssumptionMap]
+    ] = []
+    for reference in dossier.ordered_object_refs:
+        entity = entity_index.get(_entity_key(reference))
+        if entity is None or entity.entity_type != "AssumptionMap":
+            continue
+        payload = validate_theory_entity(entity)
+        if (
+            isinstance(payload, t.AssumptionMap)
+            and payload.formal_model_ref == successor_ref
+            and payload.formalization_map_ref == mapping_ref
+            and _exact_reference_is_current_and_fresh(snapshot, reference)
+        ):
+            assumption_entries.append((reference, payload))
+    if len(assumption_entries) != 1:
+        return {}
+
+    overrides = {
+        _entity_key(dossier_entity): frozenset((predecessor_ref,))
+    }
+    return overrides
 
 
 def _gate_dossier_index(
@@ -1566,7 +1792,14 @@ def _gate_dossier_is_fresh(
     dossier_ref = EntityVersionRef(
         entity_id=dossier_entity.entity_id, version=dossier_entity.version
     )
-    if not _typed_reference_closure_is_current_and_fresh(snapshot, dossier_ref):
+    historical_overrides = _g3_historical_reference_overrides(
+        snapshot, dossier_entity, dossier
+    )
+    if not _typed_reference_closure_is_current_and_fresh(
+        snapshot,
+        dossier_ref,
+        historical_overrides=historical_overrides,
+    ):
         return False
     return True
 

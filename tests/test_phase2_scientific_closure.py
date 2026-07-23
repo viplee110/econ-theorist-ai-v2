@@ -25,9 +25,13 @@ from econ_theorist.models import (
     ArtifactRegistration,
     Decision,
     DecisionVersionRef,
+    EffectiveDecisionRef,
     EntityVersion,
     EntityVersionRef,
+    RecordDecisionOp,
     ScientificStatus,
+    Snapshot,
+    Transaction,
 )
 from econ_theorist.theory import (
     AbsorptionAssessment,
@@ -78,6 +82,9 @@ from econ_theorist.theory import (
 )
 from econ_theorist.theory_validation import (
     TheoryValidationError,
+    _gate_dossier_is_fresh,
+    _typed_reference_closure_is_current_and_fresh,
+    validate_phase2_human_gate_transaction,
     validate_theory_projection,
 )
 
@@ -1347,6 +1354,372 @@ class ScientificClosureTests(unittest.TestCase):
                     mutate,
                     rf"(?i)({label}|VAP|non.?compensatory|scientific floor)",
                 )
+
+
+class G3DossierFreshnessTests(unittest.TestCase):
+    """Keep promoted-model audit history distinct from live G3 dependencies."""
+
+    def _snapshot_and_approval(
+        self,
+        *,
+        include_unrelated_stale_ref: bool = False,
+        use_unrelated_necessity_evidence: bool = False,
+        cycle_tournament_argument_to_assumptions: bool = False,
+        supersede_tournament_argument: bool = False,
+        supersede_promoted_model: bool = False,
+        supersede_mapping: bool = False,
+    ) -> tuple[Snapshot, EntityVersion, GateDossier, Transaction]:
+        fixture = ClosureFixture()
+        question_ref = eref("question.closure")
+        tournament_ref = eref("tournament.implementations.closure")
+        predecessor_ref = eref("model.selected.closure", 1)
+        promoted_ref = eref("model.selected.closure", 2)
+        mapping_ref = eref("formalization.promoted.closure")
+        assumptions_ref = eref("assumptions.promoted.closure")
+        argument_ref = eref(
+            "argument.closure",
+            2 if supersede_tournament_argument else 1,
+        )
+
+        predecessor = fixture.payload(predecessor_ref.entity_id)
+        assert isinstance(predecessor, FormalModel)
+        promoted_entity = _entity(
+            promoted_ref.entity_id,
+            predecessor,
+            version=promoted_ref.version,
+            supersedes=predecessor_ref,
+        )
+
+        prior_mapping = fixture.payload("formalization.closure")
+        assert isinstance(prior_mapping, FormalizationMap)
+        promoted_mapping = prior_mapping.model_copy(
+            update={
+                "economic_argument_graph_ref": argument_ref,
+                "formal_model_ref": promoted_ref,
+            }
+        )
+        mapping_entity = _entity(mapping_ref.entity_id, promoted_mapping)
+
+        unrelated_v1 = eref("model.unrelated.closure", 1)
+        unrelated_v2 = eref("model.unrelated.closure", 2)
+        necessity_evidence_ref = (
+            unrelated_v1
+            if use_unrelated_necessity_evidence
+            else predecessor_ref
+        )
+        prior_assumptions = fixture.payload("assumptions.closure")
+        assert isinstance(prior_assumptions, AssumptionMap)
+        promoted_records = tuple(
+            item.model_copy(
+                update={"necessity_evidence_refs": (necessity_evidence_ref,)}
+            )
+            if item.necessity_status == "result_necessary"
+            else item
+            for item in prior_assumptions.assumptions
+        )
+        promoted_assumptions = prior_assumptions.model_copy(
+            update={
+                "formal_model_ref": promoted_ref,
+                "formalization_map_ref": mapping_ref,
+                "assumptions": promoted_records,
+            }
+        )
+        assumptions_entity = _entity(
+            assumptions_ref.entity_id, promoted_assumptions
+        )
+        if cycle_tournament_argument_to_assumptions:
+            argument = fixture.payload("argument.closure")
+            assert isinstance(argument, EconomicArgumentGraph)
+            first_edge, *other_edges = argument.edges
+            fixture.replace_payload(
+                "argument.closure",
+                argument.model_copy(
+                    update={
+                        "edges": (
+                            first_edge.model_copy(
+                                update={
+                                    "formal_witness_refs": (
+                                        assumptions_ref,
+                                    )
+                                }
+                            ),
+                            *other_edges,
+                        )
+                    }
+                ),
+            )
+
+        extra_refs: tuple[EntityVersionRef, ...] = ()
+        extra_entities: list[EntityVersion] = []
+        if supersede_tournament_argument:
+            prior_argument = fixture.payload("argument.closure")
+            assert isinstance(prior_argument, EconomicArgumentGraph)
+            extra_entities.append(
+                _entity(
+                    argument_ref.entity_id,
+                    prior_argument,
+                    version=argument_ref.version,
+                    supersedes=eref(argument_ref.entity_id),
+                )
+            )
+        if include_unrelated_stale_ref or use_unrelated_necessity_evidence:
+            if include_unrelated_stale_ref:
+                extra_refs = (unrelated_v1,)
+            extra_entities.extend(
+                (
+                    _entity(unrelated_v1.entity_id, predecessor),
+                    _entity(
+                        unrelated_v2.entity_id,
+                        predecessor,
+                        version=2,
+                        supersedes=unrelated_v1,
+                    ),
+                )
+            )
+        if supersede_promoted_model:
+            extra_entities.append(
+                _entity(
+                    promoted_ref.entity_id,
+                    predecessor,
+                    version=3,
+                    supersedes=promoted_ref,
+                )
+            )
+        if supersede_mapping:
+            extra_entities.append(
+                _entity(
+                    mapping_ref.entity_id,
+                    promoted_mapping,
+                    version=2,
+                    supersedes=mapping_ref,
+                )
+            )
+
+        dossier_payload = GateDossier(
+            gate_kind="G3_formal_base",
+            research_question_ref=question_ref,
+            ordered_object_refs=(
+                question_ref,
+                tournament_ref,
+                predecessor_ref,
+                promoted_ref,
+                mapping_ref,
+                assumptions_ref,
+                *extra_refs,
+            ),
+            requirements=(
+                GateRequirement(
+                    requirement_id="requirement.g3.promoted.lineage",
+                    description=(
+                        "The current formal base is bound to its exact "
+                        "tournament-selected audit predecessor."
+                    ),
+                    evidence_refs=(
+                        tournament_ref,
+                        predecessor_ref,
+                        promoted_ref,
+                        mapping_ref,
+                        assumptions_ref,
+                    ),
+                    recorded_condition="evidence_supplied",
+                ),
+            ),
+            proposed_action="approve",
+            rationale=(
+                "The promoted model is current; its tournament predecessor is "
+                "retained only as exact audit and necessity evidence."
+            ),
+            prepared_at="2026-07-11T17:00:00Z",
+        )
+        dossier_entity = _entity(
+            "dossier.g3.promoted.history.closure", dossier_payload
+        )
+
+        entities = (
+            *fixture.entities.values(),
+            promoted_entity,
+            mapping_entity,
+            assumptions_entity,
+            dossier_entity,
+            *extra_entities,
+        )
+        current_entities: dict[str, int] = {}
+        for entity in entities:
+            current_entities[entity.entity_id] = max(
+                current_entities.get(entity.entity_id, 0), entity.version
+            )
+        prior_decisions = tuple(
+            decision
+            for decision in fixture.decisions.values()
+            if decision.decision_kind
+            in {"G1_question_benchmark", "G2_mechanism"}
+        )
+        head = _digest("g3 historical predecessor snapshot")
+        snapshot = Snapshot(
+            project_id=PROJECT_ID,
+            head=head,
+            chain=(head,),
+            entity_versions=tuple(entities),
+            decisions=prior_decisions,
+            artifacts=tuple(fixture.artifacts.values()),
+            current_entities=current_entities,
+            current_decisions={
+                decision.decision_id: decision.version
+                for decision in prior_decisions
+            },
+            current_artifacts={
+                artifact.artifact_id: artifact.version
+                for artifact in fixture.artifacts.values()
+            },
+            effective_decisions={
+                decision.decision_id: EffectiveDecisionRef(
+                    decision_id=decision.decision_id,
+                    version=decision.version,
+                    effective_revision=_digest(
+                        f"effective {decision.decision_id}"
+                    ),
+                )
+                for decision in prior_decisions
+            },
+        )
+        approval = Decision(
+            decision_id="decision.g3.promoted.history.closure",
+            version=1,
+            project_id=PROJECT_ID,
+            decision_kind="G3_formal_base",
+            subject_ref=dossier_entity.entity_id,
+            scope_ref=question_ref.entity_id,
+            question="Approve the exact promoted formal base?",
+            options=("approve", "deny"),
+            selected_option="approve",
+            machine_outcome="approve",
+            recommendation="Approve the exact current promoted base.",
+            rationale="The mapping and assumptions bind the promoted model.",
+            evidence_refs=(dossier_entity.entity_id,),
+            required_authority="L2",
+            decider=HUMAN,
+            decided_at="2026-07-11T17:01:00Z",
+            status="confirmed",
+        )
+        transaction = Transaction(
+            transaction_id="transaction.g3.promoted.history.closure",
+            origin="human_decision",
+            project_id=PROJECT_ID,
+            base_revision=head,
+            route_run_id="human.g3.promoted.history.closure",
+            actor=HUMAN,
+            intent="Approve the exact promoted formal base.",
+            operations=(RecordDecisionOp(decision=approval),),
+            created_at="2026-07-11T17:01:00Z",
+            parent_transaction_hash=head,
+        )
+        return snapshot, dossier_entity, dossier_payload, transaction
+
+    def test_exact_tournament_predecessor_remains_g3_audit_evidence(
+        self,
+    ) -> None:
+        snapshot, dossier_entity, dossier, approval = (
+            self._snapshot_and_approval()
+        )
+
+        self.assertTrue(
+            _gate_dossier_is_fresh(snapshot, dossier_entity, dossier)
+        )
+        self.assertTrue(
+            _typed_reference_closure_is_current_and_fresh(
+                snapshot, eref("assumptions.promoted.closure")
+            )
+        )
+        validate_phase2_human_gate_transaction(snapshot, approval)
+
+    def test_unrelated_stale_model_cannot_hide_in_g3_dossier(self) -> None:
+        snapshot, dossier_entity, dossier, approval = (
+            self._snapshot_and_approval(include_unrelated_stale_ref=True)
+        )
+
+        self.assertFalse(
+            _gate_dossier_is_fresh(snapshot, dossier_entity, dossier)
+        )
+        with self.assertRaisesRegex(TheoryValidationError, "stale dossier"):
+            validate_phase2_human_gate_transaction(snapshot, approval)
+
+    def test_unrelated_stale_necessity_evidence_remains_invalid(self) -> None:
+        snapshot, dossier_entity, dossier, approval = (
+            self._snapshot_and_approval(
+                use_unrelated_necessity_evidence=True
+            )
+        )
+
+        self.assertFalse(
+            _typed_reference_closure_is_current_and_fresh(
+                snapshot, eref("assumptions.promoted.closure")
+            )
+        )
+        self.assertFalse(
+            _gate_dossier_is_fresh(snapshot, dossier_entity, dossier)
+        )
+        with self.assertRaisesRegex(TheoryValidationError, "stale dossier"):
+            validate_phase2_human_gate_transaction(snapshot, approval)
+
+    def test_stale_tournament_argument_cannot_qualify_history(self) -> None:
+        snapshot, dossier_entity, dossier, approval = (
+            self._snapshot_and_approval(
+                supersede_tournament_argument=True
+            )
+        )
+
+        self.assertFalse(
+            _typed_reference_closure_is_current_and_fresh(
+                snapshot, eref("assumptions.promoted.closure")
+            )
+        )
+        self.assertFalse(
+            _gate_dossier_is_fresh(snapshot, dossier_entity, dossier)
+        )
+        with self.assertRaisesRegex(TheoryValidationError, "stale dossier"):
+            validate_phase2_human_gate_transaction(snapshot, approval)
+
+    def test_tournament_argument_cycle_reuses_freshness_walk_state(
+        self,
+    ) -> None:
+        snapshot, dossier_entity, dossier, approval = (
+            self._snapshot_and_approval(
+                cycle_tournament_argument_to_assumptions=True
+            )
+        )
+
+        self.assertTrue(
+            _typed_reference_closure_is_current_and_fresh(
+                snapshot, eref("assumptions.promoted.closure")
+            )
+        )
+        self.assertTrue(
+            _gate_dossier_is_fresh(snapshot, dossier_entity, dossier)
+        )
+        validate_phase2_human_gate_transaction(snapshot, approval)
+
+    def test_later_promoted_model_or_mapping_revision_revokes_g3_dossier(
+        self,
+    ) -> None:
+        for label, options in (
+            ("model", {"supersede_promoted_model": True}),
+            ("mapping", {"supersede_mapping": True}),
+        ):
+            with self.subTest(revised=label):
+                snapshot, dossier_entity, dossier, approval = (
+                    self._snapshot_and_approval(**options)
+                )
+                self.assertFalse(
+                    _gate_dossier_is_fresh(
+                        snapshot, dossier_entity, dossier
+                    )
+                )
+                with self.assertRaisesRegex(
+                    TheoryValidationError, "stale dossier"
+                ):
+                    validate_phase2_human_gate_transaction(
+                        snapshot, approval
+                    )
 
 
 if __name__ == "__main__":  # pragma: no cover
