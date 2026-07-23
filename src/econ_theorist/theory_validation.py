@@ -2158,6 +2158,93 @@ def _validate_phase2_route_entry_refs(
                 "claim discovery formal model, mapping, and assumptions are "
                 "not the exact G3-approved formal base"
             )
+    elif route_spec.route_id == "verify.claims_proofs_and_interpretation":
+        verification_inputs: dict[
+            str, list[tuple[EntityVersionRef, t.TheoryPayload]]
+        ] = {}
+        for reference, entity in typed_inputs:
+            payload = payload_index[_entity_key(reference)]
+            verification_inputs.setdefault(entity.entity_type, []).append(
+                (reference, payload)
+            )
+
+        def exact_verification_input(
+            entity_type: str,
+        ) -> tuple[EntityVersionRef, t.TheoryPayload]:
+            entries = verification_inputs.get(entity_type, ())
+            if len(entries) != 1:
+                raise TheoryValidationError(
+                    "claim verification requires one exact "
+                    f"{entity_type} in its retained obligation closure"
+                )
+            return entries[0]
+
+        question_ref, question = exact_verification_input(
+            "ResearchQuestion"
+        )
+        graph_ref, graph = exact_verification_input("ClaimGraph")
+        formal_model_ref, formal_model = exact_verification_input(
+            "FormalModel"
+        )
+        assumptions_ref, assumptions = exact_verification_input(
+            "AssumptionMap"
+        )
+        obligation_entries = verification_inputs.get("ProofObligation", ())
+        if (
+            not isinstance(question, t.ResearchQuestion)
+            or not isinstance(graph, t.ClaimGraph)
+            or not isinstance(formal_model, t.FormalModel)
+            or not isinstance(assumptions, t.AssumptionMap)
+            or question_ref != root
+            or formal_model.question_ref != question_ref
+            or graph.formal_model_ref != formal_model_ref
+            or graph.assumption_map_ref != assumptions_ref
+        ):
+            raise TheoryValidationError(
+                "claim verification inputs do not bind one exact approved "
+                "question, formal model, assumption map, and ClaimGraph"
+            )
+        expected_obligation_refs = {
+            reference
+            for claim in graph.claims
+            for reference in claim.proof_obligation_refs
+        }
+        input_obligation_refs = {
+            reference for reference, _ in obligation_entries
+        }
+        if input_obligation_refs != expected_obligation_refs:
+            raise TheoryValidationError(
+                "claim verification inputs must contain every and only "
+                "retained ClaimGraph ProofObligation"
+            )
+        claims_by_id = {claim.claim_id: claim for claim in graph.claims}
+        for obligation_ref, obligation in obligation_entries:
+            if not isinstance(obligation, t.ProofObligation):
+                raise TheoryValidationError(
+                    "claim verification input contains a non-obligation payload"
+                )
+            claim = claims_by_id.get(obligation.claim_id)
+            if (
+                obligation.claim_graph_ref != graph_ref
+                or claim is None
+                or obligation_ref not in claim.proof_obligation_refs
+                or not set(obligation.assumption_ids).issubset(
+                    set(claim.assumption_ids)
+                )
+            ):
+                raise TheoryValidationError(
+                    "claim verification obligation does not bind its exact "
+                    "ClaimGraph, claim, and assumptions"
+                )
+        g3_dossier = selected_gate_dossiers.get("G3_formal_base")
+        if (
+            g3_dossier is None
+            or formal_model_ref not in g3_dossier.ordered_object_refs
+        ):
+            raise TheoryValidationError(
+                "claim verification model is not the exact G3-approved "
+                "formal base"
+            )
     return TheoryRouteEntryReport(
         research_question_ref=root,
         input_entity_refs=tuple(reference for reference, _ in typed_inputs),

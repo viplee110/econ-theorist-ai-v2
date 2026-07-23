@@ -9,6 +9,7 @@ than relying on a missing reference or a different project scope.
 from __future__ import annotations
 
 import unittest
+from types import SimpleNamespace
 
 from tests.helpers import REPOSITORY_ROOT  # noqa: F401  # installs src
 from tests.test_phase2_scientific_closure import (
@@ -37,6 +38,10 @@ from econ_theorist.models import (
     Snapshot,
     SupersedeEntityOp,
     Transaction,
+)
+from econ_theorist.machine.navigation import (
+    _claim_verification_focus_sets,
+    _registry_focus_sets,
 )
 from econ_theorist.route_registry import get_route
 from econ_theorist.theory import (
@@ -225,6 +230,17 @@ def _discover_inputs() -> tuple[EntityVersionRef, ...]:
         eref("model.selected.closure"),
         eref("formalization.closure"),
         eref("mechanism.selected.closure"),
+        eref("question.closure"),
+    )
+
+
+def _verify_claim_inputs() -> tuple[EntityVersionRef, ...]:
+    return (
+        eref("assumptions.closure"),
+        eref("claims.closure"),
+        eref("model.selected.closure"),
+        eref("obligation.boundary.closure"),
+        eref("obligation.threshold.closure"),
         eref("question.closure"),
     )
 
@@ -478,6 +494,164 @@ class ClaimDiscoveryRouteEntryTests(unittest.TestCase):
                 focus,
                 actor=AGENT,
             )
+
+
+class ClaimVerificationRouteEntryTests(unittest.TestCase):
+    def test_every_retained_obligation_can_enter_as_one_closure(self) -> None:
+        fixture = ClosureFixture()
+
+        entry = validate_phase2_route_entry(
+            _snapshot(fixture),
+            get_route("verify.claims_proofs_and_interpretation"),
+            tuple(
+                reference.entity_id for reference in _verify_claim_inputs()
+            ),
+            actor=AGENT,
+        )
+
+        self.assertEqual(entry.research_question_ref, eref("question.closure"))
+        self.assertEqual(len(entry.gate_decision_refs), 3)
+
+    def test_partial_obligation_subset_cannot_enter(self) -> None:
+        fixture = ClosureFixture()
+        partial_focus = tuple(
+            reference.entity_id
+            for reference in _verify_claim_inputs()
+            if reference.entity_id != "obligation.boundary.closure"
+        )
+
+        with self.assertRaisesRegex(
+            TheoryValidationError, r"(?i)every and only.*ProofObligation"
+        ):
+            validate_phase2_route_entry(
+                _snapshot(fixture),
+                get_route("verify.claims_proofs_and_interpretation"),
+                partial_focus,
+                actor=AGENT,
+            )
+
+    def test_navigation_uses_twenty_obligations_as_one_closure(self) -> None:
+        fixture = ClosureFixture()
+        graph = fixture.payload("claims.closure")
+        template = fixture.payload("obligation.threshold.closure")
+        assert isinstance(graph, ClaimGraph)
+        assert isinstance(template, ProofObligation)
+        extra_refs: list[EntityVersionRef] = []
+        for index in range(18):
+            entity_id = f"obligation.extra.{index:02d}.closure"
+            extra_refs.append(eref(entity_id))
+            fixture.add(
+                _new_entity(
+                    entity_id,
+                    template.model_copy(
+                        update={
+                            "obligation_id": f"obligation.extra.{index:02d}"
+                        }
+                    ),
+                )
+            )
+        first_claim, *remaining_claims = graph.claims
+        fixture.replace_payload(
+            "claims.closure",
+            graph.model_copy(
+                update={
+                    "claims": (
+                        first_claim.model_copy(
+                            update={
+                                "proof_obligation_refs": (
+                                    *first_claim.proof_obligation_refs,
+                                    *extra_refs,
+                                )
+                            }
+                        ),
+                        *remaining_claims,
+                    )
+                }
+            ),
+        )
+        unretained_id = "obligation.unretained.closure"
+        fixture.add(
+            _new_entity(
+                unretained_id,
+                template.model_copy(
+                    update={"obligation_id": "obligation.unretained"}
+                ),
+            )
+        )
+        current = {
+            entity.entity_id: entity
+            for entity in fixture.entities.values()
+        }
+
+        enumeration = _claim_verification_focus_sets(
+            get_route("verify.claims_proofs_and_interpretation"),
+            current,
+            limit=64,
+        )
+
+        self.assertFalse(enumeration.truncated)
+        self.assertEqual(len(enumeration.focus_sets), 1)
+        for focus in enumeration.focus_sets:
+            self.assertEqual(len(focus), 24)
+            self.assertNotIn(unretained_id, focus)
+            self.assertEqual(
+                len(
+                    {
+                        entity_id
+                        for entity_id in focus
+                        if current[entity_id].entity_type
+                        == "ProofObligation"
+                    }
+                ),
+                20,
+            )
+
+    def test_other_registry_cardinality_routes_keep_subset_semantics(
+        self,
+    ) -> None:
+        fixture = ClosureFixture()
+        selected = fixture.entities[("model.selected.closure", 1)]
+        current = {
+            "model.one": selected.model_copy(
+                update={"entity_id": "model.one"}
+            ),
+            "model.two": selected.model_copy(
+                update={"entity_id": "model.two"}
+            ),
+            "model.three": selected.model_copy(
+                update={"entity_id": "model.three"}
+            ),
+        }
+        bounded_route = SimpleNamespace(
+            required_input_entities=(
+                SimpleNamespace(
+                    entity_type="FormalModel",
+                    min_count=1,
+                    max_count=2,
+                ),
+            )
+        )
+        unbounded_route = SimpleNamespace(
+            required_input_entities=(
+                SimpleNamespace(
+                    entity_type="FormalModel",
+                    min_count=1,
+                    max_count=None,
+                ),
+            )
+        )
+
+        bounded = _registry_focus_sets(
+            bounded_route, current, limit=64
+        )
+        unbounded = _registry_focus_sets(
+            unbounded_route, current, limit=64
+        )
+
+        self.assertFalse(bounded.truncated)
+        self.assertEqual(len(bounded.focus_sets), 6)
+        self.assertFalse(unbounded.truncated)
+        self.assertEqual(len(unbounded.focus_sets), 7)
 
 
 class ProjectionBackHalfClosureTests(unittest.TestCase):

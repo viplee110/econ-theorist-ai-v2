@@ -23,8 +23,11 @@ from ..profile_craft_policy import CRAFT_CORPUS_V1_HASH, PROFILE_CATALOG_V1_HASH
 from ..route_registry import load_registry
 from ..runs import RouteEntryError, validate_run_entry
 from ..runtime.layout import StoreLayout
-from ..theory import THEORY_PAYLOAD_MODELS
-from ..theory_validation import has_current_fresh_g1_decomposition_package
+from ..theory import ClaimGraph, FormalModel, THEORY_PAYLOAD_MODELS
+from ..theory_validation import (
+    has_current_fresh_g1_decomposition_package,
+    validate_theory_entity,
+)
 from .models import (
     DiagnosticV1,
     NavigationCandidateKeyV1,
@@ -76,24 +79,14 @@ def _registry_focus_sets(
     requirements = tuple(getattr(route, "required_input_entities"))
     choices_by_requirement: list[tuple[tuple[str, ...], ...]] = []
     for requirement in requirements:
-        pool = tuple(
-            sorted(
-                entity.entity_id
-                for entity in current.values()
-                if entity.entity_type == requirement.entity_type
-            )
+        enumeration = _requirement_focus_choices(
+            requirement, current, limit=limit
         )
-        maximum = len(pool) if requirement.max_count is None else min(
-            len(pool), requirement.max_count
-        )
-        if maximum < requirement.min_count:
+        if enumeration.truncated:
+            return enumeration
+        if not enumeration.focus_sets:
             return CandidateEnumeration(())
-        choices: list[tuple[str, ...]] = []
-        for size in range(requirement.min_count, maximum + 1):
-            choices.extend(itertools.combinations(pool, size))
-            if len(choices) > limit:
-                return CandidateEnumeration((), truncated=True)
-        choices_by_requirement.append(tuple(choices))
+        choices_by_requirement.append(enumeration.focus_sets)
     if not choices_by_requirement:
         return CandidateEnumeration(((),))
     if _bounded_product_count(
@@ -109,6 +102,161 @@ def _registry_focus_sets(
     return CandidateEnumeration(tuple(sorted(set(focus_sets))))
 
 
+def _requirement_focus_choices(
+    requirement: object,
+    current: dict[str, EntityVersion],
+    *,
+    limit: int,
+) -> CandidateEnumeration:
+    pool = tuple(
+        sorted(
+            entity.entity_id
+            for entity in current.values()
+            if entity.entity_type == getattr(requirement, "entity_type")
+        )
+    )
+    maximum = (
+        len(pool)
+        if getattr(requirement, "max_count") is None
+        else min(len(pool), getattr(requirement, "max_count"))
+    )
+    minimum = getattr(requirement, "min_count")
+    if maximum < minimum:
+        return CandidateEnumeration(())
+    choices: list[tuple[str, ...]] = []
+    for size in range(minimum, maximum + 1):
+        choices.extend(itertools.combinations(pool, size))
+        if len(choices) > limit:
+            return CandidateEnumeration((), truncated=True)
+    return CandidateEnumeration(tuple(choices))
+
+
+def _claim_verification_focus_sets(
+    route: object,
+    current: dict[str, EntityVersion],
+    *,
+    limit: int,
+) -> CandidateEnumeration:
+    """Enumerate exact ClaimGraph obligation closures without subset explosion."""
+
+    requirements = tuple(getattr(route, "required_input_entities"))
+    requirements_by_type = {
+        item.entity_type: item for item in requirements
+    }
+    expected_types = {
+        "AssumptionMap",
+        "ClaimGraph",
+        "FormalModel",
+        "ProofObligation",
+        "ResearchQuestion",
+    }
+    graph_requirement = requirements_by_type.get("ClaimGraph")
+    obligation_requirement = requirements_by_type.get("ProofObligation")
+    if (
+        getattr(route, "route_id", None)
+        != "verify.claims_proofs_and_interpretation"
+        or len(requirements_by_type) != len(requirements)
+        or set(requirements_by_type) != expected_types
+        or graph_requirement is None
+        or graph_requirement.min_count != 1
+        or graph_requirement.max_count != 1
+        or obligation_requirement is None
+        or obligation_requirement.min_count < 1
+        or any(
+            requirements_by_type[entity_type].min_count != 1
+            or requirements_by_type[entity_type].max_count != 1
+            for entity_type in expected_types.difference(
+                {"ProofObligation"}
+            )
+        )
+    ):
+        raise NavigationUnsupported(
+            "claim verification closure selector is bound to an incompatible route"
+        )
+
+    focus_sets: set[tuple[str, ...]] = set()
+    for graph_entity in sorted(
+        (
+            item
+            for item in current.values()
+            if item.entity_type == "ClaimGraph"
+        ),
+        key=lambda item: item.entity_id,
+    ):
+        graph = validate_theory_entity(graph_entity)
+        if not isinstance(graph, ClaimGraph):
+            continue
+        obligation_refs = {
+            reference
+            for claim in graph.claims
+            for reference in claim.proof_obligation_refs
+        }
+        if (
+            len({reference.entity_id for reference in obligation_refs})
+            != len(obligation_refs)
+            or len(obligation_refs) < obligation_requirement.min_count
+            or (
+                obligation_requirement.max_count is not None
+                and len(obligation_refs)
+                > obligation_requirement.max_count
+            )
+        ):
+            continue
+        obligation_ids: list[str] = []
+        for reference in sorted(
+            obligation_refs, key=lambda item: (item.entity_id, item.version)
+        ):
+            obligation = current.get(reference.entity_id)
+            if (
+                obligation is None
+                or obligation.version != reference.version
+                or obligation.entity_type != "ProofObligation"
+            ):
+                obligation_ids = []
+                break
+            obligation_ids.append(reference.entity_id)
+        if not obligation_ids:
+            continue
+        formal_model_entity = current.get(graph.formal_model_ref.entity_id)
+        assumption_map_entity = current.get(graph.assumption_map_ref.entity_id)
+        if (
+            formal_model_entity is None
+            or formal_model_entity.version != graph.formal_model_ref.version
+            or formal_model_entity.entity_type != "FormalModel"
+            or assumption_map_entity is None
+            or assumption_map_entity.version != graph.assumption_map_ref.version
+            or assumption_map_entity.entity_type != "AssumptionMap"
+        ):
+            continue
+        formal_model = validate_theory_entity(formal_model_entity)
+        if not isinstance(formal_model, FormalModel):
+            continue
+        question_entity = current.get(formal_model.question_ref.entity_id)
+        if (
+            question_entity is None
+            or question_entity.version != formal_model.question_ref.version
+            or question_entity.entity_type != "ResearchQuestion"
+        ):
+            continue
+        flattened = tuple(
+            sorted(
+                (
+                    graph_entity.entity_id,
+                    assumption_map_entity.entity_id,
+                    formal_model_entity.entity_id,
+                    question_entity.entity_id,
+                    *obligation_ids,
+                )
+            )
+        )
+        if len(set(flattened)) != len(flattened):
+            continue
+        focus_sets.add(flattened)
+        if len(focus_sets) > limit:
+            return CandidateEnumeration((), truncated=True)
+    return CandidateEnumeration(tuple(sorted(focus_sets)))
+
+
 def _focus_sets_for_policy(
     selector_id: str,
     route: object,
@@ -120,6 +268,18 @@ def _focus_sets_for_policy(
     if selector_id == "empty_focus.v1":
         return CandidateEnumeration(((),))
     if selector_id == "registry_cardinality.v1":
+        # The authoritative entry validator accepts only the every-and-only
+        # ClaimGraph obligation closure.  Construct that sole legal shape
+        # directly so rejected ProofObligation subsets cannot exhaust the
+        # selector cap; every other registry-cardinality route retains the
+        # historical exhaustive subset enumeration below.
+        if (
+            getattr(route, "route_id", None)
+            == "verify.claims_proofs_and_interpretation"
+        ):
+            return _claim_verification_focus_sets(
+                route, current, limit=limit
+            )
         return _registry_focus_sets(route, current, limit=limit)
     if selector_id == "uncompleted_decomposition_scope.v1":
         if getattr(route, "route_id", None) != "decompose.primitives":
