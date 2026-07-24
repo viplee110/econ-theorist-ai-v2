@@ -2326,6 +2326,60 @@ def _validate_phase2_route_entry_refs(
                 "claim verification model is not the exact G3-approved "
                 "formal base"
             )
+    elif route_spec.route_id == "audit.assumptions_generality_and_absorption":
+        audit_inputs: dict[
+            str, list[tuple[EntityVersionRef, t.TheoryPayload]]
+        ] = {}
+        for reference, entity in typed_inputs:
+            payload = payload_index[_entity_key(reference)]
+            audit_inputs.setdefault(entity.entity_type, []).append(
+                (reference, payload)
+            )
+
+        def exact_audit_input(
+            entity_type: str,
+        ) -> tuple[EntityVersionRef, t.TheoryPayload]:
+            entries = audit_inputs.get(entity_type, ())
+            if len(entries) != 1:
+                raise TheoryValidationError(
+                    "assumption audit requires one exact "
+                    f"{entity_type} in its verified claim closure"
+                )
+            return entries[0]
+
+        question_ref, question = exact_audit_input("ResearchQuestion")
+        graph_ref, graph = exact_audit_input("ClaimGraph")
+        formal_model_ref, formal_model = exact_audit_input("FormalModel")
+        assumptions_ref, assumptions = exact_audit_input("AssumptionMap")
+        _, bundle = exact_audit_input("VerificationBundle")
+        if (
+            not isinstance(question, t.ResearchQuestion)
+            or not isinstance(graph, t.ClaimGraph)
+            or not isinstance(formal_model, t.FormalModel)
+            or not isinstance(assumptions, t.AssumptionMap)
+            or not isinstance(bundle, t.VerificationBundle)
+            or question_ref != root
+            or formal_model.question_ref != question_ref
+            or graph.formal_model_ref != formal_model_ref
+            or graph.assumption_map_ref != assumptions_ref
+            or bundle.claim_graph_ref != graph_ref
+        ):
+            raise TheoryValidationError(
+                "assumption audit inputs do not bind one exact verified "
+                "question, formal model, assumption map, ClaimGraph, and "
+                "VerificationBundle"
+            )
+        g3_dossier = selected_gate_dossiers.get("G3_formal_base")
+        if (
+            g3_dossier is None
+            or not {formal_model_ref, assumptions_ref}.issubset(
+                set(g3_dossier.ordered_object_refs)
+            )
+        ):
+            raise TheoryValidationError(
+                "assumption audit model and assumptions are not the exact "
+                "G3-approved formal base"
+            )
     return TheoryRouteEntryReport(
         research_question_ref=root,
         input_entity_refs=tuple(reference for reference, _ in typed_inputs),

@@ -946,6 +946,40 @@ class ClaimVerificationRouteEntryTests(unittest.TestCase):
         self.assertFalse(enumeration.focus_sets)
 
 
+class AssumptionAuditRouteEntryTests(unittest.TestCase):
+    def test_exact_verified_claim_closure_can_enter(self) -> None:
+        fixture = ClosureFixture()
+
+        entry = validate_phase2_route_entry(
+            _snapshot(fixture),
+            get_route("audit.assumptions_generality_and_absorption"),
+            tuple(reference.entity_id for reference in _audit_inputs()),
+            actor=AGENT,
+        )
+
+        self.assertEqual(entry.research_question_ref, eref("question.closure"))
+        self.assertEqual(len(entry.gate_decision_refs), 3)
+
+    def test_audit_cannot_substitute_an_unbound_formal_model(self) -> None:
+        fixture = ClosureFixture()
+        focus = tuple(
+            "model.contrast.closure"
+            if reference.entity_id == "model.selected.closure"
+            else reference.entity_id
+            for reference in _audit_inputs()
+        )
+
+        with self.assertRaisesRegex(
+            TheoryValidationError, r"(?i)(one exact verified|G3-approved)"
+        ):
+            validate_phase2_route_entry(
+                _snapshot(fixture),
+                get_route("audit.assumptions_generality_and_absorption"),
+                focus,
+                actor=AGENT,
+            )
+
+
 class ProjectionBackHalfClosureTests(unittest.TestCase):
     def test_bundle_cannot_omit_one_retained_claim_obligation(self) -> None:
         fixture = ClosureFixture()
