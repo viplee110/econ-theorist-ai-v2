@@ -125,12 +125,21 @@ question. That postmortem now proposes exactly `Computational Structure
 Probe`, `Representation Hunter`, and `Analogical Structure Transfer — First
 Mapping Failure`; see
 `review_outputs/phase5b_score_disclosure_postmortem_and_research_move_proposal.md`.
-Do not begin source audit or implementation until the researcher approves or
-revises that exact proposal. That approval would authorize only source audit
-and disabled-by-default development. A later opt-in pilot requires separate
-explicit researcher authorization after source audit, and automatic default
-activation remains blocked until the held-out and end-to-end evidence required
-by `docs/architecture/scientific_discovery_craft.md` is positive. The earlier
+On 2026-07-24 the researcher approved that exact batch for source audit and
+disabled-by-default development only. The source audit passed with explicit
+boundaries and is recorded in
+`review_outputs/phase5b_research_move_source_audit_v1.md`. The resulting
+checkout-only `craft/research_corpus.v1.json`, independent strict development
+models, and exact-release loading policy are noncanonical, absent from
+installed resources, and unreachable from routes, WorkPackets, machine
+navigation, or the public bridge. They provide no runtime selector, ranking,
+activation, pilot, route disposition, or canonical-write authority. Do not
+pilot or activate the batch, wire it into a production package or WorkPacket,
+reopen the parked case, or treat source curation as research-quality evidence.
+A later opt-in pilot requires separate explicit researcher authorization, and
+automatic default activation remains blocked until the held-out and
+end-to-end evidence required by
+`docs/architecture/scientific_discovery_craft.md` is positive. The earlier
 experimental `C:\tmp\p5b1` branch after head `ed2371...` contains a failed-route
 transaction admitted only by a reverted validator relaxation and is not a
 valid final-code canonical result; preserve it only as negative evidence. Do
@@ -197,6 +206,13 @@ python scripts/export_profile_craft_schemas.py --check
 python scripts/export_profile_craft_resources.py --check
 python scripts/export_machine_schemas.py --check
 python scripts/export_framing_quality_schemas.py --check
+```
+
+The disabled checkout-only ResearchMove development batch adds no production
+exporter. Its bounded validation command is:
+
+```text
+python -m unittest tests.test_research_craft_development -v
 ```
 
 For the Phase 5A.0 documentation-only slice, also run `git diff --check`, verify

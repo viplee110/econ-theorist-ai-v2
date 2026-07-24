@@ -1,7 +1,8 @@
 # Scientific Discovery and Research-Craft Extension
 
-Status: evidence-informed design; scheduled after the first minimal
-research-team pilot and inactive until incremental evaluation
+Status: evidence-informed design; first three-move source audit and
+checkout-only disabled development corpus complete; runtime use, pilot, and
+automatic activation remain unauthorized
 
 Scope: pure and applied microeconomic theory, industrial-organization theory,
 information economics, game theory, market and mechanism design, networks, and
@@ -372,6 +373,12 @@ short decision rationale rather than a private chain of thought.
 Each runtime projection should remain about 80--120 words and contain no
 scholar name, paper prose, prestige signal, or source-ranking score.
 
+The current first-batch development surface deliberately stops before that
+future selector. It only validates one explicit absolute checkout path under
+the fixed release hash. It does not retrieve, filter, project, rank, or choose
+a move, does not construct a runtime menu, and is not reachable from a route,
+WorkPacket, machine command, installed resource, or canonical write path.
+
 | Existing capability | Candidate search-expander moves |
 |---|---|
 | `frame.question_and_benchmarks` | Different-Implementation Question; Question Reframer; Tractable Proxy; Market-Operation Primitive |
@@ -501,11 +508,21 @@ deserve early retrieval. The smallest sound implementation is:
    boundary, a contradictory method, or a previously uncovered field.
 
 After source audit, a disabled-by-default experimental selector and compact
-projection may be added to support the opt-in pilot. Automatic route selection
-and production package-resource wiring require positive held-out replication
-and the experimental end-to-end evidence. Neither mode adds a canonical
-entity, schema, Decision, gate, route, or navigation state; the WorkPacket's
-existing compiled-context hash supplies run provenance.
+projection may be added only to support a separately authorized opt-in pilot.
+The current batch contains neither retrieval nor selection code. Automatic
+route selection and production package-resource wiring require positive
+held-out replication and the experimental end-to-end evidence. Neither mode
+adds a canonical entity, schema, Decision, gate, route, or navigation state;
+the WorkPacket's existing compiled-context hash supplies run provenance.
+
+The first delivery checkpoint completed steps 1--2 and the source-audit part
+of step 3 for exactly `Computational Structure Probe`, `Representation
+Hunter`, and `Analogical Structure Transfer — First Mapping Failure`. Eleven
+primary-source snapshots were access-checked and hash-bound; only citations,
+hashes, derived functional properties, biases, and non-applicability remain
+in the repository. The source-audited release stays disabled and outside
+evaluation holdouts. The pilot part of step 3 has not begun because no pilot
+authorization was granted.
 
 One practical exploration cadence uses batches of about eight scholars or
 twenty sources. An initial saturation signal is two consecutive batches with

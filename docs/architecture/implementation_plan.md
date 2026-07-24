@@ -63,12 +63,17 @@ parking the application-only case before authoring. The bounded
 [scientific postmortem](../../review_outputs/phase5b_score_disclosure_postmortem_and_research_move_proposal.md)
 proposes `Computational Structure Probe`, `Representation Hunter`, and
 `Analogical Structure Transfer — First Mapping Failure` as the first
-source-audit-pending, disabled-by-default development batch. Do not begin
-source audit or implementation until the researcher approves or revises the
-proposal. That first approval authorizes only source audit and
-disabled-by-default development. An opt-in pilot requires separate explicit
-researcher authorization after source audit; automatic default activation
-still requires positive held-out replication and end-to-end evidence under
+disabled-by-default development batch. The researcher approved exactly that
+limited source-audit and development scope on 2026-07-24. The
+[source audit](../../review_outputs/phase5b_research_move_source_audit_v1.md)
+passes all three candidates with boundaries, and the current tree records one
+checkout-only, hash-bound corpus plus an exact-release loader. This development
+surface is noncanonical, is not an installed package resource, and has no
+retrieval, applicability filtering, projection, runtime selector, ranking,
+WorkPacket integration, pilot, route-disposition, or canonical-write
+authority. An opt-in pilot requires separate explicit researcher
+authorization. Automatic default activation still requires positive held-out
+replication and end-to-end evidence under
 `scientific_discovery_craft.md`.
 A new held-out authoring pair may be resumed only when a concrete product
 failure makes that comparison decision-relevant. V9 and an exploratory v1/v2
