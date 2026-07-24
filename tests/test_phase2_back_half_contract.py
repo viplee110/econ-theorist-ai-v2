@@ -611,8 +611,12 @@ class ClaimVerificationRouteEntryTests(unittest.TestCase):
             snapshot,
             current,
             limit=4096,
+            prefer_falsified_repair_roots=True,
         )
-        self.assertIn(("obligation.threshold.closure",), enumerated.focus_sets)
+        self.assertEqual(
+            enumerated.focus_sets,
+            (("obligation.threshold.closure",),),
+        )
         self.assertNotIn(
             tuple(
                 sorted(
@@ -623,6 +627,64 @@ class ClaimVerificationRouteEntryTests(unittest.TestCase):
                 )
             ),
             enumerated.focus_sets,
+        )
+
+        boundary_record_entity = next(
+            entity
+            for entity in snapshot.entity_versions
+            if entity.entity_id == "verification.boundary.closure"
+            and entity.version == 1
+        )
+        boundary_record = fixture.payload("verification.boundary.closure")
+        assert isinstance(boundary_record, VerificationRecord)
+        falsified_boundary_record = boundary_record_entity.model_copy(
+            update={
+                "facets": pack_theory_payload(
+                    boundary_record.model_copy(update={"outcome": "falsified"})
+                )
+            }
+        )
+        boundary_challenge = _relation(
+            "relation.challenge.boundary.closure",
+            "challenges",
+            eref("verification.boundary.closure"),
+            eref("obligation.boundary.closure"),
+        )
+        two_falsified_snapshot = snapshot.model_copy(
+            update={
+                "entity_versions": tuple(
+                    falsified_boundary_record
+                    if (
+                        entity.entity_id == falsified_boundary_record.entity_id
+                        and entity.version == falsified_boundary_record.version
+                    )
+                    else entity
+                    for entity in snapshot.entity_versions
+                ),
+                "relation_versions": (
+                    *snapshot.relation_versions,
+                    boundary_challenge,
+                ),
+                "current_relations": {
+                    **snapshot.current_relations,
+                    boundary_challenge.relation_id: boundary_challenge.version,
+                },
+            }
+        )
+        two_falsified = _focus_sets_for_policy(
+            "framing_or_stale_repair_root.v1",
+            get_route("repair.dependency"),
+            two_falsified_snapshot,
+            current,
+            limit=4096,
+            prefer_falsified_repair_roots=True,
+        )
+        self.assertEqual(
+            two_falsified.focus_sets,
+            (
+                ("obligation.boundary.closure",),
+                ("obligation.threshold.closure",),
+            ),
         )
 
         def repair_transaction(target_id: str) -> Transaction:
@@ -701,6 +763,19 @@ class ClaimVerificationRouteEntryTests(unittest.TestCase):
 
         without_challenge = snapshot.model_copy(
             update={"relation_versions": (), "current_relations": {}}
+        )
+        no_falsified_priority = _focus_sets_for_policy(
+            "framing_or_stale_repair_root.v1",
+            get_route("repair.dependency"),
+            without_challenge,
+            current,
+            limit=4096,
+            prefer_falsified_repair_roots=True,
+        )
+        self.assertGreater(len(no_falsified_priority.focus_sets), 1)
+        self.assertIn(
+            ("obligation.threshold.closure",),
+            no_falsified_priority.focus_sets,
         )
         with self.assertRaisesRegex(
             FramingQualityValidationError, "exactly one typed stale root"

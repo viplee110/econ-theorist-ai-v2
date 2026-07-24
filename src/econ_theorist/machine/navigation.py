@@ -26,6 +26,7 @@ from ..runtime.layout import StoreLayout
 from ..theory import ClaimGraph, FormalModel, THEORY_PAYLOAD_MODELS
 from ..theory_validation import (
     has_current_fresh_g1_decomposition_package,
+    is_falsified_verification_repair_root,
     validate_theory_entity,
 )
 from .models import (
@@ -275,6 +276,7 @@ def _focus_sets_for_policy(
     current: dict[str, EntityVersion],
     *,
     limit: int,
+    prefer_falsified_repair_roots: bool = False,
 ) -> CandidateEnumeration:
     if selector_id == "empty_focus.v1":
         return CandidateEnumeration(((),))
@@ -313,6 +315,23 @@ def _focus_sets_for_policy(
             for entity in current.values()
             if entity.entity_type in THEORY_PAYLOAD_MODELS
         }
+        if prefer_falsified_repair_roots:
+            falsified_roots = {
+                (entity.entity_id,)
+                for entity in current.values()
+                if entity.entity_type == "ProofObligation"
+                and is_falsified_verification_repair_root(
+                    snapshot,
+                    EntityVersionRef(
+                        entity_id=entity.entity_id,
+                        version=entity.version,
+                    ),
+                )
+            }
+            if falsified_roots:
+                if len(falsified_roots) > limit:
+                    return CandidateEnumeration((), truncated=True)
+                return CandidateEnumeration(tuple(sorted(falsified_roots)))
         for entity in current.values():
             if entity.entity_type != "FramingQualityBundle":
                 continue
@@ -442,6 +461,14 @@ def enumerate_navigation_candidates(
             snapshot,
             current,
             limit=navigation.max_candidate_sets,
+            # A direct repair continuation should address exact verification
+            # failures before unrelated historical staleness. Reframe recovery
+            # remains bound to its preflighted target and is never reprioritized.
+            prefer_falsified_repair_roots=(
+                route_id == "repair.dependency"
+                and requested == ("repair.dependency",)
+                and brief_digest is None
+            ),
         )
         if enumeration.truncated:
             raise NavigationUnsupported(
