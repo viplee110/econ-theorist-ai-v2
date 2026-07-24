@@ -980,6 +980,78 @@ class AssumptionAuditRouteEntryTests(unittest.TestCase):
             )
 
 
+class ResultPortfolioRouteEntryTests(unittest.TestCase):
+    def test_exact_verified_and_audited_claim_closure_can_enter(self) -> None:
+        fixture = ClosureFixture()
+
+        entry = validate_phase2_route_entry(
+            _snapshot(fixture),
+            get_route("curate.result_portfolio"),
+            tuple(reference.entity_id for reference in _curate_inputs()),
+            actor=AGENT,
+        )
+
+        self.assertEqual(entry.research_question_ref, eref("question.closure"))
+        self.assertEqual(len(entry.gate_decision_refs), 3)
+
+    def test_same_question_claim_graph_branch_splice_cannot_enter(self) -> None:
+        fixture = ClosureFixture()
+        graph = fixture.payload("claims.closure")
+        assert isinstance(graph, ClaimGraph)
+        fork_id = "claims.same.question.portfolio.fork"
+        fixture.add(_new_entity(fork_id, graph))
+        focus = tuple(
+            fork_id
+            if reference.entity_id == "claims.closure"
+            else reference.entity_id
+            for reference in _curate_inputs()
+        )
+
+        with self.assertRaisesRegex(
+            TheoryValidationError,
+            r"(?i)one exact verified and absorption-audited ClaimGraph",
+        ):
+            validate_phase2_route_entry(
+                _snapshot(fixture),
+                get_route("curate.result_portfolio"),
+                focus,
+                actor=AGENT,
+            )
+
+    def test_unbound_verification_bundle_cannot_enter(self) -> None:
+        fixture = ClosureFixture()
+        bundle = fixture.payload("verification.bundle.closure")
+        graph = fixture.payload("claims.closure")
+        assert isinstance(bundle, VerificationBundle)
+        assert isinstance(graph, ClaimGraph)
+        fork_id = "claims.unbound.bundle.portfolio"
+        bundle_id = "verification.bundle.unbound.portfolio"
+        fixture.add(_new_entity(fork_id, graph))
+        fixture.add(
+            _new_entity(
+                bundle_id,
+                bundle.model_copy(update={"claim_graph_ref": eref(fork_id)}),
+            )
+        )
+        focus = tuple(
+            bundle_id
+            if reference.entity_id == "verification.bundle.closure"
+            else reference.entity_id
+            for reference in _curate_inputs()
+        )
+
+        with self.assertRaisesRegex(
+            TheoryValidationError,
+            r"(?i)one exact verified and absorption-audited ClaimGraph",
+        ):
+            validate_phase2_route_entry(
+                _snapshot(fixture),
+                get_route("curate.result_portfolio"),
+                focus,
+                actor=AGENT,
+            )
+
+
 class ProjectionBackHalfClosureTests(unittest.TestCase):
     def test_bundle_cannot_omit_one_retained_claim_obligation(self) -> None:
         fixture = ClosureFixture()

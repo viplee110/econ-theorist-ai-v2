@@ -2380,6 +2380,45 @@ def _validate_phase2_route_entry_refs(
                 "assumption audit model and assumptions are not the exact "
                 "G3-approved formal base"
             )
+    elif route_spec.route_id == "curate.result_portfolio":
+        portfolio_inputs: dict[
+            str, list[tuple[EntityVersionRef, t.TheoryPayload]]
+        ] = {}
+        for reference, entity in typed_inputs:
+            payload = payload_index[_entity_key(reference)]
+            portfolio_inputs.setdefault(entity.entity_type, []).append(
+                (reference, payload)
+            )
+
+        def exact_portfolio_input(
+            entity_type: str,
+        ) -> tuple[EntityVersionRef, t.TheoryPayload]:
+            entries = portfolio_inputs.get(entity_type, ())
+            if len(entries) != 1:
+                raise TheoryValidationError(
+                    "result portfolio requires one exact "
+                    f"{entity_type} in its audited claim closure"
+                )
+            return entries[0]
+
+        question_ref, question = exact_portfolio_input("ResearchQuestion")
+        graph_ref, graph = exact_portfolio_input("ClaimGraph")
+        _, bundle = exact_portfolio_input("VerificationBundle")
+        _, absorption = exact_portfolio_input("AbsorptionAssessment")
+        if (
+            not isinstance(question, t.ResearchQuestion)
+            or not isinstance(graph, t.ClaimGraph)
+            or not isinstance(bundle, t.VerificationBundle)
+            or not isinstance(absorption, t.AbsorptionAssessment)
+            or question_ref != root
+            or bundle.claim_graph_ref != graph_ref
+            or absorption.central_claim_graph_ref != graph_ref
+            or absorption.central_claim_id not in graph.contribution_spine
+        ):
+            raise TheoryValidationError(
+                "result portfolio inputs do not bind one exact verified and "
+                "absorption-audited ClaimGraph"
+            )
     return TheoryRouteEntryReport(
         research_question_ref=root,
         input_entity_refs=tuple(reference for reference, _ in typed_inputs),
