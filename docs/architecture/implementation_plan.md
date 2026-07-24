@@ -29,9 +29,14 @@ capacity or optimization. A clean continuation under the restored strict
 Phase-2 validator committed the dependency repair, decomposition refresh, and
 fresh unchanged-V8 audit at
 `bf4e7fdd49bcf089b18318e77075514cbaea027939049113d1d5840073b4800c`.
-Exact replay passes and the audit proposes `ready_for_g1`; no human G1 decision
-occurred. The recovery remains developer-assisted, nonblind evidence rather
-than a fresh model or research-quality result.
+Exact replay passes and the audit proposes `ready_for_g1`; that checkpoint did
+not itself include a human G1 decision. A later interactive continuation
+recorded the researcher's G1, G2, and G3 approvals, followed by a G4 denial:
+the verified R3 result is application-only and the case is parked at final
+head `f4fb0a3314c77ea106a284788c74e8b52c9d3ebdd125286eeeac9a1d4ec57c96`.
+See `../../review_outputs/phase5b_score_disclosure_g4_park_closure.md`. The
+recovery and later continuation remain developer-assisted, nonblind evidence
+rather than a fresh model or research-quality result.
 
 Current implementation milestone: bounded authoring and diagnostic repair
 implemented. Semantic V2 now compiles only explicitly located force margins
@@ -596,8 +601,9 @@ unscripted user value, or scientific quality. The later frozen probe returned
 `PARK` (0.95), and the researcher selected the Scheme-B rule class and baseline,
 then separately authorized outcome-vector/locus terminology without capacity or
 optimization. The strict-replay recovery committed the dependency repair,
-decomposition, and unchanged-V8 audit; the audit proposes `ready_for_g1`, but
-no human G1 occurred. A narrow bridge-level `reframe.repair`
+decomposition, and unchanged-V8 audit; a later interactive continuation
+recorded human G1--G3 approvals and a G4 denial, parking the application-only
+case before argument-package work. A narrow bridge-level `reframe.repair`
 composite now handles only an untouched, empty-focus framing-v2 run: it records
 a noncanonical operational disposition bound to the exact target, successor
 brief, and navigation candidate, then opens that exact dependency repair with

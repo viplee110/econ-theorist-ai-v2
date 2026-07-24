@@ -41,11 +41,17 @@ adding capacity or optimization. A clean strict-validator continuation from
 the last admissible pre-experiment head committed the dependency repair,
 decomposition refresh, and fresh V8 audit at final head
 `bf4e7fdd49bcf089b18318e77075514cbaea027939049113d1d5840073b4800c`.
-Exact replay passes and the audit proposes `ready_for_g1`; no human G1 decision
-was requested, confirmed, or fabricated. The recovery was developer-assisted
-and nonblind, so it closes neither independent economics inspection nor
-research-quality, editing-burden, multi-agent-benefit, or provider-independent
-evidence.
+Exact replay passes and the audit proposes `ready_for_g1`; that checkpoint
+itself did not confirm a human G1 decision. A later interactive continuation
+did record the researcher's G1, G2, and G3 approvals, then their G4 denial of
+further investment: the verified R3 result is retained only as
+application-specific and the case is parked at final head
+`f4fb0a3314c77ea106a284788c74e8b52c9d3ebdd125286eeeac9a1d4ec57c96`.
+The closure record is
+`review_outputs/phase5b_score_disclosure_g4_park_closure.md`. The recovery and
+later continuation remain interactive, developer-assisted, and nonblind, so
+they close neither independent economics inspection nor research-quality,
+editing-burden, multi-agent-benefit, or provider-independent evidence.
 
 The bounded post-pilot stabilization passed its 594-test routine non-long gate,
 all seven exporters, and required `doctor` checks without changing V8
@@ -107,10 +113,14 @@ terminology authorization, a strict-replayable outcome-locus continuation and
 fresh unchanged-V8 audit; see
 `review_outputs/phase5b0_framing_team_public_pilot_followup/FOLLOWUP_SUMMARY.md`.
 Keep `review_outputs/phase5b0_framing_team_public_pilot/` byte-frozen; any later
-evidence for this case belongs in the sibling follow-up archive.
-The current audit proposes `ready_for_g1`, but the next scientific action is an
-explicit researcher G1 review; do not confirm it, select a `ResearchMove` batch,
-or treat the follow-up as blind model evidence automatically. The earlier
+evidence for this case belongs only in its dedicated additive follow-up records.
+The later continuation is complete: the researcher approved G1, G2, and G3,
+then denied G4 and parked the application-only case before argument-package or
+manuscript work; see
+`review_outputs/phase5b_score_disclosure_g4_park_closure.md`. Do not revive
+that case, select an argument-package route, or relabel the continuation as
+blind model evidence. The next scientific work is a bounded postmortem and a
+proposal for the first small `ResearchMove` batch for a new human-approved question. The earlier
 experimental `C:\tmp\p5b1` branch after head `ed2371...` contains a failed-route
 transaction admitted only by a reverted validator relaxation and is not a
 valid final-code canonical result; preserve it only as negative evidence. Do
