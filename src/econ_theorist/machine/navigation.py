@@ -27,6 +27,7 @@ from ..theory import ClaimGraph, FormalModel, THEORY_PAYLOAD_MODELS
 from ..theory_validation import (
     has_current_fresh_g1_decomposition_package,
     is_falsified_verification_repair_root,
+    pending_human_gate_kinds,
     validate_theory_entity,
 )
 from .models import (
@@ -453,6 +454,24 @@ def enumerate_navigation_candidates(
                 severity="error",
                 message="framing navigation requires an immutable host-neutral run input brief",
                 details={"route_id": route_id},
+            )
+            continue
+        pending_gates = pending_human_gate_kinds(
+            snapshot, route.required_gate_kinds
+        )
+        if pending_gates:
+            diagnostics[(route_id, "human_decision_prerequisite")] = DiagnosticV1(
+                code="human_decision_prerequisite",
+                severity="info",
+                message=(
+                    f"route {route_id} awaits an explicit human decision for "
+                    "the current fresh gate dossier: "
+                    + ", ".join(pending_gates)
+                ),
+                details={
+                    "route_id": route_id,
+                    "gate_kinds": list(pending_gates),
+                },
             )
             continue
         enumeration = _focus_sets_for_policy(

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import unittest
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from tests.helpers import REPOSITORY_ROOT  # noqa: F401  # installs src
 from tests.test_phase2_scientific_closure import (
@@ -43,6 +44,7 @@ from econ_theorist.machine.navigation import (
     _claim_verification_focus_sets,
     _focus_sets_for_policy,
     _registry_focus_sets,
+    plan_next,
 )
 from econ_theorist.framing_quality_validation import (
     FramingQualityValidationError,
@@ -50,6 +52,7 @@ from econ_theorist.framing_quality_validation import (
     validate_framing_repair_route_transaction,
 )
 from econ_theorist.route_registry import get_route
+from econ_theorist.runtime.layout import StoreLayout
 from econ_theorist.theory import (
     AbsorptionAssessment,
     AssumptionMap,
@@ -71,6 +74,7 @@ from econ_theorist.theory import (
 )
 from econ_theorist.theory_validation import (
     TheoryValidationError,
+    pending_human_gate_kinds,
     validate_phase2_route_entry,
     validate_phase2_route_transaction,
     validate_theory_projection,
@@ -1050,6 +1054,75 @@ class ResultPortfolioRouteEntryTests(unittest.TestCase):
                 focus,
                 actor=AGENT,
             )
+
+
+class NavigationGatePreflightTests(unittest.TestCase):
+    def test_pending_g4_precedes_unbounded_argument_focus_enumeration(
+        self,
+    ) -> None:
+        fixture = ClosureFixture()
+        g4 = next(
+            item
+            for item in fixture.decisions.values()
+            if item.decision_kind == "G4_result_investment"
+        )
+        fixture.decisions.pop((g4.decision_id, g4.version))
+        snapshot = _snapshot(fixture)
+
+        with patch(
+            "econ_theorist.machine.navigation._focus_sets_for_policy",
+            side_effect=AssertionError(
+                "pending human gate must preflight focus enumeration"
+            ),
+        ):
+            planned = plan_next(
+                StoreLayout.at(REPOSITORY_ROOT),
+                snapshot,
+                actor=AGENT,
+                compartments=("project_research",),
+                privacy_clearance="project_private",
+                requested_route_ids=("validate.argument_package",),
+            )
+
+        self.assertEqual(planned.outcome, "human_decision_required")
+        self.assertFalse(planned.candidates)
+        self.assertEqual(
+            {item.code for item in planned.blockers},
+            {"human_decision_prerequisite"},
+        )
+
+    def test_effective_g4_approval_or_denial_is_not_pending(self) -> None:
+        approved_fixture = ClosureFixture()
+        required = get_route(
+            "validate.argument_package"
+        ).required_gate_kinds
+        self.assertNotIn(
+            "G4_result_investment",
+            pending_human_gate_kinds(
+                _snapshot(approved_fixture), required
+            ),
+        )
+
+        denied_fixture = ClosureFixture()
+        g4 = next(
+            item
+            for item in denied_fixture.decisions.values()
+            if item.decision_kind == "G4_result_investment"
+        )
+        denied_fixture.decisions[(g4.decision_id, g4.version)] = (
+            g4.model_copy(
+                update={
+                    "selected_option": "deny",
+                    "machine_outcome": "deny",
+                }
+            )
+        )
+        self.assertNotIn(
+            "G4_result_investment",
+            pending_human_gate_kinds(
+                _snapshot(denied_fixture), required
+            ),
+        )
 
 
 class ProjectionBackHalfClosureTests(unittest.TestCase):

@@ -1980,6 +1980,69 @@ def _effective_approved_gates(
     return result
 
 
+def pending_human_gate_kinds(
+    snapshot: Snapshot,
+    required_gate_kinds: Iterable[str],
+) -> tuple[str, ...]:
+    """Return globally blocking fresh dossiers awaiting a human disposition.
+
+    This is a conservative navigation preflight, not route authorization.  A
+    kind is returned only when no effective human approval for that kind
+    exists anywhere in the snapshot, at least one current fresh dossier exists,
+    and no effective human denial has already disposed that exact dossier.
+    Once any scope has an effective approval, exact route entry remains
+    responsible for scope matching.
+    """
+
+    required = tuple(required_gate_kinds)
+    if not required:
+        return ()
+    approved = _effective_approved_gates(snapshot)
+    globally_missing = {kind for kind in required if not approved.get(kind)}
+    if not globally_missing:
+        return ()
+
+    decisions = {_decision_key(item): item for item in snapshot.decisions}
+    dossiers = _gate_dossier_index(snapshot)
+    effectively_denied: set[str] = set()
+    for reference in snapshot.effective_decisions.values():
+        decision = decisions.get(_decision_key(reference))
+        if (
+            decision is None
+            or decision.decision_kind not in globally_missing
+            or decision.status != "confirmed"
+            or decision.machine_outcome != "deny"
+            or decision.selected_option != "deny"
+            or decision.decider.kind != "human"
+        ):
+            continue
+        cited = [
+            dossiers[item]
+            for item in decision.evidence_refs
+            if item in dossiers
+        ]
+        if len(cited) != 1:
+            continue
+        dossier_entity, dossier = cited[0]
+        if (
+            dossier.gate_kind == decision.decision_kind
+            and decision.subject_ref == dossier_entity.entity_id
+            and decision.scope_ref == dossier.research_question_ref.entity_id
+            and _gate_dossier_is_fresh(snapshot, dossier_entity, dossier)
+        ):
+            effectively_denied.add(dossier_entity.entity_id)
+
+    pending: set[str] = set()
+    for dossier_entity, dossier in dossiers.values():
+        if (
+            dossier.gate_kind in globally_missing
+            and dossier_entity.entity_id not in effectively_denied
+            and _gate_dossier_is_fresh(snapshot, dossier_entity, dossier)
+        ):
+            pending.add(dossier.gate_kind)
+    return tuple(kind for kind in required if kind in pending)
+
+
 def _validate_requirement_counts(
     requirements: Iterable[object],
     counts: Mapping[str, int],
@@ -4291,6 +4354,7 @@ __all__ = [
     "TheoryValidationError",
     "has_current_fresh_g1_decomposition_package",
     "is_falsified_verification_repair_root",
+    "pending_human_gate_kinds",
     "validate_phase2_human_gate_transaction",
     "validate_phase2_route_transaction",
     "validate_phase2_route_entry",
