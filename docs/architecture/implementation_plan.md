@@ -58,8 +58,18 @@ rated Q mixed. The exact [pilot evidence summary](../../review_outputs/phase5b0_
 binds those claims to the engine commit, wheel digest, and observable model
 labels. The probe and bounded Scheme-B follow-up are now recorded in the
 [sibling evidence archive](../../review_outputs/phase5b0_framing_team_public_pilot_followup/FOLLOWUP_SUMMARY.md).
-The next scientific step is an explicit researcher G1 review of the exact
-ready proposal; do not activate a `ResearchMove` batch until that human choice.
+The later continuation completed G1--G3 approvals and ended with a G4 denial,
+parking the application-only case before authoring. The bounded
+[scientific postmortem](../../review_outputs/phase5b_score_disclosure_postmortem_and_research_move_proposal.md)
+proposes `Computational Structure Probe`, `Representation Hunter`, and
+`Analogical Structure Transfer — First Mapping Failure` as the first
+source-audit-pending, disabled-by-default development batch. Do not begin
+source audit or implementation until the researcher approves or revises the
+proposal. That first approval authorizes only source audit and
+disabled-by-default development. An opt-in pilot requires separate explicit
+researcher authorization after source audit; automatic default activation
+still requires positive held-out replication and end-to-end evidence under
+`scientific_discovery_craft.md`.
 A new held-out authoring pair may be resumed only when a concrete product
 failure makes that comparison decision-relevant. V9 and an exploratory v1/v2
 quality claim remain blocked. See

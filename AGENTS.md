@@ -120,7 +120,17 @@ manuscript work; see
 `review_outputs/phase5b_score_disclosure_g4_park_closure.md`. Do not revive
 that case, select an argument-package route, or relabel the continuation as
 blind model evidence. The next scientific work is a bounded postmortem and a
-proposal for the first small `ResearchMove` batch for a new human-approved question. The earlier
+proposal for the first small `ResearchMove` batch for a new human-approved
+question. That postmortem now proposes exactly `Computational Structure
+Probe`, `Representation Hunter`, and `Analogical Structure Transfer — First
+Mapping Failure`; see
+`review_outputs/phase5b_score_disclosure_postmortem_and_research_move_proposal.md`.
+Do not begin source audit or implementation until the researcher approves or
+revises that exact proposal. That approval would authorize only source audit
+and disabled-by-default development. A later opt-in pilot requires separate
+explicit researcher authorization after source audit, and automatic default
+activation remains blocked until the held-out and end-to-end evidence required
+by `docs/architecture/scientific_discovery_craft.md` is positive. The earlier
 experimental `C:\tmp\p5b1` branch after head `ed2371...` contains a failed-route
 transaction admitted only by a reverted validator relaxation and is not a
 valid final-code canonical result; preserve it only as negative evidence. Do
