@@ -57,6 +57,19 @@ class Phase5A2CodexSkillTests(unittest.TestCase):
         self.assertIn("Do not finish an ordinary human wait", text)
         self.assertIn("Do not use `finish` as a generic pause", text)
         self.assertIn("Do not rewrite `run.json`", text)
+        for required_guardrail in (
+            "Freeze each\n   intended field separately",
+            "write the request as UTF-8, re-read it",
+            "Preserve the user's framing text",
+            "do not make\n   the two fields identical",
+            "`WorkPacket.run_input`",
+            "neutral `project_name`",
+            "clean-context sealed lanes",
+            "no inherited\n  coordinator/task turns",
+            "Capability labels authorize host operations only",
+            "Hashes, status, paths, or report links alone are\n  not delivery",
+        ):
+            self.assertIn(required_guardrail, text)
 
         for route in load_route_registry().routes:
             self.assertNotIn(route.route_id, text)

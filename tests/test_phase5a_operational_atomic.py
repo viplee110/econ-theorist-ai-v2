@@ -6,9 +6,11 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+from econ_theorist.codec import canonical_json_bytes
 from econ_theorist.errors import IntegrityError
 from econ_theorist.machine import operational as operational_module
 from econ_theorist.machine.operational import (
+    ContentAddressedOperationalStore,
     OperationalError,
     write_immutable_operational,
 )
@@ -129,6 +131,71 @@ class Phase5AOperationalAtomicPublicationTests(unittest.TestCase):
             write_immutable_operational(self.anchor, self.target, self.data)
         self.assertEqual(self.target.read_bytes(), winner)
         self.assertEqual(self._temporary_candidates(), ())
+
+    def test_windows_extended_path_spelling_normalizes_drive_and_unc(self) -> None:
+        convert = operational_module._windows_extended_path_text
+        self.assertEqual(
+            convert(r"C:\alpha\..\beta"),
+            r"\\?\C:\beta",
+        )
+        self.assertEqual(
+            convert(r"\\server\share\alpha"),
+            r"\\?\UNC\server\share\alpha",
+        )
+        self.assertEqual(
+            convert(r"\\?\C:\alpha\..\beta"),
+            r"\\?\C:\beta",
+        )
+        self.assertEqual(
+            convert(r"\\?\UNC\server\share\alpha"),
+            r"\\?\UNC\server\share\alpha",
+        )
+
+    @unittest.skipUnless(os.name == "nt", "Windows MAX_PATH regression")
+    def test_long_operational_cas_path_needs_no_user_prefix(self) -> None:
+        desired_root_length = max(len(str(self.anchor)) + 2, 90)
+        filler = "p" * (desired_root_length - len(str(self.anchor)) - 1)
+        project_root = self.anchor / filler
+        project_root.mkdir()
+        run_root = (
+            project_root
+            / ".econ-theorist"
+            / "operational"
+            / "v1"
+            / "runs"
+            / ("run_op_" + "a" * 48)
+        )
+        store = ContentAddressedOperationalStore(project_root, run_root)
+        value = {
+            "schema": "test/long-operational/v1",
+            "value": "complete",
+        }
+        expected = canonical_json_bytes(value)
+
+        digest, target = store.install(
+            "framing-team-delivery-authorizations", value
+        )
+        self.addCleanup(
+            operational_module._operational_io_path(target).unlink,
+            missing_ok=True,
+        )
+        self.assertGreater(len(str(target)), 260)
+        self.assertFalse(str(target).startswith("\\\\?\\"))
+        self.assertEqual(
+            store.read_bytes(
+                "framing-team-delivery-authorizations", digest
+            ),
+            expected,
+        )
+
+        repeated_digest, repeated_target = store.install(
+            "framing-team-delivery-authorizations", value
+        )
+        self.assertEqual((repeated_digest, repeated_target), (digest, target))
+        with self.assertRaises(IntegrityError):
+            write_immutable_operational(
+                project_root, target, b'{"different":true}'
+            )
 
 
 if __name__ == "__main__":

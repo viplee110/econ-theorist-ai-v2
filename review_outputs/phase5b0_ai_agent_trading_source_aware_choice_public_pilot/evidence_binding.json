@@ -1,0 +1,118 @@
+{
+  "evidence_schema": "econ-theorist/local-pilot-evidence-binding/v1",
+  "pilot_root": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c",
+  "engine_commit": "2a81a4c049d0af523cea6447f8e159bdfe7a56cb",
+  "wheel_sha256": "3e4e6431c3f910887343a3c843a7f00af3d0c88d2697fd50eebd4500602d3f8c",
+  "manifest_sha256": "8862a4d80f6e6249c208605e76c3e17473999c42a18885df23a64d8ec1a0a8c1",
+  "work_packet_hash": "d88aebf95385f4b80568edacc02967c6f8d3bc0cfeeff46503a3309a3898d52f",
+  "delivery_envelope_hash": "ced1d4b29ac975985431f97b42c6f734ed5ad83cc20d72bba3ae15eeb23acf6c",
+  "team_plan_hash": "3fc455498c69e2a697f932d85e32bea25de7670d4b6a5a8f559f34ea0a0d643a",
+  "panel_hash": "41e14191d693babe1fde520ffbe6ac5ee316b29486832a956552d17a3e529166",
+  "choice_review_hash": "a012b816c77c81bf5b1bda261fb260fa569cceb4e42121ac252f103030989fe5",
+  "terminal_head": "0ad5bacf1daf52245971e7ad072405da8ad1cfd5180e05001977ee2d023e48d1",
+  "terminal_status": "awaiting_user_choice",
+  "files": [
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\TASK_PROMPT.md",
+      "bytes": 4963,
+      "sha256": "cc33fcd04091b07383c03c9df8fc8d1264e3141348d057d16b0fd55d3130c47e"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\02-start-request.json",
+      "bytes": 921,
+      "sha256": "43a6851ed65d932a97405229f847de33962c733870b5f1589dfc931d2e101685"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\02-start-response.json",
+      "bytes": 53293,
+      "sha256": "9e25124444b0843320483b6cedce2c72408fb66bac573a876da1169caee130da"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\03-team-open-response.json",
+      "bytes": 969,
+      "sha256": "3e50f22d0a5285b2326c334c60f5423feeefcc14015ae3cdfbe7f798705d17f2"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\03b-team-open-response-longpath.json",
+      "bytes": 55709,
+      "sha256": "77fc126c26c3e7eb5874d9a441ab319168ce904470aea65563ee01fae56df6ef"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\04-panel-response.json",
+      "bytes": 80582,
+      "sha256": "878eef94a54d6ddb3adfecf847ea5dc9a7b56141283ffbb43eab523c90b8edc0"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\05-choice-review-response.json",
+      "bytes": 108521,
+      "sha256": "d482cff3f56ace964a18f54a7cd50eb889ad5f5e4764b41f7c4b73a29b5c696d"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\agent-report.md",
+      "bytes": 13783,
+      "sha256": "da81553a8d496b1041cd2132a53afbae85a0fdfa577d308fb9e1108332bd0b12"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\lane-mentor-raw.md",
+      "bytes": 10210,
+      "sha256": "36d74d8a4c7e044dfdcc7d5b05e347cada82ec588f6c77b10660ad335f8dedd1"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\lane-collaborator-a-raw.md",
+      "bytes": 5169,
+      "sha256": "476dd436c4ce1c2507af43bb9db23624a1bc395d8563d0e8704d9b48dc3857f7"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\lane-collaborator-b-raw.md",
+      "bytes": 4872,
+      "sha256": "95a8fd6ed7568fd374f30c6342115651ee84fa98c7bc93eefd7db7707264fcdf"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\mentor-screen.md",
+      "bytes": 3595,
+      "sha256": "d1b34a076d12072b15c21b444cb16b8625374b77d67734fd5dc859f7551f6501"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\direction-card-a.json",
+      "bytes": 6055,
+      "sha256": "105ed0325928894f9a632db6fc92bdf4dfe9c5203fa93a6449059ac1aa2cab09"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\direction-card-b.json",
+      "bytes": 6190,
+      "sha256": "82003ff7dc9a64731ec32a9488e20d83b88c7d2b134909d7680c848258459d20"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\choice-review-sources.json",
+      "bytes": 9457,
+      "sha256": "478c622a4090fcd807c308e7c1ae63280b23ad72d1ad3934e797402ebcfb26f8"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\choice-review-search-scope.md",
+      "bytes": 721,
+      "sha256": "f8b93627823c1fb496953a8611c9edc97306ca8cb6bfcf7b880e47cb0830c2ed"
+    },
+    {
+      "path": "C:\\tmp\\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c\\run\\choice-review-coverage-limits.md",
+      "bytes": 1126,
+      "sha256": "06b602f705c27114b55320f5460333ed097537136cd5d71120005b8a1aed6cb9"
+    }
+  ],
+  "stop_boundary": {
+    "research_worker_handoffs": 0,
+    "applied_user_turns": 0,
+    "framing_candidate_commits": 0,
+    "completion_requests": 0,
+    "post_initialization_head_changes": 0,
+    "human_gates": 0,
+    "finish_requests": 0
+  },
+  "verdicts": {
+    "machine_protocol": "pass_bounded_slice",
+    "input_fidelity": "fail",
+    "scientific_framing": "mixed_contaminated",
+    "researcher_ux": "mixed",
+    "clean_first_use": "not_established",
+    "research_quality": "not_established"
+  }
+}

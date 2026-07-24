@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ntpath
 import os
 import re
 import tempfile
@@ -70,6 +71,45 @@ def _safe_key(value: str) -> str:
     return value
 
 
+def _windows_extended_path_text(value: str) -> str:
+    """Return one normalized Win32 extended-length path string."""
+
+    normalized = ntpath.normpath(ntpath.abspath(value))
+    if normalized.startswith("\\\\?\\"):
+        return normalized
+    if normalized.startswith("\\\\"):
+        return "\\\\?\\UNC\\" + normalized[2:]
+    return "\\\\?\\" + normalized
+
+
+def _operational_io_path(path: str | Path) -> Path:
+    """Adapt only the OS-I/O spelling; logical project paths stay unchanged."""
+
+    value = os.fspath(path)
+    if os.name != "nt":
+        return Path(value)
+    return Path(_windows_extended_path_text(value))
+
+
+def _operational_entry_exists(path: str | Path) -> bool:
+    return path_entry_exists(_operational_io_path(path))
+
+
+def _assert_safe_operational_path(
+    root: str | Path,
+    candidate: str | Path,
+    *,
+    expected: str | None = None,
+    allow_missing: bool = True,
+) -> Path:
+    return assert_safe_store_path(
+        _operational_io_path(root),
+        _operational_io_path(candidate),
+        expected=expected,
+        allow_missing=allow_missing,
+    )
+
+
 def _ensure_directory_tree(anchor: Path, target: Path) -> None:
     """Create ordinary descendants one component at a time."""
 
@@ -79,18 +119,18 @@ def _ensure_directory_tree(anchor: Path, target: Path) -> None:
         relative = target.relative_to(anchor)
     except ValueError as exc:
         raise OperationalError(f"operational path escapes its anchor: {target}") from exc
-    assert_safe_store_path(
+    _assert_safe_operational_path(
         anchor, anchor, expected="directory", allow_missing=False
     )
     current = anchor
     for part in relative.parts:
         current = current / part
-        assert_safe_store_path(
+        _assert_safe_operational_path(
             anchor, current, expected="directory", allow_missing=True
         )
-        if not path_entry_exists(current):
+        if not _operational_entry_exists(current):
             try:
-                current.mkdir(exist_ok=False)
+                _operational_io_path(current).mkdir(exist_ok=False)
             except FileExistsError:
                 # A concurrent initializer may have created the exact ordinary
                 # directory after our metadata check.  The mandatory safety
@@ -98,7 +138,7 @@ def _ensure_directory_tree(anchor: Path, target: Path) -> None:
                 pass
             else:
                 fsync_directory(current.parent)
-        assert_safe_store_path(
+        _assert_safe_operational_path(
             anchor, current, expected="directory", allow_missing=False
         )
 
@@ -110,13 +150,13 @@ def _write_immutable(anchor: Path, path: Path, data: bytes) -> bool:
         raise TypeError("immutable operational records must be bytes")
     _ensure_directory_tree(anchor, path.parent)
     try:
-        assert_safe_store_path(
+        _assert_safe_operational_path(
             anchor, path, expected="file", allow_missing=True
         )
     except UnsafeStorePath as exc:
         raise OperationalError(f"unsafe operational file: {path}") from exc
 
-    if path_entry_exists(path):
+    if _operational_entry_exists(path):
         return _verify_immutable_bytes(anchor, path, data)
 
     temp_path = _write_immutable_temp(path.parent, path.name, data)
@@ -126,21 +166,24 @@ def _write_immutable(anchor: Path, path: Path, data: bytes) -> bool:
             # replace a winner that appears after the safety/existence check.
             # The final name therefore never exposes bytes while they are
             # still being written.
-            os.link(temp_path, path)
+            os.link(
+                _operational_io_path(temp_path),
+                _operational_io_path(path),
+            )
         except FileExistsError:
             return _verify_immutable_bytes(anchor, path, data)
         except OSError as exc:
             # Windows can report a losing no-overwrite race as a generic
             # OSError.  Treat it as an idempotent/conflicting winner only
             # after validating the final entry; otherwise fail closed.
-            if path_entry_exists(path):
+            if _operational_entry_exists(path):
                 return _verify_immutable_bytes(anchor, path, data)
             raise OperationalError(
                 f"cannot atomically publish operational file: {path}"
             ) from exc
 
         try:
-            assert_safe_store_path(
+            _assert_safe_operational_path(
                 anchor, path, expected="file", allow_missing=False
             )
         except (OSError, UnsafeStorePath) as exc:
@@ -152,7 +195,7 @@ def _write_immutable(anchor: Path, path: Path, data: bytes) -> bool:
         # ordinary exception path removes it without obscuring the primary
         # publication result/error.
         try:
-            temp_path.unlink(missing_ok=True)
+            _operational_io_path(temp_path).unlink(missing_ok=True)
         except OSError:
             pass
 
@@ -161,7 +204,7 @@ def _write_immutable_temp(parent: Path, basename: str, data: bytes) -> Path:
     """Write and sync one ordinary same-directory publication candidate."""
 
     try:
-        assert_safe_store_path(
+        _assert_safe_operational_path(
             parent, parent, expected="directory", allow_missing=False
         )
     except (OSError, UnsafeStorePath) as exc:
@@ -170,10 +213,12 @@ def _write_immutable_temp(parent: Path, basename: str, data: bytes) -> Path:
     # it in the temporary prefix can exceed the ordinary Windows path limit
     # under a user temp root, even though the final publication path fits.
     # ``mkstemp`` supplies its own unique suffix, so no digest is needed here.
-    fd, raw_path = tempfile.mkstemp(prefix=".tmp-", dir=parent)
+    fd, raw_path = tempfile.mkstemp(
+        prefix=".tmp-", dir=_operational_io_path(parent)
+    )
     temp_path = Path(raw_path)
     try:
-        assert_safe_store_path(
+        _assert_safe_operational_path(
             parent, temp_path, expected="file", allow_missing=False
         )
         with os.fdopen(fd, "wb", closefd=True) as stream:
@@ -189,7 +234,7 @@ def _write_immutable_temp(parent: Path, basename: str, data: bytes) -> Path:
         except OSError:
             pass
         try:
-            temp_path.unlink(missing_ok=True)
+            _operational_io_path(temp_path).unlink(missing_ok=True)
         except OSError:
             pass
         raise
@@ -199,10 +244,10 @@ def _verify_immutable_bytes(anchor: Path, path: Path, data: bytes) -> bool:
     """Validate an immutable winner and report an idempotent publication."""
 
     try:
-        assert_safe_store_path(
+        _assert_safe_operational_path(
             anchor, path, expected="file", allow_missing=False
         )
-        existing = path.read_bytes()
+        existing = _operational_io_path(path).read_bytes()
     except (OSError, UnsafeStorePath) as exc:
         raise OperationalError(f"cannot verify operational file: {path}") from exc
     if existing != data:
@@ -222,10 +267,10 @@ def _read_exact_model(
     anchor: Path, path: Path, model: type[StrictModel]
 ) -> StrictModel:
     try:
-        assert_safe_store_path(
+        _assert_safe_operational_path(
             anchor, path, expected="file", allow_missing=False
         )
-        data = path.read_bytes()
+        data = _operational_io_path(path).read_bytes()
         value = model.model_validate_json(data, strict=True)
     except (OSError, ValueError) as exc:
         raise OperationalError(f"invalid operational record: {path}") from exc
@@ -326,7 +371,11 @@ class PreProjectOperationalLayout:
         # Keep an existing v1 location readable. New pre-project journals use
         # compact directory names so their immutable event filenames fit under
         # the ordinary Windows path limit beneath LOCALAPPDATA.
-        root = legacy_root if path_entry_exists(legacy_root) else home / "p" / binding
+        root = (
+            legacy_root
+            if _operational_entry_exists(legacy_root)
+            else home / "p" / binding
+        )
         return cls(anchor=anchor, root=root)
 
     @property
@@ -371,10 +420,10 @@ class ContentAddressedOperationalStore:
     def read_bytes(self, namespace: str, digest: str) -> bytes:
         path = self.path_for(namespace, digest)
         try:
-            assert_safe_store_path(
+            _assert_safe_operational_path(
                 self.anchor, path, expected="file", allow_missing=False
             )
-            data = path.read_bytes()
+            data = _operational_io_path(path).read_bytes()
         except OSError as exc:
             raise OperationalError(
                 f"operational content object is unavailable: {namespace}/{digest}"
@@ -419,7 +468,7 @@ class OperationJournal:
         # the complete key, so this opaque directory name is not an authority
         # or identity substitute.
         legacy = self.operations / safe_key
-        if path_entry_exists(legacy):
+        if _operational_entry_exists(legacy):
             return legacy
         return self.operations / sha256_digest(safe_key.encode("utf-8"))[:24]
 
@@ -433,18 +482,19 @@ class OperationJournal:
         # Continue reading the descriptive historical name. New operational
         # records use the compact name so a pre-project temp root remains
         # below the ordinary Windows path limit.
-        return legacy if path_entry_exists(legacy) else directory / "e"
+        return legacy if _operational_entry_exists(legacy) else directory / "e"
 
     def _events(self, key: str) -> tuple[tuple[str, LedgerEventV1], ...]:
         root = self._events_directory(key)
-        if not path_entry_exists(root):
+        if not _operational_entry_exists(root):
             return ()
-        assert_safe_store_path(
+        _assert_safe_operational_path(
             self.anchor, root, expected="directory", allow_missing=False
         )
         result: list[tuple[str, LedgerEventV1]] = []
         previous: str | None = None
-        for sequence, path in enumerate(sorted(root.glob("*.json")), start=1):
+        io_root = _operational_io_path(root)
+        for sequence, path in enumerate(sorted(io_root.glob("*.json")), start=1):
             loaded = _read_exact_model(self.anchor, path, LedgerEventV1)
             assert isinstance(loaded, LedgerEventV1)
             data = canonical_json_bytes(loaded)
@@ -482,7 +532,7 @@ class OperationJournal:
     def inspect(self, key: str) -> OperationState | None:
         directory = self._directory(key)
         reservation_path = directory / "reservation.json"
-        if not path_entry_exists(reservation_path):
+        if not _operational_entry_exists(reservation_path):
             return None
         reservation = _read_exact_model(
             self.anchor, reservation_path, OperationReservationV1
@@ -498,7 +548,7 @@ class OperationJournal:
             raise IntegrityError("operation reservation event binding is invalid")
         terminal_path = directory / "terminal.json"
         response: MachineResponseV1 | None = None
-        if path_entry_exists(terminal_path):
+        if _operational_entry_exists(terminal_path):
             loaded = _read_exact_model(
                 self.anchor, terminal_path, OperationTerminalV1
             )

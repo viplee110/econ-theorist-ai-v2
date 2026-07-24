@@ -196,8 +196,25 @@ choice or worker handoff. The cards are a compiled researcher-facing view, not
 a fixed discovery method or substitute for later scholar-derived
 `ResearchMove`s. This changes no canonical research schema, route, V8
 validator, gate, or disabled ResearchMove activation. It is deterministic
-candidate behavior only; the frozen attempt did not exercise it, and a fresh
-public pilot in a new `C:\tmp` root remains required.
+candidate behavior only. A fresh run at engine commit `2a81a4c` reached the
+intended `awaiting_user_choice` stop with matching panel/review bindings and
+zero user turns, worker handoffs, candidate commits, or human gates, but it is
+mixed rather than clean positive evidence. The correct UTF-8 brief in the task
+prompt became mojibake before the bridge request, and the host-created project
+name injected `Source-Aware` into the WorkPacket's Project title; the mentor
+and both collaborators then converged on provenance/source-lineage directions
+that the researcher had not requested. Ordinary `framing_team.open` also
+failed twice at a 274-character Windows target before an expert `\\?\` retry
+recovered the same physical project. Freeze
+`C:\tmp\etai-v2-ai-agent-trading-source-aware-20260724-2a81a4c`; do not apply a
+choice, create its worker, call `finish`, or treat its two high-overlap cards as
+research-quality evidence. The additive adjudication is
+`review_outputs/phase5b0_ai_agent_trading_source_aware_choice_public_pilot/evaluation_summary.md`.
+The current tree adds only host guardrails for field-specific UTF-8 fidelity,
+scientifically neutral project/lane context, a non-hash-only choice screen, and
+project-local Windows extended-length I/O. These fixes postdate the run. One
+new neutral-root public pilot remains required before claiming clean input
+fidelity, lane independence, researcher usefulness, or clean first use.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or

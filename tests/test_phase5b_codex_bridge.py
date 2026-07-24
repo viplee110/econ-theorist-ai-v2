@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -35,6 +37,7 @@ from econ_theorist.framing_team import (
     read_framing_worker_activation,
     read_framing_worker_completion_binding,
 )
+from econ_theorist.machine import operational as operational_module
 from econ_theorist.machine.models import HostOperationReceiptV1
 from econ_theorist.machine.operational import (
     ContentAddressedOperationalStore,
@@ -179,6 +182,16 @@ class Phase5BCodexBridgeTests(unittest.TestCase):
         self.assertEqual(opened.outcome, "team_ready", opened)
         assert opened.framing_team is not None
         assert opened.framing_team.team_plan_hash is not None
+        assert opened.framing_team.team_plan is not None
+        overlay_text = canonical_json_bytes(
+            opened.framing_team.team_plan.role_overlays
+        ).decode("utf-8")
+        for host_only_token in (
+            "source_aware_choice",
+            "awaiting_choice_review",
+            "online_host_search",
+        ):
+            self.assertNotIn(host_only_token, overlay_text)
         authorization = read_framing_team_delivery_authorization(
             ProjectOperationalLayout.at(StoreLayout.at(self.root)),
             route_run_id=self._delivery_binding()["route_run_id"],
@@ -441,6 +454,78 @@ class Phase5BCodexBridgeTests(unittest.TestCase):
             team_plan_hash=opened.framing_team.team_plan_hash,
         )
         self.assertEqual(authorization.source_aware_choice, "available")
+
+    @unittest.skipUnless(os.name == "nt", "Windows MAX_PATH regression")
+    def test_team_open_uses_ordinary_long_project_root(self) -> None:
+        # Match the fresh pilot's ordinary project-root length: initialization
+        # remains below MAX_PATH while the team authorization target exceeds it.
+        desired_root_length = max(len(str(self.anchor)) + 2, 69)
+        filler = "p" * (desired_root_length - len(str(self.anchor)) - 1)
+        long_root = self.anchor / filler
+        long_root.mkdir()
+        self.addCleanup(
+            shutil.rmtree,
+            operational_module._operational_io_path(long_root),
+            True,
+        )
+        bridge = CodexBridge(
+            trusted_clock=lambda: NOW,
+            preproject_operational_home=self.anchor / "long-preproject",
+        )
+        session = CodexSessionV1(
+            session_id="codex-session-phase5b-long-path",
+            selected_model="gpt-5",
+            installed_models=("gpt-5",),
+            observed_at=NOW,
+        )
+        ready = bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(long_root),
+                initialize=True,
+                project_name="AI agent trading theory",
+                requested_scope="Frame one bounded economic-theory question.",
+                framing_intent="Study mechanism design among AI trading agents.",
+                session=session,
+            )
+        )
+        self.assertEqual(ready.outcome, "ready", ready)
+        assert ready.route_run_id is not None
+        assert ready.work_packet_hash is not None
+        assert ready.delivery_envelope_hash is not None
+        opened = bridge.invoke(
+            CodexFramingTeamOpenRequestV1(
+                project_root=str(long_root),
+                route_run_id=ready.route_run_id,
+                work_packet_hash=ready.work_packet_hash,
+                delivery_envelope_hash=ready.delivery_envelope_hash,
+                session=session,
+                capability=CodexFramingTeamCapabilityV1(
+                    team_surface="available",
+                    lane_separation="logical",
+                    direct_user_capture="current_user_turn",
+                    source_aware_choice="available",
+                ),
+            )
+        )
+        self.assertEqual(opened.outcome, "team_ready", opened)
+        self.assertEqual(opened.head, ready.head)
+        assert opened.framing_team is not None
+        assert opened.framing_team.team_plan is not None
+        authorization_hash = (
+            opened.framing_team.team_plan.delivery_authorization_hash
+        )
+        operational = ProjectOperationalLayout.at(StoreLayout.at(long_root))
+        run_store = ContentAddressedOperationalStore(
+            operational.project_root,
+            operational.runs / ready.route_run_id,
+        )
+        authorization_path = run_store.path_for(
+            "framing-team-delivery-authorizations",
+            authorization_hash,
+        )
+        self.assertGreater(len(str(authorization_path)), 260)
+        self.assertFalse(str(authorization_path).startswith("\\\\?\\"))
+        self.assertEqual(replay(StoreLayout.at(long_root)).head, ready.head)
 
     def test_explicit_unavailable_retries_legacy_open_exactly(self) -> None:
         first = self._open_team()

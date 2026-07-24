@@ -17,16 +17,17 @@ schemas, validation, and routing. Act as a thin host over its bridge.
    select, open/resume, and deliver the exact WorkPacket.
 4. Initialize only when explicitly asked. Inspection/discussion never implies
    permission to create genesis.
-5. Send `requested_scope` and `framing_intent` only to start an unframed
-   project or when the user explicitly requests a new frame/reframe. Omit both
-   on every ordinary continuation after a committed route; their presence is
-   an explicit reframe request. If an omitted-input continuation is blocked,
-   surface its diagnostic rather than replaying the old framing inputs.
-   If an explicit different brief collides with an existing run, use
-   `reframe.repair` only for a bridge-accepted untouched, empty-focus framing v2
-   run with no active team. Bind the exact delivery, capture, target, and new
-   brief; replay the identical request after interruption. Its persisted
-   disposition is operational and noncanonical, not a scientific choice/gate.
+5. Send `requested_scope` and `framing_intent` only for an unframed project or explicit reframe. Omit both on every ordinary continuation. Freeze each
+   intended field separately, write the request as UTF-8, re-read it, and
+   require each decoded field and corresponding `WorkPacket.run_input` field
+   to equal its intended string. Preserve the user's framing text; do not make
+   the two fields identical when their intended meanings differ. Stop before
+   lane exposure on mismatch. Use a user-supplied or neutral `project_name`;
+   never add a capability, pilot/task label, expected result, or scientific
+   primitive. Surface omitted-input diagnostics
+   rather than replaying the old framing inputs. If a brief collides with a run,
+   use `reframe.repair` only for a bridge-accepted untouched, empty-focus
+   framing-v2 run with no active team. Bind delivery, capture, target, and new brief; exact retry preserves its noncanonical operational disposition.
 6. Follow the bridge status exactly. Stop and surface the smallest necessary
    user choice for an ambiguous route, structural human gate, privacy blocker,
    incompatible root, or repair requirement. After the user chooses one route
@@ -57,10 +58,11 @@ schemas, validation, and routing. Act as a thin host over its bridge.
     clarification, handoff, or intentional pause; resume the same immutable run.
 ## Use the bounded framing team
 
-- Only when the bridge returns `team_ready`, start exactly one mentor and two
-  sealed collaborator advisory lanes. Give each the exact delivered WorkPacket
-  plus only its bridge-supplied role overlay. Advisory lanes cannot write the
-  candidate, call completion, see another lane's output, or delegate again.
+- Only when the bridge returns `team_ready`, start one mentor and two clean-context sealed lanes,
+  each containing only the exact WorkPacket and its role overlay: no inherited
+  coordinator/task turns, host path, pilot/session/capability/review metadata,
+  or peer output. Capability labels authorize host operations only, never a
+  research primitive. Lanes cannot write, complete, see peers, or delegate.
 - If collaborator outputs are byte-identical or plainly the same proposal, ask
   collaborator B for one bounded diversity repair before publishing the panel.
 - Publish the raw drafts without replacing them with titles or short summaries.
@@ -75,10 +77,10 @@ schemas, validation, and routing. Act as a thin host over its bridge.
   screen; never relabel or select it as a third direction.
 - Cards are an automatically compiled decision view, not a fixed research
   method. They are orientation, never novelty or absorption evidence.
-- Only after `awaiting_user_choice`, show the attributed raw panel and, when a
-  review is present, its mentor screen and every card. Then ask one natural-
-  language choice and send the exact current user turn without sharpening or
-  summarizing it.
+- Only after `awaiting_user_choice`, put the attributed raw panel and, when
+  present, mentor screen, every complete card, and source list/limits in the
+  user-facing choice screen. Hashes, status, paths, or report links alone are
+  not delivery. Ask one natural-language choice; relay the exact current user turn without sharpening or summarizing it.
 - If source access fails, surface a retryable blocker; never invent citations
   or downgrade the active team to the legacy path.
 - Follow `awaiting_clarification`, `new_brief_required`, and `single_fallback`

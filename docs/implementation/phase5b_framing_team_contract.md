@@ -63,6 +63,18 @@ role overlay. The overlay assigns a research responsibility and free-text
 output shape; it does not copy, weaken, or extend the route instructions,
 validator, allowed operations, privacy clearance, or output contract.
 
+For every start or explicit reframe, the host freezes the intended
+`requested_scope` and `framing_intent` strings separately before serialization.
+It writes and decodes the request as UTF-8, verifies each request field against
+its corresponding intended string before invocation, and verifies each
+corresponding `P.run_input` field before any lane exposure. The user's framing
+text is preserved; the two fields need not be identical when their intended
+meanings differ.
+A hash of a faithfully preserved corrupted string is insufficient. A mismatch
+stops; it does not authorize translation, repair, or sharpening. A host-created
+project name is administrative and may not introduce a capability, pilot arm,
+expected result, or scientific primitive absent from the direct-user input.
+
 The original Phase 5A delivery remains truthfully a single-coordinator
 delivery. Before any child context sees `P`, the engine-owned bridge publishes
 one `FramingTeamDeliveryAuthorizationV1` sidecar bound to that exact envelope,
@@ -92,6 +104,13 @@ the eventual researcher selection, or worker output while authoring. The
 mentor does not see collaborator output. Logical sealing is sufficient for the
 trusted-local exploratory profile when recorded honestly; it is not described
 as cryptographic or cross-provider independence.
+
+“`P` plus one role overlay” means a clean execution context, not merely peer
+output separation. It excludes inherited coordinator/task history and all
+outside-`P` host paths, task names, experimental-arm labels, session or
+capability records, planned post-panel review metadata, and prior lane output.
+Operational capability names have no scientific authority and may not seed or
+be paraphrased into a primitive, benchmark, or direction.
 
 An advisory lane may reason, criticize, and write free-form Markdown. It may
 not write the candidate path, call `candidate.complete`, write canonical
@@ -176,11 +195,14 @@ submitted source cards; it does not certify acquisition provenance.
 
 ## 6. Researcher choice and authority
 
-The researcher may select A, select B, combine them, rewrite them, reject all,
-or request another bounded panel. Ambiguous natural language remains
-`awaiting_clarification`; the system does not infer a structural choice.
-The mentor's critique may shape a rewrite but is not itself a selectable third
-direction.
+The researcher may select A, select B, combine them, rewrite them, or reject
+all. Ambiguous natural language remains `awaiting_clarification`; the system
+does not infer a structural choice. The mentor's critique may shape a rewrite
+but is not itself a selectable third direction. A researcher may naturally ask
+for another panel, but the first public slice treats that as a materially new
+brief and stops safely as `new_brief_required`; it does not recall the advisors
+or create a second panel inside the active team. Seamless recovery into a new
+team round remains later work.
 
 When source-aware choice is available, publishing the blind panel yields
 `awaiting_choice_review`, not a user-choice request. The system asks the
@@ -188,6 +210,11 @@ researcher only after one immutable review binds the original panel. It first
 shows the mentor screen and both complete structured decision cards and
 preserves access to every raw attributed draft; titles or one-line summaries
 are not an adequate panel.
+The immediate `awaiting_user_choice` response is the researcher-facing choice
+screen. It must deliver the mentor screen, both complete cards, source list and
+coverage limits, and access to the complete attributed drafts. A response
+containing only status, digests, paths, or a report link is not a delivered
+choice screen; the operational report is evidence, not the user interface.
 Every resulting synthesis or stop binds the exact review through a separate
 selection sidecar. A legacy run that did not declare this capability remains
 replayable through the older direct-choice path.
