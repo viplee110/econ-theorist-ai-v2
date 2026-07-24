@@ -7,6 +7,7 @@ description: Operate Econ Theorist AI v2 through its installed machine protocol 
 
 Use the installed engine as sole owner of workflow, state, instructions,
 schemas, validation, and routing. Act as a thin host over its bridge.
+
 ## Operate the project
 
 1. Use only the explicit project root; do not scan parent/sibling directories.
@@ -44,8 +45,8 @@ schemas, validation, and routing. Act as a thin host over its bridge.
    Do not read package source, tests, fixtures, or reference candidates; focus
    model judgment on the WorkPacket's economic content.
 10. Submit the candidate through the bridge's completion request. Report success
-   only when the canonical response says the candidate was committed; a file
-   write, plausible draft, or staged candidate is not completion.
+    only when the canonical response says the candidate was committed; a file
+    write, plausible draft, or staged candidate is not completion.
 11. After interruption, invoke the same bridge request or inspect its recorded
     operation state. Preserve exact operation keys and bindings; do not create a
     replacement run merely because chat history is missing.
@@ -62,17 +63,34 @@ schemas, validation, and routing. Act as a thin host over its bridge.
   candidate, call completion, see another lane's output, or delegate again.
 - If collaborator outputs are byte-identical or plainly the same proposal, ask
   collaborator B for one bounded diversity repair before publishing the panel.
-- Publish raw drafts, show the attributed panel, ask one natural-language
-  choice, and send the exact current user turn without silently sharpening it.
+- Publish the raw drafts without replacing them with titles or short summaries.
+  If the bridge returns `awaiting_choice_review`, do not ask the user to choose.
+- Claim source-aware choice available only when privacy/egress permits one
+  bounded literature orientation. The coordinator performs it without recalling
+  lanes or treating model memory as checked; submit sources, limits, and cards.
+- Each collaborator card must state the concrete question, exact benchmark,
+  economic value, ordinary-agent baseline, one operational AI primitive,
+  mechanism-design delta, closest sources and overlap, remaining theory delta,
+  falsifiable increment, and kill condition. Apply the mentor's critique as a
+  screen; never relabel or select it as a third direction.
+- Cards are an automatically compiled decision view, not a fixed research
+  method. They are orientation, never novelty or absorption evidence.
+- Only after `awaiting_user_choice`, show the attributed raw panel and, when a
+  review is present, its mentor screen and every card. Then ask one natural-
+  language choice and send the exact current user turn without sharpening or
+  summarizing it.
+- If source access fails, surface a retryable blocker; never invent citations
+  or downgrade the active team to the legacy path.
 - Follow `awaiting_clarification`, `new_brief_required`, and `single_fallback`
-  literally. For `single_fallback`, disclose that the team is unavailable and
-  use exactly one worker with the packet and authoring contract; never pretend
-  that one model supplied three independent opinions. The other two statuses
-  create no worker. If an activated team returns `new_brief_required`, stop;
-  the narrow untouched-run `reframe.repair` operation does not recover that
-  branch. The same stop rule applies after a terminal `kill`.
-- Only `handoff_ready` permits exactly one research worker. Give it the packet and
-  candidate authoring contract, panel, synthesis, and handoff; include the exact handoff hash and observable agent/model labels in one `stage_and_commit`; never use `stage_only` or `commit_staged`, and stop after framing.
+  literally. A fallback uses the existing Phase 5A path with one disclosed
+  worker, the packet, and its authoring contract; never pretend it is three.
+  Other stops create no worker; `reframe.repair` cannot recover an activated
+  team's `new_brief_required` or terminal `kill`.
+- Only `handoff_ready` permits exactly one research worker. Give it the packet,
+  candidate authoring contract, panel, choice review when present, synthesis,
+  and handoff; include the exact handoff hash and observable agent/model labels
+  in one `stage_and_commit`; never use `stage_only` or `commit_staged`, and stop
+  after framing.
 
 ## Preserve boundaries
 

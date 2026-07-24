@@ -9,9 +9,9 @@ only route to a canonical commit.
 
 from __future__ import annotations
 
-from typing import Literal, TypeVar
+from typing import Any, Literal, TypeVar
 
-from pydantic import model_validator
+from pydantic import model_serializer, model_validator
 
 from .codec import canonical_json_bytes, sha256_digest
 from .machine.models import OperationKey, WorkPacketV1
@@ -116,6 +116,7 @@ class FramingTeamDeliveryAuthorizationV1(_FramingPacketBoundV1):
     )
     lane_separation_claim: Literal["logical", "host_enforced"]
     direct_user_capture_claim: Literal["current_user_turn"] = "current_user_turn"
+    source_aware_choice: Literal["available"] | None = None
     canonical_write_allowed: Literal[False] = False
     authority_semantics: Literal[
         "phase5b_declared_bounded_team_delegation_after_single_coordinator_delivery"
@@ -131,6 +132,13 @@ class FramingTeamDeliveryAuthorizationV1(_FramingPacketBoundV1):
         ):
             raise ValueError("framing team authorization requires the exact four lanes")
         return self
+
+    @model_serializer(mode="wrap")
+    def _preserve_legacy_authorization_bytes(self, handler: Any) -> Any:
+        data = handler(self)
+        if self.source_aware_choice is None:
+            data.pop("source_aware_choice", None)
+        return data
 
 
 class FramingTeamPlanV1(_FramingPacketBoundV1):
@@ -202,6 +210,122 @@ class FramingTeamPanelV1(_FramingPacketBoundV1):
                 raise ValueError("framing team output binding differs from the panel")
             if output.team_plan_hash != self.team_plan_hash:
                 raise ValueError("framing team output references a different plan")
+        return self
+
+
+class FramingChoiceSourceV1(StrictModel):
+    """One bounded source used only to orient a framing choice."""
+
+    source_schema: Literal["econ-theorist/framing-choice-source/v1"] = (
+        "econ-theorist/framing-choice-source/v1"
+    )
+    source_id: StableId
+    citation: NonEmptyString
+    locator: NonEmptyString
+    source_kind: NonEmptyString
+    access_level: Literal["metadata", "abstract", "full_text"]
+    retrieved_at: NonEmptyString
+    supported_claim_markdown: NonEmptyString
+    limitations_markdown: NonEmptyString
+
+
+class FramingDirectionCardV1(StrictModel):
+    """Source-oriented comparison card for one unchanged blind-panel lane."""
+
+    card_schema: Literal["econ-theorist/framing-direction-card/v1"] = (
+        "econ-theorist/framing-direction-card/v1"
+    )
+    lane_id: Literal["collaborator_a", "collaborator_b"]
+    research_question: NonEmptyString
+    exact_benchmark: NonEmptyString
+    economic_significance: NonEmptyString
+    ordinary_agent_baseline: NonEmptyString
+    ai_specific_primitive: NonEmptyString
+    why_ai_primitive_is_distinct: NonEmptyString
+    mechanism_design_delta: NonEmptyString
+    classic_source_ids: tuple[StableId, ...]
+    recent_source_ids: tuple[StableId, ...]
+    overlap_risk: Literal["high", "medium", "unresolved"]
+    closest_literature_overlap: NonEmptyString
+    remaining_theory_delta: NonEmptyString
+    falsifiable_theory_increment: NonEmptyString
+    kill_condition: NonEmptyString
+    decision_summary_markdown: NonEmptyString
+
+    @model_validator(mode="after")
+    def _source_groups_are_nonempty_and_unique(self) -> "FramingDirectionCardV1":
+        if not self.classic_source_ids:
+            raise ValueError("direction card requires at least one classic source")
+        if not self.recent_source_ids:
+            raise ValueError("direction card requires at least one recent source")
+        if len(set(self.classic_source_ids)) != len(self.classic_source_ids):
+            raise ValueError("direction card classic source ids must be unique")
+        if len(set(self.recent_source_ids)) != len(self.recent_source_ids):
+            raise ValueError("direction card recent source ids must be unique")
+        if set(self.classic_source_ids) & set(self.recent_source_ids):
+            raise ValueError(
+                "direction card classic and recent source ids must be distinct"
+            )
+        return self
+
+
+class FramingChoiceReviewV1(_FramingPacketBoundV1):
+    """The one source-aware coordinator review of an immutable raw panel."""
+
+    review_schema: Literal["econ-theorist/framing-choice-review/v1"] = (
+        "econ-theorist/framing-choice-review/v1"
+    )
+    team_plan_hash: Digest
+    panel_hash: Digest
+    coordinator_agent_label: StableId
+    coordinator_model_observation: NonEmptyString
+    coordinator_review_count: Literal[1] = 1
+    advisory_lanes_reinvoked: Literal[False] = False
+    acquisition_mode: Literal["online_host_search", "offline_user_bundle"]
+    search_scope: NonEmptyString
+    coverage_limits: NonEmptyString
+    mentor_screen_markdown: NonEmptyString
+    sources: tuple[FramingChoiceSourceV1, ...]
+    direction_cards: tuple[
+        FramingDirectionCardV1,
+        FramingDirectionCardV1,
+    ]
+    canonical_write_allowed: Literal[False] = False
+    authority_semantics: Literal[
+        "orientation_only_not_literature_novelty_evidence"
+    ] = "orientation_only_not_literature_novelty_evidence"
+
+    @model_validator(mode="after")
+    def _complete_source_aware_comparison(self) -> "FramingChoiceReviewV1":
+        if len(self.sources) < 2:
+            raise ValueError("framing choice review requires at least two sources")
+        source_ids = tuple(source.source_id for source in self.sources)
+        if len(set(source_ids)) != len(source_ids):
+            raise ValueError("framing choice review source ids must be unique")
+        lane_ids = tuple(card.lane_id for card in self.direction_cards)
+        if set(lane_ids) != {"collaborator_a", "collaborator_b"}:
+            raise ValueError(
+                "framing choice review requires exactly the two collaborator lanes"
+            )
+        known_sources = {source.source_id: source for source in self.sources}
+        for card in self.direction_cards:
+            referenced = set(card.classic_source_ids) | set(card.recent_source_ids)
+            unknown = referenced - set(known_sources)
+            if unknown:
+                raise ValueError(
+                    "framing direction card references an unknown source id"
+                )
+            for label, ids in (
+                ("classic", card.classic_source_ids),
+                ("recent", card.recent_source_ids),
+            ):
+                if all(
+                    known_sources[source_id].access_level == "metadata"
+                    for source_id in ids
+                ):
+                    raise ValueError(
+                        f"direction card requires an inspected {label} source"
+                    )
         return self
 
 
@@ -327,6 +451,23 @@ class FramingTeamStopV1(_FramingPacketBoundV1):
     )
 
 
+class FramingSourceAwareSelectionBindingV1(_FramingPacketBoundV1):
+    """Bind one user synthesis or stop to the exact source-aware review."""
+
+    binding_schema: Literal[
+        "econ-theorist/framing-source-aware-selection-binding/v1"
+    ] = "econ-theorist/framing-source-aware-selection-binding/v1"
+    team_plan_hash: Digest
+    panel_hash: Digest
+    review_hash: Digest
+    selection_record_kind: Literal["researcher_synthesis", "team_stop"]
+    selection_record_hash: Digest
+    canonical_write_allowed: Literal[False] = False
+    authority_semantics: Literal[
+        "orientation_only_not_literature_novelty_evidence"
+    ] = "orientation_only_not_literature_novelty_evidence"
+
+
 class FramingTeamTerminalOutcomeV1(_FramingPacketBoundV1):
     """The one immutable terminal direction allowed for a framing team run."""
 
@@ -394,6 +535,7 @@ def build_framing_team_delivery_authorization(
     adapter_version: str,
     host_session_id: str,
     lane_separation_claim: Literal["logical", "host_enforced"],
+    source_aware_choice: Literal["available"] | None = None,
 ) -> FramingTeamDeliveryAuthorizationV1:
     """Build the declaration for three advisors and one conditional worker."""
 
@@ -408,6 +550,7 @@ def build_framing_team_delivery_authorization(
         adapter_version=adapter_version,
         host_session_id=host_session_id,
         lane_separation_claim=lane_separation_claim,
+        source_aware_choice=source_aware_choice,
     )
 
 
@@ -462,6 +605,50 @@ def _read_fixed_record(
     if canonical_json_bytes(value) != data:
         raise OperationalError(f"noncanonical fixed framing-team record: {filename}")
     return value
+
+
+def _read_fixed_content_record(
+    operational: ProjectOperationalLayout,
+    route_run_id: str,
+    filename: str,
+    namespace: str,
+    model: type[_RecordT],
+    *,
+    label: str,
+    expected_digest: str | None = None,
+) -> tuple[str, _RecordT] | None:
+    value = _read_fixed_record(
+        operational, route_run_id, filename, model
+    )
+    if value is None:
+        return None
+    digest = sha256_digest(canonical_json_bytes(value))
+    if expected_digest is not None and digest != expected_digest:
+        raise OperationalError(f"{label} hash differs from expected binding")
+    stored = _read_record(
+        _team_store(operational, route_run_id), namespace, digest, model
+    )
+    if stored != value:
+        raise OperationalError(f"fixed {label} differs from content store")
+    return digest, value
+
+
+def _publish_fixed_content_record(
+    store: ContentAddressedOperationalStore,
+    filename: str,
+    namespace: str,
+    value: _RecordT,
+    *,
+    label: str,
+) -> tuple[str, _RecordT]:
+    expected_hash = sha256_digest(canonical_json_bytes(value))
+    digest, _ = store.install(namespace, value)
+    if digest != expected_hash:  # pragma: no cover - digest invariant
+        raise OperationalError(f"{label} digest changed during publish")
+    write_immutable_operational(
+        store.anchor, store.root / filename, canonical_json_bytes(value)
+    )
+    return digest, value
 
 
 def _load_current_framing_packet(
@@ -642,9 +829,8 @@ def open_framing_team_plan(
         raise OperationalError(
             "requested team isolation differs from delivery authorization"
         )
-    store = _team_store(operational, route_run_id)
-    authorization_hash, _ = store.install(
-        "framing-team-delivery-authorizations", delivery_authorization
+    authorization_hash = sha256_digest(
+        canonical_json_bytes(delivery_authorization)
     )
     plan = FramingTeamPlanV1(
         **_packet_binding(packet, work_packet_hash),
@@ -653,6 +839,19 @@ def open_framing_team_plan(
         delivery_authorization_hash=authorization_hash,
         role_overlays=dict(_ROLE_OVERLAYS),
     )
+    existing = _read_activation(operational, packet, work_packet_hash)
+    if existing is not None:
+        if existing[2] != delivery_authorization or existing[1] != plan:
+            raise OperationalError(
+                "framing team is already active under a different authorization"
+            )
+        return existing[0], existing[1]
+    store = _team_store(operational, route_run_id)
+    installed_authorization_hash, _ = store.install(
+        "framing-team-delivery-authorizations", delivery_authorization
+    )
+    if installed_authorization_hash != authorization_hash:  # pragma: no cover
+        raise OperationalError("framing team authorization digest changed")
     plan_hash, _ = store.install("framing-team-plans", plan)
     write_immutable_operational(
         store.anchor,
@@ -831,6 +1030,412 @@ def read_framing_team_panel(
     return panel
 
 
+def framing_choice_review_required(
+    operational: ProjectOperationalLayout,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    require_current_head: bool = True,
+) -> bool:
+    """Return the immutable source-aware mode of the active team plan."""
+
+    packet = _load_current_framing_packet(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        require_current_head=require_current_head,
+    )
+    activation = _read_activation(operational, packet, work_packet_hash)
+    if activation is None:
+        raise OperationalError("framing team is not active")
+    return activation[2].source_aware_choice == "available"
+
+
+def build_framing_choice_review(
+    panel: FramingTeamPanelV1,
+    panel_hash: str,
+    *,
+    coordinator_agent_label: str,
+    coordinator_model_observation: str,
+    acquisition_mode: Literal["online_host_search", "offline_user_bundle"],
+    search_scope: str,
+    coverage_limits: str,
+    mentor_screen_markdown: str,
+    sources: tuple[FramingChoiceSourceV1, ...],
+    direction_cards: tuple[
+        FramingDirectionCardV1,
+        FramingDirectionCardV1,
+    ],
+) -> FramingChoiceReviewV1:
+    """Build one comparison review without changing the raw blind panel."""
+
+    return FramingChoiceReviewV1(
+        **panel.model_dump(include=set(_FramingPacketBoundV1.model_fields)),
+        team_plan_hash=panel.team_plan_hash,
+        panel_hash=panel_hash,
+        coordinator_agent_label=coordinator_agent_label,
+        coordinator_model_observation=coordinator_model_observation,
+        acquisition_mode=acquisition_mode,
+        search_scope=search_scope,
+        coverage_limits=coverage_limits,
+        mentor_screen_markdown=mentor_screen_markdown,
+        sources=sources,
+        direction_cards=direction_cards,
+    )
+
+
+def _validate_choice_review(
+    operational: ProjectOperationalLayout,
+    packet: WorkPacketV1,
+    work_packet_hash: str,
+    review: FramingChoiceReviewV1,
+) -> None:
+    activation = _read_activation(operational, packet, work_packet_hash)
+    if activation is None or activation[2].source_aware_choice != "available":
+        raise OperationalError(
+            "framing choice review was not authorized at team activation"
+        )
+    _require_binding(review, packet, work_packet_hash, label="framing choice review")
+    if review.team_plan_hash != activation[0]:
+        raise OperationalError("framing choice review references a different team plan")
+    panel = _read_record(
+        _team_store(operational, packet.route_run_id),
+        "framing-team-panels",
+        review.panel_hash,
+        FramingTeamPanelV1,
+    )
+    _require_binding(panel, packet, work_packet_hash, label="framing team panel")
+    if panel.team_plan_hash != review.team_plan_hash:
+        raise OperationalError(
+            "framing choice review references a panel from a different plan"
+        )
+
+
+def _read_choice_review_for_packet(
+    operational: ProjectOperationalLayout,
+    packet: WorkPacketV1,
+    work_packet_hash: str,
+    *,
+    expected_review_hash: str | None = None,
+) -> tuple[str, FramingChoiceReviewV1] | None:
+    result = _read_fixed_content_record(
+        operational,
+        packet.route_run_id,
+        "framing-choice-review.json",
+        "framing-choice-reviews",
+        FramingChoiceReviewV1,
+        label="framing choice review",
+        expected_digest=expected_review_hash,
+    )
+    if result is None:
+        return None
+    review_hash, review = result
+    _validate_choice_review(operational, packet, work_packet_hash, review)
+    return result
+
+
+def publish_framing_choice_review(
+    operational: ProjectOperationalLayout,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    panel_hash: str,
+    review: FramingChoiceReviewV1,
+) -> tuple[str, FramingChoiceReviewV1]:
+    """Publish the one immutable source-aware review, with exact retry."""
+
+    packet = _load_current_framing_packet(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+    )
+    if review.panel_hash != panel_hash:
+        raise OperationalError("framing choice review references a different panel")
+    _validate_choice_review(operational, packet, work_packet_hash, review)
+    expected_hash = sha256_digest(canonical_json_bytes(review))
+    existing = _read_choice_review_for_packet(
+        operational, packet, work_packet_hash
+    )
+    if existing is not None:
+        if existing != (expected_hash, review):
+            raise OperationalError(
+                "framing run already has a different source-aware choice review"
+            )
+        return existing
+    if _read_terminal_outcome(operational, packet, work_packet_hash) is not None:
+        raise OperationalError(
+            "cannot publish a framing choice review after terminal direction"
+        )
+    return _publish_fixed_content_record(
+        _team_store(operational, route_run_id),
+        "framing-choice-review.json",
+        "framing-choice-reviews",
+        review,
+        label="framing choice review",
+    )
+
+
+def read_framing_choice_review(
+    operational: ProjectOperationalLayout,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    review_hash: str,
+    require_current_head: bool = True,
+) -> FramingChoiceReviewV1:
+    """Read the exact fixed review and all of its packet/panel bindings."""
+
+    packet = _load_current_framing_packet(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        require_current_head=require_current_head,
+    )
+    result = _read_choice_review_for_packet(
+        operational,
+        packet,
+        work_packet_hash,
+        expected_review_hash=review_hash,
+    )
+    if result is None:
+        raise OperationalError("framing choice review is missing")
+    return result[1]
+
+
+def _selection_binding_filename(selection_record_hash: str) -> str:
+    key_digest = sha256_digest(selection_record_hash.encode("utf-8"))
+    # Keep the fixed index below the ordinary Windows path limit even when the
+    # operational run id and temporary project root are both long.
+    return f"choice/{key_digest}.json"
+
+
+def _read_choice_selection(
+    store: ContentAddressedOperationalStore,
+    kind: Literal["researcher_synthesis", "team_stop"],
+    digest: str,
+) -> FramingResearcherSynthesisV1 | FramingTeamStopV1:
+    if kind == "researcher_synthesis":
+        return _read_record(
+            store, "framing-team-syntheses", digest, FramingResearcherSynthesisV1
+        )
+    return _read_record(store, "framing-team-stops", digest, FramingTeamStopV1)
+
+
+def _require_choice_selection(
+    selection: FramingResearcherSynthesisV1 | FramingTeamStopV1,
+    packet: WorkPacketV1,
+    work_packet_hash: str,
+    *,
+    team_plan_hash: str,
+    panel_hash: str,
+) -> None:
+    _require_binding(
+        selection, packet, work_packet_hash, label="framing choice selection"
+    )
+    if (
+        selection.team_plan_hash != team_plan_hash
+        or selection.panel_hash != panel_hash
+    ):
+        raise OperationalError(
+            "source-aware selection differs from its review binding"
+        )
+
+
+def _read_source_aware_selection_for_packet(
+    operational: ProjectOperationalLayout,
+    packet: WorkPacketV1,
+    work_packet_hash: str,
+    *,
+    selection_record_hash: str,
+) -> tuple[str, FramingSourceAwareSelectionBindingV1] | None:
+    result = _read_fixed_content_record(
+        operational,
+        packet.route_run_id,
+        _selection_binding_filename(selection_record_hash),
+        "choice-links",
+        FramingSourceAwareSelectionBindingV1,
+        label="source-aware selection binding",
+    )
+    if result is None:
+        return None
+    _, binding = result
+    _require_binding(
+        binding,
+        packet,
+        work_packet_hash,
+        label="source-aware selection binding",
+    )
+    if binding.selection_record_hash != selection_record_hash:
+        raise OperationalError(
+            "source-aware selection binding names a different selection record"
+        )
+    review_result = _read_choice_review_for_packet(
+        operational,
+        packet,
+        work_packet_hash,
+        expected_review_hash=binding.review_hash,
+    )
+    if review_result is None:
+        raise OperationalError(
+            "source-aware selection binding lacks its exact choice review"
+        )
+    review = review_result[1]
+    if (
+        binding.team_plan_hash != review.team_plan_hash
+        or binding.panel_hash != review.panel_hash
+    ):
+        raise OperationalError(
+            "source-aware selection binding differs from its choice review"
+        )
+    selection = _read_choice_selection(
+        _team_store(operational, packet.route_run_id),
+        binding.selection_record_kind,
+        selection_record_hash,
+    )
+    _require_choice_selection(
+        selection,
+        packet,
+        work_packet_hash,
+        team_plan_hash=binding.team_plan_hash,
+        panel_hash=binding.panel_hash,
+    )
+    return result
+
+
+def publish_framing_source_aware_selection_binding(
+    operational: ProjectOperationalLayout,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    review_hash: str,
+    selection_record_kind: Literal["researcher_synthesis", "team_stop"],
+    selection_record_hash: str,
+) -> tuple[str, FramingSourceAwareSelectionBindingV1]:
+    """Bind one existing synthesis or stop to the exact fixed review."""
+
+    packet = _load_current_framing_packet(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+    )
+    review_result = _read_choice_review_for_packet(
+        operational,
+        packet,
+        work_packet_hash,
+        expected_review_hash=review_hash,
+    )
+    if review_result is None:
+        raise OperationalError("source-aware selection lacks a choice review")
+    review = review_result[1]
+    store = _team_store(operational, route_run_id)
+    selection = _read_choice_selection(
+        store, selection_record_kind, selection_record_hash
+    )
+    if (
+        isinstance(selection, FramingResearcherSynthesisV1)
+        and "mentor" in selection.selected_lane_ids
+    ):
+        raise OperationalError(
+            "source-aware choice cannot select the mentor as a direction"
+        )
+    _require_choice_selection(
+        selection,
+        packet,
+        work_packet_hash,
+        team_plan_hash=review.team_plan_hash,
+        panel_hash=review.panel_hash,
+    )
+    binding = FramingSourceAwareSelectionBindingV1(
+        **_packet_binding(packet, work_packet_hash),
+        team_plan_hash=review.team_plan_hash,
+        panel_hash=review.panel_hash,
+        review_hash=review_hash,
+        selection_record_kind=selection_record_kind,
+        selection_record_hash=selection_record_hash,
+    )
+    expected_hash = sha256_digest(canonical_json_bytes(binding))
+    existing = _read_source_aware_selection_for_packet(
+        operational,
+        packet,
+        work_packet_hash,
+        selection_record_hash=selection_record_hash,
+    )
+    if existing is not None:
+        if existing != (expected_hash, binding):
+            raise OperationalError(
+                "selection already has a different source-aware review binding"
+            )
+        result = existing
+    else:
+        result = _publish_fixed_content_record(
+            store,
+            _selection_binding_filename(selection_record_hash),
+            "choice-links",
+            binding,
+            label="source-aware selection binding",
+        )
+    if isinstance(selection, FramingResearcherSynthesisV1):
+        if selection.disposition in {"park", "kill"}:
+            terminal_status: FramingTeamTerminalStatus = (
+                "parked" if selection.disposition == "park" else "killed"
+            )
+            _publish_terminal_outcome(
+                operational,
+                packet,
+                work_packet_hash,
+                FramingTeamTerminalOutcomeV1(
+                    **_packet_binding(packet, work_packet_hash),
+                    team_plan_hash=selection.team_plan_hash,
+                    panel_hash=selection.panel_hash,
+                    status=terminal_status,
+                    outcome_record_hash=selection_record_hash,
+                ),
+            )
+    elif selection.status == "new_brief_required":
+        _publish_terminal_outcome(
+            operational,
+            packet,
+            work_packet_hash,
+            FramingTeamTerminalOutcomeV1(
+                **_packet_binding(packet, work_packet_hash),
+                team_plan_hash=selection.team_plan_hash,
+                panel_hash=selection.panel_hash,
+                status="new_brief_required",
+                outcome_record_hash=selection_record_hash,
+            ),
+        )
+    return result
+
+
+def read_framing_source_aware_selection_binding(
+    operational: ProjectOperationalLayout,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    selection_record_hash: str,
+    require_current_head: bool = True,
+) -> FramingSourceAwareSelectionBindingV1:
+    """Read and revalidate a synthesis/stop-to-review binding."""
+
+    packet = _load_current_framing_packet(
+        operational,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        require_current_head=require_current_head,
+    )
+    result = _read_source_aware_selection_for_packet(
+        operational,
+        packet,
+        work_packet_hash,
+        selection_record_hash=selection_record_hash,
+    )
+    if result is None:
+        raise OperationalError(
+            "source-aware selection binding is required but missing"
+        )
+    return result[1]
+
+
 def build_framing_researcher_synthesis(
     panel: FramingTeamPanelV1,
     panel_hash: str,
@@ -891,6 +1496,23 @@ def publish_framing_researcher_synthesis(
     if activation is None or activation[0] != panel.team_plan_hash:
         raise OperationalError("researcher synthesis uses a non-active plan")
     plan = activation[1]
+    source_aware = activation[2].source_aware_choice == "available"
+    if source_aware:
+        review_result = _read_choice_review_for_packet(
+            operational, packet, work_packet_hash
+        )
+        if review_result is None:
+            raise OperationalError(
+                "source-aware researcher synthesis requires the fixed choice review"
+            )
+        if review_result[1].panel_hash != panel_hash:
+            raise OperationalError(
+                "source-aware researcher synthesis differs from the reviewed panel"
+            )
+        if "mentor" in synthesis.selected_lane_ids:
+            raise OperationalError(
+                "source-aware choice cannot select the mentor as a direction"
+            )
     _require_binding(plan, packet, work_packet_hash, label="framing team plan")
     _require_binding(panel, packet, work_packet_hash, label="framing team panel")
     _require_binding(
@@ -928,7 +1550,7 @@ def publish_framing_researcher_synthesis(
     synthesis_hash, _ = store.install("framing-team-syntheses", synthesis)
     if synthesis_hash != expected_synthesis_hash:  # pragma: no cover
         raise OperationalError("researcher synthesis digest changed during publish")
-    if synthesis.disposition in {"park", "kill"}:
+    if synthesis.disposition in {"park", "kill"} and not source_aware:
         status: FramingTeamTerminalStatus = (
             "parked" if synthesis.disposition == "park" else "killed"
         )
@@ -1001,6 +1623,22 @@ def publish_framing_team_stop(
         route_run_id=route_run_id,
         work_packet_hash=work_packet_hash,
     )
+    activation = _read_activation(operational, packet, work_packet_hash)
+    if activation is None or activation[0] != panel.team_plan_hash:
+        raise OperationalError("framing team stop uses a non-active plan")
+    source_aware = activation[2].source_aware_choice == "available"
+    if source_aware:
+        review_result = _read_choice_review_for_packet(
+            operational, packet, work_packet_hash
+        )
+        if review_result is None:
+            raise OperationalError(
+                "source-aware framing stop requires the fixed choice review"
+            )
+        if review_result[1].panel_hash != panel_hash:
+            raise OperationalError(
+                "source-aware framing stop differs from the reviewed panel"
+            )
     _require_binding(stop, packet, work_packet_hash, label="framing team stop")
     if stop.panel_hash != panel_hash:
         raise OperationalError("framing team stop references a different panel")
@@ -1023,7 +1661,7 @@ def publish_framing_team_stop(
     )
     if stop_hash != expected_stop_hash:  # pragma: no cover
         raise OperationalError("framing team stop digest changed during publish")
-    if stop.status == "new_brief_required":
+    if stop.status == "new_brief_required" and not source_aware:
         _publish_terminal_outcome(
             operational,
             packet,
@@ -1063,6 +1701,9 @@ def publish_framing_worker_handoff(
     panel = _read_record(
         store, "framing-team-panels", synthesis.panel_hash, FramingTeamPanelV1
     )
+    activation = _read_activation(operational, packet, work_packet_hash)
+    if activation is None or activation[0] != panel.team_plan_hash:
+        raise OperationalError("worker handoff uses a non-active plan")
     _require_binding(panel, packet, work_packet_hash, label="framing team panel")
     _require_binding(
         synthesis, packet, work_packet_hash, label="researcher synthesis"
@@ -1073,6 +1714,21 @@ def publish_framing_worker_handoff(
         raise OperationalError(
             f"{synthesis.disposition} framing disposition has no worker handoff"
         )
+    if activation[2].source_aware_choice == "available":
+        selection_binding = _read_source_aware_selection_for_packet(
+            operational,
+            packet,
+            work_packet_hash,
+            selection_record_hash=synthesis_hash,
+        )
+        if selection_binding is None:
+            raise OperationalError(
+                "source-aware worker handoff requires the synthesis selection binding"
+            )
+        if selection_binding[1].selection_record_kind != "researcher_synthesis":
+            raise OperationalError(
+                "source-aware worker selection is not a researcher synthesis"
+            )
     assert synthesis.worker_brief is not None
     lane_outputs = (panel.mentor, *panel.collaborators)
     lane_hashes = tuple(
@@ -1180,6 +1836,21 @@ def read_framing_worker_inputs(
         raise OperationalError("worker handoff brief differs from researcher synthesis")
     if handoff.selected_lane_ids != synthesis.selected_lane_ids:
         raise OperationalError("worker handoff selection differs from researcher synthesis")
+    if activation[2].source_aware_choice == "available":
+        selection_binding = _read_source_aware_selection_for_packet(
+            operational,
+            packet,
+            work_packet_hash,
+            selection_record_hash=handoff.synthesis_hash,
+        )
+        if selection_binding is None:
+            raise OperationalError(
+                "source-aware choice review lacks the synthesis selection binding"
+            )
+        if selection_binding[1].selection_record_kind != "researcher_synthesis":
+            raise OperationalError(
+                "source-aware worker selection is not a researcher synthesis"
+            )
     lane_hashes = tuple(
         sha256_digest(canonical_json_bytes(output))
         for output in (panel.mentor, *panel.collaborators)
@@ -1530,9 +2201,13 @@ def framing_worker_completion_binding_exists(
 
 __all__ = [
     "FramingAdvisoryLaneId",
+    "FramingChoiceReviewV1",
+    "FramingChoiceSourceV1",
+    "FramingDirectionCardV1",
     "FramingDisposition",
     "FramingLaneOutputV1",
     "FramingResearcherSynthesisV1",
+    "FramingSourceAwareSelectionBindingV1",
     "FramingTeamDeliveryAuthorizationV1",
     "FramingTeamPanelV1",
     "FramingTeamPlanV1",
@@ -1545,19 +2220,25 @@ __all__ = [
     "FramingWorkerCompletionBindingV1",
     "FramingWorkerHandoffV1",
     "build_framing_lane_output",
+    "build_framing_choice_review",
     "build_framing_researcher_synthesis",
     "build_framing_team_delivery_authorization",
     "build_framing_team_stop",
+    "framing_choice_review_required",
     "framing_lane_input_hash",
     "framing_worker_activation_exists",
     "framing_worker_completion_binding_exists",
     "framing_team_is_active",
     "open_framing_team_plan",
+    "publish_framing_choice_review",
     "publish_framing_researcher_synthesis",
+    "publish_framing_source_aware_selection_binding",
     "publish_framing_team_stop",
     "publish_framing_team_panel",
     "publish_framing_worker_completion_binding",
     "publish_framing_worker_handoff",
+    "read_framing_choice_review",
+    "read_framing_source_aware_selection_binding",
     "read_framing_worker_completion_binding",
     "read_framing_worker_activation",
     "read_framing_worker_inputs",

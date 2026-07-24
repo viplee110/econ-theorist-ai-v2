@@ -23,25 +23,35 @@ from .codec import canonical_json_bytes, sha256_digest
 from .errors import RuntimeStoreError
 from .framing_team import (
     FramingAdvisoryLaneId,
+    FramingChoiceReviewV1,
+    FramingChoiceSourceV1,
     FramingDisposition,
+    FramingDirectionCardV1,
     FramingResearcherSynthesisV1,
+    FramingSourceAwareSelectionBindingV1,
     FramingTeamPanelV1,
     FramingTeamPlanV1,
     FramingTeamStopV1,
     FramingWorkerHandoffV1,
+    build_framing_choice_review,
     build_framing_lane_output,
     build_framing_researcher_synthesis,
     build_framing_team_delivery_authorization,
     build_framing_team_stop,
+    framing_choice_review_required,
     framing_team_is_active,
     framing_worker_activation_exists,
     framing_worker_completion_binding_exists,
     open_framing_team_plan,
+    publish_framing_choice_review,
     publish_framing_researcher_synthesis,
+    publish_framing_source_aware_selection_binding,
     publish_framing_team_panel,
     publish_framing_team_stop,
     publish_framing_worker_completion_binding,
     publish_framing_worker_handoff,
+    read_framing_choice_review,
+    read_framing_source_aware_selection_binding,
     read_framing_team_panel,
     read_framing_team_delivery_authorization,
     read_framing_team_plan,
@@ -111,12 +121,14 @@ CodexBridgeOperation: TypeAlias = Literal[
     "finish",
     "framing_team.open",
     "framing_team.publish_panel",
+    "framing_team.publish_choice_review",
     "framing_team.apply_user_turn",
 ]
 CodexBridgeOutcome: TypeAlias = Literal[
     "ready",
     "team_ready",
     "single_fallback",
+    "awaiting_choice_review",
     "awaiting_user_choice",
     "handoff_ready",
     "awaiting_clarification",
@@ -284,7 +296,15 @@ class CodexFramingTeamCapabilityV1(StrictModel):
     team_surface: Literal["available", "unavailable"]
     lane_separation: Literal["logical", "unavailable"]
     direct_user_capture: Literal["current_user_turn", "unavailable"]
+    source_aware_choice: Literal["available", "unavailable"] = "unavailable"
     fallback_reason: NonEmpty | None = None
+
+    @model_serializer(mode="wrap")
+    def _preserve_legacy_capability_bytes(self, handler: Any) -> Any:
+        data = handler(self)
+        if "source_aware_choice" not in self.model_fields_set:
+            data.pop("source_aware_choice", None)
+        return data
 
     @property
     def available(self) -> bool:
@@ -300,6 +320,10 @@ class CodexFramingTeamCapabilityV1(StrictModel):
             raise ValueError("available framing-team capability cannot claim fallback")
         if not self.available and self.fallback_reason is None:
             raise ValueError("unavailable framing-team capability requires fallback_reason")
+        if self.source_aware_choice == "available" and not self.available:
+            raise ValueError(
+                "source-aware choice requires the available framing-team capability"
+            )
         return self
 
 
@@ -340,6 +364,37 @@ class CodexFramingTeamPanelRequestV1(_CodexFramingTeamDeliveryRequestV1):
     mentor: CodexFramingLaneDraftV1
     collaborator_a: CodexFramingLaneDraftV1
     collaborator_b: CodexFramingLaneDraftV1
+
+
+class CodexFramingChoiceReviewCoordinatorDraftV1(StrictModel):
+    """Observable coordinator identity for one bounded source-aware review."""
+
+    agent_label: StableId
+    model_observation: NonEmpty
+
+
+class CodexFramingChoiceReviewRequestV1(_CodexFramingTeamDeliveryRequestV1):
+    """Publish one source-aware choice review without revising the blind panel."""
+
+    bridge_request_schema: Literal[
+        "econ-theorist/codex-framing-choice-review-request/v1"
+    ] = "econ-theorist/codex-framing-choice-review-request/v1"
+    operation: Literal[
+        "framing_team.publish_choice_review"
+    ] = "framing_team.publish_choice_review"
+    team_plan_hash: Digest
+    panel_hash: Digest
+    session: CodexSessionV1
+    coordinator: CodexFramingChoiceReviewCoordinatorDraftV1
+    acquisition_mode: Literal["online_host_search", "offline_user_bundle"]
+    search_scope: NonEmpty
+    coverage_limits: NonEmpty
+    mentor_screen_markdown: NonEmpty
+    sources: tuple[FramingChoiceSourceV1, ...]
+    direction_cards: tuple[
+        FramingDirectionCardV1,
+        FramingDirectionCardV1,
+    ]
 
 
 class CodexDirectUserCaptureV1(StrictModel):
@@ -422,9 +477,17 @@ class CodexFramingTeamUserTurnRequestV1(_CodexFramingTeamDeliveryRequestV1):
         "framing_team.apply_user_turn"
     ] = "framing_team.apply_user_turn"
     panel_hash: Digest
+    choice_review_hash: Digest | None = None
     session: CodexSessionV1
     capture: CodexDirectUserCaptureV1
     interpretation: CodexFramingUserInterpretation
+
+    @model_serializer(mode="wrap")
+    def _preserve_legacy_user_turn_bytes(self, handler: Any) -> Any:
+        data = handler(self)
+        if "choice_review_hash" not in self.model_fields_set:
+            data.pop("choice_review_hash", None)
+        return data
 
     @model_validator(mode="after")
     def _capture_belongs_to_current_session(
@@ -438,6 +501,7 @@ class CodexFramingTeamUserTurnRequestV1(_CodexFramingTeamDeliveryRequestV1):
 CodexFramingTeamStatus: TypeAlias = Literal[
     "team_ready",
     "single_fallback",
+    "awaiting_choice_review",
     "awaiting_user_choice",
     "handoff_ready",
     "awaiting_clarification",
@@ -461,6 +525,10 @@ class CodexFramingTeamResultV1(StrictModel):
     team_plan: FramingTeamPlanV1 | None = None
     panel_hash: Digest | None = None
     panel: FramingTeamPanelV1 | None = None
+    choice_review_hash: Digest | None = None
+    choice_review: FramingChoiceReviewV1 | None = None
+    selection_binding_hash: Digest | None = None
+    selection_binding: FramingSourceAwareSelectionBindingV1 | None = None
     synthesis_hash: Digest | None = None
     synthesis: FramingResearcherSynthesisV1 | None = None
     handoff_hash: Digest | None = None
@@ -468,11 +536,30 @@ class CodexFramingTeamResultV1(StrictModel):
     stop_hash: Digest | None = None
     stop: FramingTeamStopV1 | None = None
 
+    @model_serializer(mode="wrap")
+    def _preserve_legacy_result_bytes(self, handler: Any) -> Any:
+        data = handler(self)
+        for field in (
+            "choice_review_hash",
+            "choice_review",
+            "selection_binding_hash",
+            "selection_binding",
+        ):
+            if field not in self.model_fields_set:
+                data.pop(field, None)
+        return data
+
     @model_validator(mode="after")
     def _payload_matches_status(self) -> "CodexFramingTeamResultV1":
         pairs = (
             ("team plan", self.team_plan_hash, self.team_plan),
             ("panel", self.panel_hash, self.panel),
+            ("choice review", self.choice_review_hash, self.choice_review),
+            (
+                "selection binding",
+                self.selection_binding_hash,
+                self.selection_binding,
+            ),
             ("synthesis", self.synthesis_hash, self.synthesis),
             ("handoff", self.handoff_hash, self.handoff),
             ("stop", self.stop_hash, self.stop),
@@ -485,9 +572,34 @@ class CodexFramingTeamResultV1(StrictModel):
                 if sha256_digest(canonical_json_bytes(value)) != digest:
                     raise ValueError(f"framing-team {label} digest is invalid")
                 present.add(label)
+        if self.choice_review is not None and (
+            self.choice_review.team_plan_hash != self.team_plan_hash
+            or self.choice_review.panel_hash != self.panel_hash
+        ):
+            raise ValueError(
+                "framing choice review differs from the result plan or panel"
+            )
+        if self.selection_binding is not None:
+            expected_selection_hash = (
+                self.synthesis_hash
+                if self.selection_binding.selection_record_kind
+                == "researcher_synthesis"
+                else self.stop_hash
+            )
+            if (
+                self.selection_binding.team_plan_hash != self.team_plan_hash
+                or self.selection_binding.panel_hash != self.panel_hash
+                or self.selection_binding.review_hash != self.choice_review_hash
+                or self.selection_binding.selection_record_hash
+                != expected_selection_hash
+            ):
+                raise ValueError(
+                    "source-aware selection binding differs from the result"
+                )
         required: dict[str, set[str]] = {
             "team_ready": {"team plan"},
             "single_fallback": set(),
+            "awaiting_choice_review": {"team plan", "panel"},
             "awaiting_user_choice": {"team plan", "panel"},
             "handoff_ready": {"team plan", "panel", "synthesis", "handoff"},
             "awaiting_clarification": {"team plan", "panel", "stop"},
@@ -496,7 +608,24 @@ class CodexFramingTeamResultV1(StrictModel):
             "killed": {"team plan", "panel", "synthesis"},
             "stale_team_session": set(),
         }
-        if present != required[self.status]:
+        expected = required[self.status]
+        if self.choice_review is not None:
+            source_aware_statuses = {
+                "awaiting_user_choice",
+                "handoff_ready",
+                "awaiting_clarification",
+                "new_brief_required",
+                "parked",
+                "killed",
+            }
+            if self.status not in source_aware_statuses:
+                raise ValueError(
+                    "framing choice review does not belong to this result status"
+                )
+            expected = expected | {"choice review"}
+            if self.status != "awaiting_user_choice":
+                expected = expected | {"selection binding"}
+        if present != expected:
             raise ValueError("framing-team result records do not match its status")
         if self.status in {"single_fallback", "stale_team_session"}:
             if self.reason is None:
@@ -531,6 +660,7 @@ CodexBridgeRequestValue: TypeAlias = (
     | CodexFinishRequestV1
     | CodexFramingTeamOpenRequestV1
     | CodexFramingTeamPanelRequestV1
+    | CodexFramingChoiceReviewRequestV1
     | CodexFramingTeamUserTurnRequestV1
 )
 CodexBridgeRequest: TypeAlias = Annotated[
@@ -577,6 +707,7 @@ class CodexBridgeResponseV1(StrictModel):
             "ready",
             "team_ready",
             "single_fallback",
+            "awaiting_choice_review",
             "awaiting_user_choice",
             "handoff_ready",
             "awaiting_clarification",
@@ -631,6 +762,7 @@ class CodexBridgeResponseV1(StrictModel):
         team_outcomes = {
             "team_ready",
             "single_fallback",
+            "awaiting_choice_review",
             "awaiting_user_choice",
             "handoff_ready",
             "awaiting_clarification",
@@ -920,6 +1052,7 @@ def _framing_team_response(
     request: (
         CodexFramingTeamOpenRequestV1
         | CodexFramingTeamPanelRequestV1
+        | CodexFramingChoiceReviewRequestV1
         | CodexFramingTeamUserTurnRequestV1
     ),
     *,
@@ -980,6 +1113,8 @@ class CodexBridge:
                 return self._open_framing_team(request)
             if isinstance(request, CodexFramingTeamPanelRequestV1):
                 return self._publish_framing_team_panel(request)
+            if isinstance(request, CodexFramingChoiceReviewRequestV1):
+                return self._publish_framing_choice_review(request)
             return self._apply_framing_user_turn(request)
         except RuntimeStoreError as exc:
             message = str(exc) or type(exc).__name__
@@ -1846,6 +1981,11 @@ class CodexBridge:
                 adapter_version=envelope.adapter_version,
                 host_session_id=envelope.host_session_id,
                 lane_separation_claim="logical",
+                source_aware_choice=(
+                    "available"
+                    if request.capability.source_aware_choice == "available"
+                    else None
+                ),
             )
             plan_hash, plan = open_framing_team_plan(
                 operational,
@@ -1902,6 +2042,11 @@ class CodexBridge:
             raise ValueError(
                 "panel delivery or Codex session differs from team authorization"
             )
+        review_required = framing_choice_review_required(
+            operational,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+        )
 
         def output(
             lane_id: FramingAdvisoryLaneId, draft: CodexFramingLaneDraftV1
@@ -1926,6 +2071,88 @@ class CodexBridge:
                 output("collaborator_b", request.collaborator_b),
             ),
         )
+        status: CodexFramingTeamStatus = (
+            "awaiting_choice_review"
+            if review_required
+            else "awaiting_user_choice"
+        )
+        return _framing_team_response(
+            request,
+            root=root,
+            packet=packet,
+            result=CodexFramingTeamResultV1(
+                status=status,
+                team_plan_hash=request.team_plan_hash,
+                team_plan=plan,
+                panel_hash=panel_hash,
+                panel=panel,
+            ),
+            mutated=True,
+        )
+
+    def _publish_framing_choice_review(
+        self, request: CodexFramingChoiceReviewRequestV1
+    ) -> CodexBridgeResponseV1:
+        root = Path(request.project_root).resolve()
+        if not root.is_dir():
+            raise ValueError("Codex project_root must be an existing directory")
+        envelope, _, packet = _read_framing_team_delivery(
+            root,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+            delivery_envelope_hash=request.delivery_envelope_hash,
+        )
+        operational = ProjectOperationalLayout.at(StoreLayout.at(root))
+        panel = read_framing_team_panel(
+            operational,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+            panel_hash=request.panel_hash,
+        )
+        if panel.team_plan_hash != request.team_plan_hash:
+            raise ValueError("choice review panel differs from the requested team plan")
+        plan = read_framing_team_plan(
+            operational,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+            team_plan_hash=request.team_plan_hash,
+        )
+        authorization = read_framing_team_delivery_authorization(
+            operational,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+            team_plan_hash=request.team_plan_hash,
+        )
+        if (
+            authorization.source_aware_choice != "available"
+            or authorization.source_delivery_envelope_hash
+            != request.delivery_envelope_hash
+            or authorization.host_session_id != envelope.host_session_id
+            or authorization.host_session_id != request.session.session_id
+        ):
+            raise ValueError(
+                "choice review delivery, plan, or Codex session differs from "
+                "the source-aware team authorization"
+            )
+        review = build_framing_choice_review(
+            panel,
+            request.panel_hash,
+            coordinator_agent_label=request.coordinator.agent_label,
+            coordinator_model_observation=request.coordinator.model_observation,
+            acquisition_mode=request.acquisition_mode,
+            search_scope=request.search_scope,
+            coverage_limits=request.coverage_limits,
+            mentor_screen_markdown=request.mentor_screen_markdown,
+            sources=request.sources,
+            direction_cards=request.direction_cards,
+        )
+        review_hash, review = publish_framing_choice_review(
+            operational,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+            panel_hash=request.panel_hash,
+            review=review,
+        )
         return _framing_team_response(
             request,
             root=root,
@@ -1934,8 +2161,10 @@ class CodexBridge:
                 status="awaiting_user_choice",
                 team_plan_hash=request.team_plan_hash,
                 team_plan=plan,
-                panel_hash=panel_hash,
+                panel_hash=request.panel_hash,
                 panel=panel,
+                choice_review_hash=review_hash,
+                choice_review=review,
             ),
             mutated=True,
         )
@@ -1979,8 +2208,78 @@ class CodexBridge:
             or authorization.host_session_id != request.session.session_id
         ):
             raise ValueError("direct user turn differs from team authorization")
+        review_required = framing_choice_review_required(
+            operational,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+        )
+        review: FramingChoiceReviewV1 | None = None
+        if review_required:
+            if request.choice_review_hash is None:
+                raise ValueError(
+                    "source-aware framing choice requires the exact choice review"
+                )
+            review = read_framing_choice_review(
+                operational,
+                route_run_id=request.route_run_id,
+                work_packet_hash=request.work_packet_hash,
+                review_hash=request.choice_review_hash,
+            )
+            if (
+                review.team_plan_hash != panel.team_plan_hash
+                or review.panel_hash != request.panel_hash
+            ):
+                raise ValueError(
+                    "choice review differs from the selected framing panel"
+                )
+        elif request.choice_review_hash is not None:
+            raise ValueError(
+                "legacy framing choice cannot claim a source-aware review"
+            )
+
+        def selection_binding(
+            selection_record_kind: Literal["researcher_synthesis", "team_stop"],
+            selection_record_hash: str,
+        ) -> dict[str, object]:
+            if review is None:
+                return {}
+            assert request.choice_review_hash is not None
+            binding_hash, binding = (
+                publish_framing_source_aware_selection_binding(
+                    operational,
+                    route_run_id=request.route_run_id,
+                    work_packet_hash=request.work_packet_hash,
+                    review_hash=request.choice_review_hash,
+                    selection_record_kind=selection_record_kind,
+                    selection_record_hash=selection_record_hash,
+                )
+            )
+            stored = read_framing_source_aware_selection_binding(
+                operational,
+                route_run_id=request.route_run_id,
+                work_packet_hash=request.work_packet_hash,
+                selection_record_hash=selection_record_hash,
+            )
+            if stored != binding:
+                raise OperationalError(
+                    "source-aware selection binding changed after publication"
+                )
+            return {
+                "choice_review_hash": request.choice_review_hash,
+                "choice_review": review,
+                "selection_binding_hash": binding_hash,
+                "selection_binding": binding,
+            }
+
         interpretation = request.interpretation
         if isinstance(interpretation, CodexFramingClearInterpretationV1):
+            if (
+                review is not None
+                and "mentor" in interpretation.selected_lane_ids
+            ):
+                raise ValueError(
+                    "source-aware choice cannot select the mentor as a direction"
+                )
             synthesis = build_framing_researcher_synthesis(
                 panel,
                 request.panel_hash,
@@ -1998,6 +2297,9 @@ class CodexBridge:
                 panel_hash=request.panel_hash,
                 synthesis=synthesis,
             )
+            source_aware = selection_binding(
+                "researcher_synthesis", synthesis_hash
+            )
             common = {
                 "team_plan_hash": panel.team_plan_hash,
                 "team_plan": plan,
@@ -2005,6 +2307,7 @@ class CodexBridge:
                 "panel": panel,
                 "synthesis_hash": synthesis_hash,
                 "synthesis": synthesis,
+                **source_aware,
             }
             if interpretation.disposition in {"park", "kill"}:
                 status: CodexFramingTeamStatus = (
@@ -2054,6 +2357,7 @@ class CodexBridge:
                 panel_hash=request.panel_hash,
                 stop=stop,
             )
+            source_aware = selection_binding("team_stop", stop_hash)
             result = CodexFramingTeamResultV1(
                 status=status,
                 reason=reason,
@@ -2061,6 +2365,7 @@ class CodexBridge:
                 team_plan=plan,
                 panel_hash=request.panel_hash,
                 panel=panel,
+                **source_aware,
                 stop_hash=stop_hash,
                 stop=stop,
             )
@@ -2425,6 +2730,8 @@ __all__ = [
     "CodexDirectUserCaptureV1",
     "CodexFinishRequestV1",
     "CodexFramingAmbiguousInterpretationV1",
+    "CodexFramingChoiceReviewCoordinatorDraftV1",
+    "CodexFramingChoiceReviewRequestV1",
     "CodexFramingClearInterpretationV1",
     "CodexFramingLaneDraftV1",
     "CodexFramingNewBriefInterpretationV1",

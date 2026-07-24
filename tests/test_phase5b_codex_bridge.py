@@ -13,6 +13,8 @@ from econ_theorist.codex_bridge import (
     CodexCompleteRequestV1,
     CodexDirectUserCaptureV1,
     CodexFramingAmbiguousInterpretationV1,
+    CodexFramingChoiceReviewCoordinatorDraftV1,
+    CodexFramingChoiceReviewRequestV1,
     CodexFramingClearInterpretationV1,
     CodexFramingLaneDraftV1,
     CodexFramingNewBriefInterpretationV1,
@@ -26,6 +28,9 @@ from econ_theorist.codex_bridge import (
 )
 from econ_theorist.codex_cli import invoke_codex_bytes
 from econ_theorist.framing_team import (
+    FramingChoiceSourceV1,
+    FramingDirectionCardV1,
+    read_framing_source_aware_selection_binding,
     read_framing_team_delivery_authorization,
     read_framing_worker_activation,
     read_framing_worker_completion_binding,
@@ -107,6 +112,14 @@ class Phase5BCodexBridgeTests(unittest.TestCase):
             direct_user_capture="current_user_turn",
         )
 
+    def _source_aware_capability(self) -> CodexFramingTeamCapabilityV1:
+        return CodexFramingTeamCapabilityV1(
+            team_surface="available",
+            lane_separation="logical",
+            direct_user_capture="current_user_turn",
+            source_aware_choice="available",
+        )
+
     def _open_team(self):
         return self.bridge.invoke(
             CodexFramingTeamOpenRequestV1(
@@ -116,39 +129,174 @@ class Phase5BCodexBridgeTests(unittest.TestCase):
             )
         )
 
+    def _panel_request(
+        self, team_plan_hash: str, *, session: CodexSessionV1 | None = None
+    ) -> CodexFramingTeamPanelRequestV1:
+        return CodexFramingTeamPanelRequestV1(
+            **self._delivery_binding(),
+            team_plan_hash=team_plan_hash,
+            session=session or self.session,
+            mentor=CodexFramingLaneDraftV1(
+                agent_label="mentor-agent",
+                model_observation="gpt-5",
+                content_markdown=(
+                    "Challenge whether participation is the smallest exact delta."
+                ),
+            ),
+            collaborator_a=CodexFramingLaneDraftV1(
+                agent_label="collaborator-a-agent",
+                model_observation="gpt-5",
+                content_markdown="Keep the fixed-participation benchmark explicit.",
+            ),
+            collaborator_b=CodexFramingLaneDraftV1(
+                agent_label="collaborator-b-agent",
+                model_observation="gpt-5-mini",
+                content_markdown="Try a simpler binary participation margin.",
+            ),
+        )
+
     def _publish_panel(self):
         opened = self._open_team()
         self.assertEqual(opened.outcome, "team_ready", opened)
         assert opened.framing_team is not None
         assert opened.framing_team.team_plan_hash is not None
         panel = self.bridge.invoke(
-            CodexFramingTeamPanelRequestV1(
-                **self._delivery_binding(),
-                team_plan_hash=opened.framing_team.team_plan_hash,
-                session=self.session,
-                mentor=CodexFramingLaneDraftV1(
-                    agent_label="mentor-agent",
-                    model_observation="gpt-5",
-                    content_markdown=(
-                        "Challenge whether participation is the smallest exact delta."
-                    ),
-                ),
-                collaborator_a=CodexFramingLaneDraftV1(
-                    agent_label="collaborator-a-agent",
-                    model_observation="gpt-5",
-                    content_markdown="Keep the fixed-participation benchmark explicit.",
-                ),
-                collaborator_b=CodexFramingLaneDraftV1(
-                    agent_label="collaborator-b-agent",
-                    model_observation="gpt-5-mini",
-                    content_markdown="Try a simpler binary participation margin.",
-                ),
-            )
+            self._panel_request(opened.framing_team.team_plan_hash)
         )
         self.assertEqual(panel.outcome, "awaiting_user_choice", panel)
         assert panel.framing_team is not None
         assert panel.framing_team.panel_hash is not None
         return panel
+
+    def _publish_source_aware_panel(self):
+        opened = self.bridge.invoke(
+            CodexFramingTeamOpenRequestV1(
+                **self._delivery_binding(),
+                session=self.session,
+                capability=self._source_aware_capability(),
+            )
+        )
+        self.assertEqual(opened.outcome, "team_ready", opened)
+        assert opened.framing_team is not None
+        assert opened.framing_team.team_plan_hash is not None
+        authorization = read_framing_team_delivery_authorization(
+            ProjectOperationalLayout.at(StoreLayout.at(self.root)),
+            route_run_id=self._delivery_binding()["route_run_id"],
+            work_packet_hash=self._delivery_binding()["work_packet_hash"],
+            team_plan_hash=opened.framing_team.team_plan_hash,
+        )
+        self.assertEqual(authorization.source_aware_choice, "available")
+        panel = self.bridge.invoke(
+            self._panel_request(opened.framing_team.team_plan_hash)
+        )
+        self.assertEqual(panel.outcome, "awaiting_choice_review", panel)
+        assert panel.framing_team is not None
+        assert panel.framing_team.panel_hash is not None
+        return panel
+
+    def _choice_review_request(
+        self,
+        panel_response,
+        *,
+        session: CodexSessionV1 | None = None,
+    ) -> CodexFramingChoiceReviewRequestV1:
+        assert panel_response.framing_team is not None
+        assert panel_response.framing_team.team_plan_hash is not None
+        assert panel_response.framing_team.panel_hash is not None
+        sources = (
+            FramingChoiceSourceV1(
+                source_id="classic.delegate",
+                citation="经典委托代理基准（示例元数据）",
+                locator="https://example.test/classic",
+                source_kind="classic_theory",
+                access_level="abstract",
+                retrieved_at=NOW,
+                supported_claim_markdown="普通代理基准假设一个稳定目标。",
+                limitations_markdown="这里只用于选择方向，不构成文献或新颖性证据。",
+            ),
+            FramingChoiceSourceV1(
+                source_id="recent.ai.trade",
+                citation="AI agents trading survey — 摘要",
+                locator="https://example.test/recent",
+                source_kind="recent_theory",
+                access_level="abstract",
+                retrieved_at=NOW,
+                supported_claim_markdown="AI 代理可以跨市场持续行动与调用工具。",
+                limitations_markdown="仅读取摘要，覆盖不完整。",
+            ),
+        )
+        cards = tuple(
+            FramingDirectionCardV1(
+                lane_id=lane_id,
+                research_question=f"{label}：AI 代理何时改变可实施集合？",
+                exact_benchmark="稳定偏好、单市场、不可复制的普通委托代理。",
+                economic_significance="区分自动化交易与真正改变机制约束的 AI 特征。",
+                ordinary_agent_baseline="委托人选择一个遵循稳定目标的单一代理。",
+                ai_specific_primitive=primitive,
+                why_ai_primitive_is_distinct=distinctness,
+                mechanism_design_delta=mechanism_delta,
+                classic_source_ids=("classic.delegate",),
+                recent_source_ids=("recent.ai.trade",),
+                overlap_risk="unresolved",
+                closest_literature_overlap=overlap,
+                remaining_theory_delta=theory_delta,
+                falsifiable_theory_increment=increment,
+                kill_condition=kill_condition,
+                decision_summary_markdown=f"方向 {label} 的可检验增量。",
+            )
+            for (
+                lane_id,
+                label,
+                primitive,
+                distinctness,
+                mechanism_delta,
+                overlap,
+                theory_delta,
+                increment,
+                kill_condition,
+            ) in (
+                (
+                    "collaborator_a",
+                    "合作者甲",
+                    "持久自主地跨市场调用工具并更新状态。",
+                    "普通代理的行动域和状态通常固定在单一委托关系内。",
+                    "局部激励相容不再保证跨市场组合后的相容性。",
+                    "共同代理文献已研究多个委托人的相互作用。",
+                    "加入由同一自主部署维护的跨市场动态状态。",
+                    "给出局部可实施但全局不可实施的必要与充分条件。",
+                    "若跨市场状态可无损约化为普通共同代理类型，则停止。",
+                ),
+                (
+                    "collaborator_b",
+                    "合作者乙",
+                    "低成本复制身份并在副本间共享适应性记忆。",
+                    "普通多代理模型通常把不同身份视为不同决策主体。",
+                    "身份级约束可能无法控制部署级联合偏离。",
+                    "false-name bidding 已研究多重提交身份。",
+                    "加入复制身份背后的共享学习状态和联合策略。",
+                    "刻画复制何时严格缩小经典机制的可实施集合。",
+                    "若共享记忆不改变 false-name-proof 约束，则停止。",
+                ),
+            )
+        )
+        return CodexFramingChoiceReviewRequestV1(
+            **self._delivery_binding(),
+            team_plan_hash=panel_response.framing_team.team_plan_hash,
+            panel_hash=panel_response.framing_team.panel_hash,
+            session=session or self.session,
+            coordinator=CodexFramingChoiceReviewCoordinatorDraftV1(
+                agent_label="coordinator.agent",
+                model_observation="gpt-5",
+            ),
+            acquisition_mode="online_host_search",
+            search_scope="检索经典委托代理、算法交易与 AI agent 市场设计。",
+            coverage_limits="仅限两项示例来源；不是系统综述或 novelty 判定。",
+            mentor_screen_markdown=(
+                "导师只用原始批评检验两个合作者方向，不产生第三个方向。"
+            ),
+            sources=sources,
+            direction_cards=cards,
+        )
 
     def _capture(self, text: str) -> CodexDirectUserCaptureV1:
         return CodexDirectUserCaptureV1(
@@ -246,6 +394,359 @@ class Phase5BCodexBridgeTests(unittest.TestCase):
         self.assertEqual(late_fallback.outcome, "error", late_fallback)
         self.assertIn("cannot downgrade", late_fallback.diagnostics[0].message)
         self.assertEqual(self._head(), head_before)
+
+    def test_team_open_cannot_flip_source_aware_choice_mode(self) -> None:
+        legacy = self._open_team()
+        self.assertEqual(legacy.outcome, "team_ready", legacy)
+        assert legacy.framing_team is not None
+        assert legacy.framing_team.team_plan_hash is not None
+
+        upgraded = self.bridge.invoke(
+            CodexFramingTeamOpenRequestV1(
+                **self._delivery_binding(),
+                session=self.session,
+                capability=self._source_aware_capability(),
+            )
+        )
+        self.assertEqual(upgraded.outcome, "error", upgraded)
+        self.assertIn(
+            "different authorization", upgraded.diagnostics[0].message
+        )
+        panel = self.bridge.invoke(
+            self._panel_request(legacy.framing_team.team_plan_hash)
+        )
+        self.assertEqual(panel.outcome, "awaiting_user_choice", panel)
+
+    def test_source_aware_team_cannot_reopen_as_legacy(self) -> None:
+        opened = self.bridge.invoke(
+            CodexFramingTeamOpenRequestV1(
+                **self._delivery_binding(),
+                session=self.session,
+                capability=self._source_aware_capability(),
+            )
+        )
+        self.assertEqual(opened.outcome, "team_ready", opened)
+
+        downgraded = self._open_team()
+        self.assertEqual(downgraded.outcome, "error", downgraded)
+        self.assertIn(
+            "different authorization", downgraded.diagnostics[0].message
+        )
+        assert opened.framing_team is not None
+        assert opened.framing_team.team_plan_hash is not None
+        authorization = read_framing_team_delivery_authorization(
+            ProjectOperationalLayout.at(StoreLayout.at(self.root)),
+            route_run_id=self._delivery_binding()["route_run_id"],
+            work_packet_hash=self._delivery_binding()["work_packet_hash"],
+            team_plan_hash=opened.framing_team.team_plan_hash,
+        )
+        self.assertEqual(authorization.source_aware_choice, "available")
+
+    def test_explicit_unavailable_retries_legacy_open_exactly(self) -> None:
+        first = self._open_team()
+        self.assertEqual(first.outcome, "team_ready", first)
+        explicit_unavailable = self.bridge.invoke(
+            CodexFramingTeamOpenRequestV1(
+                **self._delivery_binding(),
+                session=self.session,
+                capability=CodexFramingTeamCapabilityV1(
+                    team_surface="available",
+                    lane_separation="logical",
+                    direct_user_capture="current_user_turn",
+                    source_aware_choice="unavailable",
+                ),
+            )
+        )
+        self.assertEqual(explicit_unavailable.outcome, "team_ready")
+        assert first.framing_team is not None
+        assert explicit_unavailable.framing_team is not None
+        self.assertEqual(
+            explicit_unavailable.framing_team.team_plan_hash,
+            first.framing_team.team_plan_hash,
+        )
+
+    def test_source_aware_review_round_trips_unicode_and_binds_handoff(self) -> None:
+        head_before = self._head()
+        panel_response = self._publish_source_aware_panel()
+        review_response = self.bridge.invoke(
+            self._choice_review_request(panel_response)
+        )
+        self.assertEqual(review_response.outcome, "awaiting_user_choice")
+        assert review_response.framing_team is not None
+        result = review_response.framing_team
+        assert result.panel is not None
+        assert result.choice_review is not None
+        assert result.choice_review_hash is not None
+        self.assertEqual(result.panel, panel_response.framing_team.panel)
+        self.assertEqual(
+            result.choice_review.search_scope,
+            "检索经典委托代理、算法交易与 AI agent 市场设计。",
+        )
+        self.assertEqual(len(result.choice_review.direction_cards), 2)
+        self.assertEqual(
+            result.choice_review.direction_cards[0].research_question,
+            "合作者甲：AI 代理何时改变可实施集合？",
+        )
+        self.assertIn("不产生第三个方向", result.choice_review.mentor_screen_markdown)
+        self.assertEqual(
+            result.choice_review.authority_semantics,
+            "orientation_only_not_literature_novelty_evidence",
+        )
+
+        user_turn = CodexFramingTeamUserTurnRequestV1(
+            **self._delivery_binding(),
+            panel_hash=result.panel_hash,
+            choice_review_hash=result.choice_review_hash,
+            session=self.session,
+            capture=self._capture("选择合作者甲方向，并保留跨市场状态约束。"),
+            interpretation=CodexFramingClearInterpretationV1(
+                disposition="continue",
+                selected_lane_ids=("collaborator_a",),
+                synthesis_markdown="选择合作者甲方向，并保留跨市场状态这一可证伪增量。",
+                worker_brief="据此撰写一个有精确普通代理基准的 framing candidate。",
+            ),
+        )
+        first = self.bridge.invoke(user_turn)
+        second = self.bridge.invoke(user_turn)
+        self.assertEqual(first.outcome, "handoff_ready", first)
+        self.assertEqual(second, first)
+        assert first.framing_team is not None
+        self.assertEqual(
+            first.framing_team.choice_review_hash, result.choice_review_hash
+        )
+        self.assertIsNotNone(first.framing_team.handoff_hash)
+        assert first.framing_team.synthesis_hash is not None
+        assert first.framing_team.selection_binding is not None
+        assert first.framing_team.selection_binding_hash is not None
+        self.assertEqual(
+            first.framing_team.selection_binding.selection_record_hash,
+            first.framing_team.synthesis_hash,
+        )
+        stored = read_framing_source_aware_selection_binding(
+            ProjectOperationalLayout.at(StoreLayout.at(self.root)),
+            route_run_id=self._delivery_binding()["route_run_id"],
+            work_packet_hash=self._delivery_binding()["work_packet_hash"],
+            selection_record_hash=first.framing_team.synthesis_hash,
+        )
+        self.assertEqual(stored, first.framing_team.selection_binding)
+        self.assertEqual(len(self._handoff_paths()), 1)
+        self.assertEqual(self._head(), head_before)
+
+    def test_source_aware_choice_rejects_missing_review_and_wrong_bindings(
+        self,
+    ) -> None:
+        panel_response = self._publish_source_aware_panel()
+        assert panel_response.framing_team is not None
+        assert panel_response.framing_team.panel_hash is not None
+        missing = self.bridge.invoke(
+            CodexFramingTeamUserTurnRequestV1(
+                **self._delivery_binding(),
+                panel_hash=panel_response.framing_team.panel_hash,
+                session=self.session,
+                capture=self._capture("选择导师方向。"),
+                interpretation=CodexFramingClearInterpretationV1(
+                    disposition="continue",
+                    selected_lane_ids=("mentor",),
+                    synthesis_markdown="选择导师方向。",
+                    worker_brief="撰写 framing candidate。",
+                ),
+            )
+        )
+        self.assertEqual(missing.outcome, "error", missing)
+        self.assertIn("requires the exact choice review", missing.diagnostics[0].message)
+
+        wrong_session = self.session.model_copy(
+            update={"session_id": "different-source-review-session"}
+        )
+        rejected_session = self.bridge.invoke(
+            self._choice_review_request(panel_response, session=wrong_session)
+        )
+        self.assertEqual(rejected_session.outcome, "error", rejected_session)
+        self.assertIn("Codex session", rejected_session.diagnostics[0].message)
+        rejected_panel = self.bridge.invoke(
+            self._choice_review_request(panel_response).model_copy(
+                update={"panel_hash": "0" * 64}
+            )
+        )
+        self.assertEqual(rejected_panel.outcome, "error", rejected_panel)
+
+        review_response = self.bridge.invoke(
+            self._choice_review_request(panel_response)
+        )
+        self.assertEqual(review_response.outcome, "awaiting_user_choice")
+        assert review_response.framing_team is not None
+        assert review_response.framing_team.choice_review_hash is not None
+        wrong_hash = self.bridge.invoke(
+            CodexFramingTeamUserTurnRequestV1(
+                **self._delivery_binding(),
+                panel_hash=panel_response.framing_team.panel_hash,
+                choice_review_hash="f" * 64,
+                session=self.session,
+                capture=self._capture("选择导师方向。"),
+                interpretation=CodexFramingClearInterpretationV1(
+                    disposition="continue",
+                    selected_lane_ids=("mentor",),
+                    synthesis_markdown="选择导师方向。",
+                    worker_brief="撰写 framing candidate。",
+                ),
+            )
+        )
+        self.assertEqual(wrong_hash.outcome, "error", wrong_hash)
+        mentor_direction = self.bridge.invoke(
+            CodexFramingTeamUserTurnRequestV1(
+                **self._delivery_binding(),
+                panel_hash=panel_response.framing_team.panel_hash,
+                choice_review_hash=(
+                    review_response.framing_team.choice_review_hash
+                ),
+                session=self.session,
+                capture=self._capture("把导师批评当成第三个方向。"),
+                interpretation=CodexFramingClearInterpretationV1(
+                    disposition="continue",
+                    selected_lane_ids=("mentor",),
+                    synthesis_markdown="错误地选择导师作为方向。",
+                    worker_brief="不应创建 worker。",
+                ),
+            )
+        )
+        self.assertEqual(mentor_direction.outcome, "error", mentor_direction)
+        self.assertIn(
+            "cannot select the mentor", mentor_direction.diagnostics[0].message
+        )
+        self.assertEqual(self._handoff_paths(), ())
+
+    def test_source_aware_clarification_binds_review_without_handoff(self) -> None:
+        panel_response = self._publish_source_aware_panel()
+        review_response = self.bridge.invoke(
+            self._choice_review_request(panel_response)
+        )
+        self.assertEqual(review_response.outcome, "awaiting_user_choice")
+        assert review_response.framing_team is not None
+        result = review_response.framing_team
+        assert result.panel_hash is not None
+        assert result.choice_review_hash is not None
+        request = CodexFramingTeamUserTurnRequestV1(
+            **self._delivery_binding(),
+            panel_hash=result.panel_hash,
+            choice_review_hash=result.choice_review_hash,
+            session=self.session,
+            capture=self._capture("I need the difference between the two options."),
+            interpretation=CodexFramingAmbiguousInterpretationV1(
+                clarification_question=(
+                    "Which AI-specific primitive do you want to retain?"
+                )
+            ),
+        )
+        first = self.bridge.invoke(request)
+        second = self.bridge.invoke(request)
+        self.assertEqual(first, second)
+        self.assertEqual(first.outcome, "awaiting_clarification", first)
+        assert first.framing_team is not None
+        self.assertIsNotNone(first.framing_team.selection_binding_hash)
+        assert first.framing_team.selection_binding is not None
+        self.assertEqual(
+            first.framing_team.selection_binding.selection_record_kind,
+            "team_stop",
+        )
+        self.assertIsNone(first.framing_team.handoff_hash)
+        self.assertEqual(self._handoff_paths(), ())
+
+    def test_source_aware_park_binds_review_before_terminal_stop(self) -> None:
+        panel_response = self._publish_source_aware_panel()
+        review_response = self.bridge.invoke(
+            self._choice_review_request(panel_response)
+        )
+        assert review_response.framing_team is not None
+        result = review_response.framing_team
+        assert result.panel_hash is not None
+        assert result.choice_review_hash is not None
+        request = CodexFramingTeamUserTurnRequestV1(
+            **self._delivery_binding(),
+            panel_hash=result.panel_hash,
+            choice_review_hash=result.choice_review_hash,
+            session=self.session,
+            capture=self._capture("Park collaborator B after the source review."),
+            interpretation=CodexFramingClearInterpretationV1(
+                disposition="park",
+                selected_lane_ids=("collaborator_b",),
+                synthesis_markdown=(
+                    "The closest literature leaves too little incremental theory."
+                ),
+            ),
+        )
+        first = self.bridge.invoke(request)
+        second = self.bridge.invoke(request)
+        self.assertEqual(first, second)
+        self.assertEqual(first.outcome, "parked", first)
+        assert first.framing_team is not None
+        assert first.framing_team.selection_binding is not None
+        self.assertEqual(
+            first.framing_team.selection_binding.selection_record_kind,
+            "researcher_synthesis",
+        )
+        self.assertIsNone(first.framing_team.handoff_hash)
+        self.assertEqual(self._handoff_paths(), ())
+
+    def test_source_aware_new_brief_binds_review_before_terminal_stop(self) -> None:
+        panel_response = self._publish_source_aware_panel()
+        review_response = self.bridge.invoke(
+            self._choice_review_request(panel_response)
+        )
+        assert review_response.framing_team is not None
+        result = review_response.framing_team
+        assert result.panel_hash is not None
+        assert result.choice_review_hash is not None
+        request = CodexFramingTeamUserTurnRequestV1(
+            **self._delivery_binding(),
+            panel_hash=result.panel_hash,
+            choice_review_hash=result.choice_review_hash,
+            session=self.session,
+            capture=self._capture("Replace both options with a different question."),
+            interpretation=CodexFramingNewBriefInterpretationV1(
+                reason="The researcher changed the core economic question."
+            ),
+        )
+        first = self.bridge.invoke(request)
+        second = self.bridge.invoke(request)
+        self.assertEqual(first, second)
+        self.assertEqual(first.outcome, "new_brief_required", first)
+        assert first.framing_team is not None
+        assert first.framing_team.selection_binding is not None
+        self.assertEqual(
+            first.framing_team.selection_binding.selection_record_kind,
+            "team_stop",
+        )
+        self.assertIsNone(first.framing_team.handoff_hash)
+        self.assertEqual(self._handoff_paths(), ())
+
+    def test_legacy_request_bytes_omit_source_aware_additions(self) -> None:
+        capability = self._available_capability()
+        self.assertNotIn(b'"source_aware_choice"', canonical_json_bytes(capability))
+        panel_response = self._publish_panel()
+        assert panel_response.framing_team is not None
+        assert panel_response.framing_team.panel_hash is not None
+        legacy_result_bytes = canonical_json_bytes(panel_response.framing_team)
+        self.assertNotIn(b'"choice_review_hash"', legacy_result_bytes)
+        self.assertNotIn(b'"selection_binding_hash"', legacy_result_bytes)
+        user_turn = CodexFramingTeamUserTurnRequestV1(
+            **self._delivery_binding(),
+            panel_hash=panel_response.framing_team.panel_hash,
+            session=self.session,
+            capture=self._capture("Continue with the mentor direction."),
+            interpretation=CodexFramingClearInterpretationV1(
+                disposition="continue",
+                selected_lane_ids=("mentor",),
+                synthesis_markdown="Continue with the mentor direction.",
+                worker_brief="Author one bounded framing candidate.",
+            ),
+        )
+        self.assertNotIn(b'"choice_review_hash"', canonical_json_bytes(user_turn))
+        forged = self.bridge.invoke(
+            user_turn.model_copy(update={"choice_review_hash": "e" * 64})
+        )
+        self.assertEqual(forged.outcome, "error", forged)
+        self.assertIn("legacy framing choice", forged.diagnostics[0].message)
+        self.assertEqual(self._handoff_paths(), ())
 
     def test_panel_clear_user_turn_preserves_exact_text_and_one_handoff(self) -> None:
         panel_response = self._publish_panel()
@@ -470,6 +971,7 @@ class Phase5BCodexBridgeTests(unittest.TestCase):
         for operation in (
             "framing_team.open",
             "framing_team.publish_panel",
+            "framing_team.publish_choice_review",
             "framing_team.apply_user_turn",
         ):
             with self.subTest(operation=operation):

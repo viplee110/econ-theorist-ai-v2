@@ -183,6 +183,22 @@ apply to an activated team. General recovery after a team returns `kill` or
 exact-retry hardening for this narrow composite postdates the preserved
 `p5b1` captures and was not exercised by that pilot.
 
+The 2026-07-24 AI-agent-trading usability attempt under
+`C:\tmp\etai-v2-ai-agent-trading-20260724` is frozen negative evidence. Its raw
+panel was materially richer than the short direction summary shown to the
+researcher, and no checked literature orientation compared the proposals'
+ordinary-agent baselines with operational AI-specific primitives before the
+choice. The current branch therefore adds an optional noncanonical,
+source-aware choice review after the blind panel: the mentor remains a screen,
+the two collaborators remain the only direction authors, and the coordinator
+binds lightweight source records plus two complete comparison cards before any
+choice or worker handoff. The cards are a compiled researcher-facing view, not
+a fixed discovery method or substitute for later scholar-derived
+`ResearchMove`s. This changes no canonical research schema, route, V8
+validator, gate, or disabled ResearchMove activation. It is deterministic
+candidate behavior only; the frozen attempt did not exercise it, and a fresh
+public pilot in a new `C:\tmp` root remains required.
+
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or
 historical selector behavior to solve a host-integration problem. Host
