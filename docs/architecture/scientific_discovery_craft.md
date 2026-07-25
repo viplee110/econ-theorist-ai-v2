@@ -112,6 +112,16 @@ fields in a report, but they are not mutually exclusive storage categories.
 An inferred reconstruction is never reported as the author's own stated
 process.
 
+Move admission also requires a representative paper chain rather than one
+successful paper. Curators inspect related papers across time or applications
+and, where an official first-person interview, lecture, autobiography, or
+method essay is available, compare the inferred scientific architecture with
+the scholar's own account. The first-person source may support only what it
+actually states. If no such source states the general method, the candidate is
+labelled `paper-chain-derived`; it may still become a functional move when the
+operation recurs across independent economic evidence, but it is not reported
+as the scholar's personal research habit.
+
 Conflicting methods are preserved rather than averaged away. Examples include
 large-question search versus one precise market friction, maximal
 simplification versus retaining first-order complexity, Bayesian versus robust
@@ -523,6 +533,34 @@ hashes, derived functional properties, biases, and non-applicability remain
 in the repository. The source-audited release stays disabled and outside
 evaluation holdouts. The pilot part of step 3 has not begun because no pilot
 authorization was granted.
+
+The researcher later authorized one additive, still-disabled
+discovery-distillation batch in `craft/research_corpus.v2.json`. It preserves
+the exact v1 release and adds four source-audited primary-source cards plus
+`Market-Operation Primitive`, `Different-Implementation Question`, and
+`Ground-Up Constraint Rebuild`. The first two moves target the observed
+framing failure in which technology labels reached formal comparison before a
+market operation and economic consequence were identified. The third includes
+one cross-domain first-principles interview only as bounded method evidence;
+the release validator requires two independent economic positive anchors
+whenever such general problem-solving evidence supports a move. The v2
+[source audit](../../review_outputs/phase5b_research_move_discovery_distillation_source_audit_v2.md)
+records the exact evidence and transfer limits. This release adds no selector,
+runtime projection surface, package resource, WorkPacket integration, pilot,
+route disposition, or canonical-write authority.
+
+The additive `craft/research_corpus.v3.json` checkpoint applies the stronger
+paper-chain/first-person distinction. It preserves v1 and v2, adds five
+hash-bound source cards, and admits `Institutional Feedback Deepener`,
+`Robustness-Axis Switch`, and `Incentive-Implementation Stress Test` only as
+disabled functional candidates. The first two are explicitly
+`paper-chain-derived`; the third combines a published-paper reconstruction
+with a bounded first-person research-history account. The exact
+[v3 source audit](../../review_outputs/phase5b_research_move_scholar_method_chain_source_audit_v3.md)
+records the representative chains, contextual experience sources, biases, and
+non-applicability boundaries. V3 is neither a scholar replica nor a runtime
+feature and grants no retrieval, selection, pilot, route-disposition, or
+canonical-write authority.
 
 One practical exploration cadence uses batches of about eight scholars or
 twenty sources. An initial saturation signal is two consecutive batches with

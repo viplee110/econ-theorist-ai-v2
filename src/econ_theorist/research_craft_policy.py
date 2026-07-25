@@ -21,8 +21,14 @@ from .research_craft import (
 RESEARCH_CORPUS_V1_HASH = (
     "8e62369302e850aa5b6bb439941da08f41edcc80f453a36f3b3d66220abbfe17"
 )
+RESEARCH_CORPUS_V2_HASH = (
+    "ff373babf44100d666f666ad77310d4730ed43179ad094c6ac6961f8f24808ce"
+)
+RESEARCH_CORPUS_V3_HASH = (
+    "74facfbd0a689fd99ff44b11bd0eaebef3d29a7ec5934098bda481131c4c444e"
+)
 
-_EXPECTED_MOVE_ROUTES = {
+_EXPECTED_MOVE_ROUTES_V1 = {
     "research.move.computational_structure_probe": {
         "lab.micro_examples_and_ablations",
         "discover.claims_and_boundaries",
@@ -34,6 +40,60 @@ _EXPECTED_MOVE_ROUTES = {
     "research.move.analogical_structure_transfer": {
         "tournament.mechanisms",
         "audit.assumptions_generality_and_absorption",
+    },
+}
+_EXPECTED_MOVE_ROUTES_V2 = {
+    **_EXPECTED_MOVE_ROUTES_V1,
+    "research.move.market_operation_primitive": {
+        "frame.question_and_benchmarks",
+        "decompose.primitives",
+    },
+    "research.move.different_implementation_question": {
+        "frame.question_and_benchmarks",
+        "tournament.mechanisms",
+    },
+    "research.move.ground_up_constraint_rebuild": {
+        "frame.question_and_benchmarks",
+        "decompose.primitives",
+    },
+}
+_EXPECTED_MOVE_ROUTES_V3 = {
+    **_EXPECTED_MOVE_ROUTES_V2,
+    "research.move.institutional_feedback_deepener": {
+        "decompose.primitives",
+        "tournament.mechanisms",
+    },
+    "research.move.robustness_axis_switch": {
+        "discover.claims_and_boundaries",
+        "audit.assumptions_generality_and_absorption",
+    },
+    "research.move.incentive_implementation_stress_test": {
+        "tournament.mechanisms",
+        "tournament.implementations",
+    },
+}
+
+_RELEASE_POLICIES = {
+    "research.corpus.first_batch.v1": {
+        "hash": RESEARCH_CORPUS_V1_HASH,
+        "moves": _EXPECTED_MOVE_ROUTES_V1,
+        "report": "review_outputs/phase5b_research_move_source_audit_v1.md",
+    },
+    "research.corpus.discovery_distillation.v2": {
+        "hash": RESEARCH_CORPUS_V2_HASH,
+        "moves": _EXPECTED_MOVE_ROUTES_V2,
+        "report": (
+            "review_outputs/"
+            "phase5b_research_move_discovery_distillation_source_audit_v2.md"
+        ),
+    },
+    "research.corpus.scholar_method_chain.v3": {
+        "hash": RESEARCH_CORPUS_V3_HASH,
+        "moves": _EXPECTED_MOVE_ROUTES_V3,
+        "report": (
+            "review_outputs/"
+            "phase5b_research_move_scholar_method_chain_source_audit_v3.md"
+        ),
     },
 }
 
@@ -64,16 +124,23 @@ def _revalidate(corpus: ResearchCorpusRelease) -> ResearchCorpusRelease:
 def _validate_research_corpus_policy(
     corpus: ResearchCorpusRelease,
 ) -> ResearchCorpusRelease:
-    """Apply the exact first-batch isolation and source-audit policy."""
+    """Apply one exact disabled-release isolation and source-audit policy."""
 
     corpus = _revalidate(corpus)
-    moves = {move.move_id: move for move in corpus.moves}
-    if set(moves) != set(_EXPECTED_MOVE_ROUTES):
+    release_policy = _RELEASE_POLICIES.get(corpus.release_id)
+    if release_policy is None:
         raise ResearchCraftPolicyError(
-            "the first disabled research-craft release must contain exactly "
-            "the researcher-approved three-move batch"
+            "research-craft policy does not recognize this disabled release"
         )
-    for move_id, expected_routes in _EXPECTED_MOVE_ROUTES.items():
+    expected_moves = release_policy["moves"]
+    assert isinstance(expected_moves, dict)
+    moves = {move.move_id: move for move in corpus.moves}
+    if set(moves) != set(expected_moves):
+        raise ResearchCraftPolicyError(
+            "the disabled research-craft release does not contain its exact "
+            "researcher-approved move batch"
+        )
+    for move_id, expected_routes in expected_moves.items():
         move = moves[move_id]
         if set(move.compatible_route_ids) != expected_routes:
             raise ResearchCraftPolicyError(
@@ -91,13 +158,15 @@ def _validate_research_corpus_policy(
         raise ResearchCraftPolicyError(
             "the analogical move must retain its skeptical contrast"
         )
-    if corpus.source_audit_report_path != (
-        "review_outputs/phase5b_research_move_source_audit_v1.md"
-    ):
+    expected_report = release_policy["report"]
+    assert isinstance(expected_report, str)
+    if corpus.source_audit_report_path != expected_report:
         raise ResearchCraftPolicyError(
             "research-craft release must bind the approved source-audit report"
         )
-    if object_digest(corpus) != RESEARCH_CORPUS_V1_HASH:
+    expected_release_hash = release_policy["hash"]
+    assert isinstance(expected_release_hash, str)
+    if object_digest(corpus) != expected_release_hash:
         raise ResearchCraftPolicyError(
             "research-craft policy requires the exact fixed development release"
         )
@@ -125,7 +194,11 @@ def load_research_corpus(
         r"[0-9a-f]{64}", expected_hash
     ) is None:
         raise ResearchCraftPolicyError("research corpus expected hash is invalid")
-    if expected_hash != RESEARCH_CORPUS_V1_HASH:
+    if expected_hash not in {
+        RESEARCH_CORPUS_V1_HASH,
+        RESEARCH_CORPUS_V2_HASH,
+        RESEARCH_CORPUS_V3_HASH,
+    }:
         raise ResearchCraftPolicyError(
             "research corpus expected hash is not the fixed development release"
         )
@@ -166,6 +239,8 @@ def load_research_corpus(
 
 __all__ = [
     "RESEARCH_CORPUS_V1_HASH",
+    "RESEARCH_CORPUS_V2_HASH",
+    "RESEARCH_CORPUS_V3_HASH",
     "ResearchCraftPolicyError",
     "load_research_corpus",
 ]

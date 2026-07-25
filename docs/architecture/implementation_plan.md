@@ -75,6 +75,30 @@ authority. An opt-in pilot requires separate explicit researcher
 authorization. Automatic default activation still requires positive held-out
 replication and end-to-end evidence under
 `scientific_discovery_craft.md`.
+After the AI-agent-trading framing attempt exposed economically thin,
+topic-level proposals, the researcher authorized one additional disabled
+development release rather than another protocol-only pilot.
+`craft/research_corpus.v2.json` preserves v1 and adds
+`Market-Operation Primitive`, `Different-Implementation Question`, and
+`Ground-Up Constraint Rebuild`. Four new public primary sources are hash-bound
+in the additive
+[source audit](../../review_outputs/phase5b_research_move_discovery_distillation_source_audit_v2.md).
+One source is a cross-domain first-principles interview and cannot support a
+move without two independent economic positive anchors. V2 remains
+checkout-only, absent from routes and WorkPackets, and unauthorized for pilot,
+automatic selection, or canonical writing.
+
+The later `craft/research_corpus.v3.json` checkpoint preserves v1/v2 and
+applies a stricter scholar-method-chain audit: representative paper
+architectures and official first-person research accounts are recorded as
+different evidence relations. Five additional source cards support three
+disabled candidates: `Institutional Feedback Deepener`, `Robustness-Axis
+Switch`, and `Incentive-Implementation Stress Test`. The first two remain
+`paper-chain-derived`, not claimed personal habits. The
+[v3 audit](../../review_outputs/phase5b_research_move_scholar_method_chain_source_audit_v3.md)
+adds no runtime selector, WorkPacket integration, pilot, route disposition, or
+canonical authority.
+
 A new held-out authoring pair may be resumed only when a concrete product
 failure makes that comparison decision-relevant. V9 and an exploratory v1/v2
 quality claim remain blocked. See

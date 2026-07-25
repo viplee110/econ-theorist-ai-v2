@@ -149,6 +149,34 @@ into the public bridge. Independent economics/editing-burden inspection remains
 required before an exploratory v1/v2 comparison. Do not expand generic
 security infrastructure unless a concrete local-use failure requires it.
 
+On 2026-07-25 the researcher authorized a second additive source-audited
+development release for the observed economically thin framing failure.
+`craft/research_corpus.v2.json` preserves the exact v1 release and adds
+`Market-Operation Primitive`, `Different-Implementation Question`, and
+`Ground-Up Constraint Rebuild` with four new public primary-source cards. The
+cross-domain first-principles source is method evidence only and the validator
+requires two independent economic positive anchors for any move that uses it.
+The exact audit is
+`review_outputs/phase5b_research_move_discovery_distillation_source_audit_v2.md`.
+V2 remains checkout-only and `development_disabled`: do not package, retrieve,
+rank, select, project into a WorkPacket, pilot, or activate it without separate
+researcher authorization. It has no route, disposition, canonical-write,
+novelty, welfare, or human-gate authority.
+
+The additive `craft/research_corpus.v3.json` checkpoint preserves the exact v1
+and v2 releases and raises the evidence standard for scholar-method
+distillation. It adds five hash-bound source cards and exactly three disabled
+functional candidates: `Institutional Feedback Deepener`, `Robustness-Axis
+Switch`, and `Incentive-Implementation Stress Test`. Representative published
+paper chains are recorded separately from official first-person
+method/experience evidence; the first two moves are `paper-chain-derived` and
+must not be reported as a scholar's stated personal habit. The exact audit is
+`review_outputs/phase5b_research_move_scholar_method_chain_source_audit_v3.md`.
+V3 is also checkout-only and `development_disabled`: do not package, retrieve,
+rank, select, expose through WorkPackets, pilot, activate, or grant it route,
+canonical-write, novelty, welfare, or human-gate authority without separate
+researcher authorization.
+
 The framing-only Phase 5B.0 contract, noncanonical binding/persistence module,
 and thin public Codex bridge projection are now present. They bind one mentor
 and two collaborator outputs to one immutable framing WorkPacket, preserve all

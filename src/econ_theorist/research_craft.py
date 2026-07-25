@@ -24,7 +24,7 @@ AuditDate: TypeAlias = Annotated[
     str, Field(pattern=r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 ]
 
-SourceType: TypeAlias = Literal["method_essay", "published_paper"]
+SourceType: TypeAlias = Literal["interview", "method_essay", "published_paper"]
 ClaimRelation: TypeAlias = Literal[
     "explicitly_stated",
     "inferred_reconstruction",
@@ -33,6 +33,7 @@ ResearchMode: TypeAlias = Literal[
     "pure_theory",
     "applied_theory",
     "theory_methodology",
+    "general_problem_solving_methodology",
     "empirical",
     "mixed_empirical",
 ]
@@ -97,6 +98,9 @@ LifecycleStage: TypeAlias = Literal[
     "absorption_audit",
 ]
 ExistingOutputType: TypeAlias = Literal[
+    "ResearchQuestion",
+    "BenchmarkSet",
+    "PrimitiveGraph",
     "MechanismHypothesis",
     "PredictionRegister",
     "ExampleSuite",
@@ -233,7 +237,9 @@ class ResearchSourceCard(ResearchCraftResource):
                     "published-paper reconstructions require outcome-selection bias"
                 )
         elif self.claim_relation != "explicitly_stated":
-            raise ValueError("method essays must bind an explicitly stated method")
+            raise ValueError(
+                "method essays and interviews must bind an explicitly stated method"
+            )
         if self.curator_decision == "exclude":
             return self
         if self.evidence_role == "skeptical_contrast" and self.curator_decision != (
@@ -527,6 +533,21 @@ class ResearchCorpusRelease(ResearchCraftResource):
                         "positive research sources cannot reuse an author lineage"
                     )
                 positive_lineages.update(source.author_lineage_ids)
+            if any(
+                source.research_mode == "general_problem_solving_methodology"
+                for source in positive_sources
+            ):
+                economic_positive_sources = [
+                    source
+                    for source in positive_sources
+                    if source.research_mode
+                    in {"pure_theory", "applied_theory", "theory_methodology"}
+                ]
+                if len(economic_positive_sources) < 2:
+                    raise ValueError(
+                        "general problem-solving evidence requires two "
+                        "independent economic positive anchors"
+                    )
             if (
                 len(positive_sources) < 2
                 or len(positive_families) < 2
@@ -537,7 +558,7 @@ class ResearchCorpusRelease(ResearchCraftResource):
                     "paper families and coauthor clusters"
                 )
             has_explicit_method = any(
-                source.source_type == "method_essay"
+                source.source_type in {"interview", "method_essay"}
                 and source.claim_relation == "explicitly_stated"
                 for source in positive_sources
             )
