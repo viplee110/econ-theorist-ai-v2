@@ -2,13 +2,15 @@
 
 ## Current phase
 
-Phases 1--4, the reviewed Phase 5A.0 contract, and the Phase 5A.1 generic
-IDE-neutral machine facade are accepted on `main`. A Phase 5A.2 public Codex
-functional slice is recorded in the current tree: one prepared-checkout
-framing route completed WorkPacket delivery, model authorship, validation, and
-canonical commit. The full local research-ready gate remains open. The
-normative owner remains `docs/implementation/phase5a_contract.md`, and the
-public transport is documented in `docs/implementation/machine_protocol_v1.md`.
+Phases 1--4, the reviewed Phase 5A.0 contract, the Phase 5A.1 generic
+IDE-neutral machine facade, and the bounded Phase 5A.2/5B development slices
+form the open-source MVP baseline authorized for `main` on 2026-07-26. One
+prepared-checkout framing route completed WorkPacket delivery, model
+authorship, validation, and canonical commit. The full local research-ready
+gate remains open as post-merge evaluation rather than an MVP publication
+blocker. The normative owner remains
+`docs/implementation/phase5a_contract.md`, and the public transport is
+documented in `docs/implementation/machine_protocol_v1.md`.
 
 Phase 5A.1 owns the generic local machine facade: work packets, reliable
 candidate completion, exact retry, and ordinary recovery. The recorded 5A.2
@@ -144,10 +146,12 @@ experimental `C:\tmp\p5b1` branch after head `ed2371...` contains a failed-route
 transaction admitted only by a reverted validator relaxation and is not a
 valid final-code canonical result; preserve it only as negative evidence. Do
 not reuse the packaged verification root or rerun either frozen case, create
-V9, merge this branch to `main`, or integrate the semantic compiler prototype
-into the public bridge. Independent economics/editing-burden inspection remains
-required before an exploratory v1/v2 comparison. Do not expand generic
-security infrastructure unless a concrete local-use failure requires it.
+V9, or integrate the semantic compiler prototype into the public bridge. The
+bounded current tree may be merged only as the open-source MVP baseline; that
+merge does not upgrade any pilot or research-quality claim. Independent
+economics/editing-burden inspection remains required before an exploratory
+v1/v2 comparison. Do not expand generic security infrastructure unless a
+concrete local-use failure requires it.
 
 On 2026-07-25 the researcher authorized a second additive source-audited
 development release for the observed economically thin framing failure.

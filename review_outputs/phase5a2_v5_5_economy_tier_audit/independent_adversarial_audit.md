@@ -107,10 +107,10 @@ GateDossier 把 belief updating 和 fixed-composition implementation 归为普�
 
 ## 最小修复方案
 
-1. **锁定 certificate 语义。**  
+1. **锁定 certificate 语义。**
    规定 certificate 对应一单位已确认的高容量服务；该单位在售出前保持有效。持有未售 certificate 的 seller 不重新抽取该单位的 capacity。
 
-2. **写出最小状态、时序、行动和收益。**  
+2. **写出最小状态、时序、行动和收益。**
    采用 \(z\in\{00,10,01,11\}\)，逐状态列出 seller 和 buyer 行动。最低限度写明
 
    \[
@@ -120,7 +120,7 @@ GateDossier 把 belief updating 和 fixed-composition implementation 归为普�
 
    同时规定 inspection 后的完整 contingent action set。
 
-3. **加入闭合转移律。**  
+3. **加入闭合转移律。**
    若 \(a_{it}\) 是新发行、\(x_{it}\) 是向 seller \(i\) 的交易：
 
    \[
@@ -130,7 +130,7 @@ GateDossier 把 belief updating 和 fixed-composition implementation 归为普�
 
    并规定容量重抽、Bayes posterior、同时认证和双 certificate 时的处理。
 
-4. **明确记录 dominance。**  
+4. **明确记录 dominance。**
    写入一个正式边界：\(c>0\) 且 certificate 有效时 inspection 严格被支配。因此
 
    \[
@@ -139,10 +139,10 @@ GateDossier 把 belief updating 和 fixed-composition implementation 归为普�
 
    这会把研究问题精确分解为“零-certificate 状态占用效应”和“该状态内的 conditional inspection effect”。
 
-5. **对 feedback 做非零检验。**  
+5. **对 feedback 做非零检验。**
    检查 inspection 是否真的改变 seller-specific trade probability、continuation value 和下一期 certification。若其中任一链接恒为零，就把贡献改称“endogenous state-distribution channel”，不要称 closed-loop feedback。
 
-6. **重做 benchmark ledger。**  
+6. **重做 benchmark ledger。**
    每一行保持同一 \(z\)、同一物理行动集合和同一收益定义，只改变一个对象：
 
    - depletion parameter；
