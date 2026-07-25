@@ -21,9 +21,11 @@ Priority amendment date: 2026-07-22
 Phase 5B.0 adds one small research team around an immutable, engine-produced
 `frame.question_and_benchmarks` WorkPacket. A mentor challenges the frame, two
 sealed collaborators propose genuinely different directions, the researcher
-receives their complete attributed drafts plus a bounded source-aware choice
-review, selects or rewrites the direction in natural language, and one research
-worker authors the candidate through the existing Phase 5A completion path.
+receives their complete attributed drafts plus, only in the declared
+source-aware path for an AI-agent question that can truthfully populate its
+experimental card, a bounded choice review, selects or rewrites the direction
+in natural language, and one research worker authors the candidate through the
+existing Phase 5A completion path.
 
 This slice tests whether role-separated AI collaboration makes the research
 conversation more useful. It does not create a general agent platform, a
@@ -101,8 +103,38 @@ The first slice has exactly three advisory outputs:
 1. **mentor** -- challenges question sharpness, benchmark choice, importance,
    contribution radius, hidden assumptions, and continue/simplify/pivot/park/
    kill conditions;
-2. **collaborator A** -- proposes one defensible question-and-benchmark frame;
-3. **collaborator B** -- proposes a materially different defensible frame.
+2. **collaborator A** -- runs one bounded internal tournament and proposes its
+   strongest direct question-and-benchmark frame;
+3. **collaborator B** -- runs the same bounded tournament with a deliberate
+   search away from the most obvious mechanism family.
+
+The v2 collaborator overlay performs this competition inside the existing
+single sealed exposure. Each collaborator privately considers three to five
+materially distinct frames and publishes only a compact decision record, not
+private reasoning: one provisional champion, one materially non-isomorphic
+serious runner-up, the remaining candidates with one decisive rejection
+reason each, and a short pairwise selection rationale. Distinctiveness must
+come from the unresolved benchmark delta, a load-bearing primitive, margin or
+institution, the representation, or the result object. A renamed application,
+notation change, or preferred proof technique is not a distinct idea.
+
+The comparison has no aggregate score. It considers conditional contribution
+potential, distinctive economics and absorption risk, and the availability of
+a cheap discriminating probe. Technical ease may determine which probe runs
+first, but may not elevate an economically thin idea. If nothing survives, the
+lane reports `NO CHAMPION` and recommends reframing, parking, or a new brief.
+It does not choose the least bad idea. Journal labels, author prestige, agent
+votes, confidence percentages, invented citations, novelty claims, G1
+decisions, and disclosed chain of thought are prohibited.
+
+The tournament is candidate behavior, not an engine scoring surface. The
+engine binds and preserves the exact overlay and full Markdown output; it does
+not parse economic prose to prove that private exploration occurred. Existing
+v1 plans remain byte-valid and resume with their original overlays. New plans
+use v2. This additive change creates no new route, canonical object, gate,
+lane, worker handoff, or mandatory extra model call. The pre-existing option
+for one bounded collaborator-B diversity repair remains available when the two
+champions converge.
 
 Collaborators do not see each other's output, the mentor's completed output,
 the eventual researcher selection, or worker output while authoring. The
@@ -129,6 +161,12 @@ question generation while preventing the researcher from choosing among
 directions that have not yet been compared with an ordinary-agent benchmark
 and checked scholarly sources.
 
+The existing comparison cards cover each lane's champion. A runner-up is an
+auditable reserve, not a literature-cleared third or fourth direction. If the
+researcher wants to promote it after a champion is absorbed or rejected, it
+must first receive the same bounded source orientation and a new bound choice
+view; the original lane draft is never rewritten after seeing sources.
+
 The structured comparison is an automatically compiled decision view, not a
 fixed method for producing economic ideas. Mentor and collaborator reasoning
 remains free-form. Later scholar-derived `ResearchMove`s may change how
@@ -147,8 +185,8 @@ The minimum records are:
   exactly three advisory exposures plus one worker exposure that is conditional
   on an exact terminal handoff after the single coordinator;
 - `FramingTeamPlanV1`: the exact packet binding, declared execution/isolation
-  mode, delivery-authorization hash, three role overlays, and the single-writer
-  constraint;
+  mode, delivery-authorization hash, versioned three-role overlay set, and the
+  single-writer constraint;
 - `FramingLaneOutputV1`: lane id, role, observable agent/model label when
   available, common packet binding, and free-form Markdown;
 - `FramingTeamPanelV1`: one mentor output and exactly two collaborator outputs,
@@ -197,6 +235,14 @@ compliance are host assertions, not facts independently verified by the
 engine. The original WorkPacket delivery egress binding is not evidence that a
 separate literature search was authorized. The engine validates and binds the
 submitted source cards; it does not certify acquisition provenance.
+
+The current `FramingDirectionCardV1` is an experimental projection for
+AI-agent questions: it requires an ordinary-agent baseline, one operational
+AI-specific primitive, and a mechanism-design delta. It must not be forced
+onto unrelated theory questions or described as a topic-neutral source-review
+schema. Those questions remain on the source-blind direct-choice path unless a
+future human-authorized, topic-neutral review contract applies. Later canonical
+literature and novelty routes are unchanged.
 
 ## 6. Researcher choice and authority
 

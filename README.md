@@ -16,7 +16,7 @@ theory — without pretending any workflow can promise publication.
   <a href="#-from-an-idea-to-a-defensible-argument-in-five-moves"><img alt="Focus: Economic Theory" src="https://img.shields.io/badge/Focus-Economic%20Theory-7C3AED"></a>
   <a href="#-what-exists-today"><img alt="Status: Research Preview" src="https://img.shields.io/badge/Status-Research%20Preview-F59E0B"></a>
   <a href="routes/registry.v8.json"><img alt="35 enabled routes" src="https://img.shields.io/badge/Routes-35%20enabled-0F766E"></a>
-  <a href="#-evidence-and-verification"><img alt="594-test regression with 6 skips" src="https://img.shields.io/badge/Regression-594%20tests%20%7C%206%20skips-16A34A"></a>
+  <a href="#-evidence-and-verification"><img alt="Routine regression suite passing" src="https://img.shields.io/badge/Regression-routine%20suite%20passing-16A34A"></a>
   <a href="https://www.python.org/"><img alt="Python 3.11+" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white"></a>
   <a href="LICENSE"><img alt="Apache 2.0 license" src="https://img.shields.io/badge/License-Apache%202.0-3B82F6"></a>
 </p>
@@ -72,6 +72,34 @@ substitute for it.
 > workflows. Numerical and formal tools are used only to discover, falsify, or
 > verify theoretical claims.
 
+## A task-adaptive research team, not an agent swarm
+
+V2 uses multiple agents where independent economic judgment is useful, while
+keeping one canonical writer and the researcher in control. In the current
+framing-team slice, one mentor challenges importance and hidden assumptions.
+Two sealed collaborators are each instructed, within an initial model call, to
+compare three to five materially different ideas and expose a champion, a
+serious runner-up, and a short rejection ledger. If the two champions converge,
+collaborator B may receive at most one bounded diversity repair.
+
+The generic panel itself is source-blind. The current optional source-aware
+comparison-card slice is experimental and AI-agent-question-specific. When it
+is explicitly authorized and available, the host presents bound source records
+and cards for the two lane directions before the researcher chooses, combines,
+rewrites, or rejects them. The bridge preserves those records; it does not
+independently perform the search or prove its completeness. A topic-neutral
+pre-choice source card remains post-MVP work. Only after the bound choice may
+exactly one research worker receive the handoff.
+
+This is a bounded framing capability, not a claim that every route already runs
+an open-ended committee. Phase 5A routes outside that declared exception remain
+single-agent today; repeated post-framing mechanism, proof, counterexample, and
+manuscript teams are part of the post-MVP quality plan. Agreement among agents
+is correlated advice, not proof, novelty evidence, or a substitute for a human
+gate. See the
+[framing-team contract](docs/implementation/phase5b_framing_team_contract.md)
+for the exact current boundary.
+
 ## 🧭 From an idea to a defensible argument in five moves
 
 ### 1. Find the question worth carrying
@@ -123,6 +151,20 @@ work.
 
 **Outcome:** an argument that can evolve without losing the evidence,
 boundaries, and decisions that support it.
+
+V2 does not write by imitating the surface style of a few nearby journal
+articles. The manuscript compiler starts from the validated argument and a
+planned reader path. If exemplary papers are consulted, they are matched to a
+local function—such as motivating a puzzle, contrasting a benchmark, bridging
+a theorem to its intuition, or stating a limitation—not treated as prose or
+section templates. A small enabled seed craft retriever already supplies
+copyright-safe, derived functional cards rather than source prose; its coverage
+is still narrow. One writer integrates the paper in a consistent,
+economics-first voice, while formal, economic, and cold-reader critics diagnose
+different failures. The planned integrated Economic Manuscript Quality Loop
+strengthens this process and still requires a real end-to-end manuscript pilot
+before V2 can claim reliably human-quality exposition. See the
+[manuscript compiler](docs/architecture/manuscript_compiler.md).
 
 Between these moves, the researcher explicitly decides whether to promote the
 question and benchmarks, economic logic, formal base, central result, and

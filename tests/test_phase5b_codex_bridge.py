@@ -370,6 +370,17 @@ class Phase5BCodexBridgeTests(unittest.TestCase):
             "isolated_multi_agent",
         )
         self.assertEqual(opened.framing_team.team_plan.isolation_claim, "logical")
+        self.assertEqual(
+            opened.framing_team.team_plan.role_overlay_version,
+            "framing-team-role-overlay/v2",
+        )
+        for lane_id in ("collaborator_a", "collaborator_b"):
+            overlay = opened.framing_team.team_plan.role_overlays[lane_id]
+            self.assertIn("3-5 materially distinct", overlay)
+            self.assertIn("Champion", overlay)
+            self.assertIn("Serious runner-up", overlay)
+            self.assertIn("Eliminated candidates", overlay)
+            self.assertIn("Selection rationale", overlay)
         assert opened.framing_team.team_plan_hash is not None
         authorization = read_framing_team_delivery_authorization(
             ProjectOperationalLayout.at(StoreLayout.at(self.root)),

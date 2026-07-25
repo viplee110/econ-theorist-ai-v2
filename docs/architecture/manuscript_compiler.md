@@ -303,6 +303,78 @@ Specialist agents produce structured outputs:
 
 Their comments are merged into a revision brief. Any finding that changes committed prose or state is referenced by the transaction. The canonical writer performs the prose revision. Direct patching by many independent writers is permitted only for mechanically isolated changes and must be followed by a canonical integration pass.
 
+## Economic Manuscript Quality Loop
+
+The compiler should apply an Economic Manuscript Quality Loop to turn a
+validated argument into prose that reads like one economist explaining a
+result to another. This is a quality-control overlay on the existing
+compilation pipeline, not a second route chain or state machine. “Human” means
+clear economic judgment, natural continuity, and an auditable reader update.
+It does not mean concealing model use, gaming an AI detector, adding random
+stylistic variation, or imitating a named author.
+
+The loop is:
+
+1. **Lock the writing truth.** Start from the current argument spine, result
+   contracts, claim boundaries, and intended reader update. A fluent paragraph
+   cannot repair missing economics.
+2. **Name the local writing job.** Classify the unit by function: motivate the
+   puzzle, establish the benchmark, explain a primitive, state a result, bridge
+   theorem and intuition, defend an assumption, position a contribution, or
+   mark a boundary. Do not choose a generic journal-paper template.
+3. **Retrieve function-matched exemplars only when useful.** A small, licensed
+   or otherwise permitted set of published examples may show how strong papers
+   perform the same local function. Topic, journal, or author similarity alone
+   is insufficient. The writing packet receives an abstracted functional move
+   and its applicability boundary, never characteristic phrases, cadence,
+   paragraph order, or a paper-wide imitation template. All literature and
+   craft provenance remains explicit.
+4. **Draft economics first in one voice.** The canonical writer makes actors,
+   information, actions, incentives, strategic feedback, and the exact
+   benchmark visible before technical detail that depends on them. Theorem
+   order follows the reader's questions rather than the order in which agents
+   discovered or proved results.
+5. **Run independent formal, economic, and cold reads.** Formal review checks
+   truth and scope. Economic review checks mechanism, assumption roles,
+   consequence, and whether mathematics is doing economically meaningful
+   work. A context-isolated cold reader must recover the question, benchmark,
+   surprise, main result, intuition, and boundary in their own words; smooth
+   prose that cannot be retold fails.
+6. **Repair the smallest failed reader contract.** Merge findings into one
+   prioritized brief and let the canonical writer revise the affected
+   manuscript unit plus necessary transitions. Do not respond to a local
+   failure with uncontrolled whole-paper rewriting or many-agent prose
+   assembly.
+7. **Integrate and ask for human judgment.** Recheck cross-section voice,
+   terminology, result hierarchy, repetition, and claim strength. Material
+   choices about audience, argument order, central result, voice charter, and
+   manuscript promotion remain human-owned.
+
+Human-readable economic prose in this loop has observable requirements:
+
+- the question and benchmark are recoverable before notation becomes costly;
+- pronouns and economic objects have clear referents, and transitions state
+  the question, contrast, or causal link they perform;
+- paragraphs have distinct argumentative jobs instead of repeating the
+  theorem at successively vaguer levels;
+- sentence length and rhythm vary only as the argument requires, not through
+  mechanical “humanization”;
+- theorem and lemma density follows the result hierarchy rather than serving
+  as a quality proxy;
+- workflow jargon, schema ids, agent deliberation, validation logs, and stock
+  model meta-language do not leak into reader-facing prose; and
+- limitations and non-results sound like scientific boundaries, not product
+  disclaimers.
+
+The architecture already supplies the argument spine, Paper IR, one canonical
+writer, specialist critics, and cold-reader contracts needed for this loop.
+The enabled seed craft retriever already provides limited function-first
+retrieval and derived craft cards. Broader and better-tested exemplar coverage,
+integrated loop orchestration, and human-quality manuscript performance remain
+implementation and evaluation work until a complete held-out paper run
+succeeds. The loop adds no publication guarantee and no permission to copy
+protected expression.
+
 ## Compilation pipeline
 
 ### 1. Resolve inputs

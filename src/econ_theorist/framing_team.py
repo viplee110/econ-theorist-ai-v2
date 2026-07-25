@@ -56,7 +56,12 @@ _LANE_ROLES: dict[str, Literal["mentor", "collaborator"]] = {
     "collaborator_a": "collaborator",
     "collaborator_b": "collaborator",
 }
-_ROLE_OVERLAYS: dict[str, str] = {
+FramingRoleOverlayVersion = Literal[
+    "framing-team-role-overlay/v1",
+    "framing-team-role-overlay/v2",
+]
+
+_ROLE_OVERLAYS_V1: dict[str, str] = {
     "mentor": (
         "Act as the research mentor. Challenge the question, exact benchmarks, "
         "importance, contribution radius, hidden assumptions, and the conditions "
@@ -76,6 +81,55 @@ _ROLE_OVERLAYS: dict[str, str] = {
         "Do not author the candidate or decide G1."
     ),
 }
+_COLLABORATOR_TOURNAMENT_RULES = (
+    "Within this single sealed advisory call, privately run a bounded internal "
+    "idea tournament over 3-5 materially distinct question-and-benchmark frames; "
+    "do not delegate or reveal private chain of thought. Distinct means a "
+    "different benchmark delta, load-bearing primitive, margin, institution, "
+    "representation, or result object, not changed labels, applications, "
+    "notation, or proof techniques. Compare candidates without numerical "
+    "scores, voting, confidence percentages, journal labels, author prestige, "
+    "or novelty claims. Contribution potential means which economist belief, "
+    "application class, or modeling practice would change if the idea were "
+    "true. Technical ease may order probes but must not promote an economically "
+    "thin idea. Return concise free-form Markdown with exactly these visible "
+    "sections: Champion; Serious runner-up; Eliminated candidates; Selection "
+    "rationale. For the champion give the exact question, benchmark delta, "
+    "economic consequence, distinctive force and absorption risk, cheapest "
+    "decisive killer probe, and largest unresolved risk. Give the runner-up the "
+    "same core information, why it currently loses, and what evidence would "
+    "reverse the ordering. List each remaining candidate with one decisive "
+    "elimination reason. The champion and runner-up must be materially "
+    "non-isomorphic. If none survives, report NO CHAMPION and recommend reframe, "
+    "park, or a new brief rather than selecting the least bad idea. Treat "
+    "novelty and literature overlap as questions for later source review; never "
+    "invent citations. Do not author the candidate or decide G1."
+)
+_ROLE_OVERLAYS_V2: dict[str, str] = {
+    "mentor": _ROLE_OVERLAYS_V1["mentor"],
+    "collaborator_a": (
+        "Act as an independent research collaborator. Search first for the "
+        "strongest direct economic tension in the user's question, while "
+        "retaining any higher-upside coherent alternative. "
+        + _COLLABORATOR_TOURNAMENT_RULES
+    ),
+    "collaborator_b": (
+        "Act as an independent research collaborator. Search away from the most "
+        "obvious mechanism family, including a non-isomorphic representation, "
+        "equivalence, boundary, or impossibility angle when economically "
+        "appropriate, while retaining any higher-upside coherent alternative. "
+        + _COLLABORATOR_TOURNAMENT_RULES
+    ),
+}
+_ROLE_OVERLAYS_BY_VERSION: dict[
+    FramingRoleOverlayVersion, dict[str, str]
+] = {
+    "framing-team-role-overlay/v1": _ROLE_OVERLAYS_V1,
+    "framing-team-role-overlay/v2": _ROLE_OVERLAYS_V2,
+}
+_CURRENT_ROLE_OVERLAY_VERSION: FramingRoleOverlayVersion = (
+    "framing-team-role-overlay/v2"
+)
 
 
 class _FramingPacketBoundV1(StrictModel):
@@ -148,7 +202,7 @@ class FramingTeamPlanV1(_FramingPacketBoundV1):
     execution_mode: Literal["isolated_multi_agent", "sequential_single_model"]
     isolation_claim: Literal["logical", "host_enforced"]
     delivery_authorization_hash: Digest
-    role_overlay_version: Literal["framing-team-role-overlay/v1"] = (
+    role_overlay_version: FramingRoleOverlayVersion = (
         "framing-team-role-overlay/v1"
     )
     role_overlays: dict[FramingAdvisoryLaneId, NonEmptyString]
@@ -160,8 +214,12 @@ class FramingTeamPlanV1(_FramingPacketBoundV1):
 
     @model_validator(mode="after")
     def _exact_role_overlays(self) -> "FramingTeamPlanV1":
-        if self.role_overlays != _ROLE_OVERLAYS:
-            raise ValueError("framing team plan must carry the exact v1 role overlays")
+        expected = _ROLE_OVERLAYS_BY_VERSION[self.role_overlay_version]
+        if self.role_overlays != expected:
+            raise ValueError(
+                "framing team plan must carry the exact role overlays for "
+                f"{self.role_overlay_version}"
+            )
         return self
 
 
@@ -832,20 +890,28 @@ def open_framing_team_plan(
     authorization_hash = sha256_digest(
         canonical_json_bytes(delivery_authorization)
     )
+    existing = _read_activation(operational, packet, work_packet_hash)
+    if existing is not None:
+        existing_plan = existing[1]
+        if (
+            existing[2] != delivery_authorization
+            or existing_plan.execution_mode != execution_mode
+            or existing_plan.isolation_claim != isolation_claim
+        ):
+            raise OperationalError(
+                "framing team is already active under a different authorization"
+            )
+        return existing[0], existing_plan
     plan = FramingTeamPlanV1(
         **_packet_binding(packet, work_packet_hash),
         execution_mode=execution_mode,
         isolation_claim=isolation_claim,
         delivery_authorization_hash=authorization_hash,
-        role_overlays=dict(_ROLE_OVERLAYS),
+        role_overlay_version=_CURRENT_ROLE_OVERLAY_VERSION,
+        role_overlays=dict(
+            _ROLE_OVERLAYS_BY_VERSION[_CURRENT_ROLE_OVERLAY_VERSION]
+        ),
     )
-    existing = _read_activation(operational, packet, work_packet_hash)
-    if existing is not None:
-        if existing[2] != delivery_authorization or existing[1] != plan:
-            raise OperationalError(
-                "framing team is already active under a different authorization"
-            )
-        return existing[0], existing[1]
     store = _team_store(operational, route_run_id)
     installed_authorization_hash, _ = store.install(
         "framing-team-delivery-authorizations", delivery_authorization

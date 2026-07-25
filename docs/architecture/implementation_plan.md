@@ -1,20 +1,21 @@
 # Implementation plan
 
-Status: Architecture v0.1 with accepted Phase 1--4 implementations, the Phase
-5A.0 host-bootstrap contract, and the Phase 5A.1 generic machine facade on
-`main`; one Phase 5A.2 public Codex functional slice is recorded, and the
-current tree contains a deterministically accepted additive registry-v8
-framing-quality implementation candidate. V8 adds only a narrow, non-G1
-negative-diagnosis exit for an upstream graph that cannot honestly support an
-active-margin witness. R2 and the researcher-authorized R3 revision both
-committed framing and decomposition but no audit. Locked R3 adjudication
-classified the current failure `STRUCTURAL_TAX_PRIMARY` (0.86) and found no V8
-validator defect. A noncanonical semantic-compiler prototype now validates the
-locked R3 diagnosis under unchanged V8 semantics. The held-out paired shadow
-is complete: neither arm reached V8, while Semantic V2 substantially reduced
-structure and improved reader recovery without established material scientific
-degradation. A fresh WorkPacket-only end-to-end route and the full local
-research-ready gate remain open.
+Status: accepted Phase 1--4 implementations, the Phase 5A.0 host-bootstrap
+contract, the Phase 5A.1 generic machine facade, and the bounded Phase
+5A.2/5B development slices form the open-source MVP baseline on `main` as of
+2026-07-26. The baseline records one public Codex functional slice and a
+deterministically accepted additive registry-v8 framing-quality
+implementation. V8 adds only a narrow, non-G1 negative-diagnosis exit for an
+upstream graph that cannot honestly support an active-margin witness. R2 and
+the researcher-authorized R3 revision both committed framing and decomposition
+but no audit. Locked R3 adjudication classified the current failure
+`STRUCTURAL_TAX_PRIMARY` (0.86) and found no V8 validator defect. A
+noncanonical semantic-compiler prototype validates the locked R3 diagnosis
+under unchanged V8 semantics. The held-out paired shadow is complete: neither
+arm reached V8, while Semantic V2 substantially reduced structure and improved
+reader recovery without established material scientific degradation. A fresh
+WorkPacket-only end-to-end route and the full local research-ready gate remain
+open as post-MVP evidence requirements.
 
 The first Phase 5B case has since completed its frozen noncanonical
 nondegeneracy probe (`PARK`, 0.95), and the researcher selected Scheme B: a
@@ -689,6 +690,77 @@ The first implementation order is:
    [`scientific_discovery_craft.md`](scientific_discovery_craft.md); and
 5. keep version control, formal proof, private cross-project memory, and
    advanced symbolic/numerical adapters optional.
+
+#### Post-MVP Research Quality Discovery Loop
+
+The next quality increment should improve scientific search inside the existing
+question-to-gate path, not create a second workflow or a larger control plane.
+Use natural-language discussion, route-scoped overlays, and bounded worker
+assignments wherever possible. Add a canonical field only if it changes
+authority, dependencies, claim scope, provenance, privacy, or evaluation.
+
+1. **Lane-internal idea portfolio.** Each sealed collaborator uses one call to
+   explore three to five materially distinct frames and exposes a provisional
+   champion, a non-isomorphic runner-up, and a compact rejection ledger. The v2
+   overlay implements this candidate behavior; real research benefit remains
+   unproved.
+2. **Contribution-first screen.** Compare the conditional radius of the
+   economic update, the distinctiveness of the load-bearing force, absorption
+   risk, and the availability of a decisive probe. Do not collapse these into
+   a numerical score. Technical ease orders experiments; it does not define
+   scientific value.
+3. **Bounded source orientation.** After source-blind generation, check the
+   finalists against ordinary-agent benchmarks, closest classic theory, and
+   current relevant work. Sources may kill, demote, or reframe a direction;
+   they cannot certify novelty by checklist or retroactively rewrite a lane.
+4. **Minimal-model kill probe.** Before general formalization, solve the
+   smallest hand-checkable example, freeze the predicted result, test the
+   benchmark and closest rival, and run the cheapest ablation or
+   counterexample search. Finite computation is discovery evidence, never a
+   universal proof.
+5. **Independent economics and formal challenge.** Once the researcher accepts
+   the question and candidate mechanism, use the smallest useful team: a
+   mechanism/model worker, proof worker, counterexample worker, economics
+   critic, and formal verifier only when their tasks are actually separable.
+   One coordinator integrates results, and one canonical writer owns state.
+6. **Bounded multi-round researcher discussion.** Let the researcher ask the
+   mentor and collaborators to compare, combine, revise, or reject ideas across
+   a small number of scientifically meaningful turns. Each round must respond
+   to a changed question, source finding, killer probe, or explicit objection;
+   it must not become agent debate for its own sake. The current framing slice
+   is still one-panel plus one user choice, so this remains post-MVP work.
+
+After a question passes G1, the same loop should adapt rather than repeat:
+compete mechanism hypotheses before G2, compare formal implementations before
+G3, run proof and counterexample work in parallel during claim discovery, and
+ask the researcher to lock the useful theorem set only after formal validity,
+economic interpretation, and boundary stress tests are separately visible.
+Weak results are narrowed or parked; theorem count never substitutes for
+contribution.
+
+#### Economic Manuscript Quality Loop
+
+The normative design is
+[`manuscript_compiler.md`](manuscript_compiler.md#economic-manuscript-quality-loop).
+It replaces v1-style paper-wide imitation with function-matched craft support:
+start from the validated argument and reader path, optionally abstract one
+local writing move from permitted exemplars, draft through one canonical
+writer, run separate formal/economic/cold reads, and repair the smallest failed
+reader contract. It explicitly targets natural economist-to-economist prose,
+clear referents, economics-first paragraph logic, and one integrated authorial
+voice; it does not copy phrases, mimic a named author, or optimize for AI
+detectors.
+
+Paper IR, result contracts, the canonical-writer role, critic roles,
+cold-reader tests, and the enabled seed function-first craft retriever already
+provide the architectural foundation. The next implementation slice is a thin
+orchestration and writing-packet change, not a new manuscript schema unless an
+observed dependency or authority gap requires one. Broader and better-tested
+exemplar coverage, integrated quality-loop orchestration, and a complete
+working-paper pilot remain evidence requirements. Until a held-out end-to-end
+paper passes formal, economic, cold-reader, and researcher review, describe
+this as the planned integrated loop rather than proof of human-quality
+writing.
 
 #### Phase 5B exit criteria
 

@@ -62,19 +62,18 @@ schemas, validation, and routing. Act as a thin host over its bridge.
   coordinator/task turns, host path, pilot/session/capability/review metadata,
   or peer output. Capability labels authorize host operations only, never a
   research primitive. Lanes cannot write, complete, see peers, or delegate.
-- If collaborator outputs are byte-identical or plainly the same proposal, ask
-  collaborator B for one bounded diversity repair before publishing the panel.
+- For a v2 overlay, preserve visible `Champion`, `Serious runner-up`, `Eliminated candidates`, and `Selection rationale`; never request private reasoning, invent scores, or choose for ease.
+- If collaborator `Champion` sections are byte-identical or plainly the same
+  proposal, ask collaborator B for one bounded diversity repair before publishing.
 - Publish the raw drafts without replacing them with titles or short summaries.
   Preserve every draft, screen, source, and card as decoded UTF-8 across file and shell boundaries; re-read and compare the strings before publication.
   If the bridge returns `awaiting_choice_review`, do not ask the user to choose.
 - Claim source-aware choice available only when privacy/egress permits one
   bounded literature orientation. The coordinator performs it without recalling
   lanes or treating model memory as checked; submit sources, limits, and cards.
-- Each collaborator card must state the concrete question, exact benchmark,
-  economic value, ordinary-agent baseline, one operational AI primitive,
-  mechanism-design delta, closest sources and overlap, remaining theory delta,
-  falsifiable increment, and kill condition. Apply the mentor's critique as a
-  screen; never relabel or select it as a third direction.
+- Each collaborator card covers only that lane's v2 `Champion` and states the concrete question, exact benchmark, economic value, ordinary-agent baseline,
+  one operational AI primitive, mechanism-design delta, closest sources and overlap, remaining theory delta, falsifiable increment, and kill condition.
+  A runner-up needs a new bound source review before promotion. Apply the mentor's critique as a screen; never relabel or select it as a third direction.
 - Cards are an automatically compiled decision view, not a fixed research
   method. They are orientation, never novelty or absorption evidence.
 - Only after `awaiting_user_choice`, put the attributed raw panel and, when

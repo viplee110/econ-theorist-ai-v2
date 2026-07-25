@@ -195,9 +195,17 @@ the team path accepts only `stage_and_commit`; it cannot take ownership of a
 previously staged candidate. The bridge verifies the exact delivery/session,
 terminal direction, worker observation, and handoff but still trusts the
 host's direct-user, semantic-classification, and logical-sealing claims. It
-does not itself dispatch models or prove real multi-agent benefit. The first
-public framing pilot's recorded completion committed after two exact
-relation-binding repairs and stopped before decomposition, audit, or G1.
+does not itself dispatch models or prove real multi-agent benefit. New team
+activations use the additive v2 role overlay: each collaborator privately
+compares three to five materially distinct frames in its initial sealed call
+and exposes a champion, non-isomorphic runner-up, rejection ledger, and
+pairwise rationale without scores or chain of thought. If the two champions
+converge, the pre-existing single bounded collaborator-B diversity repair
+remains available. Existing v1 activations resume byte-exactly. This adds no
+lane, mandatory extra model call, canonical schema, route, gate, or evidence
+of better research. The first public framing pilot's recorded completion
+committed after two exact relation-binding repairs and stopped before
+decomposition, audit, or G1.
 Postflight verdicts are M `PASS`, T `MIXED`, U `NOT ESTABLISHED`, and Q `MIXED`
 (confidence 0.91); see
 `review_outputs/phase5b0_framing_team_public_pilot/evaluation_summary.md`. Do
@@ -214,6 +222,15 @@ apply to an activated team. General recovery after a team returns `kill` or
 `new_brief_required` remains open and must still stop. The crash-recovery and
 exact-retry hardening for this narrow composite postdates the preserved
 `p5b1` captures and was not exercised by that pilot.
+
+The manuscript architecture now names an Economic Manuscript Quality Loop as
+a quality-control overlay on the existing compiler. The enabled seed
+function-first craft retriever, Paper IR, canonical writer, and specialist
+reader contracts are foundations, not proof of human-quality prose. Broader
+craft coverage, integrated loop orchestration, and one complete held-out
+manuscript pilot remain open. Do not revive v1-style paper-wide imitation,
+copy source prose or author signatures, optimize for AI detectors, or claim
+that the loop already produces human-written or Top-5-ready papers.
 
 The 2026-07-24 AI-agent-trading usability attempt under
 `C:\tmp\etai-v2-ai-agent-trading-20260724` is frozen negative evidence. Its raw

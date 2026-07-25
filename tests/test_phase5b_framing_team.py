@@ -3,7 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
+import econ_theorist.framing_team as framing_team
 from econ_theorist.codec import canonical_json_bytes, sha256_digest
 from econ_theorist.errors import IntegrityError
 from econ_theorist.framing_team import (
@@ -276,6 +278,100 @@ class Phase5BFramingTeamTests(unittest.TestCase):
             sources=self._choice_sources(),
             direction_cards=self._choice_cards(),
         )
+
+    def test_new_team_uses_bounded_internal_idea_competition(self) -> None:
+        plan_hash, plan = open_framing_team_plan(
+            self.operational,
+            route_run_id=self.route_run_id,
+            work_packet_hash=self.work_packet_hash,
+            delivery_authorization=self._delivery_authorization(),
+        )
+
+        self.assertTrue(plan_hash)
+        self.assertEqual(
+            plan.role_overlay_version,
+            "framing-team-role-overlay/v2",
+        )
+        self.assertNotIn("idea tournament", plan.role_overlays["mentor"])
+        for lane_id in ("collaborator_a", "collaborator_b"):
+            overlay = plan.role_overlays[lane_id]
+            for required in (
+                "3-5 materially distinct",
+                "Champion",
+                "Serious runner-up",
+                "Eliminated candidates",
+                "Selection rationale",
+                "without numerical scores",
+                "Technical ease",
+                "NO CHAMPION",
+                "never invent citations",
+                "Do not author the candidate or decide G1",
+            ):
+                self.assertIn(required, overlay)
+        self.assertIn(
+            "strongest direct economic tension",
+            plan.role_overlays["collaborator_a"],
+        )
+        self.assertIn(
+            "Search away from the most obvious mechanism family",
+            plan.role_overlays["collaborator_b"],
+        )
+        self.assertEqual(replay(self.layout).head, self.head_before)
+
+    def test_legacy_v1_team_reopens_exactly_after_v2_becomes_default(self) -> None:
+        self.assertEqual(
+            sha256_digest(
+                canonical_json_bytes(framing_team._ROLE_OVERLAYS_V1)
+            ),
+            "fb394a1825b4b41de80eb03853036efd075cb56212971af0f6bbdb03623f02b0",
+        )
+        authorization = self._delivery_authorization()
+        with mock.patch.object(
+            framing_team,
+            "_CURRENT_ROLE_OVERLAY_VERSION",
+            "framing-team-role-overlay/v1",
+        ):
+            legacy_hash, legacy_plan = open_framing_team_plan(
+                self.operational,
+                route_run_id=self.route_run_id,
+                work_packet_hash=self.work_packet_hash,
+                delivery_authorization=authorization,
+            )
+
+        self.assertEqual(
+            legacy_plan.role_overlay_version,
+            "framing-team-role-overlay/v1",
+        )
+        reopened_hash, reopened_plan = open_framing_team_plan(
+            self.operational,
+            route_run_id=self.route_run_id,
+            work_packet_hash=self.work_packet_hash,
+            delivery_authorization=authorization,
+        )
+        self.assertEqual((reopened_hash, reopened_plan), (legacy_hash, legacy_plan))
+        v1_payload = legacy_plan.model_dump(mode="json")
+        v2_payload = {
+            **v1_payload,
+            "role_overlay_version": "framing-team-role-overlay/v2",
+        }
+        with self.assertRaisesRegex(ValueError, "exact role overlays"):
+            type(legacy_plan).model_validate(v2_payload)
+
+        mismatched_v1_payload = {
+            **v1_payload,
+            "role_overlays": dict(framing_team._ROLE_OVERLAYS_V2),
+        }
+        with self.assertRaisesRegex(ValueError, "exact role overlays"):
+            type(legacy_plan).model_validate(mismatched_v1_payload)
+        with self.assertRaisesRegex(OperationalError, "different authorization"):
+            open_framing_team_plan(
+                self.operational,
+                route_run_id=self.route_run_id,
+                work_packet_hash=self.work_packet_hash,
+                delivery_authorization=authorization,
+                execution_mode="sequential_single_model",
+            )
+        self.assertEqual(replay(self.layout).head, self.head_before)
 
     def test_happy_path_preserves_all_advice_and_one_worker(self) -> None:
         legacy_authorization = self._delivery_authorization()
