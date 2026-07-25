@@ -213,8 +213,21 @@ research-quality evidence. The additive adjudication is
 The current tree adds only host guardrails for field-specific UTF-8 fidelity,
 scientifically neutral project/lane context, a non-hash-only choice screen, and
 project-local Windows extended-length I/O. These fixes postdate the run. One
-new neutral-root public pilot remains required before claiming clean input
-fidelity, lane independence, researcher usefulness, or clean first use.
+later neutral-root run at engine commit `291cd02` correctly preserved the
+research brief and neutral project context, produced materially distinct
+collaborator directions, and stopped at `awaiting_user_choice` without a
+worker, candidate, gate, or `finish`. It remains mixed evidence: the host
+transcoded the already-correct panel while constructing the choice-review
+request (`δ`/`ε` and Unicode punctuation changed), then displayed a correct
+but different unbound helper view. The bound review and researcher display
+therefore were not identical. Freeze `C:\tmp\etai-at-r5-291cd02`; do not apply
+a choice, create its worker, or call `finish`. Its scientific postflight parks
+the machine-commitment direction and retains the replication direction only
+for a two-period separation-or-reduction revision; it also identifies omitted
+dynamic false-name and identity-persistence literature. See
+`review_outputs/phase5b0_ai_agent_trading_source_aware_choice_public_pilot_r5/evaluation_summary.md`.
+One new neutral-root public pilot remains required before claiming clean
+end-to-end input fidelity, researcher usefulness, or clean first use.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or

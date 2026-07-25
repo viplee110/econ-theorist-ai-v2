@@ -68,6 +68,8 @@ class Phase5A2CodexSkillTests(unittest.TestCase):
             "no inherited\n  coordinator/task turns",
             "Capability labels authorize host operations only",
             "Hashes, status, paths, or report links alone are\n  not delivery",
+            "decoded UTF-8 across file and shell boundaries",
+            "Render the bound bridge response, never a different unbound",
         ):
             self.assertIn(required_guardrail, text)
 

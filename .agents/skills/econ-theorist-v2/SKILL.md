@@ -2,7 +2,6 @@
 name: econ-theorist-v2
 description: Operate Econ Theorist AI v2 through its installed machine protocol in a local economic-theory paper project. Use when the user explicitly asks to initialize, inspect, continue, repair, or run Econ Theorist AI/v2, or when the selected root is already v2-bound and the user asks to continue the theory project. Do not use for empirical, econometric, data-analysis, or generic prose-only work.
 ---
-
 # Econ Theorist AI v2
 
 Use the installed engine as sole owner of workflow, state, instructions,
@@ -66,6 +65,7 @@ schemas, validation, and routing. Act as a thin host over its bridge.
 - If collaborator outputs are byte-identical or plainly the same proposal, ask
   collaborator B for one bounded diversity repair before publishing the panel.
 - Publish the raw drafts without replacing them with titles or short summaries.
+  Preserve every draft, screen, source, and card as decoded UTF-8 across file and shell boundaries; re-read and compare the strings before publication.
   If the bridge returns `awaiting_choice_review`, do not ask the user to choose.
 - Claim source-aware choice available only when privacy/egress permits one
   bounded literature orientation. The coordinator performs it without recalling
@@ -80,7 +80,7 @@ schemas, validation, and routing. Act as a thin host over its bridge.
 - Only after `awaiting_user_choice`, put the attributed raw panel and, when
   present, mentor screen, every complete card, and source list/limits in the
   user-facing choice screen. Hashes, status, paths, or report links alone are
-  not delivery. Ask one natural-language choice; relay the exact current user turn without sharpening or summarizing it.
+  not delivery. Render the bound bridge response, never a different unbound helper file. Ask one natural-language choice; relay the exact current user turn without sharpening or summarizing it.
 - If source access fails, surface a retryable blocker; never invent citations
   or downgrade the active team to the legacy path.
 - Follow `awaiting_clarification`, `new_brief_required`, and `single_fallback`
@@ -95,7 +95,6 @@ schemas, validation, and routing. Act as a thin host over its bridge.
   after framing.
 
 ## Preserve boundaries
-
 - Keep Phase 5A execution single-agent outside the bridge-declared framing-team
   exception. Do not otherwise delegate a route or expose its packet elsewhere.
 - Do not choose or reorder routes yourself.

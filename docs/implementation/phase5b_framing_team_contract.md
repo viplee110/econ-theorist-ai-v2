@@ -74,6 +74,11 @@ A hash of a faithfully preserved corrupted string is insufficient. A mismatch
 stops; it does not authorize translation, repair, or sharpening. A host-created
 project name is administrative and may not introduce a capability, pilot arm,
 expected result, or scientific primitive absent from the direct-user input.
+The same UTF-8 rule applies to every lane draft, mentor screen, source record,
+and direction card crossing a host file or shell boundary. Before publication,
+the host re-reads and compares the decoded strings. The researcher-facing
+choice screen is rendered from the exact bound bridge response, not from a
+different local helper file whose bytes were never bound.
 
 The original Phase 5A delivery remains truthfully a single-coordinator
 delivery. Before any child context sees `P`, the engine-owned bridge publishes
