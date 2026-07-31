@@ -224,13 +224,25 @@ exact-retry hardening for this narrow composite postdates the preserved
 `p5b1` captures and was not exercised by that pilot.
 
 The manuscript architecture now names an Economic Manuscript Quality Loop as
-a quality-control overlay on the existing compiler. The enabled seed
-function-first craft retriever, Paper IR, canonical writer, and specialist
-reader contracts are foundations, not proof of human-quality prose. Broader
-craft coverage, integrated loop orchestration, and one complete held-out
-manuscript pilot remain open. Do not revive v1-style paper-wide imitation,
-copy source prose or author signatures, optimize for AI detectors, or claim
-that the loop already produces human-written or Top-5-ready papers.
+a quality-control overlay on the existing compiler. New active-V8
+`compose.profiled_manuscript_unit` navigation uses the additive
+`context_selector.manuscript_quality.v1`; historical selectors remain
+byte-exact. The new selector compiles one noncanonical local `writing_job` from
+the accepted economic spine, resolved human audience, one diagnosed reader
+task, natural-language local result material, the exact project-owned current
+section and affected excerpt, and the selected derived-only craft move. Exact
+IDs, refs, hashes, source-card prose, and critic identity stay outside this
+prose-facing view. It does not add a route or canonical schema.
+The additive machine navigation registry v8 preserves v1--v7 byte-for-byte and
+changes only the new profiled-composition default context budget from 4,000 to
+32,000 units; an explicit lower budget remains a hard fail-closed cap.
+The enabled seed function-first craft retriever, Paper IR, canonical writer,
+and specialist reader contracts remain foundations, not proof of human-quality
+prose. Broader craft coverage, automatic host traversal, cross-section voice
+integration, and one complete held-out manuscript pilot remain open. Do not
+revive v1-style paper-wide imitation, copy source prose or author signatures,
+optimize for AI detectors, or claim that the loop already produces
+human-written or Top-5-ready papers.
 
 The 2026-07-24 AI-agent-trading usability attempt under
 `C:\tmp\etai-v2-ai-agent-trading-20260724` is frozen negative evidence. Its raw

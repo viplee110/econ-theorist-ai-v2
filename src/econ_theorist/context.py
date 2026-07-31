@@ -40,6 +40,7 @@ from .policy import (
     KERNEL_VERSION,
     SELECTOR_VERSION_DECOMPOSITION_REFRESH,
     SELECTOR_VERSION_DECOMPOSITION_REFRESH_V1,
+    SELECTOR_VERSION_MANUSCRIPT_QUALITY,
     VALIDATOR_VERSION,
     V3_NATIVE_ROUTE_IDS,
     V4_NATIVE_ROUTE_IDS,
@@ -2063,6 +2064,275 @@ def _phase4_role_content(
     return _strip_role_internal(payload.model_dump(mode="json"))
 
 
+def _profiled_manuscript_writing_job(
+    parsed: tuple[tuple[EntityVersion, BaseModel], ...],
+    *,
+    artifact_bytes: Mapping[tuple[str, int], bytes],
+) -> dict[str, object]:
+    """Compile a prose-facing local job from accepted project semantics.
+
+    Exact identifiers and provenance stay in the existing candidate contract.
+    This view carries only the economic content needed to write one section,
+    plus project-owned local prose when the task is a revision.  Published
+    anchor language, critic identity, and source locators never enter it.
+    """
+
+    from . import authoring as a
+    from . import profile_craft as pc
+
+    payloads = tuple(payload for _, payload in parsed)
+
+    def exactly_one(model: type[BaseModel], label: str) -> BaseModel:
+        matches = tuple(item for item in payloads if isinstance(item, model))
+        if len(matches) != 1:
+            raise ContextCompilationError(
+                f"manuscript writing job requires exactly one {label}"
+            )
+        return matches[0]
+
+    def at_most_one(model: type[BaseModel], label: str) -> BaseModel | None:
+        matches = tuple(item for item in payloads if isinstance(item, model))
+        if len(matches) > 1:
+            raise ContextCompilationError(
+                f"manuscript writing job permits at most one {label}"
+            )
+        return matches[0] if matches else None
+
+    paper = exactly_one(a.PaperIR, "PaperIR")
+    reader = exactly_one(a.ReaderPath, "ReaderPath")
+    contracts = exactly_one(a.ResultContractSet, "ResultContractSet")
+    profile_stack = exactly_one(pc.ResolvedProfileStack, "ResolvedProfileStack")
+    diagnosis = exactly_one(pc.ReaderProblemDiagnosis, "ReaderProblemDiagnosis")
+    selection = exactly_one(pc.CraftSelectionManifest, "CraftSelectionManifest")
+    prior = at_most_one(a.ManuscriptUnit, "prior ManuscriptUnit")
+    brief = at_most_one(a.RevisionBrief, "RevisionBrief")
+    assert isinstance(paper, a.PaperIR)
+    assert isinstance(reader, a.ReaderPath)
+    assert isinstance(contracts, a.ResultContractSet)
+    assert isinstance(profile_stack, pc.ResolvedProfileStack)
+    assert isinstance(diagnosis, pc.ReaderProblemDiagnosis)
+    assert isinstance(selection, pc.CraftSelectionManifest)
+    assert prior is None or isinstance(prior, a.ManuscriptUnit)
+    assert brief is None or isinstance(brief, a.RevisionBrief)
+
+    audience_layers = tuple(
+        item for item in profile_stack.selected_layers if item.layer_kind == "audience"
+    )
+    if len(audience_layers) != 1:
+        raise ContextCompilationError(
+            "manuscript writing job requires one resolved audience layer"
+        )
+    primary_audience = audience_layers[0].selection_key
+
+    if (prior is None) != (brief is None):
+        raise ContextCompilationError(
+            "a manuscript revision writing job requires both prior unit and brief"
+        )
+
+    section_by_id = {item.section_id: item for item in reader.section_contracts}
+    target_section_ids = diagnosis.affected_section_ids
+    if prior is not None:
+        if prior.section_contract_id not in target_section_ids:
+            raise ContextCompilationError(
+                "manuscript writing job prior unit is outside the diagnosed section"
+            )
+        target_section_ids = (prior.section_contract_id,)
+    elif not target_section_ids:
+        target_section_ids = tuple(
+            section_id
+            for section_id in reader.ordered_section_ids
+            if section_by_id[section_id].role in diagnosis.affected_section_roles
+        )
+    if len(target_section_ids) != 1 or target_section_ids[0] not in section_by_id:
+        raise ContextCompilationError(
+            "one manuscript writing job must resolve exactly one ReaderPath section"
+        )
+    target_section_id = target_section_ids[0]
+    section = section_by_id[target_section_id]
+
+    state_by_id = {item.state_id: item for item in reader.reader_states}
+    knowledge_by_id = {item.knowledge_id: item.content for item in reader.knowledge_items}
+
+    def state_projection(state_id: str) -> dict[str, object]:
+        state = state_by_id.get(state_id)
+        if state is None:
+            raise ContextCompilationError(
+                "manuscript writing job section references an unknown reader state"
+            )
+        return {
+            "known_on_entry": tuple(
+                knowledge_by_id[item] for item in state.known_on_entry
+            ),
+            "knowledge_delivered_here": tuple(
+                knowledge_by_id[item] for item in state.delivered_knowledge_ids
+            ),
+            "default_expectation": state.default_expectation,
+            "live_question": state.live_question,
+            "misconception_risks": state.misconception_risks,
+            "update": state.update,
+            "transfer_objective": state.transfer_objective,
+            "unresolved_on_exit": state.unresolved_on_exit,
+        }
+
+    reader_task = {
+        "section_role": section.role,
+        "central_question": section.central_question,
+        "reader_on_entry": state_projection(section.entry_state_id),
+        "reader_on_exit": state_projection(section.exit_state_id),
+        "reader_update": section.reader_update_on_exit,
+        "question_left_for_next_section": section.open_question_for_next_section,
+        "reader_cost_constraint": section.reader_cost_constraint,
+        "forbidden_detours": section.forbidden_detours,
+    }
+
+    packet_by_projection = {
+        item.claim_projection_id: item for item in contracts.result_packets
+    }
+    projection_ids = section.required_claim_projection_ids
+    if not projection_ids or any(
+        projection_id not in packet_by_projection for projection_id in projection_ids
+    ):
+        raise ContextCompilationError(
+            "manuscript writing job cannot resolve every local ResultPacket"
+        )
+
+    def layer_content(layer: a.LayerContract) -> str:
+        if layer.applicability == "applicable":
+            assert layer.content is not None
+            return layer.content
+        assert layer.not_applicable_reason is not None
+        return f"Not applicable here: {layer.not_applicable_reason}"
+
+    def result_material(packet: a.ResultPacket) -> dict[str, object]:
+        module = packet.archetype_module.model_dump(mode="python")
+        details = {
+            key: value["content"]
+            for key, value in module.items()
+            if key != "archetype"
+        }
+        return {
+            "archetype": packet.primary_archetype,
+            "question": layer_content(packet.question),
+            "pre_result_expectation": layer_content(packet.pre_result_expectation),
+            "formal_statement_and_scope": layer_content(
+                packet.formal_statement_and_scope
+            ),
+            "economic_translation": layer_content(packet.economic_translation),
+            "economic_explanation": layer_content(packet.archetype_explanation),
+            "boundary": layer_content(packet.boundary),
+            "proof_roadmap": layer_content(packet.proof_roadmap),
+            "consequence": layer_content(packet.consequence),
+            "archetype_details": details,
+        }
+
+    local_results = tuple(
+        result_material(packet_by_projection[projection_id])
+        for projection_id in projection_ids
+    )
+
+    revision_context: dict[str, object] | None = None
+    if prior is not None:
+        artifact_key = (
+            prior.manuscript_artifact_ref.artifact_id,
+            prior.manuscript_artifact_ref.version,
+        )
+        data = artifact_bytes.get(artifact_key)
+        if data is None:
+            raise ContextCompilationError(
+                "manuscript writing job cannot resolve the project-owned prior text"
+            )
+        try:
+            current_text = data.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise ContextCompilationError(
+                "project-owned prior manuscript is not valid UTF-8"
+            ) from exc
+        affected_assertions = tuple(
+            dict.fromkeys(
+                assertion
+                for requirement in diagnosis.resolution_requirements
+                if target_section_id in requirement.affected_section_ids
+                for assertion in requirement.affected_assertion_ids
+            )
+        )
+        span_by_assertion = {item.assertion_id: item for item in prior.spans}
+        if any(item not in span_by_assertion for item in affected_assertions):
+            raise ContextCompilationError(
+                "manuscript writing job cannot resolve a diagnosed prior assertion"
+            )
+        affected_spans = tuple(
+            span_by_assertion[item] for item in affected_assertions
+        )
+        if affected_spans:
+            start = min(item.location.start_offset for item in affected_spans)
+            end = max(item.location.end_offset for item in affected_spans)
+            if end > len(current_text):
+                raise ContextCompilationError(
+                    "diagnosed manuscript span lies outside the project-owned text"
+                )
+            text_to_rework = current_text[start:end]
+        else:
+            text_to_rework = current_text
+        revision_context = {
+            "current_section_text": current_text,
+            "text_to_rework": text_to_rework,
+        }
+
+    selected_moves = tuple(
+        {
+            "name": candidate.move.functional_name,
+            "intended_reader_update": candidate.move.intended_reader_update,
+            "typical_placements": candidate.move.typical_placements,
+            "failure_modes": candidate.move.failure_modes,
+            "when_not_to_use": candidate.move.non_applicability,
+        }
+        for candidate in selection.candidates
+        if candidate.selected
+    )
+    if not selected_moves:
+        raise ContextCompilationError(
+            "manuscript writing job requires one selected expository move"
+        )
+
+    spine = paper.narrative_spine
+    job: dict[str, object] = {
+        "task": (
+            "Revise the current section without changing the accepted science."
+            if prior is not None
+            else "Draft one new section from the accepted science."
+        ),
+        "language": paper.language,
+        "audience": primary_audience,
+        "economic_argument": {
+            "question": spine.phenomenon_or_question,
+            "natural_benchmark": spine.natural_benchmark,
+            "benchmark_tension": spine.unresolved_benchmark_delta,
+            "new_economic_or_conceptual_object": (
+                spine.new_economic_or_conceptual_object
+            ),
+            "central_result": spine.central_result,
+            "why_not_immediate": spine.why_not_immediate,
+            "boundary_and_failure_conditions": (
+                spine.boundary_and_failure_conditions
+            ),
+            "economic_consequence_or_changed_practice": (
+                spine.economic_consequence_or_changed_practice
+            ),
+        },
+        "reader_task": reader_task,
+        "local_result_material": local_results,
+        "expository_moves": selected_moves,
+        "writing_directives": (
+            "Use the supplied material as constraints, then write a continuous argument rather than enumerating fields.",
+            "Lead from the live question and benchmark through the shortest complete causal economic explanation; do not use a theorem paraphrase as intuition.",
+            "Preserve the surrounding voice and make it possible for an independent economist to retell the tension, mechanism, result, and boundary.",
+        ),
+    }
+    if revision_context is not None:
+        job["revision_context"] = revision_context
+    return job
+
+
 def _phase4_predicate_receipt(
     parsed: tuple[tuple[EntityVersion, BaseModel], ...],
 ) -> BaseModel:
@@ -2198,6 +2468,7 @@ def _phase4_context_inputs(
     clearance: PrivacyLabel,
     grants: frozenset[str],
     purpose: str,
+    selector_version: str,
 ) -> tuple[
     dict[tuple[str, int], EntityVersion],
     tuple[dict[str, Any], ...],
@@ -2250,6 +2521,7 @@ def _phase4_context_inputs(
     store = ObjectStore(layout)
     full_artifacts: list[dict[str, Any]] = []
     role_artifacts: list[dict[str, Any]] = []
+    artifact_bytes: dict[tuple[str, int], bytes] = {}
     for reference in artifact_refs:
         registration = artifact_index.get((reference.artifact_id, reference.version))
         if registration is None or registration.content_hash != reference.content_hash:
@@ -2270,6 +2542,7 @@ def _phase4_context_inputs(
         data = store.read_bytes("artifacts", registration.content_hash, verify=True)
         if len(data) != registration.byte_size:
             raise ContextCompilationError("Phase 4 artifact byte_size mismatch")
+        artifact_bytes[(reference.artifact_id, reference.version)] = data
         encoded = base64.b64encode(data).decode("ascii")
         full_artifacts.append(
             {
@@ -2314,6 +2587,13 @@ def _phase4_context_inputs(
         from .profile_craft_policy import craft_corpus_role_resource
 
         role_packet["static_resources"] = (craft_corpus_role_resource(),)
+    elif (
+        route.route_id == "compose.profiled_manuscript_unit"
+        and selector_version == SELECTOR_VERSION_MANUSCRIPT_QUALITY
+    ):
+        role_packet["writing_job"] = _profiled_manuscript_writing_job(
+            tuple(parsed), artifact_bytes=artifact_bytes
+        )
     return entities, tuple(full_artifacts), role_packet
 
 
@@ -2593,6 +2873,7 @@ def compile_context(
             clearance=privacy_clearance,
             grants=grants,
             purpose=purpose,
+            selector_version=selected_selector_version,
         )
         payload = _payload(
             snapshot,

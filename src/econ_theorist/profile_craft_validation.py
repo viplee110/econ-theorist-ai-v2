@@ -2833,6 +2833,11 @@ def _validate_entry_topology(
                     raise ProfileCraftValidationError(
                         "initial profiled composition cannot claim revision evidence"
                     )
+                if diagnosis.inspected_manuscript_unit_binding is not None:
+                    raise ProfileCraftValidationError(
+                        "a post-manuscript diagnosis requires its exact prior unit, "
+                        "blocked closure, and RevisionBrief"
+                    )
             else:
                 if len(closure_refs) != 1 or len(brief_refs) != 1:
                     raise ProfileCraftValidationError(

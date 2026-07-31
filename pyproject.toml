@@ -96,6 +96,7 @@ where = ["src"]
   "machine/navigation-registry.v5.json",
   "machine/navigation-registry.v6.json",
   "machine/navigation-registry.v7.json",
+  "machine/navigation-registry.v8.json",
   "machine/host-manifest.v1.json",
   "machine/compatibility-support.v1.json",
 ]

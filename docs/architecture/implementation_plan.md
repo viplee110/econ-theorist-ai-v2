@@ -753,14 +753,26 @@ detectors.
 
 Paper IR, result contracts, the canonical-writer role, critic roles,
 cold-reader tests, and the enabled seed function-first craft retriever already
-provide the architectural foundation. The next implementation slice is a thin
-orchestration and writing-packet change, not a new manuscript schema unless an
-observed dependency or authority gap requires one. Broader and better-tested
-exemplar coverage, integrated quality-loop orchestration, and a complete
-working-paper pilot remain evidence requirements. Until a held-out end-to-end
-paper passes formal, economic, cold-reader, and researcher review, describe
-this as the planned integrated loop rather than proof of human-quality
-writing.
+provide the architectural foundation. The first thin writing-packet slice is
+now implemented without a new manuscript schema or route: newly opened active
+V8 profiled-composition runs use
+`context_selector.manuscript_quality.v1` to receive a deterministic local
+`writing_job`, while historical selectors retain byte-exact packets. The job
+connects the accepted economic spine, resolved audience, local reader task,
+natural-language result content, exact project-owned current section and
+affected excerpt, and function-first move. Its prose-facing surface excludes
+internal IDs, refs, hashes, source-paper language, and critic identity, and it
+instructs the writer to synthesize rather than expose the structured outline.
+Additive machine navigation registry v8 makes that exact packet reachable on
+the ordinary omitted-budget path with a 32,000-unit profiled-composition
+default; historical registries are unchanged and an explicit lower cap still
+fails closed.
+
+Broader and better-tested exemplar coverage, automatic host orchestration,
+cross-section voice integration, and a complete working-paper pilot remain
+evidence requirements. Until a held-out end-to-end paper passes formal,
+economic, cold-reader, and researcher review, describe this as an implemented
+bounded loop seam rather than proof of human-quality writing.
 
 #### Phase 5B exit criteria
 

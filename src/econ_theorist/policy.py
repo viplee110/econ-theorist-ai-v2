@@ -73,6 +73,7 @@ SELECTOR_VERSION_DECOMPOSITION_REFRESH_V1 = (
 SELECTOR_VERSION_DECOMPOSITION_REFRESH = (
     "context_selector.decomposition_refresh.v2"
 )
+SELECTOR_VERSION_MANUSCRIPT_QUALITY = "context_selector.manuscript_quality.v1"
 # Frozen compatibility alias used by historical v1/v2 validation paths.
 SELECTOR_VERSION = SELECTOR_VERSION_V1
 KERNEL_VERSION = "theory_kernel.v1"
@@ -750,11 +751,16 @@ def selector_version_for_new_navigation(route: RouteSpecLike) -> str:
 
     if isinstance(route, RouteSpecV8) and route.route_id == "decompose.primitives":
         return SELECTOR_VERSION_DECOMPOSITION_REFRESH
+    if (
+        isinstance(route, RouteSpecV8)
+        and route.route_id == "compose.profiled_manuscript_unit"
+    ):
+        return SELECTOR_VERSION_MANUSCRIPT_QUALITY
     return selector_version_for_route(route)
 
 
 def selector_version_is_supported(route: RouteSpecLike, version: str) -> bool:
-    """Accept historical manifests and the bounded decomposition refresh."""
+    """Accept historical manifests and bounded additive selectors."""
 
     supported = {selector_version_for_route(route)}
     if isinstance(route, RouteSpecV8) and route.route_id == "decompose.primitives":
@@ -764,6 +770,11 @@ def selector_version_is_supported(route: RouteSpecLike, version: str) -> bool:
                 SELECTOR_VERSION_DECOMPOSITION_REFRESH,
             }
         )
+    if (
+        isinstance(route, RouteSpecV8)
+        and route.route_id == "compose.profiled_manuscript_unit"
+    ):
+        supported.add(SELECTOR_VERSION_MANUSCRIPT_QUALITY)
     return version in supported
 
 

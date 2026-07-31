@@ -56,6 +56,7 @@ from econ_theorist.policy import (
     ROUTE_REGISTRY_V8_HASH,
     SELECTOR_VERSION_DECOMPOSITION_REFRESH,
     SELECTOR_VERSION_DECOMPOSITION_REFRESH_V1,
+    SELECTOR_VERSION_MANUSCRIPT_QUALITY,
     V2_ENABLED_ROUTE_IDS,
     V4_ENABLED_ROUTE_IDS,
     V7_ENABLED_ROUTE_IDS,
@@ -343,6 +344,60 @@ class RouteRegistryTests(unittest.TestCase):
             self.assertTrue(
                 selector_version_is_supported(active_route, refresh_version)
             )
+
+    def test_manuscript_quality_selector_is_new_navigation_only_on_active_v8(
+        self,
+    ) -> None:
+        for registry_hash_value in (
+            ROUTE_REGISTRY_V4_HASH,
+            ROUTE_REGISTRY_V5_HASH,
+            ROUTE_REGISTRY_V6_HASH,
+            ROUTE_REGISTRY_V7_HASH,
+        ):
+            with self.subTest(registry_hash=registry_hash_value):
+                route = route_spec_by_hash(
+                    "compose.profiled_manuscript_unit", registry_hash_value
+                )
+                historical_selector = selector_version_for_route(route)
+                self.assertEqual(
+                    selector_version_for_new_navigation(route), historical_selector
+                )
+                self.assertTrue(
+                    selector_version_is_supported(route, historical_selector)
+                )
+                self.assertFalse(
+                    selector_version_is_supported(
+                        route, SELECTOR_VERSION_MANUSCRIPT_QUALITY
+                    )
+                )
+
+        active_route = route_spec_by_hash(
+            "compose.profiled_manuscript_unit", ROUTE_REGISTRY_V8_HASH
+        )
+        historical_selector = selector_version_for_route(active_route)
+        self.assertEqual(
+            selector_version_for_new_navigation(active_route),
+            SELECTOR_VERSION_MANUSCRIPT_QUALITY,
+        )
+        self.assertTrue(
+            selector_version_is_supported(active_route, historical_selector)
+        )
+        self.assertTrue(
+            selector_version_is_supported(
+                active_route, SELECTOR_VERSION_MANUSCRIPT_QUALITY
+            )
+        )
+
+        active_registry = load_route_registry_by_hash(ROUTE_REGISTRY_V8_HASH)
+        for route in active_registry.routes:
+            if route.route_id == "compose.profiled_manuscript_unit":
+                continue
+            with self.subTest(other_active_route=route.route_id):
+                self.assertFalse(
+                    selector_version_is_supported(
+                        route, SELECTOR_VERSION_MANUSCRIPT_QUALITY
+                    )
+                )
 
 
 class ContextCompilerTests(unittest.TestCase):

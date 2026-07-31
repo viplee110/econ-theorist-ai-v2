@@ -1597,6 +1597,55 @@ class ProfileCraftReadinessAndRouteTests(unittest.TestCase):
                 actor=CLOSER,
             )
 
+    def test_profiled_compose_cannot_drop_a_bound_revision_lineage(self) -> None:
+        snapshot, entities = world()
+        route = self.routes["compose.profiled_manuscript_unit"]
+        focus_names = (
+            "assurance.bundle",
+            "craft.selection",
+            "diagnosed.manuscript.unit",
+            "entity.paper",
+            "entity.reader.path",
+            "diagnosis.reader.problem",
+            "profile.universal",
+            "profile.stack",
+            "entity.result.contracts",
+            "review.closure.diagnosed",
+            "revision.brief.diagnosed",
+            "package.validated",
+        )
+        focus = tuple(entities[name].entity_id for name in focus_names)
+        paper = a.parse_authoring_entity(entities["entity.paper"])
+        assert isinstance(paper, a.PaperIR)
+
+        validate_phase4_route_entry(
+            snapshot,
+            route,
+            focus,
+            actor=paper.canonical_writer,
+        )
+
+        false_initial = tuple(
+            entity_id
+            for entity_id in focus
+            if entity_id
+            not in {
+                "diagnosed.manuscript.unit",
+                "review.closure.diagnosed",
+                "revision.brief.diagnosed",
+            }
+        )
+        with self.assertRaisesRegex(
+            ProfileCraftValidationError,
+            "post-manuscript diagnosis requires its exact prior unit",
+        ):
+            validate_phase4_route_entry(
+                snapshot,
+                route,
+                false_initial,
+                actor=paper.canonical_writer,
+            )
+
     def test_craft_review_requires_exact_reader_and_contract_inputs(self) -> None:
         snapshot, entities = world()
         focus = tuple(

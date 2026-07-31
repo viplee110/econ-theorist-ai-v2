@@ -369,11 +369,27 @@ Human-readable economic prose in this loop has observable requirements:
 The architecture already supplies the argument spine, Paper IR, one canonical
 writer, specialist critics, and cold-reader contracts needed for this loop.
 The enabled seed craft retriever already provides limited function-first
-retrieval and derived craft cards. Broader and better-tested exemplar coverage,
-integrated loop orchestration, and human-quality manuscript performance remain
-implementation and evaluation work until a complete held-out paper run
-succeeds. The loop adds no publication guarantee and no permission to copy
-protected expression.
+retrieval and derived craft cards. For newly opened V8
+`compose.profiled_manuscript_unit` runs, the additive
+`context_selector.manuscript_quality.v1` now compiles one local `writing_job`
+from those accepted objects. It connects the narrative truth, resolved human
+audience, affected reader task, natural-language local result content, selected
+functional moves, and—only for a revision—the exact project-owned current
+section and affected excerpt. Internal IDs, refs, hashes, source-paper prose,
+and critic identity do not enter this prose-facing view. It tells the writer to
+synthesize a causal economic argument instead of rendering structured fields
+as a visible outline. Historical selectors still compile their original
+byte-exact packets, so existing runs and replay are not reinterpreted.
+The additive machine navigation registry v8 changes only this route's omitted-
+budget default from 4,000 to 32,000 units so the exact packet is ordinarily
+reachable; historical registries remain addressable and explicit lower caps
+still fail closed.
+
+This is the bounded writing-job seam of the loop, not evidence that the prose
+is human-quality. Broader and better-tested exemplar coverage, automatic host
+traversal of the full loop, cross-section voice integration, and a complete
+held-out working-paper run remain implementation or evaluation work. The loop
+adds no publication guarantee and no permission to copy protected expression.
 
 ## Compilation pipeline
 

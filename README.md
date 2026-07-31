@@ -161,9 +161,12 @@ section templates. A small enabled seed craft retriever already supplies
 copyright-safe, derived functional cards rather than source prose; its coverage
 is still narrow. One writer integrates the paper in a consistent,
 economics-first voice, while formal, economic, and cold-reader critics diagnose
-different failures. The planned integrated Economic Manuscript Quality Loop
-strengthens this process and still requires a real end-to-end manuscript pilot
-before V2 can claim reliably human-quality exposition. See the
+different failures. A versioned Economic Manuscript Quality Loop writing job
+now connects each new profiled revision to its exact question, benchmark,
+reader task, result content, project-owned current section, and bounded repair
+focus without exposing source-paper prose; historical run bytes remain
+unchanged. A real end-to-end manuscript pilot is still required before V2 can
+claim reliably human-quality exposition. See the
 [manuscript compiler](docs/architecture/manuscript_compiler.md).
 
 Between these moves, the researcher explicitly decides whether to promote the

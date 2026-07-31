@@ -143,6 +143,10 @@ class DistributionResourceTests(unittest.TestCase):
             "machine/navigation-registry.v7.json",
             data_files["share/econ-theorist/machine"],
         )
+        self.assertIn(
+            "machine/navigation-registry.v8.json",
+            data_files["share/econ-theorist/machine"],
+        )
 
     def test_all_route_and_machine_resources_are_data_files(self) -> None:
         configuration = tomllib.loads(

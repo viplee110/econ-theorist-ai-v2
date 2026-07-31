@@ -16,6 +16,7 @@ from econ_theorist.machine.resources import (
     NAVIGATION_REGISTRY_V5_HASH,
     NAVIGATION_REGISTRY_V6_HASH,
     NAVIGATION_REGISTRY_V7_HASH,
+    NAVIGATION_REGISTRY_V8_HASH,
     NavigationRegistryV1,
     NavigationRegistryV2,
     NavigationRegistryV3,
@@ -23,6 +24,7 @@ from econ_theorist.machine.resources import (
     NavigationRegistryV5,
     NavigationRegistryV6,
     NavigationRegistryV7,
+    NavigationRegistryV8,
     load_navigation_registry,
     load_navigation_registry_by_hash,
 )
@@ -378,16 +380,16 @@ class Phase5FramingRegistryTests(unittest.TestCase):
         self.assertEqual(policy.route_id, route.route_id)
         self.assertEqual(policy.selector_id, "registry_cardinality.v1")
 
-    def test_navigation_v7_is_active_while_historical_versions_remain_addressable(self) -> None:
+    def test_navigation_v8_is_active_while_historical_versions_remain_addressable(self) -> None:
         active_routes = load_route_registry()
         self.assertEqual(active_routes.registry_version, 8)
         self.assertEqual(ROUTE_REGISTRY_HASH, ROUTE_REGISTRY_V8_HASH)
         self.assertEqual(registry_hash(active_routes), ROUTE_REGISTRY_V8_HASH)
 
         active_navigation = load_navigation_registry()
-        self.assertIsInstance(active_navigation, NavigationRegistryV7)
-        self.assertEqual(NAVIGATION_REGISTRY_HASH, NAVIGATION_REGISTRY_V7_HASH)
-        self.assertEqual(active_navigation.navigation_registry_version, 7)
+        self.assertIsInstance(active_navigation, NavigationRegistryV8)
+        self.assertEqual(NAVIGATION_REGISTRY_HASH, NAVIGATION_REGISTRY_V8_HASH)
+        self.assertEqual(active_navigation.navigation_registry_version, 8)
         self.assertEqual(active_navigation.route_registry_hash, ROUTE_REGISTRY_V8_HASH)
         policy = active_navigation.routes[-1]
         self.assertEqual(policy.route_id, "audit.framing_economics")
@@ -404,6 +406,12 @@ class Phase5FramingRegistryTests(unittest.TestCase):
             decompose.selector_id, "uncompleted_decomposition_scope.v1"
         )
         self.assertEqual(decompose.default_budget_units, 8_000)
+        profiled_compose = next(
+            item
+            for item in active_navigation.routes
+            if item.route_id == "compose.profiled_manuscript_unit"
+        )
+        self.assertEqual(profiled_compose.default_budget_units, 32_000)
         specialized = tuple(
             item
             for item in active_navigation.routes
@@ -447,12 +455,31 @@ class Phase5FramingRegistryTests(unittest.TestCase):
         self.assertIsInstance(historical_v5, NavigationRegistryV5)
         self.assertEqual(historical_v5.navigation_registry_version, 5)
         self.assertEqual(historical_v5.route_registry_hash, ROUTE_REGISTRY_V6_HASH)
+        historical_v6 = load_navigation_registry_by_hash(NAVIGATION_REGISTRY_V6_HASH)
+        self.assertIsInstance(historical_v6, NavigationRegistryV6)
+        historical_v7 = load_navigation_registry_by_hash(NAVIGATION_REGISTRY_V7_HASH)
+        self.assertIsInstance(historical_v7, NavigationRegistryV7)
+        historical_profiled_compose = next(
+            item
+            for item in historical_v7.routes
+            if item.route_id == "compose.profiled_manuscript_unit"
+        )
+        self.assertEqual(historical_profiled_compose.default_budget_units, 4_000)
+        active_as_v7 = active_navigation.model_dump(mode="json")
+        active_as_v7["navigation_registry_version"] = 7
+        for item in active_as_v7["routes"]:
+            if item["route_id"] == "compose.profiled_manuscript_unit":
+                item["default_budget_units"] = 4_000
+        self.assertEqual(active_as_v7, historical_v7.model_dump(mode="json"))
+
         active_as_v5 = active_navigation.model_dump(mode="json")
         active_as_v5["navigation_registry_version"] = 5
         active_as_v5["route_registry_hash"] = ROUTE_REGISTRY_V6_HASH
         for item in active_as_v5["routes"]:
             if item["route_id"] == "audit.framing_economics":
                 item["route_version"] = 6
+            if item["route_id"] == "compose.profiled_manuscript_unit":
+                item["default_budget_units"] = 4_000
         self.assertEqual(active_as_v5, historical_v5.model_dump(mode="json"))
 
         v5_as_v4 = historical_v5.model_dump(mode="json")

@@ -2,21 +2,29 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+from unittest import mock
 
 from tests.helpers import REPOSITORY_ROOT  # noqa: F401
+from tests.test_phase3_downgrade_attacks import manuscript_material
 from tests.test_phase4_profile_craft_policy import diagnosis, eref, target
 from tests.test_phase4_profile_craft_validation import (
     _assurance_bundle,
     _theory_material,
     authoring_entity,
+    registration,
     theory_entity,
+    world,
 )
 
-from econ_theorist.codec import object_digest
+from econ_theorist import authoring as a
+from econ_theorist.authoring import parse_authoring_entity
+from econ_theorist.codec import canonical_json_bytes, object_digest, sha256_digest
 from econ_theorist.context import (
     _PHASE4_VISIBLE_ENTITY_TYPES,
     _phase4_artifact_refs,
+    _phase4_payload,
     _phase4_role_content,
+    _profiled_manuscript_writing_job,
     compile_context,
 )
 from econ_theorist.models import (
@@ -46,8 +54,13 @@ from econ_theorist.profile_craft_policy import (
     resolve_profile_stack,
     select_craft_moves,
 )
+from econ_theorist.policy import (
+    SELECTOR_VERSION_MANUSCRIPT_QUALITY,
+    SELECTOR_VERSION_V4,
+)
 from econ_theorist.route_registry import authorize_route
 from econ_theorist.runtime import StoreLayout
+from econ_theorist.writer import DeterministicFixtureWriter
 
 
 PROJECT = "project.phase4.context"
@@ -248,6 +261,286 @@ class Phase4ContextIsolationTests(unittest.TestCase):
         ).lower()
         self.assertNotIn(secret.lower(), critic_projection)
         self.assertIn(secret.lower(), resolver_projection)
+
+    def test_new_writing_job_connects_the_local_economic_repair(self) -> None:
+        _snapshot, entities = world()
+        focus_ids = (
+            "assurance.bundle",
+            "craft.selection",
+            "diagnosed.manuscript.unit",
+            "entity.paper",
+            "entity.reader.path",
+            "diagnosis.reader.problem",
+            "profile.universal",
+            "profile.stack",
+            "entity.result.contracts",
+            "review.closure.diagnosed",
+            "revision.brief.diagnosed",
+            "package.validated",
+        )
+        parsed = tuple(
+            (entities[entity_id], _phase4_payload(entities[entity_id]))
+            for entity_id in focus_ids
+        )
+        prior_payload = next(
+            payload for _entity, payload in parsed if isinstance(payload, a.ManuscriptUnit)
+        )
+        before_text = "The section first fixes the receiver's baseline problem. "
+        target_text = "A higher processing cost weakens information use."
+        after_text = " The next paragraph turns to the reversal boundary."
+        current_text = before_text + target_text + after_text
+        prior_bytes = current_text.encode("utf-8")
+        local_ref = ArtifactDependencyRef(
+            artifact_id=prior_payload.manuscript_artifact_ref.artifact_id,
+            version=prior_payload.manuscript_artifact_ref.version,
+            content_hash=sha256_digest(prior_bytes),
+        )
+        base_span = prior_payload.spans[0]
+        spans = (
+            base_span.model_copy(
+                update={
+                    "assertion_id": "assertion.before",
+                    "location": a.ManuscriptLocation(
+                        start_offset=0, end_offset=len(before_text)
+                    ),
+                    "text_hash": sha256_digest(before_text.encode("utf-8")),
+                }
+            ),
+            base_span.model_copy(
+                update={
+                    "location": a.ManuscriptLocation(
+                        start_offset=len(before_text),
+                        end_offset=len(before_text) + len(target_text),
+                    ),
+                    "text_hash": sha256_digest(target_text.encode("utf-8")),
+                }
+            ),
+            base_span.model_copy(
+                update={
+                    "assertion_id": "assertion.after",
+                    "location": a.ManuscriptLocation(
+                        start_offset=len(before_text) + len(target_text),
+                        end_offset=len(current_text),
+                    ),
+                    "text_hash": sha256_digest(after_text.encode("utf-8")),
+                }
+            ),
+        )
+        local_prior = prior_payload.model_copy(
+            update={
+                "manuscript_artifact_ref": local_ref,
+                "writer_output_hash": local_ref.content_hash,
+                "canonical_writer": Actor(
+                    kind="agent", actor_id="critic.identity.must.not.leak"
+                ),
+                "spans": spans,
+            }
+        )
+        parsed = tuple(
+            (entity, local_prior)
+            if isinstance(payload, a.ManuscriptUnit)
+            else (entity, payload)
+            for entity, payload in parsed
+        )
+        artifact_bytes = {
+            (
+                local_ref.artifact_id,
+                local_ref.version,
+            ): prior_bytes,
+        }
+
+        job = _profiled_manuscript_writing_job(
+            parsed, artifact_bytes=artifact_bytes
+        )
+
+        self.assertEqual(job["audience"], "general_economist")
+        changed_base_audience = tuple(
+            (
+                entity,
+                payload.model_copy(update={"primary_audience": "field_specialist"}),
+            )
+            if isinstance(payload, a.ResolvedProfileManifest)
+            else (entity, payload)
+            for entity, payload in parsed
+        )
+        self.assertEqual(
+            _profiled_manuscript_writing_job(
+                changed_base_audience, artifact_bytes=artifact_bytes
+            )["audience"],
+            "general_economist",
+        )
+        self.assertEqual(
+            job["reader_task"]["section_role"],
+            "result_block",
+        )
+        self.assertEqual(
+            job["local_result_material"][0]["archetype"],
+            "mechanism_explanation",
+        )
+        self.assertEqual(
+            job["revision_context"]["current_section_text"],
+            current_text,
+        )
+        self.assertEqual(
+            job["revision_context"]["text_to_rework"],
+            target_text,
+        )
+        self.assertEqual(
+            job["expository_moves"][0]["name"],
+            "Expose the fixed benchmark before the new force",
+        )
+
+        def keys(value):
+            if isinstance(value, dict):
+                for key, nested in value.items():
+                    yield key
+                    yield from keys(nested)
+            elif isinstance(value, (tuple, list)):
+                for nested in value:
+                    yield from keys(nested)
+
+        for key in keys(job):
+            self.assertFalse(
+                key.endswith(("_id", "_ids", "_ref", "_refs", "_hash", "_index")),
+                key,
+            )
+        rendered = repr(job).lower()
+        for forbidden in (
+            "matched_anchor_refs",
+            "contrast_refs",
+            "source_locator",
+            "citation",
+            "paper_family",
+            "review.economic.diagnosed",
+            "instruction.repair.explanation",
+            "assertion.processing.response",
+            "packet.reversal",
+            "canonical.writer",
+            "critic.identity.must.not.leak",
+            "profile.craft.engine",
+        ):
+            self.assertNotIn(forbidden, rendered)
+
+    def test_new_selector_adds_job_without_reinterpreting_historical_bytes(self) -> None:
+        snapshot_value, entities = world()
+        focus_ids = (
+            "assurance.bundle",
+            "craft.selection",
+            "diagnosed.manuscript.unit",
+            "entity.paper",
+            "entity.reader.path",
+            "diagnosis.reader.problem",
+            "profile.universal",
+            "profile.stack",
+            "entity.result.contracts",
+            "review.closure.diagnosed",
+            "revision.brief.diagnosed",
+            "package.validated",
+        )
+        prior = parse_authoring_entity(entities["diagnosed.manuscript.unit"])
+        assert isinstance(prior, a.ManuscriptUnit)
+        prior_ref = prior.manuscript_artifact_ref
+        prior_text, prior_bytes, _fixture_ref, _unit = manuscript_material(
+            writer_packet_hash="2" * 64
+        )
+        if not any(
+            item.artifact_id == prior_ref.artifact_id
+            and item.version == prior_ref.version
+            for item in snapshot_value.artifacts
+        ):
+            prior_registration = registration(prior_ref).model_copy(
+                update={
+                    "byte_size": len(prior_bytes),
+                    "media_type": "text/plain; charset=utf-8",
+                }
+            )
+            snapshot_value = snapshot_value.model_copy(
+                update={
+                    "artifacts": (*snapshot_value.artifacts, prior_registration),
+                    "current_artifacts": {
+                        **snapshot_value.current_artifacts,
+                        prior_ref.artifact_id: prior_ref.version,
+                    },
+                }
+            )
+        route = authorize_route(
+            "compose.profiled_manuscript_unit",
+            purpose="research_authoring",
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+        )
+        arguments = dict(
+            route=route,
+            actor=prior.canonical_writer,
+            purpose="research_authoring",
+            compartments=("project_research",),
+            privacy_clearance="project_private",
+            focus_entity_ids=focus_ids,
+            budget_units=500_000,
+            layout=self.layout,
+        )
+        with mock.patch(
+            "econ_theorist.runtime.objects.ObjectStore.read_bytes",
+            return_value=prior_bytes,
+        ):
+            historical = compile_context(
+                snapshot_value,
+                **arguments,
+                selector_version=SELECTOR_VERSION_V4,
+            )
+            current = compile_context(
+                snapshot_value,
+                **arguments,
+                selector_version=SELECTOR_VERSION_MANUSCRIPT_QUALITY,
+            )
+            repeated = compile_context(
+                snapshot_value,
+                **arguments,
+                selector_version=SELECTOR_VERSION_MANUSCRIPT_QUALITY,
+            )
+
+        self.assertEqual(
+            historical.context_hash,
+            "be7c24db6cc37cefdc3bc7c4d9a9ea3a1ec27b659fbe64f2595612e920dddf37",
+        )
+        self.assertNotIn(
+            "writing_job", historical.payload["phase4_role_packet"]
+        )
+        self.assertIn("writing_job", current.payload["phase4_role_packet"])
+        self.assertNotEqual(current.context_hash, historical.context_hash)
+        self.assertLessEqual(current.used_units - historical.used_units, 1_200)
+        self.assertEqual(
+            current.context_hash,
+            "c2e88e4753734e18ff2ffa0453a01dee759cbddbe200dc7f4e74efc3e2eac7e1",
+        )
+        self.assertEqual(
+            current.payload["phase4_role_packet"]["writing_job"][
+                "revision_context"
+            ]["current_section_text"],
+            prior_text,
+        )
+        self.assertEqual(current.encoded, repeated.encoded)
+        self.assertEqual(current.context_hash, repeated.context_hash)
+
+        packet = current.payload["phase4_role_packet"]
+        writer = DeterministicFixtureWriter(
+            actor=prior.canonical_writer,
+            fixtures={"section.results": "The benchmark fixes uptake.\n"},
+        )
+        output = writer.compose(packet, manuscript_key="section.results")
+        self.assertEqual(
+            output.role_packet_hash,
+            sha256_digest(canonical_json_bytes(packet)),
+        )
+        tampered = dict(packet)
+        tampered["writing_job"] = {
+            **packet["writing_job"],
+            "task": "Draft a different section.",
+        }
+        self.assertNotEqual(
+            output.role_packet_hash,
+            writer.compose(tampered, manuscript_key="section.results").role_packet_hash,
+        )
 
     def test_brief_attachment_is_diagnostic_evidence_not_writer_material(self) -> None:
         from econ_theorist.authoring import RevisionBrief
