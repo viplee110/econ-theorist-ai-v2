@@ -1427,6 +1427,38 @@ class FramingQualityRouteTests(unittest.TestCase):
             }
         )
 
+    def _unwitnessed_design_revision(
+        self,
+        payload: FramingQualityBundle,
+    ) -> FramingQualityBundle:
+        negative = self._unwitnessed_negative_revision(
+            self._research_first_bundle(payload)
+        )
+        return negative.model_copy(
+            update={
+                "tension": ArchetypeTension(
+                    result_archetype="design_implementation_impossibility",
+                    tension_kind="design_tradeoff_or_impossibility",
+                    conventional_prediction=(
+                        "A shared state can be treated as an ordinary private "
+                        "state without changing implementation."
+                    ),
+                    countervailing_logic=(
+                        "Cross-client updates may instead alter another agent's "
+                        "continuation choice."
+                    ),
+                    economic_puzzle=(
+                        "The current graph cannot establish whether that update is "
+                        "implementationally distinct or benchmark-equivalent."
+                    ),
+                    resolution_target=(
+                        "Add the exact continuation payoff and deviation basis, or "
+                        "absorb the channel into the ordinary-agent benchmark."
+                    ),
+                )
+            }
+        )
+
     def _hard_relation(
         self,
         relation_id: str,
@@ -1747,6 +1779,108 @@ class FramingQualityRouteTests(unittest.TestCase):
                     decision_id="decision.g1.unwitnessed.rejected",
                     decided_at=T4,
                 ),
+            )
+
+    def test_v8_unwitnessed_design_revision_commits_without_relabelling(
+        self,
+    ) -> None:
+        core = self._phase2_prefix(
+            candidate_archetypes=("design_implementation_impossibility",)
+        )
+        question, _, _, _ = core
+        bundle, replacement, after = self._commit_audit(
+            core,
+            proposed_action="ready_for_g1",
+            bundle_mutator=self._unwitnessed_design_revision,
+            route_registry_hash=ROUTE_REGISTRY_V8_HASH,
+        )
+        committed = parse_framing_quality_payload(
+            "FramingQualityBundle", bundle.facets
+        )
+        self.assertEqual(
+            committed.tension.result_archetype,
+            "design_implementation_impossibility",
+        )
+        self.assertEqual(
+            committed.tension.tension_kind,
+            "design_tradeoff_or_impossibility",
+        )
+        self.assertEqual(committed.proposed_action, "revise_framing")
+        self.assertTrue(
+            all(step.active_margin_witness is None for step in committed.causal_chain)
+        )
+        self.assertEqual(after.current_entities[bundle.entity_id], 1)
+        with self.assertRaisesRegex(DecisionInputError, "ready_for_g1"):
+            commit_decision(
+                self.layout,
+                self._g1_decision(
+                    question,
+                    replacement,
+                    decision_id="decision.g1.unwitnessed.design.rejected",
+                    decided_at=T4,
+                ),
+            )
+
+    def test_v7_still_rejects_the_unwitnessed_design_revision(self) -> None:
+        core = self._phase2_prefix(
+            candidate_archetypes=("design_implementation_impossibility",)
+        )
+        with self.assertRaisesRegex(
+            CandidateValidationError,
+            "active_margin_witness_missing",
+        ):
+            self._commit_audit(
+                core,
+                proposed_action="ready_for_g1",
+                bundle_mutator=self._unwitnessed_design_revision,
+                route_registry_hash=ROUTE_REGISTRY_V7_HASH,
+            )
+
+    def test_v8_unwitnessed_revision_names_each_failed_condition(self) -> None:
+        core = self._phase2_prefix(
+            candidate_archetypes=("design_implementation_impossibility",)
+        )
+
+        def restore_positive_claims(
+            payload: FramingQualityBundle,
+        ) -> FramingQualityBundle:
+            negative = self._unwitnessed_design_revision(payload)
+            assessment = negative.benchmark_assessments[0]
+            promoted_aggregate = assessment.aggregate_invariance.model_copy(
+                update={
+                    "pointwise_policy_fixed": True,
+                    "weighting_distribution_status": "fixed",
+                    "claims_aggregate_fixed": True,
+                }
+            )
+            promoted_assessment = assessment.model_copy(
+                update={
+                    "channel_kind": "active_response",
+                    "aggregate_invariance": promoted_aggregate,
+                }
+            )
+            nonqualifying_gap = negative.disclosed_gaps[0].model_copy(
+                update={"category": "scope"}
+            )
+            return negative.model_copy(
+                update={
+                    "benchmark_assessments": (promoted_assessment,),
+                    "disclosed_gaps": (nonqualifying_gap,),
+                }
+            )
+
+        with self.assertRaisesRegex(
+            CandidateValidationError,
+            (
+                "failed_conditions=qualifying_exact_repair_target_missing,"
+                "active_response_claim_present,aggregate_fixed_claim_present"
+            ),
+        ):
+            self._commit_audit(
+                core,
+                proposed_action="ready_for_g1",
+                bundle_mutator=restore_positive_claims,
+                route_registry_hash=ROUTE_REGISTRY_V8_HASH,
             )
 
     def test_v8_negative_revision_keeps_force_paths_strict_and_reports_all_gaps(

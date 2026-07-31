@@ -76,9 +76,13 @@ class FramingQualitySemanticAuthoringTests(unittest.TestCase):
         self,
         *,
         quality_node_kind: str = "choice",
+        candidate_archetypes: tuple[str, ...] = ("mechanism_explanation",),
         continuation: bool = False,
     ) -> tuple[object, object, tuple[EntityVersion, ...]]:
-        core = self.fixture._phase2_prefix(quality_node_kind=quality_node_kind)
+        core = self.fixture._phase2_prefix(
+            quality_node_kind=quality_node_kind,
+            candidate_archetypes=candidate_archetypes,
+        )
         focus = tuple(item.entity_id for item in core)
         created_at = framing_fixture.T3
         if continuation:
@@ -766,6 +770,43 @@ class FramingQualitySemanticAuthoringTests(unittest.TestCase):
         snapshot, contract, core = self._open_v8_contract()
         payload = self.fixture._unwitnessed_negative_revision(
             self.fixture._research_first_bundle(self.fixture._bundle_payload(*core))
+        )
+        negative_draft = self._unwitnessed_negative_draft_v2(
+            payload,
+            force_margin_locators=(
+                ForceMarginLocatorV2(
+                    force_id="force.targeting",
+                    step_number=1,
+                    margin_position="target",
+                ),
+                ForceMarginLocatorV2(
+                    force_id="force.quality",
+                    step_number=2,
+                    margin_position="target",
+                ),
+            ),
+        )
+
+        report = preflight_framing_audit_semantic_draft_v2(
+            snapshot, contract, negative_draft
+        )
+        self.assertTrue(report.passed, report.issues)
+        transaction = compile_framing_audit_semantic_draft_v2(
+            snapshot, contract, negative_draft
+        )
+        validate_candidate(
+            snapshot,
+            transaction,
+            route_registry_hash=ROUTE_REGISTRY_V8_HASH,
+            enforce_live_current_policy=True,
+        )
+
+    def test_v2_preserves_the_exact_unwitnessed_design_exception(self) -> None:
+        snapshot, contract, core = self._open_v8_contract(
+            candidate_archetypes=("design_implementation_impossibility",)
+        )
+        payload = self.fixture._unwitnessed_design_revision(
+            self.fixture._bundle_payload(*core)
         )
         negative_draft = self._unwitnessed_negative_draft_v2(
             payload,

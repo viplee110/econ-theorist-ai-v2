@@ -1282,27 +1282,73 @@ def _is_permitted_unwitnessed_negative_revision(
     Route acceptance remains owned by ``_validate_bundle_science``.
     """
 
-    return (
+    return not _unwitnessed_negative_revision_failed_conditions(bundle)
+
+
+def _unwitnessed_negative_revision_failed_conditions(
+    bundle: fq.FramingQualityBundle,
+) -> tuple[str, ...]:
+    """Return each unmet V8 downgrade condition in stable diagnostic order.
+
+    The exception covers the existing mechanism-margin tensions plus the exact
+    design/implementability pair exposed by the held-out failure.  The latter
+    must not be relabelled as a mechanism-margin tension merely to preserve an
+    honest negative result.  Other archetypes remain outside this narrow V8
+    exception until concrete evidence justifies changing their semantics.
+    """
+
+    failures: list[str] = []
+    supported_archetype_tension = (
         bundle.tension.tension_kind in fq.MECHANISM_MARGIN_TENSION_KINDS
-        and any(
-            gap.category in {"causal_attribution", "reoptimization"}
-            and gap.repair_target_refs
-            for gap in bundle.disclosed_gaps
+        or (
+            bundle.tension.result_archetype
+            == "design_implementation_impossibility"
+            and bundle.tension.tension_kind
+            == "design_tradeoff_or_impossibility"
         )
-        and all(
-            assessment.channel_kind != "active_response"
-            and assessment.attribution_strength in {"weak", "unresolved"}
-            and not assessment.aggregate_invariance.claims_aggregate_fixed
-            and assessment.selection_assurance.status
-            in {"selector_only", "not_applicable", "unresolved"}
-            and assessment.distinctive_mechanism is not None
-            and assessment.distinctive_mechanism.claim_kind
-            in {"not_claimed", "unresolved"}
-            for assessment in bundle.benchmark_assessments
-        )
-        and bundle.distinctive_mechanism_contribution_status
-        in {"not_claimed", "unresolved"}
     )
+    if not supported_archetype_tension:
+        failures.append("supported_archetype_tension_pair_missing")
+    if not any(
+        gap.category in {"causal_attribution", "reoptimization"}
+        and gap.repair_target_refs
+        for gap in bundle.disclosed_gaps
+    ):
+        failures.append("qualifying_exact_repair_target_missing")
+    if any(
+        assessment.channel_kind == "active_response"
+        for assessment in bundle.benchmark_assessments
+    ):
+        failures.append("active_response_claim_present")
+    if any(
+        assessment.attribution_strength not in {"weak", "unresolved"}
+        for assessment in bundle.benchmark_assessments
+    ):
+        failures.append("attribution_not_fully_downgraded")
+    if any(
+        assessment.aggregate_invariance.claims_aggregate_fixed
+        for assessment in bundle.benchmark_assessments
+    ):
+        failures.append("aggregate_fixed_claim_present")
+    if any(
+        assessment.selection_assurance.status
+        not in {"selector_only", "not_applicable", "unresolved"}
+        for assessment in bundle.benchmark_assessments
+    ):
+        failures.append("selection_assurance_not_fully_downgraded")
+    if any(
+        assessment.distinctive_mechanism is None
+        or assessment.distinctive_mechanism.claim_kind
+        not in {"not_claimed", "unresolved"}
+        for assessment in bundle.benchmark_assessments
+    ):
+        failures.append("distinctive_mechanism_not_fully_downgraded")
+    if bundle.distinctive_mechanism_contribution_status not in {
+        "not_claimed",
+        "unresolved",
+    }:
+        failures.append("contribution_not_fully_downgraded")
+    return tuple(failures)
 
 
 def _validate_bundle_science(
@@ -1380,10 +1426,12 @@ def _validate_bundle_science(
         and _is_permitted_unwitnessed_negative_revision(bundle)
     )
     if negative_revision_requested and not negative_revision:
+        failed_conditions = _unwitnessed_negative_revision_failed_conditions(bundle)
         raise FramingQualityValidationError(
             "unwitnessed_negative_revision_invalid: v8 permits an absent payoff "
             "witness only for a fully downgraded revise_framing diagnosis with "
-            "an exact causal-attribution or reoptimization repair target"
+            "an exact causal-attribution or reoptimization repair target; "
+            "failed_conditions=" + ",".join(failed_conditions)
         )
     primitive_path_issues: list[dict[str, object]] = []
     for step_index, step in enumerate(steps):

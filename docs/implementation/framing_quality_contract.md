@@ -93,6 +93,11 @@ reoptimization gap with an exact current upstream repair target, make no
 active-response, clean-attribution, aggregate-fixed, or distinctive-mechanism
 claim, and cannot support `ready_for_g1`. It forbids fabricated payoff
 evidence; any supplied witness remains subject to every ordinary strict check.
+The eligible tension classes are the existing mechanism-margin kinds plus the
+exact `design_implementation_impossibility` / `design_tradeoff_or_impossibility`
+pair. The latter need not be relabelled as a mechanism-margin tension to record
+an upstream repair. This does not add the design tension to positive
+active-margin semantics or relax any G1-readiness check.
 
 Historical chains replay under the registry hash to which they were bound.
 The current CLI and machine facade use route registry v8 and navigation
@@ -265,6 +270,9 @@ The implementation slice is not accepted until it demonstrates:
 - acceptance of an honestly inactive link only as `revise_framing` with an
   exact causal-attribution repair target, and rejection of inactive or
   unresolved margins at `ready_for_g1`;
+- acceptance of a fully downgraded design or implementability diagnosis as
+  `revise_framing` without relabelling its schema-valid tension, while preserving
+  every positive active-margin and G1-readiness check;
 - rejection of self-declared reoptimization on outcome nodes and of same-level
   fixed/movable aliases;
 - acceptance of a typed endogenous transition as the active response margin;
