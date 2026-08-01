@@ -58,6 +58,21 @@ from .framing_team import (
     read_framing_worker_activation,
     read_framing_worker_inputs,
 )
+from .theorem_team import (
+    TheoremAdvisoryLaneId,
+    TheoremTeamPlanV1,
+    TheoremTeamReviewV1,
+    build_theorem_lane_output,
+    build_theorem_team_delivery_authorization,
+    open_theorem_team_plan,
+    publish_theorem_team_completion_binding,
+    publish_theorem_team_review,
+    read_theorem_team_delivery_authorization,
+    read_theorem_team_plan,
+    read_theorem_team_review,
+    theorem_team_is_active,
+    theorem_team_review_exists,
+)
 from .ids import utc_now
 from .models import Actor, Digest, EntityVersionRef, StableId, StrictModel
 from .machine.dispatcher import (
@@ -123,6 +138,8 @@ CodexBridgeOperation: TypeAlias = Literal[
     "framing_team.publish_panel",
     "framing_team.publish_choice_review",
     "framing_team.apply_user_turn",
+    "theorem_team.open",
+    "theorem_team.publish_review",
 ]
 CodexBridgeOutcome: TypeAlias = Literal[
     "ready",
@@ -136,6 +153,8 @@ CodexBridgeOutcome: TypeAlias = Literal[
     "parked",
     "killed",
     "stale_team_session",
+    "theorem_team_ready",
+    "theorem_review_ready",
     "staged",
     "committed",
     "stale_base",
@@ -243,12 +262,20 @@ class CodexCompleteRequestV1(StrictModel):
     delivery_envelope_hash: Digest
     framing_team_handoff_hash: Digest | None = None
     framing_team_worker: CodexFramingWorkerObservationV1 | None = None
+    theorem_team_review_hash: Digest | None = None
     expected_candidate_digest: Digest | None = None
     transaction_path: NonEmpty | None = None
     artifacts: dict[NonEmpty, NonEmpty] = Field(default_factory=dict)
     action: Literal[
         "stage_only", "commit_staged", "stage_and_commit"
     ] = "stage_and_commit"
+
+    @model_serializer(mode="wrap")
+    def _preserve_pre_theorem_request_bytes(self, handler: Any) -> Any:
+        data = handler(self)
+        if "theorem_team_review_hash" not in self.model_fields_set:
+            data.pop("theorem_team_review_hash", None)
+        return data
 
     @model_validator(mode="after")
     def _staged_commit_keeps_an_exact_identity(self) -> "CodexCompleteRequestV1":
@@ -327,12 +354,60 @@ class CodexFramingTeamCapabilityV1(StrictModel):
         return self
 
 
+class CodexTheoremTeamCapabilityV1(StrictModel):
+    """Observable host facts for two sealed theorem-advisory lanes."""
+
+    capability_schema: Literal[
+        "econ-theorist/codex-theorem-team-capability/v1"
+    ] = "econ-theorist/codex-theorem-team-capability/v1"
+    team_surface: Literal["available"] = "available"
+    lane_separation: Literal["logical"] = "logical"
+
+
+class CodexTheoremLaneDraftV1(StrictModel):
+    """One raw advisory report; the bridge supplies authoritative bindings."""
+
+    agent_label: StableId
+    model_observation: NonEmpty
+    content_markdown: NonEmpty
+
+
 class _CodexFramingTeamDeliveryRequestV1(StrictModel):
     bridge_version: Literal[1] = 1
     project_root: NonEmpty
     route_run_id: NonEmpty
     work_packet_hash: Digest
     delivery_envelope_hash: Digest
+
+
+class _CodexTheoremTeamDeliveryRequestV1(StrictModel):
+    bridge_version: Literal[1] = 1
+    project_root: NonEmpty
+    route_run_id: NonEmpty
+    work_packet_hash: Digest
+    delivery_envelope_hash: Digest
+
+
+class CodexTheoremTeamOpenRequestV1(_CodexTheoremTeamDeliveryRequestV1):
+    bridge_request_schema: Literal[
+        "econ-theorist/codex-theorem-team-open-request/v1"
+    ] = "econ-theorist/codex-theorem-team-open-request/v1"
+    operation: Literal["theorem_team.open"] = "theorem_team.open"
+    session: CodexSessionV1
+    capability: CodexTheoremTeamCapabilityV1
+
+
+class CodexTheoremTeamReviewRequestV1(_CodexTheoremTeamDeliveryRequestV1):
+    bridge_request_schema: Literal[
+        "econ-theorist/codex-theorem-team-review-request/v1"
+    ] = "econ-theorist/codex-theorem-team-review-request/v1"
+    operation: Literal[
+        "theorem_team.publish_review"
+    ] = "theorem_team.publish_review"
+    team_plan_hash: Digest
+    session: CodexSessionV1
+    proof_worker: CodexTheoremLaneDraftV1
+    counterexample_economics_challenger: CodexTheoremLaneDraftV1
 
 
 class CodexFramingTeamOpenRequestV1(_CodexFramingTeamDeliveryRequestV1):
@@ -653,6 +728,46 @@ class CodexFramingTeamResultV1(StrictModel):
         return self
 
 
+CodexTheoremTeamStatus: TypeAlias = Literal[
+    "theorem_team_ready",
+    "theorem_review_ready",
+]
+
+
+class CodexTheoremTeamResultV1(StrictModel):
+    """Self-contained noncanonical theorem-team transition."""
+
+    result_schema: Literal[
+        "econ-theorist/codex-theorem-team-result/v1"
+    ] = "econ-theorist/codex-theorem-team-result/v1"
+    status: CodexTheoremTeamStatus
+    capability: CodexTheoremTeamCapabilityV1 | None = None
+    team_plan_hash: Digest
+    team_plan: TheoremTeamPlanV1
+    review_hash: Digest | None = None
+    review: TheoremTeamReviewV1 | None = None
+
+    @model_validator(mode="after")
+    def _payload_matches_status(self) -> "CodexTheoremTeamResultV1":
+        if sha256_digest(canonical_json_bytes(self.team_plan)) != self.team_plan_hash:
+            raise ValueError("theorem-team plan digest is invalid")
+        if (self.review_hash is None) != (self.review is None):
+            raise ValueError("theorem-team review hash and value must be paired")
+        if self.status == "theorem_team_ready":
+            if self.capability is None or self.review is not None:
+                raise ValueError("theorem_team_ready requires capability and no review")
+        else:
+            if self.capability is not None or self.review is None:
+                raise ValueError("theorem_review_ready requires the exact review")
+            assert self.review_hash is not None
+            if (
+                sha256_digest(canonical_json_bytes(self.review)) != self.review_hash
+                or self.review.team_plan_hash != self.team_plan_hash
+            ):
+                raise ValueError("theorem-team review differs from its plan")
+        return self
+
+
 CodexBridgeRequestValue: TypeAlias = (
     CodexStartRequestV1
     | CodexReframeRepairRequestV1
@@ -662,6 +777,8 @@ CodexBridgeRequestValue: TypeAlias = (
     | CodexFramingTeamPanelRequestV1
     | CodexFramingChoiceReviewRequestV1
     | CodexFramingTeamUserTurnRequestV1
+    | CodexTheoremTeamOpenRequestV1
+    | CodexTheoremTeamReviewRequestV1
 )
 CodexBridgeRequest: TypeAlias = Annotated[
     CodexBridgeRequestValue,
@@ -689,6 +806,7 @@ class CodexBridgeResponseV1(StrictModel):
     candidate_authoring_contract_hash: Digest | None = None
     candidate_authoring_contract: CandidateAuthoringContractV1 | None = None
     framing_team: CodexFramingTeamResultV1 | None = None
+    theorem_team: CodexTheoremTeamResultV1 | None = None
     completion: CandidateCompletionResultV1 | None = None
     diagnostics: tuple[DiagnosticV1, ...] = ()
 
@@ -699,6 +817,8 @@ class CodexBridgeResponseV1(StrictModel):
         data = handler(self)
         if "framing_team" not in self.model_fields_set:
             data.pop("framing_team", None)
+        if "theorem_team" not in self.model_fields_set:
+            data.pop("theorem_team", None)
         return data
 
     @model_validator(mode="after")
@@ -714,6 +834,8 @@ class CodexBridgeResponseV1(StrictModel):
             "new_brief_required",
             "parked",
             "killed",
+            "theorem_team_ready",
+            "theorem_review_ready",
         }
         if self.outcome in packet_bound_outcomes and any(
             value is None
@@ -776,6 +898,14 @@ class CodexBridgeResponseV1(StrictModel):
                 raise ValueError("team outcome requires the matching framing-team result")
         elif self.framing_team is not None:
             raise ValueError("non-team response cannot carry a framing-team result")
+        theorem_team_outcomes = {"theorem_team_ready", "theorem_review_ready"}
+        if self.outcome in theorem_team_outcomes:
+            if self.theorem_team is None or self.theorem_team.status != self.outcome:
+                raise ValueError(
+                    "theorem-team outcome requires the matching theorem-team result"
+                )
+        elif self.theorem_team is not None:
+            raise ValueError("non-theorem response cannot carry a theorem-team result")
         if self.outcome in {
             "staged",
             "committed",
@@ -1048,6 +1178,29 @@ def _read_framing_team_delivery(
     return envelope, plan, packet
 
 
+def _read_theorem_team_delivery(
+    root: Path,
+    *,
+    route_run_id: str,
+    work_packet_hash: str,
+    delivery_envelope_hash: str,
+) -> tuple[DeliveryEnvelopeV1, EgressPlanV1, WorkPacketV1]:
+    """Recover one live public claim-verification packet."""
+
+    envelope, plan, packet = _read_provider_delivery(
+        root,
+        route_run_id=route_run_id,
+        work_packet_hash=work_packet_hash,
+        delivery_envelope_hash=delivery_envelope_hash,
+    )
+    if packet.route_id != "verify.claims_proofs_and_interpretation":
+        raise ValueError("Phase 5B.1 accepts only the claim-verification route")
+    snapshot = replay(StoreLayout.at(root))
+    if snapshot.project_id != packet.project_id or snapshot.head != packet.base_head:
+        raise OperationalError("theorem team packet binding is stale")
+    return envelope, plan, packet
+
+
 def _framing_team_response(
     request: (
         CodexFramingTeamOpenRequestV1
@@ -1084,6 +1237,37 @@ def _framing_team_response(
     )
 
 
+def _theorem_team_response(
+    request: CodexTheoremTeamOpenRequestV1 | CodexTheoremTeamReviewRequestV1,
+    *,
+    root: Path,
+    packet: WorkPacketV1,
+    result: CodexTheoremTeamResultV1,
+    mutated: bool,
+) -> CodexBridgeResponseV1:
+    """Return one theorem-team transition over the unchanged packet."""
+
+    contract = compile_candidate_authoring_contract(
+        StoreLayout.at(root), packet, request.work_packet_hash
+    )
+    return CodexBridgeResponseV1(
+        operation=request.operation,
+        request_digest=_request_digest(request),
+        outcome=result.status,
+        mutated=mutated,
+        project_id=packet.project_id,
+        head=packet.base_head,
+        route_run_id=packet.route_run_id,
+        work_packet_hash=request.work_packet_hash,
+        delivery_envelope_hash=request.delivery_envelope_hash,
+        candidate_logical_path=packet.candidate_logical_path,
+        work_packet=packet,
+        candidate_authoring_contract_hash=candidate_authoring_contract_hash(contract),
+        candidate_authoring_contract=contract,
+        theorem_team=result,
+    )
+
+
 class CodexBridge:
     """Compose machine operations for one narrow public Codex pilot."""
 
@@ -1115,7 +1299,11 @@ class CodexBridge:
                 return self._publish_framing_team_panel(request)
             if isinstance(request, CodexFramingChoiceReviewRequestV1):
                 return self._publish_framing_choice_review(request)
-            return self._apply_framing_user_turn(request)
+            if isinstance(request, CodexFramingTeamUserTurnRequestV1):
+                return self._apply_framing_user_turn(request)
+            if isinstance(request, CodexTheoremTeamOpenRequestV1):
+                return self._open_theorem_team(request)
+            return self._publish_theorem_team_review(request)
         except RuntimeStoreError as exc:
             message = str(exc) or type(exc).__name__
             if (
@@ -2377,6 +2565,154 @@ class CodexBridge:
             mutated=True,
         )
 
+    def _open_theorem_team(
+        self, request: CodexTheoremTeamOpenRequestV1
+    ) -> CodexBridgeResponseV1:
+        root = Path(request.project_root).resolve()
+        if not root.is_dir():
+            raise ValueError("Codex project_root must be an existing directory")
+        envelope, _, packet = _read_theorem_team_delivery(
+            root,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+            delivery_envelope_hash=request.delivery_envelope_hash,
+        )
+        if envelope.host_session_id != request.session.session_id:
+            raise ValueError("theorem team open uses a different Codex session")
+        operational = ProjectOperationalLayout.at(StoreLayout.at(root))
+        with ExclusiveFileLock(operational.navigation_lock):
+            assert_run_not_disposed(operational, request.route_run_id)
+            team_already_active = theorem_team_is_active(
+                operational,
+                route_run_id=request.route_run_id,
+                work_packet_hash=request.work_packet_hash,
+            )
+            if (
+                _has_active_staged_candidate(root, request.route_run_id)
+                and not team_already_active
+            ):
+                raise OperationalError(
+                    "theorem team cannot activate after a candidate was staged"
+                )
+            assert envelope.egress_plan_hash is not None
+            authorization = build_theorem_team_delivery_authorization(
+                packet,
+                request.work_packet_hash,
+                source_delivery_envelope_hash=request.delivery_envelope_hash,
+                source_capability_receipt_hash=envelope.capability_receipt_hash,
+                source_egress_plan_hash=envelope.egress_plan_hash,
+                host_product=envelope.host_product,
+                host_version=envelope.host_version,
+                adapter_id=envelope.adapter_id,
+                adapter_version=envelope.adapter_version,
+                host_session_id=envelope.host_session_id,
+                lane_separation_claim=request.capability.lane_separation,
+            )
+            plan_hash, plan = open_theorem_team_plan(
+                operational,
+                route_run_id=request.route_run_id,
+                work_packet_hash=request.work_packet_hash,
+                delivery_authorization=authorization,
+                execution_mode="isolated_multi_agent",
+                isolation_claim=request.capability.lane_separation,
+            )
+        return _theorem_team_response(
+            request,
+            root=root,
+            packet=packet,
+            result=CodexTheoremTeamResultV1(
+                status="theorem_team_ready",
+                capability=request.capability,
+                team_plan_hash=plan_hash,
+                team_plan=plan,
+            ),
+            mutated=not team_already_active,
+        )
+
+    def _publish_theorem_team_review(
+        self, request: CodexTheoremTeamReviewRequestV1
+    ) -> CodexBridgeResponseV1:
+        root = Path(request.project_root).resolve()
+        if not root.is_dir():
+            raise ValueError("Codex project_root must be an existing directory")
+        envelope, _, packet = _read_theorem_team_delivery(
+            root,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+            delivery_envelope_hash=request.delivery_envelope_hash,
+        )
+        operational = ProjectOperationalLayout.at(StoreLayout.at(root))
+        plan = read_theorem_team_plan(
+            operational,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+            team_plan_hash=request.team_plan_hash,
+        )
+        authorization = read_theorem_team_delivery_authorization(
+            operational,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+            team_plan_hash=request.team_plan_hash,
+        )
+        if (
+            authorization.source_delivery_envelope_hash
+            != request.delivery_envelope_hash
+            or authorization.host_session_id != envelope.host_session_id
+            or authorization.host_session_id != request.session.session_id
+        ):
+            raise ValueError(
+                "theorem review delivery or session differs from authorization"
+            )
+        for draft in (
+            request.proof_worker,
+            request.counterexample_economics_challenger,
+        ):
+            if draft.model_observation not in request.session.installed_models:
+                raise ValueError(
+                    "theorem lane model observation is not installed in this session"
+                )
+
+        def output(
+            lane_id: TheoremAdvisoryLaneId, draft: CodexTheoremLaneDraftV1
+        ):
+            return build_theorem_lane_output(
+                plan,
+                request.team_plan_hash,
+                lane_id=lane_id,
+                agent_label=draft.agent_label,
+                model_observation=draft.model_observation,
+                content_markdown=draft.content_markdown,
+            )
+
+        review_already_exists = theorem_team_review_exists(
+            operational,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+        )
+        review_hash, review = publish_theorem_team_review(
+            operational,
+            route_run_id=request.route_run_id,
+            work_packet_hash=request.work_packet_hash,
+            proof_worker=output("proof_worker", request.proof_worker),
+            counterexample_economics_challenger=output(
+                "counterexample_economics_challenger",
+                request.counterexample_economics_challenger,
+            ),
+        )
+        return _theorem_team_response(
+            request,
+            root=root,
+            packet=packet,
+            result=CodexTheoremTeamResultV1(
+                status="theorem_review_ready",
+                team_plan_hash=request.team_plan_hash,
+                team_plan=plan,
+                review_hash=review_hash,
+                review=review,
+            ),
+            mutated=not review_already_exists,
+        )
+
     def _complete(self, request: CodexCompleteRequestV1) -> CodexBridgeResponseV1:
         root = Path(request.project_root).resolve()
         if not root.is_dir():
@@ -2439,6 +2775,49 @@ class CodexBridge:
             if request.framing_team_worker.model_observation != plan.model:
                 raise OperationalError(
                     "research worker model observation differs from source delivery"
+                )
+        theorem_team_active = False
+        if packet.route_id == "verify.claims_proofs_and_interpretation":
+            theorem_team_active = theorem_team_is_active(
+                ProjectOperationalLayout.at(StoreLayout.at(root)),
+                route_run_id=request.route_run_id,
+                work_packet_hash=request.work_packet_hash,
+                require_current_head=not already_recorded,
+            )
+        if theorem_team_active and request.theorem_team_review_hash is None:
+            raise OperationalError(
+                "a declared theorem team requires its exact published review"
+            )
+        if theorem_team_active and request.action != "stage_and_commit":
+            raise OperationalError(
+                "declared theorem-team completion requires stage_and_commit"
+            )
+        theorem_review = None
+        if request.theorem_team_review_hash is not None:
+            if not theorem_team_active:
+                raise OperationalError(
+                    "theorem team review supplied without an active team plan"
+                )
+            theorem_review = read_theorem_team_review(
+                ProjectOperationalLayout.at(StoreLayout.at(root)),
+                route_run_id=request.route_run_id,
+                work_packet_hash=request.work_packet_hash,
+                review_hash=request.theorem_team_review_hash,
+                require_current_head=not already_recorded,
+            )
+            theorem_authorization = read_theorem_team_delivery_authorization(
+                ProjectOperationalLayout.at(StoreLayout.at(root)),
+                route_run_id=request.route_run_id,
+                work_packet_hash=request.work_packet_hash,
+                team_plan_hash=theorem_review.team_plan_hash,
+                require_current_head=not already_recorded,
+            )
+            if (
+                theorem_authorization.source_delivery_envelope_hash
+                != request.delivery_envelope_hash
+            ):
+                raise OperationalError(
+                    "completion delivery differs from theorem-team authorization"
                 )
         tool_identities = ("openai.codex",)
         transaction_path = request.transaction_path
@@ -2561,6 +2940,22 @@ class CodexBridge:
                     ),
                     require_current_head=not already_recorded,
                 )
+            )
+        if request.theorem_team_review_hash is not None:
+            _, _, theorem_binding_mutated = publish_theorem_team_completion_binding(
+                ProjectOperationalLayout.at(StoreLayout.at(root)),
+                route_run_id=request.route_run_id,
+                work_packet_hash=request.work_packet_hash,
+                review_hash=request.theorem_team_review_hash,
+                completion_operation_key=completion_key,
+                delivery_envelope_hash=request.delivery_envelope_hash,
+                candidate_digest=effective_candidate_digest,
+                coordinator_agent_label=_CODEX_SCIENTIFIC_AGENT.actor_id,
+                coordinator_model_observation=plan.model,
+                require_current_head=not already_recorded,
+            )
+            completion_binding_mutated = (
+                completion_binding_mutated or theorem_binding_mutated
             )
         observation = TrustedHostCompletionObservation(
             operation_key=completion_key,
@@ -2744,5 +3139,10 @@ __all__ = [
     "CodexReframeRepairRequestV1",
     "CodexSessionV1",
     "CodexStartRequestV1",
+    "CodexTheoremLaneDraftV1",
+    "CodexTheoremTeamCapabilityV1",
+    "CodexTheoremTeamOpenRequestV1",
+    "CodexTheoremTeamResultV1",
+    "CodexTheoremTeamReviewRequestV1",
     "codex_bridge_schema",
 ]

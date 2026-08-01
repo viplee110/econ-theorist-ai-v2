@@ -192,6 +192,8 @@ The detailed owners are:
   acceptance: `docs/implementation/phase5a_contract.md`.
 - minimal Phase 5B.0 framing research team:
   `docs/implementation/phase5b_framing_team_contract.md`.
+- bounded Phase 5B.1 theorem challenge team:
+  `docs/implementation/phase5b_theorem_team_contract.md`.
 
 ## 5. Research control flow
 

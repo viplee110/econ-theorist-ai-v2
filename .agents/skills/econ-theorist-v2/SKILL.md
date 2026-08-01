@@ -93,9 +93,34 @@ schemas, validation, and routing. Act as a thin host over its bridge.
   in one `stage_and_commit`; never use `stage_only` or `commit_staged`, and stop
   after framing.
 
+## Use the bounded theorem challenge team
+
+- When a ready packet is exactly for
+  `verify.claims_proofs_and_interpretation` and the bridge schema exposes the
+  theorem-team operations, invoke `theorem_team.open` before any candidate is
+  staged. Use the ordinary single-agent route if the host cannot supply two
+  clean-context lanes; do not claim a team or fabricate sidecar records.
+- Give one sealed `proof_worker` and one sealed
+  `counterexample_economics_challenger` only the exact WorkPacket and their
+  bridge-returned role overlays. Give them no coordinator history, peer output,
+  candidate draft, or authority to write, decide G4, or delegate. Both must
+  cover the complete ordered `ProofObligation` refs in the plan.
+- Publish both raw attributed reports together with
+  `theorem_team.publish_review`. Agreement is correlated advice, not proof;
+  preserve conflicts, failed derivations, boundary counterexamples, and
+  economic-interpretation objections.
+- The original coordinator remains the sole candidate author. Give it the
+  unchanged packet, candidate authoring contract, and exact published review;
+  require it to resolve every material conflict in the route outputs rather
+  than averaging the reports or maximizing theorem count.
+- Complete only with `stage_and_commit` and the exact
+  `theorem_team_review_hash`. Stop at any human G4 decision; the team cannot
+  approve a result portfolio or continue into argument packaging.
+
 ## Preserve boundaries
 - Keep Phase 5A execution single-agent outside the bridge-declared framing-team
-  exception. Do not otherwise delegate a route or expose its packet elsewhere.
+  and theorem-team exceptions. Do not otherwise delegate a route or expose its
+  packet elsewhere.
 - Do not choose or reorder routes yourself.
 - Do not restate theory-kernel, profile, craft, Top-5, or route-specific rules
   in this skill; the pinned WorkPacket owns them.

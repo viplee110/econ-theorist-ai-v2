@@ -723,6 +723,11 @@ authority, dependencies, claim scope, provenance, privacy, or evaluation.
    mechanism/model worker, proof worker, counterexample worker, economics
    critic, and formal verifier only when their tasks are actually separable.
    One coordinator integrates results, and one canonical writer owns state.
+   The first active slice now applies this principle after G3 on
+   `verify.claims_proofs_and_interpretation`: one proof worker and one combined
+   counterexample/economics challenger cover the exact packet obligations, and
+   the original coordinator alone authors the canonical candidate. Broader
+   mechanism, model, and specialist-verifier teams remain future work.
 6. **Bounded multi-round researcher discussion.** Let the researcher ask the
    mentor and collaborators to compare, combine, revise, or reject ideas across
    a small number of scientifically meaningful turns. Each round must respond

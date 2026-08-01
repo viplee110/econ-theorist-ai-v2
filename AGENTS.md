@@ -223,6 +223,24 @@ apply to an activated team. General recovery after a team returns `kill` or
 exact-retry hardening for this narrow composite postdates the preserved
 `p5b1` captures and was not exercised by that pilot.
 
+The bounded Phase 5B.1 theorem challenge-team slice is now present for exactly
+`verify.claims_proofs_and_interpretation`. It exposes the unchanged immutable
+WorkPacket to one sealed proof worker and one sealed counterexample/economics
+challenger, binds both reports to the complete ordered ProofObligation tuple,
+and returns their raw attributed review to the original coordinator. The
+coordinator remains the sole candidate author; an activated team requires the
+exact review hash and `stage_and_commit`, while the existing route validator
+and human G4 authority remain unchanged. Plan, review, and completion records
+are noncanonical, immutable, and exactly retryable. This adds no canonical
+schema, route, selector, gate, automatic G4 decision, or evidence that multiple
+agents improve research quality. Do not delegate other post-framing routes,
+split one obligation across unbound workers, hide disagreements, or treat
+worker agreement as formal or economic validation. The normative owner is
+`docs/implementation/phase5b_theorem_team_contract.md`. Focused deterministic
+sidecar, bridge-guard, legacy-byte, and repair-loop checks pass. One fresh
+positive public bridge commit and any real multi-agent-benefit comparison
+remain post-merge evidence rather than an MVP publication blocker.
+
 The manuscript architecture now names an Economic Manuscript Quality Loop as
 a quality-control overlay on the existing compiler. New active-V8
 `compose.profiled_manuscript_unit` navigation uses the additive

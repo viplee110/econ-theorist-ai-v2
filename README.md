@@ -91,14 +91,17 @@ independently perform the search or prove its completeness. A topic-neutral
 pre-choice source card remains post-MVP work. Only after the bound choice may
 exactly one research worker receive the handoff.
 
-This is a bounded framing capability, not a claim that every route already runs
-an open-ended committee. Phase 5A routes outside that declared exception remain
-single-agent today; repeated post-framing mechanism, proof, counterexample, and
-manuscript teams are part of the post-MVP quality plan. Agreement among agents
-is correlated advice, not proof, novelty evidence, or a substitute for a human
-gate. See the
+After G3, the claim-verification route can also open one bounded theorem
+challenge team: a sealed proof worker attempts the exact ProofObligations while
+a sealed counterexample/economics challenger attacks their boundaries and
+interpretation. The original coordinator sees both raw reports and remains the
+only candidate author. This is still not an open-ended committee: other routes
+remain single-agent unless the bridge explicitly declares a team surface.
+Agreement among agents is correlated advice, not proof, novelty evidence, or a
+substitute for a human gate. See the
 [framing-team contract](docs/implementation/phase5b_framing_team_contract.md)
-for the exact current boundary.
+and [theorem-team contract](docs/implementation/phase5b_theorem_team_contract.md)
+for the exact current boundaries.
 
 ## 🧭 From an idea to a defensible argument in five moves
 
@@ -404,6 +407,9 @@ getting closer.**
   open
 - ✅ Paper IR and manuscript-unit routes with formal-fidelity, economic-reader,
   cold-reader, and profile/craft review
+- ✅ Optional exact-bound theorem challenge team on the post-G3 claim-verification
+  route, with one proof worker, one counterexample/economics challenger, and one
+  canonical coordinator
 - ✅ V8 pre-G1 framing-quality audit passing its deterministic acceptance suite
 
 ### Recorded public pilot evidence

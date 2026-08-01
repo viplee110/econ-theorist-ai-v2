@@ -39,6 +39,8 @@ def _fallback_operation(data: bytes) -> str:
             "framing_team.publish_panel",
             "framing_team.publish_choice_review",
             "framing_team.apply_user_turn",
+            "theorem_team.open",
+            "theorem_team.publish_review",
         }
         else "start_or_resume"
     )
