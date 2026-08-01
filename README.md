@@ -461,7 +461,7 @@ the thin IDE-facing instruction and orchestration layer, not the economics.
 | Host | Engine and CLI | Natural-language repository path | Current claim |
 |---|---|---|---|
 | **Codex** | Available | Prepared public `.agents` skill and bounded bridge | Recorded public path; recommended today |
-| **Claude Code** | Available through the same local CLI/protocol | Thin `CLAUDE.md` projection not yet shipped | Host-neutral core available; native parity not yet tested |
+| **Claude Code** | Available through the same local CLI/protocol | Root `CLAUDE.md` host projection | Core single-route adapter; team-bridge parity not yet claimed |
 | **Cursor** | Available through the same local CLI/protocol | Thin project-rule projection not yet shipped | Host-neutral core available; native parity not yet tested |
 
 ### Remaining after the core MVP
@@ -471,8 +471,9 @@ the thin IDE-facing instruction and orchestration layer, not the economics.
 - 🚧 Topic-neutral, evidence-bounded literature orientation before every framing
   choice; the current generic panel is source-blind and the source-aware slice is
   narrow and experimental
-- 🚧 Clean arbitrary-folder onboarding, positive private execution, and the thin
-  Claude Code/Cursor natural-language projections
+- 🚧 Clean arbitrary-folder onboarding, positive private execution, and native
+  Claude Code/Cursor host smoke tests; Claude's current adapter is core-only and
+  the Codex-specific team bridge is not claimed for it
 - 🧪 Held-out evidence on readability, scientific quality, tokens, wall time, and
   active researcher effort; these are evaluation questions, not missing core
   workflow objects
@@ -514,6 +515,7 @@ frame.question_and_benchmarks
 ```text
 econ-theorist-ai-v2/
 ├── .agents/skills/        Thin host projection for the prepared Codex path
+├── CLAUDE.md              Thin Claude Code projection over the machine protocol
 ├── routes/                Versioned research routes and instructions
 ├── schemas/               Canonical scientific and machine contracts
 ├── src/econ_theorist/     State kernel, validators, CLI, and machine facade
