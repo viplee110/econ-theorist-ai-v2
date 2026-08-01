@@ -5,12 +5,14 @@ from __future__ import annotations
 from pathlib import Path
 
 from ..codec import canonical_json_bytes, sha256_digest
+from ..policy import SELECTOR_VERSION_RESEARCH_MOVE_PILOT
 from ..runs import begin_run
 from ..runtime.layout import StoreLayout
 from ..runtime.lock import ExclusiveFileLock
 from ..runtime.replay import replay
 from .lifecycle import derive_all_run_execution_views, incomplete_run_views
 from .disposition import (
+    RunTerminalFailureReframeDispositionV3,
     assert_reframe_successor_allowed,
     valid_disposed_run_ids,
 )
@@ -167,6 +169,36 @@ def open_or_resume_run(
             matched_run_id, _ = _find_incomplete_match(
                 operational, active_views, candidate
             )
+            reframe_disposition = assert_reframe_successor_allowed(
+                layout,
+                operational,
+                views,
+                candidate,
+                run_input_brief,
+            )
+            pinned_selector = (
+                candidate.key.context_selector_version
+                if matched_run_id is not None
+                else None
+            )
+            if matched_run_id is None and isinstance(
+                reframe_disposition,
+                RunTerminalFailureReframeDispositionV3,
+            ):
+                pinned_selector = candidate.key.context_selector_version
+            if (
+                matched_run_id is None
+                and candidate.key.context_selector_version
+                == SELECTOR_VERSION_RESEARCH_MOVE_PILOT
+            ):
+                if not isinstance(
+                    reframe_disposition,
+                    RunTerminalFailureReframeDispositionV3,
+                ):
+                    raise ActiveRunConflict(
+                        "research-move pilot requires its exact terminal reframe disposition"
+                    )
+                pinned_selector = SELECTOR_VERSION_RESEARCH_MOVE_PILOT
             legal, _ = enumerate_navigation_candidates(
                 layout,
                 snapshot,
@@ -176,23 +208,12 @@ def open_or_resume_run(
                 budget_units=candidate.key.context_budget,
                 requested_route_ids=(candidate.key.route_id,),
                 run_input_brief=run_input_brief,
-                pinned_context_selector_version=(
-                    candidate.key.context_selector_version
-                    if matched_run_id is not None
-                    else None
-                ),
+                pinned_context_selector_version=pinned_selector,
             )
             if candidate not in legal:
                 raise ActiveRunConflict(
                     "exact navigation candidate no longer passes the current validator"
                 )
-            assert_reframe_successor_allowed(
-                layout,
-                operational,
-                views,
-                candidate,
-                run_input_brief,
-            )
             deterministic_run_id, context_id = _deterministic_ids(
                 snapshot.project_id, operation_key, candidate.candidate_digest
             )

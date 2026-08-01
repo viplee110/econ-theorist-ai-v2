@@ -192,10 +192,27 @@ zero-loss statement before extracting a simple structure. Both are
 `paper-chain-derived`; neither may be presented as a scholar's stated personal
 habit. The exact audit is
 `review_outputs/phase5b_research_move_contribution_structure_source_audit_v4.md`.
-V4 is checkout-only and `development_disabled`: do not package, retrieve, rank,
-select, expose through WorkPackets, pilot, activate, or grant it route,
-canonical-write, novelty, importance, welfare, venue, or human-gate authority
-without separate researcher authorization.
+The V4 source release remains checkout-only and `development_disabled`: do not
+package, retrieve, rank, select, activate, or grant it route, canonical-write,
+novelty, importance, welfare, venue, or human-gate authority. A separately
+authorized, default-closed pilot selector may project only the exact audited
+`Market-Operation Primitive` and `Question Reframer` cards into one existing
+`revise_framing` successor WorkPacket; it is not ordinary or fresh-framing
+availability.
+
+That one-time pilot completed on 2026-08-01 in the existing AI-agent-trading
+project. It followed an exact terminal V8 `failed_no_effect` disposition, used
+one mentor, two sealed collaborators, one bounded source-aware review, the
+researcher's explicit selection of `First Mapping Failure` for the pilot but
+not as G1 approval, and one terminal research worker. The proposed-L1 framing
+candidate committed without repair at head
+`d246a369e2c0cf14da8ac01c815662a7535a189dbf610623b94ffab9b50acc63`
+with host receipt
+`8cdf29999d612a30c9d257a06a88254d38cc47c9e8084787d19c79fb01c7f495`.
+No G1 decision occurred. This developer-assisted run establishes only that the
+exact opt-in projection and recovery path can complete one real framing route;
+it does not establish ResearchMove benefit, novelty, research quality, lower
+user effort, provider independence, clean first use, or default activation.
 
 The framing-only Phase 5B.0 contract, noncanonical binding/persistence module,
 and thin public Codex bridge projection are now present. They bind one mentor
@@ -229,8 +246,8 @@ not treat this as provider-independent delivery proof, multi-agent benefit,
 user-effort reduction, or research-quality evidence. The bounded scientific
 probe and Scheme-B follow-up are now complete as described above; they do not
 upgrade the original pilot's M/T/U/Q verdicts. A narrow bridge-level
-`reframe.repair` composite may dispose only an untouched, empty-focus
-framing-v2 run and open its exact dependency repair. Its operational
+`reframe.repair` composite may dispose an untouched, empty-focus framing-v2 run
+and open its exact dependency repair. Its operational
 disposition is bound to the exact source delivery, direct-user capture, repair
 target, successor brief, and navigation candidate; it is recoverable and
 exactly retryable, but it is not a canonical scientific decision. It does not
@@ -238,6 +255,17 @@ apply to an activated team. General recovery after a team returns `kill` or
 `new_brief_required` remains open and must still stop. The crash-recovery and
 exact-retry hardening for this narrow composite postdates the preserved
 `p5b1` captures and was not exercised by that pilot.
+
+The additive terminal variant is even narrower: it accepts only the unique
+active staged `audit.framing_economics@8` run whose current staged digest is
+bound by the latest authorized exact `failed_no_effect` finish receipt, records
+a head-neutral operational disposition, and opens one exact empty-focus
+`frame.question_and_benchmarks@2` successor. It rejects other routes, stale
+deliveries or candidates, missing terminal evidence, and activated teams. Only
+this disposition may carry the separately explicit
+`research_move_pilot.v1` opt-in; raw selector requests remain closed. The
+2026-08-01 pilot exercised this path, but it does not turn terminal reframe into
+general recovery or a canonical scientific decision.
 
 The bounded Phase 5B.1 theorem challenge-team slice is now present for exactly
 `verify.claims_proofs_and_interpretation`. It exposes the unchanged immutable
@@ -322,7 +350,9 @@ for a two-period separation-or-reduction revision; it also identifies omitted
 dynamic false-name and identity-persistence literature. See
 `review_outputs/phase5b0_ai_agent_trading_source_aware_choice_public_pilot_r5/evaluation_summary.md`.
 One new neutral-root public pilot remains required before claiming clean
-end-to-end input fidelity, researcher usefulness, or clean first use.
+end-to-end input fidelity, researcher usefulness, or clean first use. The later
+2026-08-01 existing-project ResearchMove reframe pilot is developer-assisted
+and does not close this requirement.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or

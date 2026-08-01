@@ -74,6 +74,9 @@ SELECTOR_VERSION_DECOMPOSITION_REFRESH = (
     "context_selector.decomposition_refresh.v2"
 )
 SELECTOR_VERSION_MANUSCRIPT_QUALITY = "context_selector.manuscript_quality.v1"
+SELECTOR_VERSION_RESEARCH_MOVE_PILOT = (
+    "context_selector.research_move_pilot.v1"
+)
 # Frozen compatibility alias used by historical v1/v2 validation paths.
 SELECTOR_VERSION = SELECTOR_VERSION_V1
 KERNEL_VERSION = "theory_kernel.v1"
@@ -775,6 +778,11 @@ def selector_version_is_supported(route: RouteSpecLike, version: str) -> bool:
         and route.route_id == "compose.profiled_manuscript_unit"
     ):
         supported.add(SELECTOR_VERSION_MANUSCRIPT_QUALITY)
+    if (
+        isinstance(route, RouteSpecV8)
+        and route.route_id == "frame.question_and_benchmarks"
+    ):
+        supported.add(SELECTOR_VERSION_RESEARCH_MOVE_PILOT)
     return version in supported
 
 

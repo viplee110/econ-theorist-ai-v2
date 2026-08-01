@@ -114,6 +114,17 @@ class _CompletionOperationRecordV1(StrictModel):
     result: CandidateCompletionResultV1
 
 
+class TerminalHostFinishEvidenceV1(StrictModel):
+    """Read-only exact evidence for a terminal host finish."""
+
+    evidence_schema: Literal[
+        "econ-theorist/terminal-host-finish-evidence/v1"
+    ] = "econ-theorist/terminal-host-finish-evidence/v1"
+    route_run_id: str = Field(min_length=1)
+    receipt_hash: Digest
+    receipt: HostOperationReceiptV1
+
+
 class _CandidateCompletionStartV1(StrictModel):
     start_schema: Literal["econ-theorist/candidate-completion-start/v1"] = (
         "econ-theorist/candidate-completion-start/v1"
@@ -328,6 +339,87 @@ def _persist_operation_result(
     if installed != receipt_hash:  # pragma: no cover - hash invariant
         raise CompletionError("host receipt address changed during publication")
     return result
+
+
+def read_terminal_host_finish_evidence(
+    operational: ProjectOperationalLayout,
+    route_run_id: str,
+) -> tuple[TerminalHostFinishEvidenceV1, ...]:
+    """Read exact no-effect/terminal/cancelled finish records without mutation."""
+
+    directory = _run_root(operational, route_run_id) / "completion-operations"
+    if not path_entry_exists(directory):
+        return ()
+    try:
+        assert_safe_store_path(
+            operational.project_root,
+            directory,
+            expected="directory",
+            allow_missing=False,
+        )
+        paths = tuple(sorted(path for path in directory.iterdir() if path.is_file()))
+    except (OSError, UnsafeStorePath) as exc:
+        raise CompletionError("cannot inspect host finish evidence") from exc
+
+    evidence: list[TerminalHostFinishEvidenceV1] = []
+    for path in paths:
+        try:
+            assert_safe_store_path(
+                operational.project_root,
+                path,
+                expected="file",
+                allow_missing=False,
+            )
+            data = path.read_bytes()
+            record = _CompletionOperationRecordV1.model_validate_json(
+                data, strict=True
+            )
+        except (OSError, ValueError, UnsafeStorePath) as exc:
+            raise CompletionError("completion operation record is invalid") from exc
+        if canonical_json_bytes(record) != data:
+            raise CompletionError("completion operation record is not canonical JSON")
+        expected_path = _operation_record_path(
+            operational, route_run_id, record.operation_key
+        )
+        if (
+            record.route_run_id != route_run_id
+            or path.name != expected_path.name
+            or record.receipt.operation_key != record.operation_key
+        ):
+            raise CompletionError("completion operation record targets another run")
+        if record.invocation != "host.finish":
+            continue
+        if record.receipt.completion_status not in {
+            "failed_no_effect",
+            "failed_terminal",
+            "cancelled",
+        }:
+            continue
+        if (
+            record.result.status != "recorded_failure"
+            or record.result.route_run_id != route_run_id
+            or record.result.candidate_digest != record.receipt.candidate_digest
+            or record.result.transaction_digest is not None
+            or record.result.head_before != record.receipt.head_before
+            or record.result.head_after != record.receipt.head_after
+            or record.receipt_hash
+            != sha256_digest(canonical_json_bytes(record.receipt))
+            or record.result.host_receipt_hash != record.receipt_hash
+        ):
+            raise CompletionError("terminal host finish evidence is not self-bound")
+        evidence.append(
+            TerminalHostFinishEvidenceV1(
+                route_run_id=route_run_id,
+                receipt_hash=record.receipt_hash,
+                receipt=record.receipt,
+            )
+        )
+    return tuple(
+        sorted(
+            evidence,
+            key=lambda item: (item.receipt.completed_at, item.receipt_hash),
+        )
+    )
 
 
 def _same_path(left: Path, right: Path) -> bool:

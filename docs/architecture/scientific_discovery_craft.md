@@ -519,7 +519,8 @@ deserve early retrieval. The smallest sound implementation is:
 
 After source audit, a disabled-by-default experimental selector and compact
 projection may be added only to support a separately authorized opt-in pilot.
-The current batch contains neither retrieval nor selection code. Automatic
+At the initial delivery checkpoint the batch contained neither retrieval nor
+selection code. Automatic
 route selection and production package-resource wiring require positive
 held-out replication and the experimental end-to-end evidence. Neither mode
 adds a canonical entity, schema, Decision, gate, route, or navigation state;
@@ -531,8 +532,8 @@ Hunter`, and `Analogical Structure Transfer — First Mapping Failure`. Eleven
 primary-source snapshots were access-checked and hash-bound; only citations,
 hashes, derived functional properties, biases, and non-applicability remain
 in the repository. The source-audited release stays disabled and outside
-evaluation holdouts. The pilot part of step 3 has not begun because no pilot
-authorization was granted.
+evaluation holdouts. At that checkpoint the pilot part of step 3 had not begun
+because no pilot authorization had been granted.
 
 The researcher later authorized one additive, still-disabled
 discovery-distillation batch in `craft/research_corpus.v2.json`. It preserves
@@ -572,9 +573,27 @@ zero-loss simple class whose economic structure is explicit. Both are
 `paper-chain-derived`; neither is reported as a scholar's personal habit. The
 exact [v4 source audit](../../review_outputs/phase5b_research_move_contribution_structure_source_audit_v4.md)
 records source hashes, contradictory simplicity concepts, and
-non-applicability. V4 remains checkout-only and `development_disabled`, with no
-runtime selector, WorkPacket exposure, pilot, route disposition, or canonical
-authority.
+non-applicability. The audited V4 source release remains checkout-only and
+`development_disabled`; it grants no route disposition, canonical authority,
+novelty, importance, welfare, venue, or human-gate authority.
+
+On 2026-08-01 the researcher separately authorized one default-closed,
+existing-project reframe pilot after an exact V8 `failed_no_effect` framing
+audit. The additive `context_selector.research_move_pilot.v1` projected only
+`Market-Operation Primitive` and `Question Reframer` from the exact V4 release
+into one `frame.question_and_benchmarks@2` WorkPacket. It was not available to
+fresh framing or ordinary continuation. In the AI-agent-trading project, the
+mentor and two collaborators produced an immutable panel, a bounded source
+orientation found high absorption risk, and the researcher selected the
+concrete `First Mapping Failure` lane expressly for the pilot and expressly not
+as G1 approval. One terminal research worker then committed the proposed-L1
+framing candidate without repair at head
+`d246a369e2c0cf14da8ac01c815662a7535a189dbf610623b94ffab9b50acc63`;
+no G1 decision occurred. This is developer-assisted evidence that the opt-in
+projection and terminal reframe path can complete one real framing route. It
+does not establish ResearchMove benefit, novelty, research quality, user-effort
+reduction, provider independence, clean first use, or grounds for default
+activation. The selector therefore remains checkout-only and default closed.
 
 One practical exploration cadence uses batches of about eight scholars or
 twenty sources. An initial saturation signal is two consecutive batches with

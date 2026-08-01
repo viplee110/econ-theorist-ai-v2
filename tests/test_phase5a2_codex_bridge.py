@@ -18,9 +18,11 @@ from econ_theorist.codex_bridge import (
     CodexBridge,
     CodexBridgeResponseV1,
     CodexCompleteRequestV1,
+    CodexDirectUserCaptureV1,
     CodexFinishRequestV1,
     CodexSessionV1,
     CodexStartRequestV1,
+    CodexTerminalFailureReframeV1,
     codex_bridge_schema,
 )
 from econ_theorist.candidate_contract import candidate_authoring_contract_hash
@@ -28,13 +30,18 @@ from econ_theorist.codex_cli import invoke_codex_bytes
 from econ_theorist.machine.binding import bind_or_initialize_project
 from econ_theorist.machine.binding import _deterministic_genesis_ids
 from econ_theorist.machine.egress import _automatic_delivery_subject, _events
+from econ_theorist.machine.disposition import (
+    RunTerminalFailureReframeDispositionV3,
+    read_run_reframe_disposition,
+)
+from econ_theorist.machine.lifecycle import derive_run_execution_view
 from econ_theorist.machine.models import DeliveryEnvelopeV1, EgressPlanV1, RunInputBriefV1
-from econ_theorist.machine.navigation import plan_next
+from econ_theorist.machine.navigation import enumerate_navigation_candidates, plan_next
 from econ_theorist.machine.operational import (
     ContentAddressedOperationalStore,
     ProjectOperationalLayout,
 )
-from econ_theorist.machine.run_service import open_or_resume_run
+from econ_theorist.machine.run_service import ActiveRunConflict, open_or_resume_run
 from econ_theorist.models import (
     Actor,
     CreateEntityOp,
@@ -52,6 +59,7 @@ from econ_theorist.project import _genesis_transaction
 from econ_theorist.policy import (
     SELECTOR_VERSION_DECOMPOSITION_REFRESH,
     SELECTOR_VERSION_DECOMPOSITION_REFRESH_V1,
+    SELECTOR_VERSION_RESEARCH_MOVE_PILOT,
     SELECTOR_VERSION_V1,
 )
 from econ_theorist.runs import read_context, read_run, transaction_bindings
@@ -389,6 +397,159 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
         )
         return operational, envelope, plan
 
+    def _advance_to_audit_ready(self) -> CodexBridgeResponseV1:
+        framing = self.bridge.invoke(self._start_request())
+        self.assertEqual(framing.outcome, "ready", framing)
+        framing_path = self.root / framing.candidate_logical_path
+        framing_path.parent.mkdir(parents=True, exist_ok=True)
+        framing_path.write_text(
+            json.dumps(
+                self._framing_transaction(framing.route_run_id).model_dump(
+                    mode="json"
+                ),
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        framing_completed = self.bridge.invoke(
+            CodexCompleteRequestV1(
+                project_root=str(self.root),
+                route_run_id=framing.route_run_id,
+                work_packet_hash=framing.work_packet_hash,
+                delivery_envelope_hash=framing.delivery_envelope_hash,
+            )
+        )
+        self.assertEqual(framing_completed.outcome, "committed", framing_completed)
+
+        decomposition = self.bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(self.root),
+                requested_route_id="decompose.primitives",
+                session=self.session.model_copy(
+                    update={"session_id": "codex-terminal-reframe-decomposition"}
+                ),
+            )
+        )
+        self.assertEqual(decomposition.outcome, "ready", decomposition)
+        decomposition_path = self.root / decomposition.candidate_logical_path
+        decomposition_path.write_text(
+            json.dumps(
+                self._decomposition_transaction(
+                    decomposition.route_run_id
+                ).model_dump(mode="json"),
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        decomposition_completed = self.bridge.invoke(
+            CodexCompleteRequestV1(
+                project_root=str(self.root),
+                route_run_id=decomposition.route_run_id,
+                work_packet_hash=decomposition.work_packet_hash,
+                delivery_envelope_hash=decomposition.delivery_envelope_hash,
+            )
+        )
+        self.assertEqual(
+            decomposition_completed.outcome,
+            "committed",
+            decomposition_completed,
+        )
+
+        audit = self.bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(self.root),
+                budget_units=10_000,
+                session=self.session.model_copy(
+                    update={"session_id": "codex-terminal-reframe-audit"}
+                ),
+            )
+        )
+        self.assertEqual(audit.outcome, "ready", audit)
+        self.assertEqual(audit.work_packet.route_id, "audit.framing_economics")
+        self.assertEqual(audit.work_packet.route_version, 8)
+        return audit
+
+    def _stage_invalid_route_candidate(
+        self,
+        ready: CodexBridgeResponseV1,
+        *,
+        variant: str = "primary",
+    ) -> str:
+        layout = StoreLayout.at(self.root)
+        snapshot = replay(layout)
+        run = read_run(layout, ready.route_run_id)
+        evidence_entity = next(
+            (
+                item
+                for item in snapshot.entity_versions
+                if item.entity_type == "ResearchQuestion"
+                and snapshot.current_entities.get(item.entity_id) == item.version
+            ),
+            next(
+                item
+                for item in snapshot.entity_versions
+                if item.entity_id == snapshot.project_id
+                and snapshot.current_entities.get(item.entity_id) == item.version
+            ),
+        )
+        evidence_ref = EntityVersionRef(
+            entity_id=evidence_entity.entity_id, version=evidence_entity.version
+        )
+        invalid = Transaction(
+            **transaction_bindings(layout, ready.route_run_id),
+            transaction_id=f"transaction.invalid.{variant}.{ready.route_run_id}",
+            origin="route_run",
+            project_id=snapshot.project_id,
+            base_revision=run.base_revision,
+            route_run_id=run.route_run_id,
+            route_id=run.route_id,
+            actor=run.actor,
+            intent="Exercise one rejected route candidate.",
+            operations=(
+                RecordRouteOutcomeOp(
+                    outcome=RouteOutcome(
+                        route_run_id=run.route_run_id,
+                        route_id=run.route_id,
+                        outcome="completed_with_candidate",
+                        rationale=(
+                            "This candidate intentionally omits its required "
+                            f"route object ({variant})."
+                        ),
+                        candidate_refs=(evidence_ref,),
+                        privacy="public",
+                        access_compartments=("project_research",),
+                    )
+                ),
+            ),
+            evidence_refs=(evidence_ref,),
+            privacy="public",
+            access_compartments=("project_research",),
+            created_at=run.created_at,
+            parent_transaction_hash=run.base_revision,
+        )
+        candidate_path = self.root / ready.candidate_logical_path
+        candidate_path.parent.mkdir(parents=True, exist_ok=True)
+        candidate_path.write_text(
+            json.dumps(invalid.model_dump(mode="json"), indent=2) + "\n",
+            encoding="utf-8",
+        )
+        rejected = self.bridge.invoke(
+            CodexCompleteRequestV1(
+                project_root=str(self.root),
+                route_run_id=ready.route_run_id,
+                work_packet_hash=ready.work_packet_hash,
+                delivery_envelope_hash=ready.delivery_envelope_hash,
+            )
+        )
+        self.assertEqual(rejected.outcome, "error", rejected)
+        digest = sha256_digest(transaction_bytes(invalid))
+        view = derive_run_execution_view(layout, replay(layout), ready.route_run_id)
+        self.assertEqual(view.lifecycle, "staged")
+        self.assertEqual(view.candidate_digest, digest)
+        return digest
+
     def _assert_historical_decomposition_selector_resumes(
         self, selector_version: str
     ) -> None:
@@ -663,6 +824,81 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
             SELECTOR_VERSION_DECOMPOSITION_REFRESH_V1
         )
 
+    def test_raw_pilot_selector_cannot_open_without_terminal_disposition(
+        self,
+    ) -> None:
+        framing = self.bridge.invoke(self._start_request())
+        self.assertEqual(framing.outcome, "ready", framing)
+        candidate_path = self.root / framing.candidate_logical_path
+        candidate_path.parent.mkdir(parents=True, exist_ok=True)
+        candidate_path.write_text(
+            json.dumps(
+                self._framing_transaction(framing.route_run_id).model_dump(
+                    mode="json"
+                ),
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        committed = self.bridge.invoke(
+            CodexCompleteRequestV1(
+                project_root=str(self.root),
+                route_run_id=framing.route_run_id,
+                work_packet_hash=framing.work_packet_hash,
+                delivery_envelope_hash=framing.delivery_envelope_hash,
+            )
+        )
+        self.assertEqual(committed.outcome, "committed", committed)
+
+        layout = StoreLayout.at(self.root)
+        snapshot = replay(layout)
+        brief = RunInputBriefV1(
+            project_id=snapshot.project_id,
+            base_head=snapshot.head,
+            requested_scope="Try a raw pilot reframe.",
+            framing_intent="This must fail without an exact terminal disposition.",
+            privacy="public",
+            compartments=("project_research",),
+            actor_role="scientific_agent",
+        )
+        candidates, _ = enumerate_navigation_candidates(
+            layout,
+            snapshot,
+            actor=Actor(kind="agent", actor_id="scientific_agent"),
+            compartments=("project_research",),
+            privacy_clearance="public",
+            budget_units=10_000,
+            requested_route_ids=("frame.question_and_benchmarks",),
+            run_input_brief=brief,
+            pinned_context_selector_version=(
+                SELECTOR_VERSION_RESEARCH_MOVE_PILOT
+            ),
+        )
+        self.assertEqual(len(candidates), 1)
+        operational = ProjectOperationalLayout.at(layout)
+        existing_runs = (
+            set()
+            if not operational.runs.exists()
+            else {item.name for item in operational.runs.iterdir()}
+        )
+        with self.assertRaisesRegex(
+            ActiveRunConflict,
+            "research-move pilot requires its exact terminal reframe disposition",
+        ):
+            open_or_resume_run(
+                layout,
+                operation_key="raw.pilot.without.disposition",
+                reserved_at=NOW,
+                candidate=candidates[0],
+                run_input_brief=brief,
+                operational=operational,
+            )
+        self.assertEqual(replay(layout).head, snapshot.head)
+        self.assertEqual(
+            {item.name for item in operational.runs.iterdir()}, existing_runs
+        )
+
     def test_explicit_reframe_after_commit_targets_framing_route(self) -> None:
         ready = self.bridge.invoke(self._start_request())
         self.assertEqual(ready.outcome, "ready", ready)
@@ -874,6 +1110,251 @@ class Phase5A2CodexBridgeTests(unittest.TestCase):
         )
         self.assertEqual(committed.outcome, "committed", committed)
         self.assertEqual(replay(layout).head, committed.head)
+
+    def test_failed_audit_terminal_reframe_is_exact_retryable_and_head_neutral(
+        self,
+    ) -> None:
+        audit = self._advance_to_audit_ready()
+        layout = StoreLayout.at(self.root)
+        operational = ProjectOperationalLayout.at(layout)
+        original_head = replay(layout).head
+        candidate_digest = self._stage_invalid_route_candidate(audit)
+        self.assertEqual(replay(layout).head, original_head)
+
+        terminal_failure = self.bridge.invoke(
+            CodexFinishRequestV1(
+                project_root=str(self.root),
+                route_run_id=audit.route_run_id,
+                work_packet_hash=audit.work_packet_hash,
+                delivery_envelope_hash=audit.delivery_envelope_hash,
+                completion_status="failed_terminal",
+                warnings=("audit_validation_exhausted",),
+                expected_candidate_digest=candidate_digest,
+            )
+        )
+        self.assertEqual(terminal_failure.outcome, "recorded_failure")
+        session = self.session.model_copy(
+            update={"session_id": "codex-terminal-reframe-pilot"}
+        )
+
+        def reframe_request(receipt_hash: str) -> CodexStartRequestV1:
+            return CodexStartRequestV1(
+                project_root=str(self.root),
+                requested_scope=(
+                    "Revise the current question after the failed framing audit."
+                ),
+                framing_intent=(
+                    "Name the market operation and test absorption by the exact benchmark."
+                ),
+                budget_units=10_000,
+                terminal_reframe=CodexTerminalFailureReframeV1(
+                    source_route_run_id=audit.route_run_id,
+                    source_host_receipt_hash=receipt_hash,
+                    capture=CodexDirectUserCaptureV1(
+                        session_id=session.session_id,
+                        researcher_id="researcher",
+                        captured_at=NOW,
+                        text="好的，继续",
+                    ),
+                ),
+                research_move_pilot="research_move_pilot.v1",
+                session=session,
+            )
+
+        wrong_status = self.bridge.invoke(
+            reframe_request(terminal_failure.completion.host_receipt_hash)
+        )
+        self.assertEqual(wrong_status.outcome, "error", wrong_status)
+        self.assertIn(
+            "zero canonical effect", wrong_status.diagnostics[0].message
+        )
+        source_root = operational.runs / audit.route_run_id
+        disposition_path = source_root / "reframe-disposition.json"
+        self.assertFalse(disposition_path.exists())
+
+        superseded_no_effect = self.bridge.invoke(
+            CodexFinishRequestV1(
+                project_root=str(self.root),
+                route_run_id=audit.route_run_id,
+                work_packet_hash=audit.work_packet_hash,
+                delivery_envelope_hash=audit.delivery_envelope_hash,
+                completion_status="failed_no_effect",
+                warnings=("audit_validation_exhausted",),
+                expected_candidate_digest=candidate_digest,
+            )
+        )
+        self.assertEqual(
+            superseded_no_effect.outcome,
+            "recorded_failure",
+            superseded_no_effect,
+        )
+        later_bridge = CodexBridge(
+            trusted_clock=lambda: "2026-07-14T00:00:01Z",
+            preproject_operational_home=self.anchor / "preproject-operations",
+        )
+        redelivered = later_bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(self.root),
+                session=self.session.model_copy(
+                    update={"session_id": "codex-terminal-reframe-redelivery"}
+                ),
+            )
+        )
+        self.assertEqual(redelivered.outcome, "ready", redelivered)
+        self.assertEqual(redelivered.route_run_id, audit.route_run_id)
+        self.assertNotEqual(
+            redelivered.delivery_envelope_hash,
+            audit.delivery_envelope_hash,
+        )
+        stale_delivery = self.bridge.invoke(
+            reframe_request(
+                superseded_no_effect.completion.host_receipt_hash
+            )
+        )
+        self.assertEqual(stale_delivery.outcome, "error", stale_delivery)
+        self.assertIn("superseded", stale_delivery.diagnostics[0].message)
+
+        replaced_digest = self._stage_invalid_route_candidate(
+            redelivered, variant="replacement"
+        )
+        replaced_finish = later_bridge.invoke(
+            CodexFinishRequestV1(
+                project_root=str(self.root),
+                route_run_id=redelivered.route_run_id,
+                work_packet_hash=redelivered.work_packet_hash,
+                delivery_envelope_hash=redelivered.delivery_envelope_hash,
+                completion_status="failed_no_effect",
+                warnings=("audit_validation_exhausted",),
+                expected_candidate_digest=replaced_digest,
+            )
+        )
+        self.assertEqual(replaced_finish.outcome, "recorded_failure")
+        candidate_digest = self._stage_invalid_route_candidate(
+            redelivered, variant="current"
+        )
+        stale_candidate = self.bridge.invoke(
+            reframe_request(replaced_finish.completion.host_receipt_hash)
+        )
+        self.assertEqual(stale_candidate.outcome, "error", stale_candidate)
+        self.assertIn(
+            "zero canonical effect", stale_candidate.diagnostics[0].message
+        )
+        no_effect = later_bridge.invoke(
+            CodexFinishRequestV1(
+                project_root=str(self.root),
+                route_run_id=redelivered.route_run_id,
+                work_packet_hash=redelivered.work_packet_hash,
+                delivery_envelope_hash=redelivered.delivery_envelope_hash,
+                completion_status="failed_no_effect",
+                warnings=("audit_validation_exhausted",),
+                expected_candidate_digest=candidate_digest,
+            )
+        )
+        self.assertEqual(no_effect.outcome, "recorded_failure", no_effect)
+        forged = self.bridge.invoke(reframe_request("a" * 64))
+        self.assertEqual(forged.outcome, "error", forged)
+        self.assertFalse(disposition_path.exists())
+
+        request = reframe_request(no_effect.completion.host_receipt_hash)
+        reframed = later_bridge.invoke(request)
+        self.assertEqual(reframed.outcome, "ready", reframed)
+        self.assertTrue(reframed.mutated)
+        self.assertEqual(replay(layout).head, original_head)
+        self.assertEqual(
+            reframed.work_packet.route_id, "frame.question_and_benchmarks"
+        )
+        self.assertEqual(reframed.work_packet.route_version, 2)
+        self.assertEqual(reframed.work_packet.focus_refs, ())
+        self.assertEqual(
+            reframed.work_packet.context_selector_version,
+            SELECTOR_VERSION_RESEARCH_MOVE_PILOT,
+        )
+        self.assertIn(
+            "research_move_pilot", reframed.work_packet.compiled_context
+        )
+        disposition = read_run_reframe_disposition(
+            operational, audit.route_run_id
+        )
+        self.assertIsInstance(
+            disposition, RunTerminalFailureReframeDispositionV3
+        )
+        assert isinstance(disposition, RunTerminalFailureReframeDispositionV3)
+        self.assertEqual(
+            disposition.terminal_finish_receipt_hash,
+            no_effect.completion.host_receipt_hash,
+        )
+        self.assertEqual(
+            disposition.terminal_candidate_digest, candidate_digest
+        )
+        self.assertEqual(
+            disposition.successor_navigation_candidate_digest,
+            reframed.work_packet.navigation_candidate_digest,
+        )
+
+        disposition_bytes = disposition_path.read_bytes()
+        run_names = {item.name for item in operational.runs.iterdir()}
+        retried = later_bridge.invoke(request)
+        self.assertEqual(retried, reframed)
+        self.assertEqual(disposition_path.read_bytes(), disposition_bytes)
+        self.assertEqual(
+            {item.name for item in operational.runs.iterdir()}, run_names
+        )
+        self.assertEqual(replay(layout).head, original_head)
+
+    def test_terminal_reframe_rejects_non_audit_v8_source(self) -> None:
+        ready = self.bridge.invoke(self._start_request())
+        self.assertEqual(ready.outcome, "ready", ready)
+        layout = StoreLayout.at(self.root)
+        original_head = replay(layout).head
+        candidate_digest = self._stage_invalid_route_candidate(ready)
+        no_effect = self.bridge.invoke(
+            CodexFinishRequestV1(
+                project_root=str(self.root),
+                route_run_id=ready.route_run_id,
+                work_packet_hash=ready.work_packet_hash,
+                delivery_envelope_hash=ready.delivery_envelope_hash,
+                completion_status="failed_no_effect",
+                warnings=("framing_validation_exhausted",),
+                expected_candidate_digest=candidate_digest,
+            )
+        )
+        self.assertEqual(no_effect.outcome, "recorded_failure", no_effect)
+        session = self.session.model_copy(
+            update={"session_id": "codex-terminal-reframe-wrong-source"}
+        )
+        rejected = self.bridge.invoke(
+            CodexStartRequestV1(
+                project_root=str(self.root),
+                requested_scope="Replace the failed fresh framing.",
+                framing_intent="Open one exact new framing brief.",
+                terminal_reframe=CodexTerminalFailureReframeV1(
+                    source_route_run_id=ready.route_run_id,
+                    source_host_receipt_hash=(
+                        no_effect.completion.host_receipt_hash
+                    ),
+                    capture=CodexDirectUserCaptureV1(
+                        session_id=session.session_id,
+                        researcher_id="researcher",
+                        captured_at=NOW,
+                        text="好的，继续",
+                    ),
+                ),
+                session=session,
+            )
+        )
+        self.assertEqual(rejected.outcome, "error", rejected)
+        self.assertIn(
+            "source run bindings are inconsistent",
+            rejected.diagnostics[0].message,
+        )
+        self.assertFalse(
+            (
+                ProjectOperationalLayout.at(layout).runs
+                / ready.route_run_id
+                / "reframe-disposition.json"
+            ).exists()
+        )
+        self.assertEqual(replay(layout).head, original_head)
 
     def test_omitted_decomposition_budget_and_explicit_audit_cap_are_exact(self) -> None:
         layout = StoreLayout.at(self.root)

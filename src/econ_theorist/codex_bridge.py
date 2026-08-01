@@ -75,6 +75,7 @@ from .theorem_team import (
 )
 from .ids import utc_now
 from .models import Actor, Digest, EntityVersionRef, StableId, StrictModel
+from .policy import SELECTOR_VERSION_RESEARCH_MOVE_PILOT
 from .machine.dispatcher import (
     MachineDispatcher,
     TrustedHostCompletionObservation,
@@ -86,7 +87,9 @@ from .machine.completion import (
     candidate_source_digest,
 )
 from .machine.disposition import (
+    RunTerminalFailureReframeDispositionV3,
     assert_run_not_disposed,
+    dispose_terminal_failure_for_reframe,
     dispose_run_for_reframe,
     read_reframe_bridge_result_bytes,
     read_run_reframe_disposition,
@@ -190,6 +193,17 @@ class CodexSessionV1(StrictModel):
         return self
 
 
+class CodexDirectUserCaptureV1(StrictModel):
+    capture_schema: Literal[
+        "econ-theorist/codex-direct-user-capture/v1"
+    ] = "econ-theorist/codex-direct-user-capture/v1"
+    source: Literal["current_user_turn"] = "current_user_turn"
+    session_id: NonEmpty
+    researcher_id: StableId
+    captured_at: NonEmpty
+    text: NonEmpty
+
+
 class CodexFramingWorkerObservationV1(StrictModel):
     """Observable worker identity attached to a declared team completion."""
 
@@ -199,6 +213,17 @@ class CodexFramingWorkerObservationV1(StrictModel):
     lane_id: Literal["research_worker"] = "research_worker"
     agent_label: StableId
     model_observation: NonEmpty
+
+
+class CodexTerminalFailureReframeV1(StrictModel):
+    """Exact current-turn authority to abandon one safely failed audit run."""
+
+    binding_schema: Literal[
+        "econ-theorist/codex-terminal-failure-reframe/v1"
+    ] = "econ-theorist/codex-terminal-failure-reframe/v1"
+    source_route_run_id: NonEmpty
+    source_host_receipt_hash: Digest
+    capture: CodexDirectUserCaptureV1
 
 
 class CodexStartRequestV1(StrictModel):
@@ -233,7 +258,30 @@ class CodexStartRequestV1(StrictModel):
     )
     profile_request: NonEmpty | None = None
     budget_units: Annotated[int, Field(ge=1)] | None = None
+    terminal_reframe: CodexTerminalFailureReframeV1 | None = Field(
+        default=None,
+        description=(
+            "Exact failed audit run, terminal no-effect receipt, and current "
+            "user capture authorizing one explicit reframe."
+        ),
+    )
+    research_move_pilot: Literal["research_move_pilot.v1"] | None = Field(
+        default=None,
+        description=(
+            "Explicit single-run opt-in to the checkout-only ResearchMove "
+            "pilot selector. Omit for every ordinary run."
+        ),
+    )
     session: CodexSessionV1
+
+    @model_serializer(mode="wrap")
+    def _preserve_pre_pilot_request_bytes(self, handler: Any) -> Any:
+        data = handler(self)
+        if self.terminal_reframe is None:
+            data.pop("terminal_reframe", None)
+        if self.research_move_pilot is None:
+            data.pop("research_move_pilot", None)
+        return data
 
     @model_validator(mode="after")
     def _initialization_and_framing_inputs_are_explicit(self) -> "CodexStartRequestV1":
@@ -246,6 +294,21 @@ class CodexStartRequestV1(StrictModel):
         if self.requested_route_id is not None and self.requested_scope is not None:
             raise ValueError(
                 "requested_route_id cannot be combined with a frame/reframe brief"
+            )
+        if self.terminal_reframe is not None and self.requested_scope is None:
+            raise ValueError(
+                "terminal_reframe requires an explicit framing brief"
+            )
+        if self.terminal_reframe is not None:
+            if self.initialize:
+                raise ValueError("terminal_reframe cannot initialize a project")
+            if self.terminal_reframe.capture.session_id != self.session.session_id:
+                raise ValueError(
+                    "terminal reframe capture belongs to a different Codex session"
+                )
+        if self.research_move_pilot is not None and self.terminal_reframe is None:
+            raise ValueError(
+                "research_move_pilot requires an exact terminal_reframe binding"
             )
         return self
 
@@ -470,17 +533,6 @@ class CodexFramingChoiceReviewRequestV1(_CodexFramingTeamDeliveryRequestV1):
         FramingDirectionCardV1,
         FramingDirectionCardV1,
     ]
-
-
-class CodexDirectUserCaptureV1(StrictModel):
-    capture_schema: Literal[
-        "econ-theorist/codex-direct-user-capture/v1"
-    ] = "econ-theorist/codex-direct-user-capture/v1"
-    source: Literal["current_user_turn"] = "current_user_turn"
-    session_id: NonEmpty
-    researcher_id: StableId
-    captured_at: NonEmpty
-    text: NonEmpty
 
 
 class CodexReframeRepairRequestV1(_CodexFramingTeamDeliveryRequestV1):
@@ -1286,6 +1338,8 @@ class CodexBridge:
     ) -> CodexBridgeResponseV1:
         try:
             if isinstance(request, CodexStartRequestV1):
+                if request.terminal_reframe is not None:
+                    return self._terminal_failure_reframe_start(request)
                 return self._start(request)
             if isinstance(request, CodexReframeRepairRequestV1):
                 return self._reframe_repair(request)
@@ -1381,6 +1435,236 @@ class CodexBridge:
             head=response.head,
             diagnostics=diagnostics,
         )
+
+    def _terminal_failure_reframe_start(
+        self, request: CodexStartRequestV1
+    ) -> CodexBridgeResponseV1:
+        """Dispose one exact failed V8 audit and open its exact framing reframe."""
+
+        terminal = request.terminal_reframe
+        if terminal is None:  # pragma: no cover - invoke dispatch invariant
+            raise ValueError("terminal reframe binding is required")
+        assert request.requested_scope is not None
+        assert request.framing_intent is not None
+        root = Path(request.project_root).resolve()
+        if not root.is_dir():
+            raise ValueError("Codex project_root must be an existing directory")
+        layout = StoreLayout.at(root)
+        operational = ProjectOperationalLayout.at(layout)
+        request_digest = _request_digest(request)
+        existing = read_run_reframe_disposition(
+            operational, terminal.source_route_run_id
+        )
+        if existing is None:
+            snapshot = replay(layout)
+            if not _canonical_project_is_public(root, snapshot.project_id):
+                raise ValueError(
+                    "terminal reframe requires a public canonical project"
+                )
+            successor_brief = RunInputBriefV1(
+                project_id=snapshot.project_id,
+                base_head=snapshot.head,
+                requested_scope=request.requested_scope,
+                framing_intent=request.framing_intent,
+                privacy="public",
+                compartments=("project_research",),
+                actor_role="scientific_agent",
+                profile_request=request.profile_request,
+            )
+            successors, diagnostics = enumerate_navigation_candidates(
+                layout,
+                snapshot,
+                actor=_CODEX_SCIENTIFIC_AGENT,
+                compartments=("project_research",),
+                privacy_clearance="public",
+                budget_units=request.budget_units,
+                requested_route_ids=("frame.question_and_benchmarks",),
+                run_input_brief=successor_brief,
+                pinned_context_selector_version=(
+                    SELECTOR_VERSION_RESEARCH_MOVE_PILOT
+                    if request.research_move_pilot is not None
+                    else None
+                ),
+            )
+            if len(successors) != 1:
+                return CodexBridgeResponseV1(
+                    operation=request.operation,
+                    request_digest=request_digest,
+                    outcome="blocked",
+                    mutated=False,
+                    project_id=snapshot.project_id,
+                    head=snapshot.head,
+                    diagnostics=diagnostics
+                    or (
+                        _diagnostic(
+                            "terminal_reframe_successor_not_unique",
+                            "the exact explicit reframe did not produce one legal framing successor",
+                        ),
+                    ),
+                )
+            successor_candidate = successors[0]
+        else:
+            if not isinstance(
+                existing, RunTerminalFailureReframeDispositionV3
+            ):
+                raise OperationalError(
+                    "source run already has a different reframe disposition"
+                )
+            successor_brief, successor_candidate = (
+                recoverable_reframe_successor(existing)
+            )
+
+        disposition_key = _operation_key(
+            "terminal-failure-reframe",
+            {
+                "request": request.model_dump(mode="json"),
+                "source_route_run_id": terminal.source_route_run_id,
+                "source_host_receipt_hash": terminal.source_host_receipt_hash,
+                "successor_candidate_digest": (
+                    successor_candidate.candidate_digest
+                ),
+            },
+        )
+        record, disposition_hash, _ = dispose_terminal_failure_for_reframe(
+            layout,
+            operational,
+            operation_key=disposition_key,
+            disposed_at=self._trusted_clock(),
+            route_run_id=terminal.source_route_run_id,
+            terminal_finish_receipt_hash=terminal.source_host_receipt_hash,
+            successor_run_input_brief=successor_brief,
+            successor_candidate=successor_candidate,
+            direct_user_capture_hash=sha256_digest(
+                canonical_json_bytes(terminal.capture)
+            ),
+        )
+        disposition_diagnostic = DiagnosticV1(
+            code="terminal_reframe_disposition_bound",
+            severity="info",
+            message=(
+                "the exact failed audit was durably disposed for this explicit framing reframe"
+            ),
+            details={
+                "source_route_run_id": terminal.source_route_run_id,
+                "source_host_receipt_hash": terminal.source_host_receipt_hash,
+                "disposition_hash": disposition_hash,
+                "successor_navigation_candidate_digest": (
+                    record.successor_navigation_candidate_digest
+                ),
+            },
+        )
+        selector = (
+            SELECTOR_VERSION_RESEARCH_MOVE_PILOT
+            if request.research_move_pilot is not None
+            else None
+        )
+        expected_selector = (
+            record.successor_navigation_candidate.key.context_selector_version
+        )
+        if selector is not None and expected_selector != selector:
+            raise OperationalError(
+                "terminal reframe disposition does not bind the pilot selector"
+            )
+        start_request = CodexStartRequestV1(
+            project_root=str(root),
+            requested_scope=request.requested_scope,
+            framing_intent=request.framing_intent,
+            profile_request=request.profile_request,
+            budget_units=request.budget_units,
+            session=request.session,
+        )
+        try:
+            persisted_bytes = read_reframe_bridge_result_bytes(
+                operational, terminal.source_route_run_id
+            )
+            if persisted_bytes is not None:
+                persisted = CodexBridgeResponseV1.model_validate_json(
+                    persisted_bytes, strict=True
+                )
+                if (
+                    canonical_json_bytes(persisted) != persisted_bytes
+                    or persisted.operation != request.operation
+                    or persisted.request_digest != request_digest
+                    or persisted.outcome != "ready"
+                    or not persisted.mutated
+                    or persisted.project_id != successor_brief.project_id
+                    or persisted.head != successor_brief.base_head
+                    or persisted.work_packet is None
+                    or persisted.work_packet.route_id
+                    != "frame.question_and_benchmarks"
+                    or persisted.work_packet.navigation_candidate_digest
+                    != record.successor_navigation_candidate_digest
+                    or persisted.work_packet.context_selector_version
+                    != expected_selector
+                    or disposition_diagnostic not in persisted.diagnostics
+                ):
+                    raise OperationalError(
+                        "persisted terminal reframe result is invalid"
+                    )
+                assert persisted.route_run_id is not None
+                assert persisted.work_packet_hash is not None
+                assert persisted.delivery_envelope_hash is not None
+                _, _, delivered_packet = _read_provider_delivery(
+                    root,
+                    route_run_id=persisted.route_run_id,
+                    work_packet_hash=persisted.work_packet_hash,
+                    delivery_envelope_hash=persisted.delivery_envelope_hash,
+                )
+                if delivered_packet != persisted.work_packet:
+                    raise OperationalError(
+                        "persisted terminal reframe result differs from its delivery"
+                    )
+                return persisted
+
+            response = self._start(
+                start_request,
+                requested_route_ids=("frame.question_and_benchmarks",),
+                required_candidate_digest=(
+                    record.successor_navigation_candidate_digest
+                ),
+                exact_brief=successor_brief,
+                pinned_context_selector_version=expected_selector,
+            )
+            final_response = response.model_copy(
+                update={
+                    "operation": request.operation,
+                    "request_digest": request_digest,
+                    "mutated": True,
+                    "diagnostics": (
+                        *response.diagnostics,
+                        disposition_diagnostic,
+                    ),
+                }
+            )
+            if final_response.outcome == "ready":
+                write_reframe_bridge_result_bytes(
+                    operational,
+                    terminal.source_route_run_id,
+                    canonical_json_bytes(final_response),
+                )
+            return final_response
+        except (
+            CompletionError,
+            RuntimeStoreError,
+            OSError,
+            RuntimeError,
+            ValueError,
+        ) as exc:
+            return CodexBridgeResponseV1(
+                operation=request.operation,
+                request_digest=request_digest,
+                outcome="error",
+                mutated=True,
+                project_id=successor_brief.project_id,
+                head=successor_brief.base_head,
+                diagnostics=(
+                    _diagnostic(
+                        "codex_terminal_reframe_successor_open_failed",
+                        str(exc) or type(exc).__name__,
+                    ),
+                    disposition_diagnostic,
+                ),
+            )
 
     def _reframe_repair(
         self, request: CodexReframeRepairRequestV1
@@ -1636,6 +1920,7 @@ class CodexBridge:
         required_focus_ref: EntityVersionRef | None = None,
         required_candidate_digest: str | None = None,
         exact_brief: RunInputBriefV1 | None = None,
+        pinned_context_selector_version: str | None = None,
     ) -> CodexBridgeResponseV1:
         root = Path(request.project_root).resolve()
         if not root.is_dir():
@@ -1782,6 +2067,10 @@ class CodexBridge:
             navigation_parameters["budget_units"] = request.budget_units
         if brief is not None:
             navigation_parameters["run_input_brief"] = brief.model_dump(mode="json")
+        if pinned_context_selector_version is not None:
+            navigation_parameters["pinned_context_selector_version"] = (
+                pinned_context_selector_version
+            )
         navigation = dispatcher.dispatch(
             _machine_request(
                 root,
@@ -1865,8 +2154,9 @@ class CodexBridge:
                             ),
                         ),
                     )
-                candidate_data = descriptors[0].get("navigation_candidate")
-                brief_data = descriptor_brief
+                else:
+                    candidate_data = descriptors[0].get("navigation_candidate")
+                    brief_data = descriptor_brief
         elif navigation_outcome == "complete_for_requested_scope":
             return CodexBridgeResponseV1(
                 operation=request.operation,
@@ -3139,6 +3429,7 @@ __all__ = [
     "CodexReframeRepairRequestV1",
     "CodexSessionV1",
     "CodexStartRequestV1",
+    "CodexTerminalFailureReframeV1",
     "CodexTheoremLaneDraftV1",
     "CodexTheoremTeamCapabilityV1",
     "CodexTheoremTeamOpenRequestV1",

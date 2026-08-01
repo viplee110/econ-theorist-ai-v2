@@ -32,6 +32,7 @@ def inspect_project(
     budget_units: int | None = None,
     requested_route_ids: Iterable[str] | None = None,
     run_input_brief: RunInputBriefV1 | None = None,
+    pinned_context_selector_version: str | None = None,
     complete_if_none: bool = False,
     snapshot: Snapshot | None = None,
 ) -> ProjectInspectionV1:
@@ -74,6 +75,7 @@ def inspect_project(
         budget_units=budget_units,
         requested_route_ids=requested_route_ids,
         run_input_brief=run_input_brief,
+        pinned_context_selector_version=pinned_context_selector_version,
         active_run_ids=tuple(sorted(resumable_ids)),
         resume_descriptors=tuple(resume_descriptors),
         repair_run_ids=repair_ids,

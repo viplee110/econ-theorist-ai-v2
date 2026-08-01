@@ -10,6 +10,7 @@ from __future__ import annotations
 import base64
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
@@ -41,6 +42,7 @@ from .policy import (
     SELECTOR_VERSION_DECOMPOSITION_REFRESH,
     SELECTOR_VERSION_DECOMPOSITION_REFRESH_V1,
     SELECTOR_VERSION_MANUSCRIPT_QUALITY,
+    SELECTOR_VERSION_RESEARCH_MOVE_PILOT,
     VALIDATOR_VERSION,
     V3_NATIVE_ROUTE_IDS,
     V4_NATIVE_ROUTE_IDS,
@@ -668,6 +670,7 @@ def _required_slice(
     grants: frozenset[str],
     purpose: str,
     include_decomposition_preservation: bool = False,
+    include_research_move_reframe_context: bool = False,
 ) -> tuple[
     dict[tuple[str, int], EntityVersion],
     dict[tuple[str, int], RelationVersion],
@@ -704,6 +707,39 @@ def _required_slice(
         )
         if project_entities:
             required_entities[_entity_key(project_entities[0])] = project_entities[0]
+
+    if (
+        route.route_id == "frame.question_and_benchmarks"
+        and include_research_move_reframe_context
+    ):
+        questions = tuple(
+            entity
+            for entity in current_entities.values()
+            if entity.entity_type == "ResearchQuestion"
+        )
+        benchmarks = tuple(
+            entity
+            for entity in current_entities.values()
+            if entity.entity_type == "BenchmarkSet"
+        )
+        if len(questions) != 1 or len(benchmarks) != 1:
+            raise ContextCompilationError(
+                "ResearchMove reframe pilot requires exactly one current "
+                "ResearchQuestion and BenchmarkSet"
+            )
+        for entity in (*questions, *benchmarks):
+            required_entities[_entity_key(entity)] = entity
+        selected_refs = set(required_entities)
+        for relation in current_relations:
+            if relation.relation_type not in {"frames", "benchmark_delta"}:
+                continue
+            if (
+                (relation.source.entity_id, relation.source.version)
+                in selected_refs
+                and (relation.target.entity_id, relation.target.version)
+                in selected_refs
+            ):
+                required_relations[_relation_key(relation)] = relation
 
     if (
         route.route_id == "decompose.primitives"
@@ -2615,6 +2651,7 @@ def _payload(
     evaluation_decisions: tuple[Decision, ...] = (),
     phase3_role_packet: Mapping[str, Any] | None = None,
     phase4_role_packet: Mapping[str, Any] | None = None,
+    research_move_pilot: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     selected_ids = frozenset(entity.entity_id for entity in entities.values())
     relevant_decisions = (
@@ -2818,6 +2855,8 @@ def _payload(
                 "phase4_role_packet": dict(phase4_role_packet),
             }
         )
+    if research_move_pilot is not None:
+        payload["research_move_pilot"] = dict(research_move_pilot)
     return payload
 
 
@@ -2862,6 +2901,46 @@ def compile_context(
             f"unsupported selector version for route {route.route_id}: "
             f"{selected_selector_version}"
         )
+
+    research_move_pilot: Mapping[str, Any] | None = None
+    if selected_selector_version == SELECTOR_VERSION_RESEARCH_MOVE_PILOT:
+        from .research_craft_pilot import (
+            ResearchMovePilotError,
+            build_research_move_pilot_material,
+            research_move_pilot_work_packet_payload,
+        )
+
+        current_entity_types = {
+            entity.entity_type
+            for entity in snapshot.entity_versions
+            if snapshot.current_entities.get(entity.entity_id) == entity.version
+        }
+        if not {"ResearchQuestion", "BenchmarkSet"}.issubset(
+            current_entity_types
+        ):
+            raise ContextCompilationError(
+                "ResearchMove pilot requires an existing question and benchmark; "
+                "it cannot create a fresh frame"
+            )
+
+        # This experimental selector is intentionally checkout-only.  It has
+        # no installed-resource fallback and therefore fails closed outside
+        # the explicitly authorized development checkout.
+        corpus_path = (
+            Path(__file__).resolve().parents[2]
+            / "craft"
+            / "research_corpus.v4.json"
+        ).resolve()
+        try:
+            material = build_research_move_pilot_material(
+                corpus_path,
+                route_id=route.route_id,
+            )
+        except ResearchMovePilotError as exc:
+            raise ContextCompilationError(
+                "cannot compile the explicit ResearchMove pilot projection"
+            ) from exc
+        research_move_pilot = research_move_pilot_work_packet_payload(material)
 
     if isinstance(route, RouteSpecV4) and route.route_id in _PHASE4_NATIVE_ROUTE_IDS:
         exact_entities, phase4_artifacts, role_packet = _phase4_context_inputs(
@@ -3030,6 +3109,9 @@ def compile_context(
                 SELECTOR_VERSION_DECOMPOSITION_REFRESH,
             }
         ),
+        include_research_move_reframe_context=(
+            selected_selector_version == SELECTOR_VERSION_RESEARCH_MOVE_PILOT
+        ),
     )
     neighbors, privacy_omissions = _optional_neighbor_groups(
         snapshot,
@@ -3074,6 +3156,7 @@ def compile_context(
             omissions=omissions,
             clearance=privacy_clearance,
             grants=grants,
+            research_move_pilot=research_move_pilot,
         )
         encoded = canonical_json_bytes(payload)
         if units_for_bytes(encoded) <= budget_units:
@@ -3108,6 +3191,7 @@ def compile_context(
             ),
             clearance=privacy_clearance,
             grants=grants,
+            research_move_pilot=research_move_pilot,
         )
         required_units = units_for_bytes(canonical_json_bytes(required_payload))
         raise ContextBudgetError(

@@ -588,6 +588,32 @@ def enumerate_navigation_candidates(
                 )
                 for entity_id in focus_ids
             )
+            policy_hashes = {
+                "kernel": KERNEL_HASH,
+                "profile_catalog": PROFILE_CATALOG_V1_HASH,
+                "craft_corpus": CRAFT_CORPUS_V1_HASH,
+            }
+            pilot_payload = compiled.payload.get("research_move_pilot")
+            if isinstance(pilot_payload, dict):
+                provenance = pilot_payload.get("provenance")
+                if not isinstance(provenance, dict):
+                    raise NavigationUnsupported(
+                        "ResearchMove pilot context lacks exact provenance"
+                    )
+                projection_hash = provenance.get("model_visible_sha256")
+                source_release_hash = provenance.get("corpus_sha256")
+                if not isinstance(projection_hash, str) or not isinstance(
+                    source_release_hash, str
+                ):
+                    raise NavigationUnsupported(
+                        "ResearchMove pilot context lacks exact policy hashes"
+                    )
+                policy_hashes.update(
+                    {
+                        "research_move_pilot_projection": projection_hash,
+                        "research_move_source_release": source_release_hash,
+                    }
+                )
             key = NavigationCandidateKeyV1(
                 base_head=snapshot.head,
                 route_id=route_id,
@@ -603,11 +629,7 @@ def enumerate_navigation_candidates(
                 instruction_bundle_hash=validated_route.instruction_bundle_hash,
                 context_selector_version=context_selector_version,
                 navigation_registry_hash=NAVIGATION_REGISTRY_HASH,
-                policy_hashes={
-                    "kernel": KERNEL_HASH,
-                    "profile_catalog": PROFILE_CATALOG_V1_HASH,
-                    "craft_corpus": CRAFT_CORPUS_V1_HASH,
-                },
+                policy_hashes=policy_hashes,
                 run_input_brief_hash=brief_digest,
             )
             candidates.append(
@@ -645,6 +667,7 @@ def plan_next(
     budget_units: int | None = None,
     requested_route_ids: Iterable[str] | None = None,
     run_input_brief: RunInputBriefV1 | None = None,
+    pinned_context_selector_version: str | None = None,
     active_run_ids: Iterable[str] = (),
     resume_descriptors: Iterable[ResumeDescriptorV1] = (),
     repair_run_ids: Iterable[str] = (),
@@ -704,6 +727,7 @@ def plan_next(
             budget_units=budget_units,
             requested_route_ids=requested_route_ids,
             run_input_brief=run_input_brief,
+            pinned_context_selector_version=pinned_context_selector_version,
         )
     except NavigationUnsupported as exc:
         return NavigationPlanV1(

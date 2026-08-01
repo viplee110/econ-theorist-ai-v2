@@ -4,57 +4,27 @@ description: Operate Econ Theorist AI v2 through its installed machine protocol 
 ---
 # Econ Theorist AI v2
 
-Use the installed engine as sole owner of workflow, state, instructions,
-schemas, validation, and routing. Act as a thin host over its bridge.
+Use the installed engine as sole owner of workflow, state, instructions, schemas, validation, and routing. Act as a thin host over its bridge.
 
 ## Operate the project
 
 1. Use only the explicit project root; do not scan parent/sibling directories.
-2. Verify that the installed `etai` exposes the `codex` bridge. Use its schema
-   output when the exact request shape is not already known.
-3. Invoke `etai codex invoke --request <path-or->`; let the bridge bind/inspect,
-   select, open/resume, and deliver the exact WorkPacket.
-4. Initialize only when explicitly asked. Inspection/discussion never implies
-   permission to create genesis.
-5. Send `requested_scope` and `framing_intent` only for an unframed project or explicit reframe. Omit both on every ordinary continuation. Freeze each
-   intended field separately, write the request as UTF-8, re-read it, and
-   require each decoded field and corresponding `WorkPacket.run_input` field
-   to equal its intended string. Preserve the user's framing text; do not make
-   the two fields identical when their intended meanings differ. Stop before
-   lane exposure on mismatch. Use a user-supplied or neutral `project_name`;
-   never add a capability, pilot/task label, expected result, or scientific
-   primitive. Surface omitted-input diagnostics
-   rather than replaying the old framing inputs. If a brief collides with a run,
-   use `reframe.repair` only for a bridge-accepted untouched, empty-focus
-   framing-v2 run with no active team. Bind delivery, capture, target, and new brief; exact retry preserves its noncanonical operational disposition.
-6. Follow the bridge status exactly. Stop and surface the smallest necessary
-   user choice for an ambiguous route, structural human gate, privacy blocker,
-   incompatible root, or repair requirement. After the user chooses one route
-   from `ambiguous_next`, relay only that existing route id through
-   `requested_route_id`; never invent a route, combine it with a reframe brief,
-   or treat the route choice as a human scientific gate. Handle an explicit
-   `single_fallback` only as described below.
-7. Treat the returned WorkPacket as the only scientific instruction, context,
-   and output contract for the route. Do not supplement it with a remembered
-   workflow, a journal stereotype, or instructions copied from another run.
-8. Write helper code only under the packet's shadow root and the candidate only
-   at its declared candidate path. Never edit canonical ObjectStore bytes or
-   overwrite a human-owned paper or instruction file.
-9. Use only the ready `candidate_authoring_contract` and exact WorkPacket.
-   Copy its bindings/locations and obey its schemas/cardinalities.
-   Do not read package source, tests, fixtures, or reference candidates; focus
-   model judgment on the WorkPacket's economic content.
-10. Submit the candidate through the bridge's completion request. Report success
-    only when the canonical response says the candidate was committed; a file
-    write, plausible draft, or staged candidate is not completion.
-11. After interruption, invoke the same bridge request or inspect its recorded
-    operation state. Preserve exact operation keys and bindings; do not create a
-    replacement run merely because chat history is missing.
-12. Submit a bridge `finish` request only after an otherwise-unrecorded real
-    termination following packet delivery: exhausted declared retries,
-    explicit user cancellation, or an abnormal host/model abort. Use the exact
-    packet and envelope bindings. Do not finish an ordinary human wait,
-    clarification, handoff, or intentional pause; resume the same immutable run.
+2. Verify that installed `etai` exposes the `codex` bridge; use schema output when the exact request shape is unknown.
+3. Invoke `etai codex invoke --request <path-or->`; let the bridge bind/inspect, select, open/resume, and deliver the exact WorkPacket.
+4. Initialize only when explicitly asked; inspection/discussion never permits genesis.
+5. Send `requested_scope` and `framing_intent` only for an unframed project or explicit reframe. Omit both
+   on every ordinary continuation. Freeze each
+   intended field separately, write the request as UTF-8, re-read it, and require each decoded field and matching `WorkPacket.run_input` field to equal its intended string.
+   Preserve the user's framing text; do not make
+   the two fields identical when their intended meanings differ. Stop before lane exposure on mismatch. Use a user-supplied or neutral `project_name`, never a capability, pilot/task label, expected result, or scientific primitive. Surface omitted-input diagnostics rather than replaying the old framing inputs. Use `reframe.repair` only for a bridge-accepted eligible run; bind delivery, capture, target, and brief, and preserve its exact-retry operational disposition.
+6. Follow bridge status exactly. Surface the smallest needed choice for ambiguity, gate, privacy, root, or repair. For `ambiguous_next`, relay only the chosen existing id as `requested_route_id`; never invent a route, combine it with a reframe, or call it a human gate. Handle `single_fallback` only below.
+7. The returned WorkPacket is the only scientific instruction, context, and output contract. Do not add remembered workflow, journal stereotypes, or another run's instructions. Send `research_move_pilot=research_move_pilot.v1` only after current explicit authorization, for one existing-question reframe after `revise_framing`. Require selector `context_selector.research_move_pilot.v1` and its bounded projection; omit the field for ordinary/fresh framing. Never add sidecar cards, sources, hints, or use instructions; stop if the projection is absent.
+8. Write helpers only under the packet shadow root and the candidate only at its declared path; never edit canonical ObjectStore bytes or human-owned files.
+9. Use only the ready `candidate_authoring_contract` and exact WorkPacket; obey all bindings, schemas, locations, and cardinalities. Do not read package source, tests, fixtures, or reference candidates while authoring.
+10. Complete through the bridge. Report success only when the canonical response says committed; a file write, plausible draft, or stage is not completion.
+11. After interruption, retry the same request or inspect recorded operation state. Preserve operation keys and bindings; do not replace a run because chat history is missing.
+12. Submit a bridge `finish` request only for an otherwise-unrecorded real termination after delivery: exhausted declared retries, explicit user cancellation, or an abnormal host/model abort. Bind the exact packet/envelope.
+    Do not finish an ordinary human wait, clarification, handoff, or intentional pause; resume the same run.
 ## Use the bounded framing team
 
 - Only when the bridge returns `team_ready`, start one mentor and two clean-context sealed lanes,
@@ -95,9 +65,9 @@ schemas, validation, and routing. Act as a thin host over its bridge.
 
 ## Use the bounded theorem challenge team
 
-- When a ready packet is exactly for
-  `verify.claims_proofs_and_interpretation` and the bridge schema exposes the
-  theorem-team operations, invoke `theorem_team.open` before any candidate is
+- When a ready packet is exactly for the bridge-declared theorem-challenge
+  route and the schema exposes theorem-team operations, invoke
+  `theorem_team.open` before any candidate is
   staged. Use the ordinary single-agent route if the host cannot supply two
   clean-context lanes; do not claim a team or fabricate sidecar records.
 - Give one sealed `proof_worker` and one sealed

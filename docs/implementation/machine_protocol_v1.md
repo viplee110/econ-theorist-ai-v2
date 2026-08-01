@@ -87,6 +87,19 @@ successor, and ready response, including after the successor has advanced the
 head. This is not general abandon/reframe support for team `kill` or
 `new_brief_required`; those branches remain stopped.
 
+An additive terminal variant covers one narrower concrete recovery observed in
+local use. It applies only when the unique active source is
+`audit.framing_economics@8`, its lifecycle is still staged, and its current
+staged candidate is bound by the exact latest authorized `failed_no_effect`
+finish receipt. The bridge records one head-neutral operational disposition and
+opens only an empty-focus `frame.question_and_benchmarks@2` successor. The
+source receipt, latest delivery, staged digest, successor brief,
+navigation candidate, and optional default-closed ResearchMove selector are all
+exact-bound; a retry returns the persisted response rather than navigating
+again. This variant cannot recover another route, an unrecorded failure, a
+stale candidate, or an activated team, and it does not change the failed audit,
+confirm G1, or grant the experimental selector ordinary availability.
+
 The repository's pilot capture helper is evaluation tooling, not another
 machine or Codex interface. Capture schema v2 pre-reads and strictly validates
 one bridge request, immutably snapshots its exact bytes, binds its selected

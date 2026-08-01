@@ -301,6 +301,7 @@ class _NavigationParameters(StrictModel):
     budget_units: int | None = Field(default=None, ge=1)
     requested_route_ids: tuple[str, ...] | None = None
     run_input_brief: RunInputBriefV1 | None = None
+    pinned_context_selector_version: str | None = None
     complete_if_none: bool = False
 
 
@@ -984,6 +985,9 @@ class MachineDispatcher:
                 budget_units=parameters.budget_units,
                 requested_route_ids=parameters.requested_route_ids,
                 run_input_brief=parameters.run_input_brief,
+                pinned_context_selector_version=(
+                    parameters.pinned_context_selector_version
+                ),
                 complete_if_none=parameters.complete_if_none,
                 snapshot=snapshot,
             )
