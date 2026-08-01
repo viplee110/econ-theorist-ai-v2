@@ -100,6 +100,17 @@ Switch`, and `Incentive-Implementation Stress Test`. The first two remain
 adds no runtime selector, WorkPacket integration, pilot, route disposition, or
 canonical authority.
 
+The additive `craft/research_corpus.v4.json` checkpoint preserves v1--v3 and
+adds exactly two disabled candidates: `Question Reframer` for preserving an
+economic tension while changing the unit or object of explanation, and
+`Near-Optimal Structure Pivot` for extracting a transparent structure only
+under an explicit loss bound or exact zero-loss implementation. Four public
+primary-source cards are hash-bound in the additive
+[v4 audit](../../review_outputs/phase5b_research_move_contribution_structure_source_audit_v4.md).
+Both moves are `paper-chain-derived`, not personal-scholar replicas. V4 adds no
+runtime selector, WorkPacket integration, pilot, route disposition, or
+canonical authority.
+
 A new held-out authoring pair may be resumed only when a concrete product
 failure makes that comparison decision-relevant. V9 and an exploratory v1/v2
 quality claim remain blocked. See

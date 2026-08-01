@@ -181,6 +181,22 @@ rank, select, expose through WorkPackets, pilot, activate, or grant it route,
 canonical-write, novelty, welfare, or human-gate authority without separate
 researcher authorization.
 
+The additive `craft/research_corpus.v4.json` checkpoint preserves the exact
+v1--v3 releases and adds four hash-bound public primary-source cards plus
+exactly two disabled functional candidates: `Question Reframer` and
+`Near-Optimal Structure Pivot`. The first preserves a fixed economic tension
+while varying the unit or object of explanation and cannot replace a
+human-approved question. The second requires a maintained environment,
+objective, feasible set, exact optimum, and an explicit bounded-loss or exact
+zero-loss statement before extracting a simple structure. Both are
+`paper-chain-derived`; neither may be presented as a scholar's stated personal
+habit. The exact audit is
+`review_outputs/phase5b_research_move_contribution_structure_source_audit_v4.md`.
+V4 is checkout-only and `development_disabled`: do not package, retrieve, rank,
+select, expose through WorkPackets, pilot, activate, or grant it route,
+canonical-write, novelty, importance, welfare, venue, or human-gate authority
+without separate researcher authorization.
+
 The framing-only Phase 5B.0 contract, noncanonical binding/persistence module,
 and thin public Codex bridge projection are now present. They bind one mentor
 and two collaborator outputs to one immutable framing WorkPacket, preserve all

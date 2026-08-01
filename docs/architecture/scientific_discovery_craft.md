@@ -1,6 +1,6 @@
 # Scientific Discovery and Research-Craft Extension
 
-Status: evidence-informed design; first three-move source audit and
+Status: evidence-informed design; additive eleven-move source-audited,
 checkout-only disabled development corpus complete; runtime use, pilot, and
 automatic activation remain unauthorized
 
@@ -561,6 +561,20 @@ records the representative chains, contextual experience sources, biases, and
 non-applicability boundaries. V3 is neither a scholar replica nor a runtime
 feature and grants no retrieval, selection, pilot, route-disposition, or
 canonical-write authority.
+
+The additive `craft/research_corpus.v4.json` checkpoint preserves v1--v3 and
+adds four hash-bound public primary-source cards plus `Question Reframer` and
+`Near-Optimal Structure Pivot`. The first move preserves an exact economic
+tension while changing the unit or object of explanation and cannot replace a
+human-approved question. The second fixes the environment, objective, feasible
+set, and exact optimum before admitting only a formally bounded-loss or exact
+zero-loss simple class whose economic structure is explicit. Both are
+`paper-chain-derived`; neither is reported as a scholar's personal habit. The
+exact [v4 source audit](../../review_outputs/phase5b_research_move_contribution_structure_source_audit_v4.md)
+records source hashes, contradictory simplicity concepts, and
+non-applicability. V4 remains checkout-only and `development_disabled`, with no
+runtime selector, WorkPacket exposure, pilot, route disposition, or canonical
+authority.
 
 One practical exploration cadence uses batches of about eight scholars or
 twenty sources. An initial saturation signal is two consecutive batches with

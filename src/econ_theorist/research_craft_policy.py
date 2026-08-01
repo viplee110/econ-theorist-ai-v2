@@ -27,6 +27,9 @@ RESEARCH_CORPUS_V2_HASH = (
 RESEARCH_CORPUS_V3_HASH = (
     "74facfbd0a689fd99ff44b11bd0eaebef3d29a7ec5934098bda481131c4c444e"
 )
+RESEARCH_CORPUS_V4_HASH = (
+    "507ca179b7941b737d59a888fbd61453b5aa72ddb415ddf4f47bc43bc74be46f"
+)
 
 _EXPECTED_MOVE_ROUTES_V1 = {
     "research.move.computational_structure_probe": {
@@ -72,6 +75,17 @@ _EXPECTED_MOVE_ROUTES_V3 = {
         "tournament.implementations",
     },
 }
+_EXPECTED_MOVE_ROUTES_V4 = {
+    **_EXPECTED_MOVE_ROUTES_V3,
+    "research.move.question_reframer": {
+        "frame.question_and_benchmarks",
+        "audit.assumptions_generality_and_absorption",
+    },
+    "research.move.near_optimal_structure_pivot": {
+        "tournament.implementations",
+        "audit.assumptions_generality_and_absorption",
+    },
+}
 
 _RELEASE_POLICIES = {
     "research.corpus.first_batch.v1": {
@@ -93,6 +107,14 @@ _RELEASE_POLICIES = {
         "report": (
             "review_outputs/"
             "phase5b_research_move_scholar_method_chain_source_audit_v3.md"
+        ),
+    },
+    "research.corpus.contribution_structure.v4": {
+        "hash": RESEARCH_CORPUS_V4_HASH,
+        "moves": _EXPECTED_MOVE_ROUTES_V4,
+        "report": (
+            "review_outputs/"
+            "phase5b_research_move_contribution_structure_source_audit_v4.md"
         ),
     },
 }
@@ -198,6 +220,7 @@ def load_research_corpus(
         RESEARCH_CORPUS_V1_HASH,
         RESEARCH_CORPUS_V2_HASH,
         RESEARCH_CORPUS_V3_HASH,
+        RESEARCH_CORPUS_V4_HASH,
     }:
         raise ResearchCraftPolicyError(
             "research corpus expected hash is not the fixed development release"
@@ -241,6 +264,7 @@ __all__ = [
     "RESEARCH_CORPUS_V1_HASH",
     "RESEARCH_CORPUS_V2_HASH",
     "RESEARCH_CORPUS_V3_HASH",
+    "RESEARCH_CORPUS_V4_HASH",
     "ResearchCraftPolicyError",
     "load_research_corpus",
 ]
