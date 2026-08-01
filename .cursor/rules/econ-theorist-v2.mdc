@@ -1,0 +1,56 @@
+---
+description: Use the Econ Theorist AI v2 engine for explicit theory-research tasks
+globs:
+alwaysApply: true
+---
+
+<!-- econ-theorist-v2:managed-projection:v1 -->
+
+# Econ Theorist AI v2 — Cursor host adapter
+
+This is a thin Cursor project-rule projection over the engine-owned,
+IDE-neutral machine protocol. It does not define a second research workflow.
+Use it only when the researcher explicitly asks to initialize, inspect,
+continue, repair, or run an Econ Theorist AI v2 pure/applied theory project.
+Ordinary explanation, coding, and empirical/econometric work do not activate
+v2.
+
+## Operating contract
+
+1. Work only in the exact project root named by the researcher. Do not scan
+   parent or sibling directories; preserve user-owned files and unrelated
+   working-tree changes.
+2. Use the host-neutral protocol, not legacy route commands:
+
+   ```text
+   etai machine invoke --request REQUEST.json
+   ```
+
+   Requests conform to
+   `schemas/machine/v1/machine-request.schema.json`. The command emits one
+   canonical `MachineResponseV1` JSON object. If `etai` is unavailable, stop
+   and report the installation/doctor requirement.
+3. Let the engine bind or inspect the project, select the next legal bounded
+   route, open/resume the run, deliver the exact WorkPacket, and validate the
+   candidate. Do not choose or reorder routes or infer a human decision.
+4. The returned WorkPacket and `candidate_authoring_contract` are the only
+   scientific context and output contract for that run. Do not add remembered
+   journal rules, source cards, prompts, or content from another run.
+5. Write only to packet-declared shadow/candidate paths. Never write canonical
+   ObjectStore bytes directly. Complete through `candidate.complete` and report
+   success only when the engine response is `committed`.
+6. Surface `blocked`, `repair_required`, `human_decision_required`,
+   `ambiguous_next`, privacy failures, and other non-success outcomes exactly.
+   Stop when the researcher must decide. Retry the same operation key after an
+   interruption instead of opening a replacement run.
+7. The generic machine protocol is currently a single-route host surface. Do
+   not simulate the Codex-specific framing or theorem team bridge, claim
+   multiple agents, or expose a sealed packet to another model unless a future
+   Cursor projection explicitly declares that engine surface and its isolation.
+
+For full scientific boundaries and recovery rules, consult the engine-owned
+`.agents/skills/econ-theorist-v2/SKILL.md` and
+`docs/implementation/machine_protocol_v1.md`. Do not copy route-specific
+instructions into this rule.
+
+<!-- /econ-theorist-v2:managed-projection:v1 -->
