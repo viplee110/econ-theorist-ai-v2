@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
   <title id="title">Econ Theorist AI v2 research-to-manuscript workflow</title>
-  <desc id="desc">A researcher-led, six-stage economic-theory workflow with task-adaptive agents, five human scientific gates, canonical research state, literature evidence, target calibration, and dependency-aware revision.</desc>
+  <desc id="desc">A researcher-led, six-stage economic-theory workflow with task-adaptive agents, five human scientific gates, persistent research state, literature evidence, target calibration, and dependency-aware revision.</desc>
   <defs>
     <linearGradient id="headerGradient" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#102A43"/>
@@ -51,14 +51,14 @@
   <g>
     <rect x="60" y="158" width="1480" height="88" rx="18" fill="url(#headerGradient)" filter="url(#shadow)"/>
     <text x="90" y="190" class="eyebrow" fill="#77D8CD">RESEARCHER BRIEF</text>
-    <text x="90" y="220" font-size="18" font-weight="650" fill="#FFFFFF">Puzzle or question  •  exact benchmark  •  field  •  ambition and intended reader</text>
+  <text x="90" y="220" font-size="18" font-weight="650" fill="#FFFFFF">Puzzle or question  •  constraints  •  field  •  ambition and intended reader</text>
 
     <rect x="1195" y="174" width="315" height="56" rx="13" fill="#FFFFFF" fill-opacity="0.11" stroke="#FFFFFF" stroke-opacity="0.25"/>
-    <text x="1220" y="197" class="eyebrow" fill="#BFD8F1">STATE-AWARE ORCHESTRATOR</text>
-    <text x="1220" y="218" font-size="13" fill="#FFFFFF">Selects the next legal, bounded route</text>
+  <text x="1220" y="197" class="eyebrow" fill="#BFD8F1">RESEARCH MEMORY + NEXT STEP</text>
+  <text x="1220" y="218" font-size="13" fill="#FFFFFF">Preserves decisions and opens one bounded task</text>
   </g>
 
-  <text x="60" y="285" class="eyebrow" fill="#60758A">RESEARCH LIFECYCLE — ROUTES REOPEN WHEN EVIDENCE OR ASSUMPTIONS CHANGE</text>
+  <text x="60" y="285" class="eyebrow" fill="#60758A">RESEARCH LIFECYCLE — REOPEN ONLY WHAT NEW EVIDENCE CHANGES</text>
 
   <g stroke="#7890A8" stroke-width="2.5" marker-end="url(#arrow)">
     <path d="M280 453 H312"/>
@@ -77,7 +77,7 @@
       <text x="82" y="400" class="stageTitle">Benchmark</text>
       <line x1="82" y1="418" x2="258" y2="418" stroke="#E4EAF1"/>
       <circle cx="86" cy="450" r="3.5" fill="#2F6FED"/><text x="98" y="455" class="item">Mentor + 2 collaborators</text>
-      <circle cx="86" cy="487" r="3.5" fill="#2F6FED"/><text x="98" y="492" class="item">3–5 frames per lane</text>
+      <circle cx="86" cy="487" r="3.5" fill="#2F6FED"/><text x="98" y="492" class="item">Several competing frames</text>
       <circle cx="86" cy="524" r="3.5" fill="#2F6FED"/><text x="98" y="529" class="item">Source check (optional)</text>
       <circle cx="86" cy="561" r="3.5" fill="#2F6FED"/><text x="98" y="566" class="item">Importance + kill test</text>
     </g>
@@ -102,7 +102,7 @@
       <text x="586" y="374" class="stageTitle">Minimal</text>
       <text x="586" y="400" class="stageTitle">Formal Base</text>
       <line x1="586" y1="418" x2="762" y2="418" stroke="#E4EAF1"/>
-      <circle cx="590" cy="450" r="3.5" fill="#0F9D8A"/><text x="602" y="455" class="item">Implementation contest</text>
+      <circle cx="590" cy="450" r="3.5" fill="#0F9D8A"/><text x="602" y="455" class="item">Alternative implementations</text>
       <circle cx="590" cy="487" r="3.5" fill="#0F9D8A"/><text x="602" y="492" class="item">Small credible model</text>
       <circle cx="590" cy="524" r="3.5" fill="#0F9D8A"/><text x="602" y="529" class="item">Assumption mapping</text>
       <circle cx="590" cy="561" r="3.5" fill="#0F9D8A"/><text x="602" y="566" class="item">Formalization map</text>
@@ -141,8 +141,8 @@
       <text x="1342" y="374" class="stageTitle">Economic</text>
       <text x="1342" y="400" class="stageTitle">Manuscript</text>
       <line x1="1342" y1="418" x2="1518" y2="418" stroke="#E4EAF1"/>
-      <circle cx="1346" cy="450" r="3.5" fill="#A24CB2"/><text x="1358" y="455" class="item">Paper IR + reader path</text>
-      <circle cx="1346" cy="487" r="3.5" fill="#A24CB2"/><text x="1358" y="492" class="item">One canonical writer</text>
+      <circle cx="1346" cy="450" r="3.5" fill="#A24CB2"/><text x="1358" y="455" class="item">Economic spine + reader path</text>
+      <circle cx="1346" cy="487" r="3.5" fill="#A24CB2"/><text x="1358" y="492" class="item">One coherent writer</text>
       <circle cx="1346" cy="524" r="3.5" fill="#A24CB2"/><text x="1358" y="529" class="item">3 independent reads</text>
       <circle cx="1346" cy="561" r="3.5" fill="#A24CB2"/><text x="1358" y="566" class="item">Smallest useful repair</text>
     </g>
@@ -158,34 +158,34 @@
 
   <g>
     <rect x="60" y="632" width="1480" height="120" rx="18" fill="#FFFFFF" stroke="#D8E2EC"/>
-    <text x="86" y="665" class="eyebrow" fill="#60758A">BOUNDED TEAM SURFACES — FRAMING + OPTIONAL THEOREM CHALLENGE; OTHER ROUTES USE ONE ROUTE AGENT</text>
+  <text x="86" y="665" class="eyebrow" fill="#60758A">BOUNDED CODEX TEAM — FRAMING + OPTIONAL THEOREM CHALLENGE</text>
     <line x1="430" y1="680" x2="430" y2="731" stroke="#DFE7EF"/>
     <line x1="790" y1="680" x2="790" y2="731" stroke="#DFE7EF"/>
     <line x1="1150" y1="680" x2="1150" y2="731" stroke="#DFE7EF"/>
     <text x="86" y="699" class="roleTitle">Mentor</text>
     <text x="86" y="722" class="roleBody">importance, hidden assumptions, kill / pivot</text>
-    <text x="456" y="699" class="roleTitle">Sealed collaborators</text>
+      <text x="456" y="699" class="roleTitle">Independent collaborators</text>
     <text x="456" y="722" class="roleBody">independent portfolios, rivals, minority view</text>
     <text x="816" y="699" class="roleTitle">Research workers + challengers</text>
     <text x="816" y="722" class="roleBody">bounded source, proof, counterexample, repair</text>
-    <text x="1176" y="699" class="roleTitle">Canonical coordinator / writer</text>
+      <text x="1176" y="699" class="roleTitle">Coordinator / writer</text>
     <text x="1176" y="722" class="roleBody">integrates accepted work; never votes for the human</text>
   </g>
 
   <g>
     <rect x="60" y="778" width="476" height="118" rx="17" fill="#173F67"/>
     <text x="86" y="811" class="eyebrow" fill="#92BDE8">SCIENTIFIC MEMORY</text>
-    <text x="86" y="842" class="railTitle">Canonical research state + provenance</text>
+      <text x="86" y="842" class="railTitle">Research state + provenance</text>
     <text x="86" y="870" class="railBody">Versioned decisions, dependencies, replay, selective repair</text>
 
     <rect x="562" y="778" width="476" height="118" rx="17" fill="#08796D"/>
     <text x="588" y="811" class="eyebrow" fill="#A5E8DF">EVIDENCE RAIL</text>
     <text x="588" y="842" class="railTitle">Literature evidence + closest-theory map</text>
-    <text x="588" y="870" class="railBody">Authorized, evidence-bounded sources; never novelty by checklist</text>
+      <text x="588" y="870" class="railBody">Explicit coverage; never novelty by checklist</text>
 
     <rect x="1064" y="778" width="476" height="118" rx="17" fill="#6348C8"/>
     <text x="1090" y="811" class="eyebrow" fill="#D7CEFF">TARGET CALIBRATION</text>
-    <text x="1090" y="842" class="railTitle">Ambition + field + audience + soft venue overlay</text>
+      <text x="1090" y="842" class="railTitle">Ambition + field + intended audience</text>
     <text x="1090" y="870" class="railBody">Calibrates burden and reader fit — never theorem truth</text>
   </g>
 
