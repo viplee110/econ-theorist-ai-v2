@@ -12,6 +12,12 @@ blocker. The normative owner remains
 `docs/implementation/phase5a_contract.md`, and the public transport is
 documented in `docs/implementation/machine_protocol_v1.md`.
 
+The `v1.0.0` GitHub release names this bounded open-source core as the first
+numbered public version on 2026-08-01. The version label does not upgrade any
+claim about private execution, native cross-host parity, multi-agent benefit,
+research quality, researcher effort, complete-paper quality, or Top-5
+readiness; the evidence boundaries below remain controlling.
+
 Phase 5A.1 owns the generic local machine facade: work packets, reliable
 candidate completion, exact retry, and ordinary recovery. The recorded 5A.2
 slice owns only the public Codex projection and its pilot evidence; it does not

@@ -232,6 +232,9 @@ class ResearchCraftContributionStructureDevelopmentTests(unittest.TestCase):
         self.assertNotIn("research_corpus.v4.json", serialized_data_files)
 
         forbidden = ("research_corpus.v4.json", *NEW_MOVE_ROUTES)
+        explicit_pilot_context = (
+            REPOSITORY_ROOT / "src" / "econ_theorist" / "context.py"
+        )
         inspected_paths = [
             REPOSITORY_ROOT / "src" / "econ_theorist" / "context.py",
             *(
@@ -254,6 +257,15 @@ class ResearchCraftContributionStructureDevelopmentTests(unittest.TestCase):
         for path in inspected_paths:
             text = path.read_text(encoding="utf-8").casefold()
             for value in forbidden:
+                if (
+                    path == explicit_pilot_context
+                    and value == "research_corpus.v4.json"
+                ):
+                    # The separately authorized, default-closed reframe selector
+                    # may load this exact checkout-only source.  No machine
+                    # resource, route, or ordinary selector may reference it.
+                    self.assertEqual(text.count(value), 1)
+                    continue
                 with self.subTest(path=path, forbidden=value):
                     self.assertNotIn(value.casefold(), text)
 

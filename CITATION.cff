@@ -1,6 +1,8 @@
 cff-version: 1.2.0
 message: "If Econ Theorist AI v2 helps your research, please cite the repository."
 title: "Econ Theorist AI v2"
+version: "1.0.0"
+date-released: "2026-08-01"
 authors:
   - name: "viplee110"
 repository-code: "https://github.com/viplee110/econ-theorist-ai-v2"

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "econ-theorist-ai"
-version = "0.1.0"
+version = "1.0.0"
 description = "A theory-only, provenance-preserving research substrate"
 readme = "README.md"
 requires-python = ">=3.11"

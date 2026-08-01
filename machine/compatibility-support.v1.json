@@ -1,7 +1,7 @@
 {
   "support_schema": 1,
-  "support_version": 1,
-  "engine_versions": ["0.1.0"],
+  "support_version": 2,
+  "engine_versions": ["0.1.0", "1.0.0"],
   "project_config_schemas": [1],
   "transaction_schemas": [1],
   "snapshot_schemas": [1],

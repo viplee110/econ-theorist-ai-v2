@@ -15,7 +15,7 @@ pretending that any workflow can guarantee publication.
 
 <p>
   <a href="#start-here"><img alt="Start here" src="https://img.shields.io/badge/Start-One%20conversation-2F6FED"></a>
-  <a href="#what-is-ready-today"><img alt="Status: Open-source Core MVP" src="https://img.shields.io/badge/Status-Open--source%20Core%20MVP-0F766E"></a>
+  <a href="#what-is-ready-today"><img alt="Release: v1.0.0" src="https://img.shields.io/badge/Release-v1.0.0-0F766E"></a>
   <a href="#designed-to-raise-top-journal-potential"><img alt="Ambition: Frontier theory" src="https://img.shields.io/badge/Ambition-Frontier%20theory-7C3AED"></a>
   <a href="LICENSE"><img alt="Apache 2.0 license" src="https://img.shields.io/badge/License-Apache%202.0-3B82F6"></a>
 </p>
@@ -240,10 +240,10 @@ explains this separation.
 
 ## What is ready today
 
-The open-source core MVP on `main` is ready for researcher-supervised use in the
-prepared Codex checkout. “Core MVP” means the research chain exists and can be
-used; it does not mean every host integration or research-quality claim has
-been proved.
+The open-source v1.0 core on `main` is ready for researcher-supervised use in
+the prepared Codex checkout. “v1.0 core” means the research chain is available
+as a coherent public release; it does not mean every host integration or
+research-quality claim has been proved.
 
 | Capability | Current status |
 |---|---|
@@ -341,6 +341,7 @@ Architecture sources of truth:
 
 Econ Theorist AI v2 is licensed under the
 [Apache License 2.0](LICENSE). Attribution and citation metadata are available
-in [CITATION.cff](CITATION.cff).
+in [CITATION.cff](CITATION.cff). Version history is recorded in the
+[changelog](CHANGELOG.md).
 
 © 2026 viplee110. Built for rigorous, readable economic theory.
