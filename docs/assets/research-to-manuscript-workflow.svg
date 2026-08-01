@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
+  <title id="title">Econ Theorist AI v2 research-to-manuscript workflow</title>
+  <desc id="desc">A researcher-led, six-stage economic-theory workflow with task-adaptive agents, five human scientific gates, canonical research state, literature evidence, target calibration, and dependency-aware revision.</desc>
+  <defs>
+    <linearGradient id="headerGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#102A43"/>
+      <stop offset="1" stop-color="#173F67"/>
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2F6FED"/>
+      <stop offset="0.55" stop-color="#0F9D8A"/>
+      <stop offset="1" stop-color="#7C5CFC"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="#102A43" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#7890A8"/>
+    </marker>
+    <marker id="arrowAmber" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#D99000"/>
+    </marker>
+    <style>
+      text { font-family: Inter, "Segoe UI", Arial, sans-serif; }
+      .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 1.6px; }
+      .stageLabel { font-size: 12px; font-weight: 700; letter-spacing: 1.25px; }
+      .stageTitle { font-size: 21px; font-weight: 750; fill: #102A43; }
+      .item { font-size: 15px; fill: #52677A; }
+      .roleTitle { font-size: 16px; font-weight: 700; fill: #102A43; }
+      .roleBody { font-size: 13px; fill: #60758A; }
+      .railTitle { font-size: 16px; font-weight: 700; fill: #FFFFFF; }
+      .railBody { font-size: 13px; fill: #E7EEF6; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1040" rx="22" fill="#F5F8FC"/>
+  <rect x="0" y="0" width="1600" height="10" fill="url(#accentGradient)"/>
+
+  <g>
+    <rect x="60" y="30" width="205" height="28" rx="14" fill="#E8F0FE"/>
+    <text x="162.5" y="49" text-anchor="middle" class="eyebrow" fill="#2F6FED">OPEN-SOURCE CORE MVP</text>
+    <text x="60" y="98" font-size="39" font-weight="780" fill="#102A43">Econ Theorist AI v2</text>
+    <text x="60" y="132" font-size="20" fill="#52677A">Research-to-Manuscript Workflow for Economic Theory</text>
+
+    <rect x="1160" y="35" width="380" height="92" rx="18" fill="#F0ECFF" stroke="#C8BAFF"/>
+    <text x="1190" y="62" class="eyebrow" fill="#6B4FD3">FRONTIER RESEARCH AMBITION</text>
+    <text x="1190" y="87" font-size="16" font-weight="700" fill="#2D2356">Built to pursue top-journal standards</text>
+    <text x="1190" y="110" font-size="13" fill="#695E8E">No workflow can certify novelty, truth, or publication.</text>
+  </g>
+
+  <g>
+    <rect x="60" y="158" width="1480" height="88" rx="18" fill="url(#headerGradient)" filter="url(#shadow)"/>
+    <text x="90" y="190" class="eyebrow" fill="#77D8CD">RESEARCHER BRIEF</text>
+    <text x="90" y="220" font-size="18" font-weight="650" fill="#FFFFFF">Puzzle or question  •  exact benchmark  •  field  •  ambition and intended reader</text>
+
+    <rect x="1195" y="174" width="315" height="56" rx="13" fill="#FFFFFF" fill-opacity="0.11" stroke="#FFFFFF" stroke-opacity="0.25"/>
+    <text x="1220" y="197" class="eyebrow" fill="#BFD8F1">STATE-AWARE ORCHESTRATOR</text>
+    <text x="1220" y="218" font-size="13" fill="#FFFFFF">Selects the next legal, bounded route</text>
+  </g>
+
+  <text x="60" y="285" class="eyebrow" fill="#60758A">RESEARCH LIFECYCLE — ROUTES REOPEN WHEN EVIDENCE OR ASSUMPTIONS CHANGE</text>
+
+  <g stroke="#7890A8" stroke-width="2.5" marker-end="url(#arrow)">
+    <path d="M280 453 H312"/>
+    <path d="M532 453 H564"/>
+    <path d="M784 453 H816"/>
+    <path d="M1036 453 H1068"/>
+    <path d="M1288 453 H1320"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <g>
+      <rect x="60" y="305" width="220" height="295" rx="18" fill="#FFFFFF" stroke="#D8E2EC"/>
+      <rect x="60" y="305" width="220" height="7" rx="4" fill="#2F6FED"/>
+      <text x="82" y="340" class="stageLabel" fill="#2F6FED">DISCOVER</text>
+      <text x="82" y="374" class="stageTitle">Question &amp;</text>
+      <text x="82" y="400" class="stageTitle">Benchmark</text>
+      <line x1="82" y1="418" x2="258" y2="418" stroke="#E4EAF1"/>
+      <circle cx="86" cy="450" r="3.5" fill="#2F6FED"/><text x="98" y="455" class="item">Mentor + 2 collaborators</text>
+      <circle cx="86" cy="487" r="3.5" fill="#2F6FED"/><text x="98" y="492" class="item">3–5 frames per lane</text>
+      <circle cx="86" cy="524" r="3.5" fill="#2F6FED"/><text x="98" y="529" class="item">Source check (optional)</text>
+      <circle cx="86" cy="561" r="3.5" fill="#2F6FED"/><text x="98" y="566" class="item">Importance + kill test</text>
+    </g>
+
+    <g>
+      <rect x="312" y="305" width="220" height="295" rx="18" fill="#FFFFFF" stroke="#D8E2EC"/>
+      <rect x="312" y="305" width="220" height="7" rx="4" fill="#158DBB"/>
+      <text x="334" y="340" class="stageLabel" fill="#158DBB">EXPLAIN</text>
+      <text x="334" y="374" class="stageTitle">Mechanism</text>
+      <text x="334" y="400" class="stageTitle">Tournament</text>
+      <line x1="334" y1="418" x2="510" y2="418" stroke="#E4EAF1"/>
+      <circle cx="338" cy="450" r="3.5" fill="#158DBB"/><text x="350" y="455" class="item">Primitives + predictions</text>
+      <circle cx="338" cy="487" r="3.5" fill="#158DBB"/><text x="350" y="492" class="item">Serious rival account</text>
+      <circle cx="338" cy="524" r="3.5" fill="#158DBB"/><text x="350" y="529" class="item">Smallest useful example</text>
+      <circle cx="338" cy="561" r="3.5" fill="#158DBB"/><text x="350" y="566" class="item">Ablation / absorption</text>
+    </g>
+
+    <g>
+      <rect x="564" y="305" width="220" height="295" rx="18" fill="#FFFFFF" stroke="#D8E2EC"/>
+      <rect x="564" y="305" width="220" height="7" rx="4" fill="#0F9D8A"/>
+      <text x="586" y="340" class="stageLabel" fill="#0F8B7A">FORMALIZE</text>
+      <text x="586" y="374" class="stageTitle">Minimal</text>
+      <text x="586" y="400" class="stageTitle">Formal Base</text>
+      <line x1="586" y1="418" x2="762" y2="418" stroke="#E4EAF1"/>
+      <circle cx="590" cy="450" r="3.5" fill="#0F9D8A"/><text x="602" y="455" class="item">Implementation contest</text>
+      <circle cx="590" cy="487" r="3.5" fill="#0F9D8A"/><text x="602" y="492" class="item">Small credible model</text>
+      <circle cx="590" cy="524" r="3.5" fill="#0F9D8A"/><text x="602" y="529" class="item">Assumption mapping</text>
+      <circle cx="590" cy="561" r="3.5" fill="#0F9D8A"/><text x="602" y="566" class="item">Formalization map</text>
+    </g>
+
+    <g>
+      <rect x="816" y="305" width="220" height="295" rx="18" fill="#FFFFFF" stroke="#D8E2EC"/>
+      <rect x="816" y="305" width="220" height="7" rx="4" fill="#5873D8"/>
+      <text x="838" y="340" class="stageLabel" fill="#5873D8">CHALLENGE</text>
+      <text x="838" y="374" class="stageTitle">Claims, Proof</text>
+      <text x="838" y="400" class="stageTitle">&amp; Counterexample</text>
+      <line x1="838" y1="418" x2="1014" y2="418" stroke="#E4EAF1"/>
+      <circle cx="842" cy="450" r="3.5" fill="#5873D8"/><text x="854" y="455" class="item">Claims + boundaries</text>
+      <circle cx="842" cy="487" r="3.5" fill="#5873D8"/><text x="854" y="492" class="item">Proof obligations</text>
+      <circle cx="842" cy="524" r="3.5" fill="#5873D8"/><text x="854" y="529" class="item">Independent challenge</text>
+      <circle cx="842" cy="561" r="3.5" fill="#5873D8"/><text x="854" y="566" class="item">Economic interpretation</text>
+    </g>
+
+    <g>
+      <rect x="1068" y="305" width="220" height="295" rx="18" fill="#FFFFFF" stroke="#D8E2EC"/>
+      <rect x="1068" y="305" width="220" height="7" rx="4" fill="#7C5CFC"/>
+      <text x="1090" y="340" class="stageLabel" fill="#6B4FD3">VALIDATE</text>
+      <text x="1090" y="374" class="stageTitle">Validated</text>
+      <text x="1090" y="400" class="stageTitle">Argument</text>
+      <line x1="1090" y1="418" x2="1266" y2="418" stroke="#E4EAF1"/>
+      <circle cx="1094" cy="450" r="3.5" fill="#7C5CFC"/><text x="1106" y="455" class="item">Formal validity</text>
+      <circle cx="1094" cy="487" r="3.5" fill="#7C5CFC"/><text x="1106" y="492" class="item">Closest-theory risk</text>
+      <circle cx="1094" cy="524" r="3.5" fill="#7C5CFC"/><text x="1106" y="529" class="item">Contribution radius</text>
+      <circle cx="1094" cy="561" r="3.5" fill="#7C5CFC"/><text x="1106" y="566" class="item">Argument + risk package</text>
+    </g>
+
+    <g>
+      <rect x="1320" y="305" width="220" height="295" rx="18" fill="#FFFFFF" stroke="#D8E2EC"/>
+      <rect x="1320" y="305" width="220" height="7" rx="4" fill="#A24CB2"/>
+      <text x="1342" y="340" class="stageLabel" fill="#8C399C">COMMUNICATE</text>
+      <text x="1342" y="374" class="stageTitle">Economic</text>
+      <text x="1342" y="400" class="stageTitle">Manuscript</text>
+      <line x1="1342" y1="418" x2="1518" y2="418" stroke="#E4EAF1"/>
+      <circle cx="1346" cy="450" r="3.5" fill="#A24CB2"/><text x="1358" y="455" class="item">Paper IR + reader path</text>
+      <circle cx="1346" cy="487" r="3.5" fill="#A24CB2"/><text x="1358" y="492" class="item">One canonical writer</text>
+      <circle cx="1346" cy="524" r="3.5" fill="#A24CB2"/><text x="1358" y="529" class="item">3 independent reads</text>
+      <circle cx="1346" cy="561" r="3.5" fill="#A24CB2"/><text x="1358" y="566" class="item">Smallest useful repair</text>
+    </g>
+  </g>
+
+  <g>
+    <g><circle cx="296" cy="453" r="18" fill="#D99000" stroke="#FFFFFF" stroke-width="3"/><text x="296" y="458" text-anchor="middle" font-size="12" font-weight="800" fill="#FFFFFF">G1</text></g>
+    <g><circle cx="548" cy="453" r="18" fill="#D99000" stroke="#FFFFFF" stroke-width="3"/><text x="548" y="458" text-anchor="middle" font-size="12" font-weight="800" fill="#FFFFFF">G2</text></g>
+    <g><circle cx="800" cy="453" r="18" fill="#D99000" stroke="#FFFFFF" stroke-width="3"/><text x="800" y="458" text-anchor="middle" font-size="12" font-weight="800" fill="#FFFFFF">G3</text></g>
+    <g><circle cx="1052" cy="453" r="18" fill="#D99000" stroke="#FFFFFF" stroke-width="3"/><text x="1052" y="458" text-anchor="middle" font-size="12" font-weight="800" fill="#FFFFFF">G4</text></g>
+    <g><circle cx="1304" cy="453" r="18" fill="#D99000" stroke="#FFFFFF" stroke-width="3"/><text x="1304" y="458" text-anchor="middle" font-size="12" font-weight="800" fill="#FFFFFF">G5</text></g>
+  </g>
+
+  <g>
+    <rect x="60" y="632" width="1480" height="120" rx="18" fill="#FFFFFF" stroke="#D8E2EC"/>
+    <text x="86" y="665" class="eyebrow" fill="#60758A">BOUNDED TEAM SURFACES — FRAMING + OPTIONAL THEOREM CHALLENGE; OTHER ROUTES USE ONE ROUTE AGENT</text>
+    <line x1="430" y1="680" x2="430" y2="731" stroke="#DFE7EF"/>
+    <line x1="790" y1="680" x2="790" y2="731" stroke="#DFE7EF"/>
+    <line x1="1150" y1="680" x2="1150" y2="731" stroke="#DFE7EF"/>
+    <text x="86" y="699" class="roleTitle">Mentor</text>
+    <text x="86" y="722" class="roleBody">importance, hidden assumptions, kill / pivot</text>
+    <text x="456" y="699" class="roleTitle">Sealed collaborators</text>
+    <text x="456" y="722" class="roleBody">independent portfolios, rivals, minority view</text>
+    <text x="816" y="699" class="roleTitle">Research workers + challengers</text>
+    <text x="816" y="722" class="roleBody">bounded source, proof, counterexample, repair</text>
+    <text x="1176" y="699" class="roleTitle">Canonical coordinator / writer</text>
+    <text x="1176" y="722" class="roleBody">integrates accepted work; never votes for the human</text>
+  </g>
+
+  <g>
+    <rect x="60" y="778" width="476" height="118" rx="17" fill="#173F67"/>
+    <text x="86" y="811" class="eyebrow" fill="#92BDE8">SCIENTIFIC MEMORY</text>
+    <text x="86" y="842" class="railTitle">Canonical research state + provenance</text>
+    <text x="86" y="870" class="railBody">Versioned decisions, dependencies, replay, selective repair</text>
+
+    <rect x="562" y="778" width="476" height="118" rx="17" fill="#08796D"/>
+    <text x="588" y="811" class="eyebrow" fill="#A5E8DF">EVIDENCE RAIL</text>
+    <text x="588" y="842" class="railTitle">Literature evidence + closest-theory map</text>
+    <text x="588" y="870" class="railBody">Authorized, evidence-bounded sources; never novelty by checklist</text>
+
+    <rect x="1064" y="778" width="476" height="118" rx="17" fill="#6348C8"/>
+    <text x="1090" y="811" class="eyebrow" fill="#D7CEFF">TARGET CALIBRATION</text>
+    <text x="1090" y="842" class="railTitle">Ambition + field + audience + soft venue overlay</text>
+    <text x="1090" y="870" class="railBody">Calibrates burden and reader fit — never theorem truth</text>
+  </g>
+
+  <g>
+    <rect x="60" y="923" width="1480" height="64" rx="17" fill="#FFF4D8" stroke="#E4B24F"/>
+    <text x="86" y="950" class="eyebrow" fill="#9A6500">RESEARCHER-OWNED SCIENTIFIC GATES</text>
+    <text x="86" y="974" font-size="14" fill="#704F12">approve  •  revise  •  pivot  •  park  •  kill</text>
+    <path d="M1505 956 H560" stroke="#D99000" stroke-width="2.5" marker-end="url(#arrowAmber)"/>
+    <text x="1030" y="948" text-anchor="middle" font-size="14" font-weight="650" fill="#8A5A00">When evidence changes, reopen the smallest affected dependency</text>
+  </g>
+
+  <text x="800" y="1020" text-anchor="middle" font-size="13" fill="#6B7E91">Designed to raise the quality and traceability of economic-theory research — not to replace researcher judgment or guarantee publication.</text>
+</svg>
