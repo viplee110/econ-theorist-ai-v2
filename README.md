@@ -76,7 +76,51 @@ Install and check the engine without activating the environment:
 
 The installation is ready when `doctor` reports `"required_ok": true`.
 
-### 2. Choose a host
+### 2. One installation, many independent research projects
+
+Econ Theorist AI v2 separates the reusable research system from the workspace
+of each paper. Install the engine once; give every paper its own exact project
+root. The framework does not need to be copied into every research folder.
+
+Illustrative Windows layout:
+
+```text
+C:\
+├── Projects\
+│   └── Econ Theorist AI v2\             one shared system installation
+│       └── (system files)
+│
+└── Research\
+    ├── Project-A-Agent-Trading\          Project A
+    │   ├── (your notes and draft)
+    │   └── .econ-theorist\               managed memory for A—do not edit
+    │
+    └── Project-B-Information-Disclosure\ Project B
+        ├── (your notes and draft)
+        └── .econ-theorist\               managed memory for B—do not edit
+```
+
+The same installation can serve both projects, including from separate AI
+sessions. Each project keeps its own question, accepted results, provenance,
+human decisions, and revision history. Canonical engine state is project-local
+and is not shared by the engine merely because two papers use the same
+installation.
+
+Distinct project roots are designed to proceed independently. For the clearest
+continuity, use one coordinating AI conversation per project; avoid two
+uncoordinated conversations advancing the same paper at once. Never nest one
+Econ Theorist project inside another or point two projects at the same
+`.econ-theorist` directory.
+
+> [!NOTE]
+> Exact project-root binding and project-local state are implemented in the
+> engine architecture. The publicly recorded Codex route has so far been
+> exercised in a prepared checkout. Clean first use from an arbitrary external
+> folder—and equivalent native Claude Code or Cursor execution—still require
+> positive end-to-end validation. The prepared checkout therefore remains the
+> most reliable first-run path in v1.0.
+
+### 3. Choose a host
 
 | Host | What works today | Recommendation |
 |---|---|---|
@@ -84,17 +128,24 @@ The installation is ready when `doctor` reports `"required_ok": true`.
 | **Claude Code** | Root [`CLAUDE.md`](CLAUDE.md) adapter targeting the host-neutral single-route protocol | Adapter provided; native host smoke and multi-agent parity remain unverified |
 | **Cursor** | [Project rule](.cursor/rules/econ-theorist-v2.mdc) targeting the same single-route protocol | Adapter provided; native host smoke and multi-agent parity remain unverified |
 
-For Claude Code or Cursor, open the same repository root and explicitly ask it
-to use the repository's Econ Theorist AI v2 adapter. Use Codex today when the
+For the recorded Codex first-run path, open the prepared engine checkout and
+explicitly ask Codex to use its Econ Theorist AI v2 adapter. When the paper has
+a separate project root, provide both absolute paths and grant Codex access to
+that project folder. Claude Code and Cursor provide the adapters shown above,
+but their equivalent native paths remain unvalidated. Use Codex today when the
 framing or theorem-challenge team is important.
 
-### 3. Paste one instruction
+### 4. Paste one instruction
 
 ```text
-Use this repository's Econ Theorist AI v2 adapter in this exact repository
-root. In Codex, use $econ-theorist-v2; in Claude Code, follow CLAUDE.md; in
-Cursor, follow the project rule. Initialize a public theory project called
-"My Theory Project".
+Use the Econ Theorist AI v2 adapter from this prepared engine checkout:
+[ENGINE_ROOT]. In Codex, use $econ-theorist-v2; in Claude Code, follow
+CLAUDE.md; in Cursor, follow the project rule.
+
+Operate only on this exact research project root: [PROJECT_ROOT]. Initialize a
+public theory project there called "My Theory Project". Keep its research files
+and `.econ-theorist` state in [PROJECT_ROOT]. When the two roots differ, do not
+create project state under [ENGINE_ROOT].
 
 The economic puzzle I want to explore is: [describe it in ordinary language].
 Intended audience and ambition: [Econometrica / general-interest Top-5 /
@@ -108,7 +159,14 @@ checked. Do not choose a model or draft a paper before I approve the framing.
 Stop whenever my judgment is required.
 ```
 
-### 4. Continue in ordinary language
+For the recorded prepared-checkout Codex pattern, the same checkout can serve
+as both placeholders. To use the Project A / Project B architecture above,
+supply different `[ENGINE_ROOT]` and `[PROJECT_ROOT]` paths; clean cold
+onboarding from an arbitrary external folder remains to be positively
+validated. The host must stop rather than silently substitute another folder
+if it cannot access or verify either path.
+
+### 5. Continue in ordinary language
 
 ```text
 I prefer direction B, but use the benchmark from A.
@@ -250,6 +308,7 @@ research-quality claim has been proved.
 | Persistent research state, provenance, replay, and selective revision | Implemented |
 | Bounded research tasks from framing through manuscript work | Implemented |
 | G1–G5 human promotion gates and authority checks | Implemented |
+| One installed engine serving multiple independent project roots | Implemented in the machine architecture; arbitrary-folder cold onboarding remains to be positively validated |
 | Mentor + two-collaborator framing team | Implemented and exercised in a recorded public pilot |
 | Optional proof/counterexample theorem challenge | Implemented and deterministically tested; a fresh positive public bridge commit and real multi-agent-benefit comparison remain open |
 | Structured argument and reader paths, one coordinating writer, review routes, and a bounded manuscript-quality entry point | Foundations implemented; automatic whole-paper traversal, cross-section voice integration, and a complete real working-paper pilot remain open |
