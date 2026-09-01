@@ -332,6 +332,20 @@ remains the canonical fail-closed authority before G4. The normative owner is
 tests establish binding and compatibility, not exhaustive search, host honesty,
 novelty, contribution quality, or Top-5 readiness.
 
+A 2026-09-01 developer-assisted, topic-neutral `online_host_search` smoke at
+engine checkout `a888d765bd87fb291acfeee2b15ad39e7ef71c1a` reached
+`awaiting_user_choice` with the canonical head unchanged after one required
+collaborator-B diversity repair. The bounded source review classified one
+direction as high-overlap and exposed a severe near-direct absorption risk for
+the other before any choice, worker, candidate completion, `finish`, or G1
+decision. The exact evidence is
+`review_outputs/phase5b0_topic_neutral_online_literature_smoke_20260901/evaluation_summary.md`.
+The run is checkout-bound and developer-assisted; its discarded first
+host-ordering attempt and a pre-invocation script parse failure prevent any
+clean-first-use claim. It proves neither exhaustive search, novelty,
+researcher usefulness, provider independence, multi-agent benefit, nor
+cross-host parity.
+
 The 2026-07-24 AI-agent-trading usability attempt under
 `C:\tmp\etai-v2-ai-agent-trading-20260724` is frozen negative evidence. Its raw
 panel was materially richer than the short direction summary shown to the
@@ -375,10 +389,14 @@ the machine-commitment direction and retains the replication direction only
 for a two-period separation-or-reduction revision; it also identifies omitted
 dynamic false-name and identity-persistence literature. See
 `review_outputs/phase5b0_ai_agent_trading_source_aware_choice_public_pilot_r5/evaluation_summary.md`.
-One new neutral-root public pilot remains required before claiming clean
-end-to-end input fidelity, researcher usefulness, or clean first use. The later
-2026-08-01 existing-project ResearchMove reframe pilot is developer-assisted
-and does not close this requirement.
+The later 2026-09-01 neutral-root literature-orientation smoke preserved its
+exact brief and reached `awaiting_user_choice`, but it was developer-assisted
+and did not independently verify researcher display fidelity or usefulness.
+Together with its discarded first host-ordering attempt, it does not establish
+clean first use. A user-owned neutral-root run remains required before claiming
+clean end-to-end input fidelity, researcher usefulness, or clean first use.
+The 2026-08-01 existing-project ResearchMove reframe pilot likewise does not
+close this requirement.
 
 Do not modify Phase 1--4 payload meanings, committed schemas, registry or
 instruction bytes, packaged profile/craft resources, frozen fixtures, or
