@@ -201,6 +201,16 @@ Absorption asks: does the closest verified result plus a standard argument
 available to the intended audience already deliver the central claim or its
 economic lesson? Notation or prose differences do not establish novelty.
 
+Literature is acquired at two different resolutions. A broad, shallow
+orientation may run only after framing directions have been generated and
+before the researcher chooses at G1; it can expose overlap and killer probes
+but cannot set canonical literature or novelty status. The formal acquisition
+runs only after claims and interpretations have been verified and immediately
+before authoring the absorption audit. It searches the exact benchmark,
+primitives, assumptions, result, and economic lesson against inspected closest
+theory. Its host and privacy semantics are owned by
+`docs/implementation/literature_acquisition_checkpoints.md`.
+
 ### 4.9 ResultPortfolio and ValidatedArgumentPackage
 
 `ResultPortfolio` selects the smallest results needed for the contribution
@@ -329,6 +339,12 @@ model base, assumptions, or economic lesson changes. Outcomes are nonabsorbed,
 partially absorbed, application-only, unresolved evidence, or absorbed. Valid
 routes are substantive mutation, converse/boundary search, demotion, pivot,
 park, or kill--never renaming or decorative generality.
+
+A positive `proceed` recommendation requires current, source-verified full-text
+evidence for the exact packet and claim scope. Metadata, abstracts, snippets,
+or model memory remain unresolved. Insufficient access may support an honest
+park or request for an offline paper bundle, never a positive contribution
+upgrade.
 
 ## 8. Human promotion gates
 

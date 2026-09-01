@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
   <title id="title">Econ Theorist AI v2 research-to-manuscript workflow</title>
-  <desc id="desc">A researcher-led, six-stage economic-theory workflow with task-adaptive agents, five human scientific gates, persistent research state, literature evidence, target calibration, and dependency-aware revision.</desc>
+  <desc id="desc">A researcher-led, six-stage economic-theory workflow with task-adaptive agents, five human scientific gates, pre-G1 literature orientation, pre-G4 full-text closest-theory audit, persistent research state, target calibration, and dependency-aware revision.</desc>
   <defs>
     <linearGradient id="headerGradient" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#102A43"/>
@@ -180,8 +180,8 @@
 
     <rect x="562" y="778" width="476" height="118" rx="17" fill="#08796D"/>
     <text x="588" y="811" class="eyebrow" fill="#A5E8DF">EVIDENCE RAIL</text>
-    <text x="588" y="842" class="railTitle">Literature evidence + closest-theory map</text>
-      <text x="588" y="870" class="railBody">Explicit coverage; never novelty by checklist</text>
+    <text x="588" y="842" class="railTitle">Source orientation + full-text audit</text>
+      <text x="588" y="870" class="railBody">Before G1 choice · before G4 investment</text>
 
     <rect x="1064" y="778" width="476" height="118" rx="17" fill="#6348C8"/>
     <text x="1090" y="811" class="eyebrow" fill="#D7CEFF">TARGET CALIBRATION</text>

@@ -188,8 +188,13 @@ the system then continues from the accepted research state.
    needed for that task.
 3. On the available team surfaces, a mentor and independent collaborators
    compare genuinely different directions before one worker receives a handoff.
-4. The engine validates the proposed research objects before accepting them.
-5. V2 pauses at the scientific decisions that belong to you: approve, revise,
+4. When source access is authorized, the host is required to acquire and
+   declare inspected classic and recent work after the directions are frozen
+   but before asking you to choose.
+5. After claims are verified, the packet requires declared current full-text
+   closest-theory evidence before the system can recommend investing at G4.
+6. The engine validates the proposed research objects before accepting them.
+7. V2 pauses at the scientific decisions that belong to you: approve, revise,
    pivot, park, or kill.
 
 ## Why this is different from an ordinary AI writing session
@@ -207,7 +212,7 @@ V2 organizes the work around those risks.
 | A topic is mistaken for a research question | Requires an exact benchmark, contribution hypothesis, and kill condition | A small set of contestable questions rather than a model chosen too early |
 | Formalism outruns the economics | Freezes primitives, predictions, rivals, and a minimal example before general derivation | The operative economic force in plain language |
 | A plausible result is treated as established | Separates proof, counterexample, boundary, and economic-interpretation work | Exact proof status and unresolved obligations |
-| Novelty is asserted from memory | Records literature evidence, closest-theory comparisons, and absorption risk | A bounded contribution claim with visible coverage limits |
+| Novelty is asserted from memory | Uses a pre-choice orientation and a later full-text closest-theory audit; records sources, access level, comparison, and absorption risk | A bounded contribution claim with visible coverage limits |
 | Revision becomes a full rewrite | Tracks dependencies among assumptions, claims, proofs, intuition, and prose | Only the affected research path is reopened |
 | AI quietly takes over scientific judgment | Reserves structural promotion and external release for the researcher | Clear approve / revise / pivot / park / kill decisions |
 
@@ -228,12 +233,43 @@ affected part without erasing valid work.
 
 | Stage | Central question | Main output | Human decision |
 |---|---|---|---|
-| **1. Question and benchmark** | What exactly is unexplained, why might it matter, and what would kill the project? | Research question, benchmark set, contribution hypothesis | **G1:** pursue, revise, pivot, park, or kill |
+| **1. Question and benchmark** | What exactly is unexplained, why might it matter, and what would kill the project? | Research question, benchmark set, contribution hypothesis, bounded source orientation when available | **G1:** pursue, revise, pivot, park, or kill |
 | **2. Economic mechanism** | Which primitive, conflict, equilibrium feedback, mapping, or impossibility force changes the answer? | Competing mechanisms, frozen predictions, minimal examples | **G2:** promote the economic logic |
 | **3. Formal base** | What is the smallest credible model that represents that logic? | Formalization map, assumptions, solution concept, proof obligations | **G3:** promote the formal base |
-| **4. Claims and challenge** | Which results survive proof attempts, counterexamples, boundaries, and interpretation checks? | Verified claims, counterexamples, interpretation audit | **G4:** invest in the result portfolio |
+| **4. Claims and challenge** | Which results survive proof attempts, counterexamples, boundaries, interpretation checks, and the closest theory? | Verified claims, counterexamples, full-text closest-theory map, absorption assessment | **G4:** invest in the result portfolio |
 | **5. Validated argument** | What has actually been learned, and what can the closest theory already explain? | Argument package, contribution boundary, risks and limitations | **G5:** promote the argument |
 | **6. Economic manuscript** | Can a reader reconstruct the question, mechanism, result, and consequence? | Paper IR, reader path, manuscript units, targeted revisions | Researcher-owned manuscript promotion and release |
+
+## Literature search at two different moments
+
+V2 does not wait until the introduction to ask whether a project has already
+been done. It uses two deliberately different checks:
+
+- **Before G1: broad and shallow orientation.** The collaborators first develop
+  their directions independently. Then an authorized host is required to
+  compare each frozen champion using classic and recent sources that it declares
+  inspected before the researcher chooses. This can expose an obvious overlap,
+  a wrong benchmark, or a cheap killer probe, but it cannot establish novelty.
+- **Before G4: narrow and deep contribution audit.** Once the formal claims are
+  verified, the host searches the exact result, assumptions, economic lesson,
+  and closest mapping. A `proceed` recommendation requires source-verified
+  full-text evidence; metadata, abstracts, snippets, and model memory are not
+  enough.
+
+There is no mechanical paper quota and no claim of exhaustive coverage. Search
+may use an independently authorized online host or a project-local paper bundle.
+If access or coverage is inadequate, the system records the evidence as
+unresolved and cannot promote it into a positive contribution judgment. The
+engine validates the submitted structure, bindings, and declared access and
+verification status; in the trusted-local profile it does not independently
+prove that the host actually inspected a source, and it is not a hidden web
+crawler.
+
+The topic-neutral pre-choice sidecar is currently a Codex surface. The formal
+pre-G4 acquisition obligation is visible in the WorkPacket used by Codex,
+Claude Code, and Cursor. See the
+[literature acquisition contract](docs/implementation/literature_acquisition_checkpoints.md)
+for exact authority, privacy, and compatibility boundaries.
 
 ## A research team when it helps
 
@@ -312,7 +348,7 @@ research-quality claim has been proved.
 | Mentor + two-collaborator framing team | Implemented and exercised in a recorded public pilot |
 | Optional proof/counterexample theorem challenge | Implemented and deterministically tested; a fresh positive public bridge commit and real multi-agent-benefit comparison remain open |
 | Structured argument and reader paths, one coordinating writer, review routes, and a bounded manuscript-quality entry point | Foundations implemented; automatic whole-paper traversal, cross-section voice integration, and a complete real working-paper pilot remain open |
-| Literature evidence, closest-theory maps, and absorption checks | Implemented as research objects; generic pre-choice source orientation is still limited and not automatic |
+| Literature orientation, closest-theory maps, and absorption checks | Topic-neutral pre-choice review is implemented on the Codex framing surface; the formal full-text acquisition obligation is encoded for all three adapters. Live search remains host- and permission-dependent and is not exhaustive-novelty proof |
 | Codex, Claude Code, and Cursor | Codex has the prepared team path; Claude Code and Cursor have core single-route adapters |
 | Private and arbitrary-folder first use | Not yet positively validated |
 

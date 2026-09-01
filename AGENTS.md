@@ -312,6 +312,26 @@ revive v1-style paper-wide imitation, copy source prose or author signatures,
 optimize for AI detectors, or claim that the loop already produces
 human-written or Top-5-ready papers.
 
+The 2026-09-01 additive literature-acquisition slice introduces no new
+scientific stage, route, gate, canonical schema, registry, or instruction
+version. The Codex framing bridge can now bind an explicit
+`topic_neutral_v2` pre-choice profile after the sealed panel and before the
+researcher choice. It uses `FramingDirectionCardV2` and
+`FramingChoiceReviewV2`; the earlier AI-agent-specific V1 profile and omitted
+legacy authorization bytes remain replayable unchanged. This review is
+orientation only and has no literature-status, novelty, nonabsorption, G1, or
+worker authority. Separately, every newly compiled WorkPacket that jointly
+requires `LiteratureEvidence`, `ClosestTheoryMap`, and
+`AbsorptionAssessment` now forbids contribution judgment from model memory or
+uninspected sources and forbids a `proceed` recommendation without current
+full-text acquisition. Codex, Claude Code, and Cursor adapters instruct the
+host to acquire that evidence under separate online-search permission or from
+an explicit project-local offline bundle; the unchanged theory validator
+remains the canonical fail-closed authority before G4. The normative owner is
+`docs/implementation/literature_acquisition_checkpoints.md`. Deterministic
+tests establish binding and compatibility, not exhaustive search, host honesty,
+novelty, contribution quality, or Top-5 readiness.
+
 The 2026-07-24 AI-agent-trading usability attempt under
 `C:\tmp\etai-v2-ai-agent-trading-20260724` is frozen negative evidence. Its raw
 panel was materially richer than the short direction summary shown to the
@@ -476,6 +496,8 @@ or operating system.
   mentor/collaborator/research-worker framing-team semantics.
 - `docs/implementation/framing_quality_contract.md`: additive v8
   economist-facing framing audit and pre-G1 scientific checks.
+- `docs/implementation/literature_acquisition_checkpoints.md`: additive
+  pre-choice orientation and pre-G4 full-text acquisition overlays.
 
 Do not define a second competing workflow in a README, prompt, example, or generated dashboard. Link to the owning specification.
 

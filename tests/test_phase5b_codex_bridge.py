@@ -30,8 +30,10 @@ from econ_theorist.codex_bridge import (
 )
 from econ_theorist.codex_cli import invoke_codex_bytes
 from econ_theorist.framing_team import (
+    FramingChoiceReviewV2,
     FramingChoiceSourceV1,
     FramingDirectionCardV1,
+    FramingDirectionCardV2,
     read_framing_source_aware_selection_binding,
     read_framing_team_delivery_authorization,
     read_framing_worker_activation,
@@ -115,12 +117,15 @@ class Phase5BCodexBridgeTests(unittest.TestCase):
             direct_user_capture="current_user_turn",
         )
 
-    def _source_aware_capability(self) -> CodexFramingTeamCapabilityV1:
+    def _source_aware_capability(
+        self, *, profile: str | None = None
+    ) -> CodexFramingTeamCapabilityV1:
         return CodexFramingTeamCapabilityV1(
             team_surface="available",
             lane_separation="logical",
             direct_user_capture="current_user_turn",
             source_aware_choice="available",
+            source_aware_choice_profile=profile,
         )
 
     def _open_team(self):
@@ -171,12 +176,12 @@ class Phase5BCodexBridgeTests(unittest.TestCase):
         assert panel.framing_team.panel_hash is not None
         return panel
 
-    def _publish_source_aware_panel(self):
+    def _publish_source_aware_panel(self, *, profile: str | None = None):
         opened = self.bridge.invoke(
             CodexFramingTeamOpenRequestV1(
                 **self._delivery_binding(),
                 session=self.session,
-                capability=self._source_aware_capability(),
+                capability=self._source_aware_capability(profile=profile),
             )
         )
         self.assertEqual(opened.outcome, "team_ready", opened)
@@ -188,6 +193,7 @@ class Phase5BCodexBridgeTests(unittest.TestCase):
         ).decode("utf-8")
         for host_only_token in (
             "source_aware_choice",
+            "topic_neutral_v2",
             "awaiting_choice_review",
             "online_host_search",
         ):
@@ -199,6 +205,7 @@ class Phase5BCodexBridgeTests(unittest.TestCase):
             team_plan_hash=opened.framing_team.team_plan_hash,
         )
         self.assertEqual(authorization.source_aware_choice, "available")
+        self.assertEqual(authorization.source_aware_choice_profile, profile)
         panel = self.bridge.invoke(
             self._panel_request(opened.framing_team.team_plan_hash)
         )
@@ -307,6 +314,86 @@ class Phase5BCodexBridgeTests(unittest.TestCase):
             mentor_screen_markdown=(
                 "导师只用原始批评检验两个合作者方向，不产生第三个方向。"
             ),
+            sources=sources,
+            direction_cards=cards,
+        )
+
+    def _topic_neutral_choice_review_request(
+        self, panel_response
+    ) -> CodexFramingChoiceReviewRequestV1:
+        assert panel_response.framing_team is not None
+        assert panel_response.framing_team.team_plan_hash is not None
+        assert panel_response.framing_team.panel_hash is not None
+        sources = (
+            FramingChoiceSourceV1(
+                source_id="classic.disclosure",
+                citation="Classic disclosure benchmark.",
+                locator="https://example.test/disclosure",
+                source_kind="classic_theory",
+                access_level="full_text",
+                retrieved_at=NOW,
+                supported_claim_markdown="Provides the no-disclosure benchmark.",
+                limitations_markdown="Does not settle the proposed participation margin.",
+            ),
+            FramingChoiceSourceV1(
+                source_id="recent.certification",
+                citation="Recent voluntary-certification theory.",
+                locator="https://example.test/certification",
+                source_kind="recent_theory",
+                access_level="abstract",
+                retrieved_at=NOW,
+                supported_claim_markdown="Studies endogenous certification choices.",
+                limitations_markdown="Abstract inspection cannot establish novelty.",
+            ),
+        )
+        cards = tuple(
+            FramingDirectionCardV2(
+                lane_id=lane_id,
+                research_question=question,
+                exact_benchmark="No certification with the same information structure.",
+                benchmark_delta=benchmark_delta,
+                economic_significance=significance,
+                load_bearing_economic_force=force,
+                classic_source_ids=("classic.disclosure",),
+                recent_source_ids=("recent.certification",),
+                overlap_risk="unresolved",
+                closest_literature_overlap="Disclosure theory may absorb the signal channel.",
+                remaining_theory_delta="Isolate participation from information revelation.",
+                falsifiable_theory_increment="Characterize an exact reversal or equivalence region.",
+                decisive_pre_g1_probe="Solve a two-type example and test the disclosure reduction.",
+                kill_or_reframe_condition="Park if standard disclosure reproduces the result.",
+                decision_summary_markdown=f"{lane_id}: conditional source-oriented direction.",
+            )
+            for lane_id, question, benchmark_delta, significance, force in (
+                (
+                    "collaborator_a",
+                    "When does voluntary certification worsen adverse selection?",
+                    "Allow endogenous participation in certification.",
+                    "Certification may reverse rather than improve market sorting.",
+                    "Participation changes the selected pool observed by buyers.",
+                ),
+                (
+                    "collaborator_b",
+                    "When is certification equivalent to direct disclosure?",
+                    "Replace certification with a direct signal of equal informativeness.",
+                    "Institutional form may not change implementability.",
+                    "Only induced posteriors affect downstream choices.",
+                ),
+            )
+        )
+        return CodexFramingChoiceReviewRequestV1(
+            **self._delivery_binding(),
+            team_plan_hash=panel_response.framing_team.team_plan_hash,
+            panel_hash=panel_response.framing_team.panel_hash,
+            session=self.session,
+            coordinator=CodexFramingChoiceReviewCoordinatorDraftV1(
+                agent_label="coordinator.agent",
+                model_observation="gpt-5",
+            ),
+            acquisition_mode="online_host_search",
+            search_scope="Classic disclosure and recent certification theory.",
+            coverage_limits="Bounded orientation only; no novelty finding.",
+            mentor_screen_markdown="Apply the mentor's benchmark and kill tests.",
             sources=sources,
             direction_cards=cards,
         )
@@ -564,10 +651,19 @@ class Phase5BCodexBridgeTests(unittest.TestCase):
     def test_source_aware_review_round_trips_unicode_and_binds_handoff(self) -> None:
         head_before = self._head()
         panel_response = self._publish_source_aware_panel()
-        review_response = self.bridge.invoke(
-            self._choice_review_request(panel_response)
+        review_request = self._choice_review_request(panel_response)
+        legacy_request_bytes = canonical_json_bytes(review_request)
+        parsed_request = CODEX_BRIDGE_REQUEST_ADAPTER.validate_json(
+            legacy_request_bytes, strict=True
         )
+        self.assertEqual(canonical_json_bytes(parsed_request), legacy_request_bytes)
+        review_response = self.bridge.invoke(review_request)
         self.assertEqual(review_response.outcome, "awaiting_user_choice")
+        legacy_response_bytes = canonical_json_bytes(review_response)
+        parsed_response = type(review_response).model_validate_json(
+            legacy_response_bytes, strict=True
+        )
+        self.assertEqual(canonical_json_bytes(parsed_response), legacy_response_bytes)
         assert review_response.framing_team is not None
         result = review_response.framing_team
         assert result.panel is not None
@@ -626,6 +722,57 @@ class Phase5BCodexBridgeTests(unittest.TestCase):
         )
         self.assertEqual(stored, first.framing_team.selection_binding)
         self.assertEqual(len(self._handoff_paths()), 1)
+        self.assertEqual(self._head(), head_before)
+
+    def test_topic_neutral_review_reaches_choice_without_ai_specific_fields(self) -> None:
+        head_before = self._head()
+        panel_response = self._publish_source_aware_panel(
+            profile="topic_neutral_v2"
+        )
+        incompatible_reopen = self.bridge.invoke(
+            CodexFramingTeamOpenRequestV1(
+                **self._delivery_binding(),
+                session=self.session,
+                capability=self._source_aware_capability(),
+            )
+        )
+        self.assertEqual(incompatible_reopen.outcome, "error")
+        self.assertIn(
+            "different authorization",
+            incompatible_reopen.diagnostics[0].message,
+        )
+        review_response = self.bridge.invoke(
+            self._topic_neutral_choice_review_request(panel_response)
+        )
+        self.assertEqual(review_response.outcome, "awaiting_user_choice")
+        assert review_response.framing_team is not None
+        result = review_response.framing_team
+        assert result.choice_review is not None
+        assert result.choice_review_hash is not None
+        self.assertIsInstance(result.choice_review, FramingChoiceReviewV2)
+        self.assertEqual(
+            result.choice_review.direction_cards[0].load_bearing_economic_force,
+            "Participation changes the selected pool observed by buyers.",
+        )
+        self.assertNotIn(
+            b"ai_specific_primitive",
+            canonical_json_bytes(result.choice_review),
+        )
+        user_turn = CodexFramingTeamUserTurnRequestV1(
+            **self._delivery_binding(),
+            panel_hash=result.panel_hash,
+            choice_review_hash=result.choice_review_hash,
+            session=self.session,
+            capture=self._capture("选择 A，并先做最小披露约化测试。"),
+            interpretation=CodexFramingClearInterpretationV1(
+                disposition="continue",
+                selected_lane_ids=("collaborator_a",),
+                synthesis_markdown="选择 A，但保留披露吸收风险。",
+                worker_brief="围绕参与选择与披露基准撰写 framing candidate。",
+            ),
+        )
+        handoff = self.bridge.invoke(user_turn)
+        self.assertEqual(handoff.outcome, "handoff_ready", handoff)
         self.assertEqual(self._head(), head_before)
 
     def test_source_aware_choice_rejects_missing_review_and_wrong_bindings(
@@ -818,6 +965,9 @@ class Phase5BCodexBridgeTests(unittest.TestCase):
     def test_legacy_request_bytes_omit_source_aware_additions(self) -> None:
         capability = self._available_capability()
         self.assertNotIn(b'"source_aware_choice"', canonical_json_bytes(capability))
+        self.assertNotIn(
+            b'"source_aware_choice_profile"', canonical_json_bytes(capability)
+        )
         panel_response = self._publish_panel()
         assert panel_response.framing_team is not None
         assert panel_response.framing_team.panel_hash is not None

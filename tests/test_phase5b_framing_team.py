@@ -9,8 +9,10 @@ import econ_theorist.framing_team as framing_team
 from econ_theorist.codec import canonical_json_bytes, sha256_digest
 from econ_theorist.errors import IntegrityError
 from econ_theorist.framing_team import (
+    FramingChoiceReviewV2,
     FramingChoiceSourceV1,
     FramingDirectionCardV1,
+    FramingDirectionCardV2,
     build_framing_choice_review,
     build_framing_lane_output,
     build_framing_researcher_synthesis,
@@ -111,7 +113,9 @@ class Phase5BFramingTeamTests(unittest.TestCase):
             self.operational.runs / self.route_run_id,
         )
 
-    def _delivery_authorization(self, *, source_aware_choice=None):
+    def _delivery_authorization(
+        self, *, source_aware_choice=None, source_aware_choice_profile=None
+    ):
         return build_framing_team_delivery_authorization(
             self.packet,
             self.work_packet_hash,
@@ -125,15 +129,19 @@ class Phase5BFramingTeamTests(unittest.TestCase):
             host_session_id="focused-test-session",
             lane_separation_claim="logical",
             source_aware_choice=source_aware_choice,
+            source_aware_choice_profile=source_aware_choice_profile,
         )
 
-    def _team_outputs(self, *, source_aware_choice=None):
+    def _team_outputs(
+        self, *, source_aware_choice=None, source_aware_choice_profile=None
+    ):
         plan_hash, plan = open_framing_team_plan(
             self.operational,
             route_run_id=self.route_run_id,
             work_packet_hash=self.work_packet_hash,
             delivery_authorization=self._delivery_authorization(
-                source_aware_choice=source_aware_choice
+                source_aware_choice=source_aware_choice,
+                source_aware_choice_profile=source_aware_choice_profile,
             ),
         )
         mentor = build_framing_lane_output(
@@ -169,9 +177,14 @@ class Phase5BFramingTeamTests(unittest.TestCase):
         )
         return plan_hash, plan, mentor, collaborator_a, collaborator_b
 
-    def _published_panel(self, *, source_aware_choice=None):
+    def _published_panel(
+        self, *, source_aware_choice=None, source_aware_choice_profile=None
+    ):
         plan_hash, plan, mentor, collaborator_a, collaborator_b = (
-            self._team_outputs(source_aware_choice=source_aware_choice)
+            self._team_outputs(
+                source_aware_choice=source_aware_choice,
+                source_aware_choice_profile=source_aware_choice_profile,
+            )
         )
         panel_hash, panel = publish_framing_team_panel(
             self.operational,
@@ -279,6 +292,56 @@ class Phase5BFramingTeamTests(unittest.TestCase):
             direction_cards=self._choice_cards(),
         )
 
+    def _topic_neutral_choice_cards(self):
+        return tuple(
+            FramingDirectionCardV2(
+                lane_id=lane_id,
+                research_question=(
+                    "When does voluntary certification worsen selection?"
+                    if lane_id == "collaborator_a"
+                    else "When is certification equivalent to direct disclosure?"
+                ),
+                exact_benchmark="No certification under the same information structure.",
+                benchmark_delta=(
+                    "Make certification optional and endogenous."
+                    if lane_id == "collaborator_a"
+                    else "Replace the intermediary signal with direct disclosure."
+                ),
+                economic_significance=(
+                    "The sign of certification's selection effect can reverse."
+                    if lane_id == "collaborator_a"
+                    else "Institutional form may be irrelevant to implementability."
+                ),
+                load_bearing_economic_force=(
+                    "Endogenous participation changes the pool being screened."
+                    if lane_id == "collaborator_a"
+                    else "Only the induced posterior, not the certifier, affects choice."
+                ),
+                classic_source_ids=("source.classic",),
+                recent_source_ids=("source.recent",),
+                overlap_risk="unresolved",
+                closest_literature_overlap=(
+                    "Classic disclosure models already permit endogenous revelation."
+                ),
+                remaining_theory_delta=(
+                    "Separate the participation margin from the information margin."
+                ),
+                falsifiable_theory_increment=(
+                    "Characterize exactly when the benchmark ordering reverses."
+                ),
+                decisive_pre_g1_probe=(
+                    "Solve the smallest two-type example and test reduction to disclosure."
+                ),
+                kill_or_reframe_condition=(
+                    "Park if the claimed force is absorbed by standard disclosure."
+                ),
+                decision_summary_markdown=(
+                    f"{lane_id} remains conditional on a nonabsorbed benchmark delta."
+                ),
+            )
+            for lane_id in ("collaborator_a", "collaborator_b")
+        )
+
     def test_new_team_uses_bounded_internal_idea_competition(self) -> None:
         plan_hash, plan = open_framing_team_plan(
             self.operational,
@@ -378,6 +441,10 @@ class Phase5BFramingTeamTests(unittest.TestCase):
         self.assertIsNone(legacy_authorization.source_aware_choice)
         self.assertNotIn(
             b'"source_aware_choice"',
+            canonical_json_bytes(legacy_authorization),
+        )
+        self.assertNotIn(
+            b'"source_aware_choice_profile"',
             canonical_json_bytes(legacy_authorization),
         )
         legacy_bytes = canonical_json_bytes(legacy_authorization)
@@ -651,6 +718,73 @@ class Phase5BFramingTeamTests(unittest.TestCase):
         after = replay(self.layout)
         self.assertEqual(after.head, self.head_before)
         self.assertEqual(len(after.decisions), 0)
+
+    def test_topic_neutral_source_review_is_versioned_and_head_neutral(self) -> None:
+        _, _, panel_hash, panel = self._published_panel(
+            source_aware_choice="available",
+            source_aware_choice_profile="topic_neutral_v2",
+        )
+        authorization = self._delivery_authorization(
+            source_aware_choice="available",
+            source_aware_choice_profile="topic_neutral_v2",
+        )
+        self.assertEqual(
+            authorization.source_aware_choice_profile,
+            "topic_neutral_v2",
+        )
+        review = build_framing_choice_review(
+            panel,
+            panel_hash,
+            coordinator_agent_label="coordinator.test",
+            coordinator_model_observation="source-orientation-model",
+            acquisition_mode="online_host_search",
+            search_scope="Classic disclosure theory and recent certification theory.",
+            coverage_limits="Bounded orientation; novelty remains unresolved.",
+            mentor_screen_markdown="Apply the mentor's kill tests to both directions.",
+            sources=self._choice_sources(),
+            direction_cards=self._topic_neutral_choice_cards(),
+            source_aware_choice_profile="topic_neutral_v2",
+        )
+        self.assertIsInstance(review, FramingChoiceReviewV2)
+        self.assertEqual(
+            review.review_schema,
+            "econ-theorist/framing-choice-review/v2",
+        )
+        encoded_card = canonical_json_bytes(review.direction_cards[0])
+        self.assertNotIn(b"ai_specific_primitive", encoded_card)
+        self.assertIn(b"load_bearing_economic_force", encoded_card)
+        review_hash, stored = publish_framing_choice_review(
+            self.operational,
+            route_run_id=self.route_run_id,
+            work_packet_hash=self.work_packet_hash,
+            panel_hash=panel_hash,
+            review=review,
+        )
+        self.assertEqual(stored, review)
+        self.assertEqual(
+            read_framing_choice_review(
+                self.operational,
+                route_run_id=self.route_run_id,
+                work_packet_hash=self.work_packet_hash,
+                review_hash=review_hash,
+            ),
+            review,
+        )
+        with self.assertRaisesRegex(ValueError, "requires v2 direction cards"):
+            build_framing_choice_review(
+                panel,
+                panel_hash,
+                coordinator_agent_label="coordinator.test",
+                coordinator_model_observation="source-orientation-model",
+                acquisition_mode="online_host_search",
+                search_scope="Bounded search.",
+                coverage_limits="Orientation only.",
+                mentor_screen_markdown="Apply the mentor screen.",
+                sources=self._choice_sources(),
+                direction_cards=self._choice_cards(),
+                source_aware_choice_profile="topic_neutral_v2",
+            )
+        self.assertEqual(replay(self.layout).head, self.head_before)
 
     def test_choice_review_rejects_incomplete_or_unknown_source_mapping(self) -> None:
         _, _, panel_hash, panel = self._published_panel()

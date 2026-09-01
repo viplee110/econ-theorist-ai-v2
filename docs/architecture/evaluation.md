@@ -208,6 +208,8 @@ An individual output is ineligible for manuscript promotion or a submission-qual
 ### Literature integrity
 
 - fabricated source or result;
+- claimed online or full-text coverage without actually inspecting the recorded source;
+- a positive pre-G4 contribution recommendation without current, source-verified full-text closest-theory evidence;
 - closest-paper claim unsupported by current `LiteratureEvidence`;
 - prior paper described more strongly or narrowly than the source permits;
 - novelty claim that ignores a known absorption threat in the supplied evidence.

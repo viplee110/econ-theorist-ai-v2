@@ -23,10 +23,10 @@ from .codec import canonical_json_bytes, sha256_digest
 from .errors import RuntimeStoreError
 from .framing_team import (
     FramingAdvisoryLaneId,
-    FramingChoiceReviewV1,
+    FramingChoiceReview,
     FramingChoiceSourceV1,
     FramingDisposition,
-    FramingDirectionCardV1,
+    FramingDirectionCard,
     FramingResearcherSynthesisV1,
     FramingSourceAwareSelectionBindingV1,
     FramingTeamPanelV1,
@@ -387,6 +387,7 @@ class CodexFramingTeamCapabilityV1(StrictModel):
     lane_separation: Literal["logical", "unavailable"]
     direct_user_capture: Literal["current_user_turn", "unavailable"]
     source_aware_choice: Literal["available", "unavailable"] = "unavailable"
+    source_aware_choice_profile: Literal["topic_neutral_v2"] | None = None
     fallback_reason: NonEmpty | None = None
 
     @model_serializer(mode="wrap")
@@ -394,6 +395,8 @@ class CodexFramingTeamCapabilityV1(StrictModel):
         data = handler(self)
         if "source_aware_choice" not in self.model_fields_set:
             data.pop("source_aware_choice", None)
+        if self.source_aware_choice_profile is None:
+            data.pop("source_aware_choice_profile", None)
         return data
 
     @property
@@ -413,6 +416,13 @@ class CodexFramingTeamCapabilityV1(StrictModel):
         if self.source_aware_choice == "available" and not self.available:
             raise ValueError(
                 "source-aware choice requires the available framing-team capability"
+            )
+        if (
+            self.source_aware_choice_profile is not None
+            and self.source_aware_choice != "available"
+        ):
+            raise ValueError(
+                "source-aware choice profile requires source-aware choice"
             )
         return self
 
@@ -530,8 +540,8 @@ class CodexFramingChoiceReviewRequestV1(_CodexFramingTeamDeliveryRequestV1):
     mentor_screen_markdown: NonEmpty
     sources: tuple[FramingChoiceSourceV1, ...]
     direction_cards: tuple[
-        FramingDirectionCardV1,
-        FramingDirectionCardV1,
+        FramingDirectionCard,
+        FramingDirectionCard,
     ]
 
 
@@ -653,7 +663,7 @@ class CodexFramingTeamResultV1(StrictModel):
     panel_hash: Digest | None = None
     panel: FramingTeamPanelV1 | None = None
     choice_review_hash: Digest | None = None
-    choice_review: FramingChoiceReviewV1 | None = None
+    choice_review: FramingChoiceReview | None = None
     selection_binding_hash: Digest | None = None
     selection_binding: FramingSourceAwareSelectionBindingV1 | None = None
     synthesis_hash: Digest | None = None
@@ -2464,6 +2474,11 @@ class CodexBridge:
                     if request.capability.source_aware_choice == "available"
                     else None
                 ),
+                source_aware_choice_profile=(
+                    request.capability.source_aware_choice_profile
+                    if request.capability.source_aware_choice == "available"
+                    else None
+                ),
             )
             plan_hash, plan = open_framing_team_plan(
                 operational,
@@ -2623,6 +2638,9 @@ class CodexBridge:
             mentor_screen_markdown=request.mentor_screen_markdown,
             sources=request.sources,
             direction_cards=request.direction_cards,
+            source_aware_choice_profile=(
+                authorization.source_aware_choice_profile
+            ),
         )
         review_hash, review = publish_framing_choice_review(
             operational,
@@ -2691,7 +2709,7 @@ class CodexBridge:
             route_run_id=request.route_run_id,
             work_packet_hash=request.work_packet_hash,
         )
-        review: FramingChoiceReviewV1 | None = None
+        review: FramingChoiceReview | None = None
         if review_required:
             if request.choice_review_hash is None:
                 raise ValueError(

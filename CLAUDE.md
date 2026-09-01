@@ -35,15 +35,21 @@ activate v2.
 4. Treat the returned WorkPacket and `candidate_authoring_contract` as the only
    scientific context and output contract for that run. Do not add remembered
    journal rules, source cards, prompts, or content from another run.
-5. Write only to the packet-declared shadow/candidate paths. Never write
+5. If the required outputs jointly name `LiteratureEvidence`,
+   `ClosestTheoryMap`, and `AbsorptionAssessment`, acquire fresh closest-theory
+   evidence before authoring. Use online search only with separate
+   privacy/egress permission, or an explicit project-local offline bundle.
+   Bind it to the current packet and head; metadata, abstracts, snippets, and
+   model memory are not full-text evidence and cannot support `proceed`.
+6. Write only to the packet-declared shadow/candidate paths. Never write
    canonical ObjectStore bytes directly. Complete through
    `candidate.complete` and report success only when the engine response is
    `committed`.
-6. Surface `blocked`, `repair_required`, `human_decision_required`,
+7. Surface `blocked`, `repair_required`, `human_decision_required`,
    `ambiguous_next`, privacy failures, and other non-success outcomes exactly;
    stop when the researcher must decide. Retry the same operation key after an
    interruption rather than opening a replacement run.
-7. The generic machine protocol is currently a single-route host surface. Do
+8. The generic machine protocol is currently a single-route host surface. Do
    not simulate the Codex-specific framing or theorem team bridge, claim
    multiple agents, or expose a sealed packet to another model unless a future
    Claude projection explicitly declares that engine surface and its isolation.

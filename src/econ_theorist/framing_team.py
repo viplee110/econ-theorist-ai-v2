@@ -9,7 +9,7 @@ only route to a canonical commit.
 
 from __future__ import annotations
 
-from typing import Any, Literal, TypeVar
+from typing import Any, Literal, TypeAlias, TypeVar
 
 from pydantic import model_serializer, model_validator
 
@@ -171,6 +171,7 @@ class FramingTeamDeliveryAuthorizationV1(_FramingPacketBoundV1):
     lane_separation_claim: Literal["logical", "host_enforced"]
     direct_user_capture_claim: Literal["current_user_turn"] = "current_user_turn"
     source_aware_choice: Literal["available"] | None = None
+    source_aware_choice_profile: Literal["topic_neutral_v2"] | None = None
     canonical_write_allowed: Literal[False] = False
     authority_semantics: Literal[
         "phase5b_declared_bounded_team_delegation_after_single_coordinator_delivery"
@@ -185,6 +186,13 @@ class FramingTeamDeliveryAuthorizationV1(_FramingPacketBoundV1):
             "research_worker",
         ):
             raise ValueError("framing team authorization requires the exact four lanes")
+        if (
+            self.source_aware_choice_profile is not None
+            and self.source_aware_choice != "available"
+        ):
+            raise ValueError(
+                "source-aware choice profile requires source-aware choice"
+            )
         return self
 
     @model_serializer(mode="wrap")
@@ -192,6 +200,8 @@ class FramingTeamDeliveryAuthorizationV1(_FramingPacketBoundV1):
         data = handler(self)
         if self.source_aware_choice is None:
             data.pop("source_aware_choice", None)
+        if self.source_aware_choice_profile is None:
+            data.pop("source_aware_choice_profile", None)
         return data
 
 
@@ -327,6 +337,45 @@ class FramingDirectionCardV1(StrictModel):
         return self
 
 
+class FramingDirectionCardV2(StrictModel):
+    """Topic-neutral source orientation for one unchanged blind-panel lane."""
+
+    card_schema: Literal["econ-theorist/framing-direction-card/v2"] = (
+        "econ-theorist/framing-direction-card/v2"
+    )
+    lane_id: Literal["collaborator_a", "collaborator_b"]
+    research_question: NonEmptyString
+    exact_benchmark: NonEmptyString
+    benchmark_delta: NonEmptyString
+    economic_significance: NonEmptyString
+    load_bearing_economic_force: NonEmptyString
+    classic_source_ids: tuple[StableId, ...]
+    recent_source_ids: tuple[StableId, ...]
+    overlap_risk: Literal["high", "medium", "unresolved"]
+    closest_literature_overlap: NonEmptyString
+    remaining_theory_delta: NonEmptyString
+    falsifiable_theory_increment: NonEmptyString
+    decisive_pre_g1_probe: NonEmptyString
+    kill_or_reframe_condition: NonEmptyString
+    decision_summary_markdown: NonEmptyString
+
+    @model_validator(mode="after")
+    def _source_groups_are_nonempty_and_unique(self) -> "FramingDirectionCardV2":
+        if not self.classic_source_ids:
+            raise ValueError("direction card requires at least one classic source")
+        if not self.recent_source_ids:
+            raise ValueError("direction card requires at least one recent source")
+        if len(set(self.classic_source_ids)) != len(self.classic_source_ids):
+            raise ValueError("direction card classic source ids must be unique")
+        if len(set(self.recent_source_ids)) != len(self.recent_source_ids):
+            raise ValueError("direction card recent source ids must be unique")
+        if set(self.classic_source_ids) & set(self.recent_source_ids):
+            raise ValueError(
+                "direction card classic and recent source ids must be distinct"
+            )
+        return self
+
+
 class FramingChoiceReviewV1(_FramingPacketBoundV1):
     """The one source-aware coordinator review of an immutable raw panel."""
 
@@ -385,6 +434,70 @@ class FramingChoiceReviewV1(_FramingPacketBoundV1):
                         f"direction card requires an inspected {label} source"
                     )
         return self
+
+
+class FramingChoiceReviewV2(_FramingPacketBoundV1):
+    """Topic-neutral source review of one immutable raw framing panel."""
+
+    review_schema: Literal["econ-theorist/framing-choice-review/v2"] = (
+        "econ-theorist/framing-choice-review/v2"
+    )
+    team_plan_hash: Digest
+    panel_hash: Digest
+    coordinator_agent_label: StableId
+    coordinator_model_observation: NonEmptyString
+    coordinator_review_count: Literal[1] = 1
+    advisory_lanes_reinvoked: Literal[False] = False
+    acquisition_mode: Literal["online_host_search", "offline_user_bundle"]
+    search_scope: NonEmptyString
+    coverage_limits: NonEmptyString
+    mentor_screen_markdown: NonEmptyString
+    sources: tuple[FramingChoiceSourceV1, ...]
+    direction_cards: tuple[
+        FramingDirectionCardV2,
+        FramingDirectionCardV2,
+    ]
+    canonical_write_allowed: Literal[False] = False
+    authority_semantics: Literal[
+        "orientation_only_not_literature_novelty_evidence"
+    ] = "orientation_only_not_literature_novelty_evidence"
+
+    @model_validator(mode="after")
+    def _complete_source_aware_comparison(self) -> "FramingChoiceReviewV2":
+        if len(self.sources) < 2:
+            raise ValueError("framing choice review requires at least two sources")
+        source_ids = tuple(source.source_id for source in self.sources)
+        if len(set(source_ids)) != len(source_ids):
+            raise ValueError("framing choice review source ids must be unique")
+        lane_ids = tuple(card.lane_id for card in self.direction_cards)
+        if set(lane_ids) != {"collaborator_a", "collaborator_b"}:
+            raise ValueError(
+                "framing choice review requires exactly the two collaborator lanes"
+            )
+        known_sources = {source.source_id: source for source in self.sources}
+        for card in self.direction_cards:
+            referenced = set(card.classic_source_ids) | set(card.recent_source_ids)
+            unknown = referenced - set(known_sources)
+            if unknown:
+                raise ValueError(
+                    "framing direction card references an unknown source id"
+                )
+            for label, ids in (
+                ("classic", card.classic_source_ids),
+                ("recent", card.recent_source_ids),
+            ):
+                if all(
+                    known_sources[source_id].access_level == "metadata"
+                    for source_id in ids
+                ):
+                    raise ValueError(
+                        f"direction card requires an inspected {label} source"
+                    )
+        return self
+
+
+FramingDirectionCard: TypeAlias = FramingDirectionCardV1 | FramingDirectionCardV2
+FramingChoiceReview: TypeAlias = FramingChoiceReviewV1 | FramingChoiceReviewV2
 
 
 class FramingResearcherSynthesisV1(_FramingPacketBoundV1):
@@ -594,6 +707,7 @@ def build_framing_team_delivery_authorization(
     host_session_id: str,
     lane_separation_claim: Literal["logical", "host_enforced"],
     source_aware_choice: Literal["available"] | None = None,
+    source_aware_choice_profile: Literal["topic_neutral_v2"] | None = None,
 ) -> FramingTeamDeliveryAuthorizationV1:
     """Build the declaration for three advisors and one conditional worker."""
 
@@ -609,6 +723,7 @@ def build_framing_team_delivery_authorization(
         host_session_id=host_session_id,
         lane_separation_claim=lane_separation_claim,
         source_aware_choice=source_aware_choice,
+        source_aware_choice_profile=source_aware_choice_profile,
     )
 
 
@@ -1129,13 +1244,14 @@ def build_framing_choice_review(
     mentor_screen_markdown: str,
     sources: tuple[FramingChoiceSourceV1, ...],
     direction_cards: tuple[
-        FramingDirectionCardV1,
-        FramingDirectionCardV1,
+        FramingDirectionCard,
+        FramingDirectionCard,
     ],
-) -> FramingChoiceReviewV1:
+    source_aware_choice_profile: Literal["topic_neutral_v2"] | None = None,
+) -> FramingChoiceReview:
     """Build one comparison review without changing the raw blind panel."""
 
-    return FramingChoiceReviewV1(
+    payload = dict(
         **panel.model_dump(include=set(_FramingPacketBoundV1.model_fields)),
         team_plan_hash=panel.team_plan_hash,
         panel_hash=panel_hash,
@@ -1148,18 +1264,40 @@ def build_framing_choice_review(
         sources=sources,
         direction_cards=direction_cards,
     )
+    if source_aware_choice_profile == "topic_neutral_v2":
+        if not all(
+            isinstance(card, FramingDirectionCardV2) for card in direction_cards
+        ):
+            raise ValueError(
+                "topic-neutral source-aware choice requires v2 direction cards"
+            )
+        return FramingChoiceReviewV2.model_validate(payload, strict=True)
+    if not all(
+        isinstance(card, FramingDirectionCardV1) for card in direction_cards
+    ):
+        raise ValueError("legacy source-aware choice requires v1 direction cards")
+    return FramingChoiceReviewV1.model_validate(payload, strict=True)
 
 
 def _validate_choice_review(
     operational: ProjectOperationalLayout,
     packet: WorkPacketV1,
     work_packet_hash: str,
-    review: FramingChoiceReviewV1,
+    review: FramingChoiceReview,
 ) -> None:
     activation = _read_activation(operational, packet, work_packet_hash)
     if activation is None or activation[2].source_aware_choice != "available":
         raise OperationalError(
             "framing choice review was not authorized at team activation"
+        )
+    expected_type: type[FramingChoiceReviewV1] | type[FramingChoiceReviewV2]
+    if activation[2].source_aware_choice_profile == "topic_neutral_v2":
+        expected_type = FramingChoiceReviewV2
+    else:
+        expected_type = FramingChoiceReviewV1
+    if not isinstance(review, expected_type):
+        raise OperationalError(
+            "framing choice review differs from the active source-aware profile"
         )
     _require_binding(review, packet, work_packet_hash, label="framing choice review")
     if review.team_plan_hash != activation[0]:
@@ -1183,13 +1321,21 @@ def _read_choice_review_for_packet(
     work_packet_hash: str,
     *,
     expected_review_hash: str | None = None,
-) -> tuple[str, FramingChoiceReviewV1] | None:
+) -> tuple[str, FramingChoiceReview] | None:
+    activation = _read_activation(operational, packet, work_packet_hash)
+    if activation is None:
+        raise OperationalError("framing team is not active")
+    review_model: type[FramingChoiceReviewV1] | type[FramingChoiceReviewV2]
+    if activation[2].source_aware_choice_profile == "topic_neutral_v2":
+        review_model = FramingChoiceReviewV2
+    else:
+        review_model = FramingChoiceReviewV1
     result = _read_fixed_content_record(
         operational,
         packet.route_run_id,
         "framing-choice-review.json",
         "framing-choice-reviews",
-        FramingChoiceReviewV1,
+        review_model,
         label="framing choice review",
         expected_digest=expected_review_hash,
     )
@@ -1206,8 +1352,8 @@ def publish_framing_choice_review(
     route_run_id: str,
     work_packet_hash: str,
     panel_hash: str,
-    review: FramingChoiceReviewV1,
-) -> tuple[str, FramingChoiceReviewV1]:
+    review: FramingChoiceReview,
+) -> tuple[str, FramingChoiceReview]:
     """Publish the one immutable source-aware review, with exact retry."""
 
     packet = _load_current_framing_packet(
@@ -1248,7 +1394,7 @@ def read_framing_choice_review(
     work_packet_hash: str,
     review_hash: str,
     require_current_head: bool = True,
-) -> FramingChoiceReviewV1:
+) -> FramingChoiceReview:
     """Read the exact fixed review and all of its packet/panel bindings."""
 
     packet = _load_current_framing_packet(
@@ -2267,9 +2413,13 @@ def framing_worker_completion_binding_exists(
 
 __all__ = [
     "FramingAdvisoryLaneId",
+    "FramingChoiceReview",
     "FramingChoiceReviewV1",
+    "FramingChoiceReviewV2",
     "FramingChoiceSourceV1",
+    "FramingDirectionCard",
     "FramingDirectionCardV1",
+    "FramingDirectionCardV2",
     "FramingDisposition",
     "FramingLaneOutputV1",
     "FramingResearcherSynthesisV1",

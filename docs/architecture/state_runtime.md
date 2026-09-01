@@ -135,6 +135,12 @@ Applicability is declared by entity schema. A required dimension uses one value 
 
 Stored scientific-status transitions require a transaction, an allowed actor, and supporting references. `human_acceptance` is derived exclusively from effective, immutable Decision events. `freshness` is derived exclusively from the committed dependency graph and exact version/facet refs. Both appear in materialized snapshots and views, but neither may be asserted by an agent or written by an independent status-transition operation.
 
+A noncanonical pre-choice literature orientation cannot change
+`literature.coverage` from `not_started` or `partial` to `current`, and cannot
+change `literature.novelty`. Only the owning canonical literature and
+absorption objects, their validators, and exact dependencies can support those
+transitions.
+
 ### 4.4 Core entity families
 
 The initial schema should support only entities needed by the end-to-end theory route.

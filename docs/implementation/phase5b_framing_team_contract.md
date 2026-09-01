@@ -240,9 +240,27 @@ The current `FramingDirectionCardV1` is an experimental projection for
 AI-agent questions: it requires an ordinary-agent baseline, one operational
 AI-specific primitive, and a mechanism-design delta. It must not be forced
 onto unrelated theory questions or described as a topic-neutral source-review
-schema. Those questions remain on the source-blind direct-choice path unless a
-future human-authorized, topic-neutral review contract applies. Later canonical
-literature and novelty routes are unchanged.
+schema.
+
+The additive topic-neutral profile is explicit rather than a reinterpretation
+of V1. A new activation may bind
+`source_aware_choice_profile=topic_neutral_v2`; omitted legacy activations still
+require the V1 card and review. The topic-neutral profile requires
+`FramingDirectionCardV2` and `FramingChoiceReviewV2`. Each V2 card covers the
+exact question, benchmark and delta, economic significance, load-bearing
+economic force, classic and recent inspected sources, overlap risk, remaining
+theory delta, falsifiable increment, decisive pre-G1 probe, and
+kill-or-reframe condition. It contains no AI-specific field. The fixed
+activation profile determines which review version is admissible, so an old
+V1 run cannot be upgraded and a new V2 run cannot be silently downgraded.
+
+Both versions use the same bounded publish operation, immutable review pointer,
+selection binding, retry semantics, and authority boundary. The topic-neutral
+profile creates no new lane, model call, route, worker authority, canonical
+object, or human gate. Later canonical literature and novelty routes are
+unchanged. Acquisition and privacy behavior across the early and formal
+literature checks is specified in
+[`literature_acquisition_checkpoints.md`](literature_acquisition_checkpoints.md).
 
 ## 6. Researcher choice and authority
 

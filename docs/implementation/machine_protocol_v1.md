@@ -228,7 +228,13 @@ obtain the same work-packet hash.
    hosts converge under the navigation/canonical lock order.
 5. `egress.plan` and `packet.deliver` record the selected local execution and
    return the exact nonsealed packet.
-6. The host writes only the packet's candidate/shadow paths, then calls
+6. When the packet jointly requires `LiteratureEvidence`, `ClosestTheoryMap`,
+   and `AbsorptionAssessment`, the host first acquires fresh closest-theory
+   evidence under a separate online-search permission or from an explicit
+   project-local offline bundle. The packet forbids contribution judgment from
+   model memory or uninspected sources and forbids `proceed` without current
+   full-text acquisition.
+7. The host writes only the packet's candidate/shadow paths, then calls
    `candidate.complete` or `host.finish`.
 
 This sequence remains the engine contract for Codex, Claude Code, Cursor, and
@@ -237,6 +243,13 @@ activation only in a prepared checkout and only for a public framing route. It
 does not establish cold installation, positive private execution, a signed
 production release, multi-agent execution, host parity, or improved research
 quality.
+
+The Codex-only framing-team projection also has an additive topic-neutral
+pre-choice review. It is bound after the raw panel and before the user choice,
+remains noncanonical, and carries no novelty or G1 authority. It is not part of
+the host-neutral operation union. The shared formal acquisition obligation and
+the narrower Codex pre-choice sidecar are specified in
+[`literature_acquisition_checkpoints.md`](literature_acquisition_checkpoints.md).
 
 The later V8 public diagnostic extended real execution through primitive
 decomposition but not through the audit commit. Its final operational

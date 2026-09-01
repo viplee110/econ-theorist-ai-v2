@@ -49,6 +49,31 @@ _HIDDEN_COMPARTMENTS_BY_ROUTE: dict[str, tuple[str, ...]] = {
     ),
 }
 
+_LITERATURE_ACQUISITION_OUTPUTS = frozenset(
+    {
+        "LiteratureEvidence",
+        "ClosestTheoryMap",
+        "AbsorptionAssessment",
+    }
+)
+_BASE_FORBIDDEN_ACTIONS = (
+    "canonical_store_direct_write",
+    "human_decision_fabrication",
+    "human_owned_artifact_overwrite",
+    "undeclared_cross_project_read",
+    "undeclared_agent_delegation",
+)
+
+
+def _packet_forbidden_actions(output_entities: tuple[str, ...]) -> tuple[str, ...]:
+    actions = _BASE_FORBIDDEN_ACTIONS
+    if _LITERATURE_ACQUISITION_OUTPUTS.issubset(output_entities):
+        actions += (
+            "contribution_judgment_from_model_memory_or_uninspected_sources",
+            "recommend_proceed_without_current_full_text_literature_acquisition",
+        )
+    return actions
+
 
 class RunInputBindingV1(StrictModel):
     binding_schema: Literal["econ-theorist/run-input-binding/v1"] = (
@@ -252,13 +277,7 @@ def compile_work_packet(
         allowed_operation_classes=route.allowed_operations,
         required_output_entity_types=output_entities,
         required_output_relation_types=output_relations,
-        forbidden_actions=(
-            "canonical_store_direct_write",
-            "human_decision_fabrication",
-            "human_owned_artifact_overwrite",
-            "undeclared_cross_project_read",
-            "undeclared_agent_delegation",
-        ),
+        forbidden_actions=_packet_forbidden_actions(output_entities),
     )
     root = _run_operational_root(operational, route_run_id)
     store = ContentAddressedOperationalStore(operational.project_root, root)

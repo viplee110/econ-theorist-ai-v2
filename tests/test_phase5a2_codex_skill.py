@@ -44,6 +44,13 @@ class Phase5A2CodexSkillTests(unittest.TestCase):
         self.assertIn("`awaiting_choice_review`", text)
         self.assertIn("bounded literature orientation", text)
         self.assertIn("ordinary-agent baseline", text)
+        self.assertIn("`topic_neutral_v2` card", text)
+        self.assertIn(
+            "`source_aware_choice_profile=topic_neutral_v2`",
+            text,
+        )
+        self.assertIn("load-bearing force", text)
+        self.assertIn("kill/reframe condition", text)
         self.assertIn("never novelty or absorption evidence", text)
         self.assertIn("never relabel or select it as a third direction", text)
         self.assertIn("not a fixed research\n  method", text)
@@ -65,6 +72,14 @@ class Phase5A2CodexSkillTests(unittest.TestCase):
         self.assertIn("Do not finish an ordinary human wait", text)
         self.assertIn("Do not use `finish` as a generic pause", text)
         self.assertIn("Do not rewrite `run.json`", text)
+        for literature_guardrail in (
+            "`LiteratureEvidence`, `ClosestTheoryMap`, and `AbsorptionAssessment`",
+            "separate privacy/egress permission",
+            "current WorkPacket hash and base head",
+            "model memory leave evidence unresolved",
+            "cannot support `proceed`",
+        ):
+            self.assertIn(literature_guardrail, text)
         for required_guardrail in (
             "Freeze each\n   intended field separately",
             "write the request as UTF-8, re-read it",

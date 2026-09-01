@@ -4,6 +4,20 @@ This file records user-visible releases of Econ Theorist AI v2. The project
 uses semantic versioning for the released open-source core; scientific claims
 remain governed by the evidence boundaries in the repository.
 
+## [Unreleased]
+
+### Literature acquisition
+
+- Added a topic-neutral, noncanonical Codex framing review after independent
+  direction generation and before the researcher chooses; legacy AI-agent
+  source-review records remain replayable unchanged.
+- Added a machine-visible host obligation to acquire current closest-theory
+  evidence before the formal absorption audit. A positive `proceed` judgment
+  cannot rely on model memory, uninspected sources, metadata, or abstracts.
+- Documented separately authorized online search and project-local offline
+  paper bundles for Codex, Claude Code, and Cursor. This does not establish
+  exhaustive literature coverage, novelty, research quality, or host honesty.
+
 ## [1.0.0] - 2026-08-01
 
 The first numbered public release of the bounded Econ Theorist AI v2

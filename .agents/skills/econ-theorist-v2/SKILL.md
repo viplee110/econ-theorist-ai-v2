@@ -41,8 +41,8 @@ Use the installed engine as sole owner of workflow, state, instructions, schemas
 - Claim source-aware choice available only when privacy/egress permits one
   bounded literature orientation. The coordinator performs it without recalling
   lanes or treating model memory as checked; submit sources, limits, and cards.
-- Each collaborator card covers only that lane's v2 `Champion` and states the concrete question, exact benchmark, economic value, ordinary-agent baseline,
-  one operational AI primitive, mechanism-design delta, closest sources and overlap, remaining theory delta, falsifiable increment, and kill condition.
+- For a new general-theory team, bind `source_aware_choice_profile=topic_neutral_v2`; omit that profile only when exactly resuming a legacy AI-specific activation.
+- Each collaborator card covers only that lane's v2 `Champion`. A `topic_neutral_v2` card states the question, exact benchmark and delta, economic value, load-bearing force, closest sources and overlap, remaining theory delta, falsifiable increment, cheapest probe, and kill/reframe condition. A legacy card preserves its ordinary-agent baseline, AI primitive, and mechanism-design delta.
   A runner-up needs a new bound source review before promotion. Apply the mentor's critique as a screen; never relabel or select it as a third direction.
 - Cards are an automatically compiled decision view, not a fixed research
   method. They are orientation, never novelty or absorption evidence.
@@ -86,6 +86,11 @@ Use the installed engine as sole owner of workflow, state, instructions, schemas
 - Complete only with `stage_and_commit` and the exact
   `theorem_team_review_hash`. Stop at any human G4 decision; the team cannot
   approve a result portfolio or continue into argument packaging.
+
+## Acquire literature when the packet requires it
+- When the required outputs jointly name `LiteratureEvidence`, `ClosestTheoryMap`, and `AbsorptionAssessment`, acquire closest-theory evidence before candidate authoring; this is external evidence, not an extra scientific instruction.
+- Use fresh `online_host_search` only with separate privacy/egress permission, or an explicit project-local `offline_user_bundle`; bind the search to the current WorkPacket hash and base head.
+- Mark `full_text` only after inspecting the text. Metadata, abstracts, snippets, and model memory leave evidence unresolved and cannot support `proceed`; if no citable source is accessible, request a bundle and keep the same run open.
 
 ## Preserve boundaries
 - Keep Phase 5A execution single-agent outside the bridge-declared framing-team

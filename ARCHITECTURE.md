@@ -194,6 +194,8 @@ The detailed owners are:
   `docs/implementation/phase5b_framing_team_contract.md`.
 - bounded Phase 5B.1 theorem challenge team:
   `docs/implementation/phase5b_theorem_team_contract.md`.
+- host-executed pre-G1 orientation and pre-G4 full-text acquisition:
+  `docs/implementation/literature_acquisition_checkpoints.md`.
 
 ## 5. Research control flow
 
@@ -217,6 +219,14 @@ discover.question
 ```
 
 Failure routes are first-class. A failed global sign may become a threshold, bound, possibility set, or impossibility result. A theorem whose proposed mechanism fails must reopen the mechanism rather than receive a new post-hoc intuition. A closest-paper absorption may trigger mutation, demotion to an application, pivot, park, or kill.
+
+Literature acquisition is an overlay on this flow, not a second route graph.
+After blind framing directions are fixed, a bounded source orientation may
+inform the researcher's pre-G1 choice without claiming novelty. After claims
+are formally and economically verified, fresh full-text closest-theory
+acquisition supplies the existing absorption audit before G4. Search results
+gain scientific authority only through the owning canonical research objects
+and validators.
 
 Project maturity is derived from accepted and fresh capabilities. It is never advanced by writing “Stage 6” into a dashboard.
 

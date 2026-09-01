@@ -724,6 +724,9 @@ authority, dependencies, claim scope, provenance, privacy, or evaluation.
    finalists against ordinary-agent benchmarks, closest classic theory, and
    current relevant work. Sources may kill, demote, or reframe a direction;
    they cannot certify novelty by checklist or retroactively rewrite a lane.
+   The additive Codex `topic_neutral_v2` review now implements this as an
+   immutable pre-choice sidecar while preserving the earlier AI-specific V1;
+   a fresh live topic-neutral search remains post-implementation evidence.
 4. **Minimal-model kill probe.** Before general formalization, solve the
    smallest hand-checkable example, freeze the predicted result, test the
    benchmark and closest rival, and run the cheapest ablation or
@@ -753,6 +756,13 @@ ask the researcher to lock the useful theorem set only after formal validity,
 economic interpretation, and boundary stress tests are separately visible.
 Weak results are narrowed or parked; theorem count never substitutes for
 contribution.
+
+After formal and economic claim verification, the existing absorption audit
+now has an explicit host acquisition obligation rather than a new research
+stage. A packet that jointly requests literature evidence, a closest-theory
+map, and an absorption assessment forbids contribution judgment from model
+memory or uninspected sources and forbids `proceed` without current full-text
+acquisition. The unchanged validator and G4 authority remain controlling.
 
 #### Economic Manuscript Quality Loop
 
